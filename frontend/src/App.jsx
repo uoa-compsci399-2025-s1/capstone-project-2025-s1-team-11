@@ -1,10 +1,13 @@
 import React from 'react';
-import { Button } from 'antd';
+import Users from './pages/Users';
 
-const App = () => (
-    <div className="App">
-        <Button type="primary">Button</Button>
-    </div>
-);
+const App = () => {
+    return (
+        <div>
+            <h1>Hello World</h1>
+            <Users />
+        </div>
+    );
+};
 
 export default App;
