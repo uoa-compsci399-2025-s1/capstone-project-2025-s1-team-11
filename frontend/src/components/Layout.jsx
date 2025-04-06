@@ -10,7 +10,7 @@ const MCQLayout = ({ children }) => {
 
   const items = [
     { key: '1', label: 'Home' },
-    { key: '2', label: 'MCQ Creator' },
+    { key: '2', label: 'MCQ Builder' },
     { key: '3', label: 'MCQ Randomiser' },
     { key: '4', label: 'Automarker' },
   ];
