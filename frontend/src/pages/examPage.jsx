@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Exam from "../models/Exam.js";
+import Exam from "./models/Exam.js";
 import { Question } from "../models/Question.js";
 import { exportExamToJSON, importExamFromJSON } from "../services/jsonExamService.js";
 
