@@ -29,13 +29,22 @@ export async function openExamFile() {
 /**
  * Saves the given exam to the file represented by fileHandle.
  */
-export async function saveExamToFile(exam, fileHandle) {
-    try {
-        const writable = await fileHandle.createWritable();
-        await writable.write(exam.toJSON());
-        await writable.close();
-        console.log("File saved successfully!");
-    } catch (error) {
-        console.error("Error saving file:", error);
+export async function saveExamToFile(exam, fileHandle = null) {
+    // If no file handle exists, prompt the user for a save location.
+    if (!fileHandle) {
+        fileHandle = await window.showSaveFilePicker({
+            suggestedName: "Exam.json",
+            types: [
+                {
+                    description: "JSON Files",
+                    accept: { "application/json": [".json"] },
+                },
+            ],
+        });
     }
+    // Create a writable stream, write the JSON content, and close the stream.
+    const writable = await fileHandle.createWritable();
+    await writable.write(exam.toJSON());
+    await writable.close();
+    return fileHandle; // Return the file handle so it can be stored for future saves.
 }

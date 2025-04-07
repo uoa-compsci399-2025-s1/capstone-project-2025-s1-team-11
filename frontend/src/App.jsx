@@ -1,13 +1,34 @@
+// src/App.jsx
 import React, { useEffect, useState } from 'react';
-import { Alert } from 'antd';
-import Users from './pages/Users';
 import ExamPageFS from './pages/ExamPageFS';
+import ExamImporter from "./pages/examImporter.jsx";
+import ExamDisplay from './components/ExamDisplay.jsx';
 import MCQLayout from './components/Layout';
+import DevelopmentWarning from './components/developmentWarning';
 import PopupWarning from './components/popupWarning';
+import { saveExamToFile } from './services/fileSystemAccess.js';
+import ExamFileManager from "./pages/ExamFileManager.jsx";
+
 
 const App = () => {
   const [showWarning, setShowWarning] = useState(false);
+  // Unified exam state
+  const [exam, setExam] = useState(null);
 
+  // Callback for adding a new question
+  const addQuestion = () => {
+    if (!exam) return;
+    const newId = exam.questions.length + 1;
+    const newQuestion = {
+      id: newId,
+      questionText: `New Question ${newId}`,
+      answer: "Answer",
+      options: ["1","2","3","4"],
+    };
+    setExam({ ...exam, questions: [...exam.questions, newQuestion] });
+  };
+
+  // Check for non-Chromium browsers
   useEffect(() => {
     const isChromium = !!window.chrome;
     if (!isChromium) {
@@ -16,10 +37,15 @@ const App = () => {
   }, []);
 
   return (
-    <MCQLayout>
-      <PopupWarning visible={showWarning} onClose={() => setShowWarning(false)} />
-      <ExamPageFS />
-    </MCQLayout>
+      <MCQLayout>
+        <DevelopmentWarning />
+        <PopupWarning visible={showWarning} onClose={() => setShowWarning(false)} />
+
+        <div>
+          {exam ? <ExamDisplay exam={exam} onAddQuestion={addQuestion}/> : <p>No exam loaded.</p>}
+          <ExamFileManager onExamLoaded={setExam} />
+        </div>
+      </MCQLayout>
   );
 };
 
