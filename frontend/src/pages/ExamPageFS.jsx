@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Space, Card, List, Typography, Alert } from 'antd';
+import { Button, Space, Card, List, Typography, Alert, Table } from 'antd'; 
 import Exam from "../models/ExamFS.js";
 import { Question } from "../models/QuestionFS.js";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
@@ -8,8 +8,8 @@ const ExamPageFS = () => {
     // Initialize with a default exam in case no file is loaded yet.
     const [exam, setExam] = useState(
         new Exam("Midterm Exam", "2025-04-04", [
-            new Question(1, "What is 2+2?", "4", ["3", "4", "5"]),
-            new Question(2, "Capital of France?", "Paris", ["Paris", "London", "Rome"]),
+            new Question(1, "What is 2+2?", "4", ["3", "4", "5", "6"]),
+            new Question(2, "Capital of France?", "Paris", ["Paris", "London", "Rome", "Auckland"]),
         ])
     );
     const [fileHandle, setFileHandle] = useState(null);
@@ -44,41 +44,83 @@ const ExamPageFS = () => {
         setExam(updatedExam);
     };
 
+    const tableData = exam.questions.map((q, index) => ({
+        key: q.id,
+        number: index + 1,
+        questionText: q.questionText,
+        answer: q.answer,
+        optionA: q.options[0] || '',
+        optionB: q.options[1] || '',
+        optionC: q.options[2] || '',
+        optionD: q.options[3] || '',
+    }));
+
+    const tableColumns = [
+        {
+            title: '#',
+            dataIndex: 'number',
+            key: 'number',
+        },
+        {
+            title: 'Question',
+            dataIndex: 'questionText',
+            key: 'questionText',
+        },
+        {
+            title: 'Answer',
+            dataIndex: 'answer',
+            key: 'answer',
+        },
+        {
+            title: 'Option A',
+            dataIndex: 'optionA',
+            key: 'optionA',
+        },
+        {
+            title: 'Option B',
+            dataIndex: 'optionB',
+            key: 'optionB',
+        },
+        {
+            title: 'Option C',
+            dataIndex: 'optionC',
+            key: 'optionC',
+        },
+        {
+            title: 'Option D',
+            dataIndex: 'optionD',
+            key: 'optionD',
+        },
+    ];
+
     return (
         <div>
             <Alert
-            message="Warning"
-            description="Assessly is in early development. Features may be incomplete and bugs are expected."
-            type="warning"
-            showIcon
-            closable
-        />
-        <h1>MCQ Builder</h1>
-        <Card title={exam.title} extra={<span>Date: {exam.date}</span>}>
-            <Typography.Title level={3} style={{ margin: '0', paddingBottom: '8px'}}>Questions:</Typography.Title>
-            <List
-                itemLayout="horizontal"
-                dataSource={exam.questions}
-                renderItem={(q) => (
-                    <List.Item>
-                        <List.Item.Meta
-                            title={q.questionText}
-                            description={`Answer: ${q.answer}`}
-                        />
-                    </List.Item>
-                )}
+                message="Warning"
+                description="Assessly is in early development. Features may be incomplete and bugs are expected."
+                type="warning"
+                showIcon
+                closable
             />
+            <h1>MCQ Builder</h1>
+            <Card title={ exam.title } extra={ <span>Date: { exam.date }</span> }>
+                <Typography.Title level={ 3 } style={{ margin: '0', paddingBottom: '8px' }}>Questions:</Typography.Title>
+                <Table
+                    dataSource={ tableData }
+                    columns={ tableColumns }
+                    pagination={ false }
+                />
+                <Space style={{ marginTop: '16px' }}>
+                    <Button type="dashed" onClick={ handleAddQuestion }>Add Question</Button>
+                </Space>
+            </Card>
             <Space style={{ marginTop: '16px' }}>
-                <Button type="dashed" onClick={handleAddQuestion}>Add Question</Button>
+                <Button type="primary" onClick={ handleOpenFile }>
+                    Open Exam File
+                </Button>
+                <Button onClick={ handleSaveFile }>Save Exam File</Button>
             </Space>
-        </Card>
-        <Space style={{ marginTop: '16px' }}>
-            <Button type="primary" onClick={handleOpenFile}>
-                Open Exam File
-            </Button>
-            <Button onClick={handleSaveFile}>Save Exam File</Button>
-        </Space>
-    </div>
+        </div>
     );
 };
 
