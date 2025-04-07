@@ -26,7 +26,7 @@ const MCQLayout = ({ children }) => {
       <Content style={{ padding: '0 48px', flex: 1 }}>
         <Breadcrumb style={{ margin: '16px 0' }}>
           <Breadcrumb.Item>Home</Breadcrumb.Item>
-          <Breadcrumb.Item>App</Breadcrumb.Item>
+          <Breadcrumb.Item>MCQ Builder</Breadcrumb.Item>
         </Breadcrumb>
         <div
           style={{

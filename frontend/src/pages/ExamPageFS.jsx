@@ -45,26 +45,32 @@ const ExamPageFS = () => {
     };
 
     return (
-        <Card title={exam.title} extra={<span>Date: {exam.date}</span>}>
-            <Typography.Title level={3} style={{ margin: '10px 0' }}>Questions:</Typography.Title>
-            <List
-                itemLayout="horizontal"
-                dataSource={exam.questions}
-                renderItem={(q) => (
-                    <List.Item>
-                        <List.Item.Meta
-                            title={q.questionText}
-                            description={`Answer: ${q.answer}`}
-                        />
-                    </List.Item>
-                )}
-            />
+        <div>
+            <Card title={exam.title} extra={<span>Date: {exam.date}</span>}>
+                <Typography.Title level={3} style={{ margin: '10px 0' }}>Questions:</Typography.Title>
+                <List
+                    itemLayout="horizontal"
+                    dataSource={exam.questions}
+                    renderItem={(q) => (
+                        <List.Item>
+                            <List.Item.Meta
+                                title={q.questionText}
+                                description={`Answer: ${q.answer}`}
+                            />
+                        </List.Item>
+                    )}
+                />
+                <Space style={{ marginTop: '16px' }}>
+                    <Button type="dashed" onClick={handleAddQuestion}>Add Question</Button>
+                </Space>
+            </Card>
             <Space style={{ marginTop: '16px' }}>
-                <Button type="primary" onClick={handleOpenFile}>Open Exam File</Button>
+                <Button type="primary" onClick={handleOpenFile}>
+                    Open Exam File
+                </Button>
                 <Button onClick={handleSaveFile}>Save Exam File</Button>
-                <Button type="dashed" onClick={handleAddQuestion}>Add Question</Button>
             </Space>
-        </Card>
+        </div>
     );
 };
 
