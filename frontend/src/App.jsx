@@ -5,7 +5,7 @@ import MCQLayout from './components/Layout';
 import DevelopmentWarning from './components/developmentWarning';
 import PopupWarning from './components/popupWarning';
 import ExamFileManager from "./pages/ExamFileManager.jsx";
-
+import ExamPageFS from "./pages/ExamPageFS.jsx";
 
 const App = () => {
   const [showWarning, setShowWarning] = useState(false);
@@ -37,7 +37,7 @@ const App = () => {
       <MCQLayout>
         <DevelopmentWarning />
         <PopupWarning visible={showWarning} onClose={() => setShowWarning(false)} />
-
+        <ExamPageFS></ExamPageFS>
         <div>
           {exam ? <ExamDisplay exam={exam} onAddQuestion={addQuestion}/> : <p>No exam loaded.</p>}
           <ExamFileManager onExamLoaded={setExam} />
