@@ -18,16 +18,6 @@ const App = () => {
   return (
     <MCQLayout>
       <PopupWarning visible={showWarning} onClose={() => setShowWarning(false)} />
-
-      <h1>Assessly Prototype</h1>
-      <Alert
-        message="Warning"
-        description="Assessly is in early development. Features may be incomplete and bugs are expected."
-        type="warning"
-        showIcon
-        closable
-      />
-      <br />
       <ExamPageFS />
     </MCQLayout>
   );

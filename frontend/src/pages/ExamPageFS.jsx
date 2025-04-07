@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Space, Card, List, Typography } from 'antd';
+import { Button, Space, Card, List, Typography, Alert } from 'antd';
 import Exam from "../models/ExamFS.js";
 import { Question } from "../models/QuestionFS.js";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
@@ -46,31 +46,39 @@ const ExamPageFS = () => {
 
     return (
         <div>
-            <Card title={exam.title} extra={<span>Date: {exam.date}</span>}>
-                <Typography.Title level={3} style={{ margin: '10px 0' }}>Questions:</Typography.Title>
-                <List
-                    itemLayout="horizontal"
-                    dataSource={exam.questions}
-                    renderItem={(q) => (
-                        <List.Item>
-                            <List.Item.Meta
-                                title={q.questionText}
-                                description={`Answer: ${q.answer}`}
-                            />
-                        </List.Item>
-                    )}
-                />
-                <Space style={{ marginTop: '16px' }}>
-                    <Button type="dashed" onClick={handleAddQuestion}>Add Question</Button>
-                </Space>
-            </Card>
+            <Alert
+            message="Warning"
+            description="Assessly is in early development. Features may be incomplete and bugs are expected."
+            type="warning"
+            showIcon
+            closable
+        />
+        <h1>MCQ Builder</h1>
+        <Card title={exam.title} extra={<span>Date: {exam.date}</span>}>
+            <Typography.Title level={3} style={{ margin: '0', paddingBottom: '8px'}}>Questions:</Typography.Title>
+            <List
+                itemLayout="horizontal"
+                dataSource={exam.questions}
+                renderItem={(q) => (
+                    <List.Item>
+                        <List.Item.Meta
+                            title={q.questionText}
+                            description={`Answer: ${q.answer}`}
+                        />
+                    </List.Item>
+                )}
+            />
             <Space style={{ marginTop: '16px' }}>
-                <Button type="primary" onClick={handleOpenFile}>
-                    Open Exam File
-                </Button>
-                <Button onClick={handleSaveFile}>Save Exam File</Button>
+                <Button type="dashed" onClick={handleAddQuestion}>Add Question</Button>
             </Space>
-        </div>
+        </Card>
+        <Space style={{ marginTop: '16px' }}>
+            <Button type="primary" onClick={handleOpenFile}>
+                Open Exam File
+            </Button>
+            <Button onClick={handleSaveFile}>Save Exam File</Button>
+        </Space>
+    </div>
     );
 };
 
