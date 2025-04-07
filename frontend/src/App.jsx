@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Alert } from 'antd';
 import Users from './pages/Users';
 import ExamPageFS from './pages/ExamPageFS';
+import MCQLayout from './components/Layout';
+import PopupWarning from './components/popupWarning';
 
 const App = () => {
-    return (
-        <div>
-            <h1>Assesly Prototype</h1>
+  const [showWarning, setShowWarning] = useState(false);
 
-            <ExamPageFS />
-        </div>
-    );
+  useEffect(() => {
+    const isChromium = !!window.chrome;
+    if (!isChromium) {
+      setShowWarning(true);
+    }
+  }, []);
+
+  return (
+    <MCQLayout>
+      <PopupWarning visible={showWarning} onClose={() => setShowWarning(false)} />
+      <ExamPageFS />
+    </MCQLayout>
+  );
 };
 
 export default App;

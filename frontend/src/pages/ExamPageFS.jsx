@@ -1,6 +1,5 @@
-// src/pages/ExamPage.jsx
-
 import React, { useState } from "react";
+import { Button, Space, Card, List, Typography, Alert } from 'antd';
 import Exam from "../models/ExamFS.js";
 import { Question } from "../models/QuestionFS.js";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
@@ -47,20 +46,39 @@ const ExamPageFS = () => {
 
     return (
         <div>
-            <h1>{exam.title}</h1>
-            <p>Date: {exam.date}</p>
-            <h2>Questions:</h2>
-            <ul>
-                {exam.questions.map((q) => (
-                    <li key={q.id}>
-                        {q.questionText} (Answer: {q.answer})
-                    </li>
-                ))}
-            </ul>
-            <button onClick={handleOpenFile}>Open Exam File</button>
-            <button onClick={handleSaveFile}>Save Exam File</button>
-            <button onClick={handleAddQuestion}>Add Question</button>
-        </div>
+            <Alert
+            message="Warning"
+            description="Assessly is in early development. Features may be incomplete and bugs are expected."
+            type="warning"
+            showIcon
+            closable
+        />
+        <h1>MCQ Builder</h1>
+        <Card title={exam.title} extra={<span>Date: {exam.date}</span>}>
+            <Typography.Title level={3} style={{ margin: '0', paddingBottom: '8px'}}>Questions:</Typography.Title>
+            <List
+                itemLayout="horizontal"
+                dataSource={exam.questions}
+                renderItem={(q) => (
+                    <List.Item>
+                        <List.Item.Meta
+                            title={q.questionText}
+                            description={`Answer: ${q.answer}`}
+                        />
+                    </List.Item>
+                )}
+            />
+            <Space style={{ marginTop: '16px' }}>
+                <Button type="dashed" onClick={handleAddQuestion}>Add Question</Button>
+            </Space>
+        </Card>
+        <Space style={{ marginTop: '16px' }}>
+            <Button type="primary" onClick={handleOpenFile}>
+                Open Exam File
+            </Button>
+            <Button onClick={handleSaveFile}>Save Exam File</Button>
+        </Space>
+    </div>
     );
 };
 
