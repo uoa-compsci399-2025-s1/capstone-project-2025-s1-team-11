@@ -1,6 +1,6 @@
 // src/components/ExamDisplay.jsx
 import React from 'react';
-import {Alert, Button, Card, List, Space, Typography} from "antd";
+import {Button, Card, List, Space, Typography} from "antd";
 
 const ExamDisplay = ({ exam, onAddQuestion }) => {
     if (!exam) {

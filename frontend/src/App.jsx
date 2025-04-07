@@ -1,12 +1,9 @@
 // src/App.jsx
 import React, { useEffect, useState } from 'react';
-import ExamPageFS from './pages/ExamPageFS';
-import ExamImporter from "./pages/examImporter.jsx";
 import ExamDisplay from './components/ExamDisplay.jsx';
 import MCQLayout from './components/Layout';
 import DevelopmentWarning from './components/developmentWarning';
 import PopupWarning from './components/popupWarning';
-import { saveExamToFile } from './services/fileSystemAccess.js';
 import ExamFileManager from "./pages/ExamFileManager.jsx";
 
 
