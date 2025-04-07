@@ -22,7 +22,7 @@ const App = () => {
       <h1>Assessly Prototype</h1>
       <Alert
         message="Warning"
-        description="wow! look at this error message"
+        description="Assessly is in early development. Features may be incomplete and bugs are expected."
         type="warning"
         showIcon
         closable
