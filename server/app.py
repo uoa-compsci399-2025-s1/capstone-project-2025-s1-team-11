@@ -2,7 +2,7 @@ from flask import Flask, send_from_directory
 import os
 
 # Define the path to the Vite build output (dist folder)
-build_path = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dist')
+build_path = os.path.join(os.path.dirname(__file__), '..', 'client', 'dist')
 app = Flask(__name__, static_folder=build_path)
 
 # Serve the main page (index.html)
