@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,6 +13,7 @@
     "antd": "^5.24.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-router": "^7.5.0",
     "sql.js": "^1.13.0"
   },
   "devDependencies": {
