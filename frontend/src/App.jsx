@@ -1,9 +1,9 @@
 // src/App.jsx
-import React, { useEffect, useState } from 'react';
-import ExamDisplay from './components/ExamDisplay.jsx';
-import MCQLayout from './components/Layout';
-import DevelopmentWarning from './components/developmentWarning';
-import PopupWarning from './components/popupWarning';
+import React, { useEffect, useState } from "react";
+import ExamDisplay from "./components/ExamDisplay.jsx";
+import MCQLayout from "./components/Layout";
+import DevelopmentWarning from "./components/developmentWarning";
+import PopupWarning from "./components/popupWarning";
 import ExamFileManager from "./pages/ExamFileManager.jsx";
 import ExamPageFS from "./pages/ExamPageFS.jsx";
 
@@ -20,7 +20,7 @@ const App = () => {
       id: newId,
       questionText: `New Question ${newId}`,
       answer: "Answer",
-      options: ["1","2","3","4"],
+      options: ["1", "2", "3", "4"],
     };
     setExam({ ...exam, questions: [...exam.questions, newQuestion] });
   };
@@ -34,15 +34,22 @@ const App = () => {
   }, []);
 
   return (
-      <MCQLayout>
-        <DevelopmentWarning />
-        <PopupWarning visible={showWarning} onClose={() => setShowWarning(false)} />
-        <ExamPageFS></ExamPageFS>
-        <div>
-          {exam ? <ExamDisplay exam={exam} onAddQuestion={addQuestion}/> : <p>No exam loaded.</p>}
-          <ExamFileManager onExamLoaded={setExam} />
-        </div>
-      </MCQLayout>
+    <MCQLayout>
+      <DevelopmentWarning />
+      <PopupWarning
+        visible={showWarning}
+        onClose={() => setShowWarning(false)}
+      />
+      <div>
+        <h1>MCQ Builder</h1>
+        {exam ? (
+          <ExamDisplay exam={exam} onAddQuestion={addQuestion} />
+        ) : (
+          <p>No exam loaded.</p>
+        )}
+        <ExamFileManager onExamLoaded={setExam} />
+      </div>
+    </MCQLayout>
   );
 };
 
