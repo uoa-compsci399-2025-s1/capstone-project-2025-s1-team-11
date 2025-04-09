@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
 import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
-import { Button, Alert, Input, Space, Table, Typography, Card } from "antd";
+import { Button, Alert, Space } from "antd";
 
 const ExamFileManager = ({ onExamLoaded }) => {
   const [exam, setExam] = useState(null);

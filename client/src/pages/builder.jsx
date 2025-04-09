@@ -1,6 +1,5 @@
 // src/pages/ExamFileManager.jsx
-import React, {useEffect, useState} from "react";
-import { Button, Alert, Input, Space, Table, Typography, Card } from "antd";
+import React, { useState} from "react";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 
