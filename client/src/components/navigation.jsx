@@ -19,9 +19,10 @@ export function Navigation() {
                         <Button type="text" style={{ borderRadius: 0, color: "#fff", fontWeight: 500 }}>MCQ Automarker</Button>
                     </NavLink>
                 </Space>
-                <NavLink to="/documentation" end>
+                <a href="/documentation" target="_blank" rel="noopener noreferrer">
+
                     <Button type="text" style={{ borderRadius: 0, backgroundColor: "#fff", fontWeight: 500 }}>Documentation</Button>
-                </NavLink>
+                </a>
             </div>
         </nav>
     );
