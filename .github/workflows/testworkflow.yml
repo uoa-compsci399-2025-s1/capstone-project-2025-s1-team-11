@@ -1,0 +1,61 @@
+name: Run Tests on testing-infrastructure branch only
+
+on:
+  push:
+    branches:
+      - testing-infrastructure
+  pull_request:
+    branches:
+      - testing-infrastructure
+
+jobs:
+  client-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.14.0
+
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: client
+
+      - name: Run Jest tests
+        run: npm run test
+        working-directory: client
+
+  cypress-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Cypress dependencies
+        run: npm ci
+        working-directory: client
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: client
+
+  backend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+        working-directory: server
+
+      - name: Run pytest
+        run: pytest
+        working-directory: server
