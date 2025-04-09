@@ -2,7 +2,7 @@
 import React from "react";
 import { Button, Alert, Input, Space, Table, Typography, Card } from "antd";
 
-const ExamDisplay = ({ exam, onAddQuestion }) => {
+const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
   if (!exam) {
     return <div>No exam loaded.</div>;
   }
@@ -10,13 +10,17 @@ const ExamDisplay = ({ exam, onAddQuestion }) => {
     <div>
       {exam && (
         <Card
-          title={exam.title}
+          title={
+            <div>
+              <Typography.Text strong>Currently editing:</Typography.Text>{' '}
+              <Typography.Text>{exam.title}</Typography.Text>
+              <br />
+              <Typography.Text type="secondary">File: {fileName || "Unknown file"}</Typography.Text>
+            </div>
+          }
           extra={<span>Date: {exam.date}</span>}
           style={{ marginTop: 24 }}
         >
-          <Typography.Title level={3} style={{ margin: 0, paddingBottom: 8 }}>
-            Questions:
-          </Typography.Title>
           <Table
             dataSource={exam.questions.map((q, index) => ({
               key: q.id,
