@@ -1,5 +1,6 @@
 import React from 'react';
 import { Layout, Menu, Breadcrumb, theme } from 'antd';
+import {Navigation} from "./navigation.jsx";
 
 const { Header, Content, Footer } = Layout;
 
@@ -17,11 +18,12 @@ const MCQLayout = ({ children }) => {
 
   return (
     <Layout style={{ minHeight: '100vh', minWidth: '100vw', display: 'flex', flexDirection: 'column' }}>
-            <Header style={{ display: 'flex', alignItems: 'center', padding: '0 24px' }}>
-        {/* update logo */}
-        <div className="logo" style={{ marginRight: '24px' }} />
-        {/* default key 2 = mcq creator tab */}
-        <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['2']} items={items} style={{ flex: 1, minWidth: 0 }} />
+        <Header style={{ display: 'flex', alignItems: 'center', padding: '0 24px' }}>
+            {/* update logo */}
+            <div className="logo" style={{ marginRight: '24px' }} /><Navigation />
+            {/* default key 2 = mcq creator tab */}
+            <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['2']} items={items} style={{ flex: 1, minWidth: 0 }} />
+
       </Header>
       <Content style={{ padding: '32px 48px', flex: 1 }}>
         <div style={{maxWidth: '1200px', margin: '0 auto'}}>
