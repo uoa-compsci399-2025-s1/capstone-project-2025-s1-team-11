@@ -1,4 +1,4 @@
 ﻿/// <reference types="cypress" />
-module.exports = {
+export default {
     presets: ['@babel/preset-env', '@babel/preset-react'],
 };
