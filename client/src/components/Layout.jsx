@@ -12,9 +12,16 @@ const MCQLayout = ({ children }) => {
 
   return (
     <Layout style={{ minHeight: '100vh', minWidth: '100vw', display: 'flex', flexDirection: 'column' }}>
-        <Header style={{ display: 'flex', alignItems: 'center', padding: '0 24px' }}>
+        <Header
+            style={{
+              backgroundColor: "#ffffff", // <-- makes the header white
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 24px'
+            }}
+          >
             {/* update logo */}
-            <div className="logo" style={{ marginRight: '24px' }} /><Navigation />
+            <div className="logo" style={{ marginRight: '24px'}} /><Navigation />
       </Header>
       <Content style={{ padding: '32px 48px', flex: 1 }}>
         <div style={{maxWidth: '1200px', margin: '0 auto'}}>

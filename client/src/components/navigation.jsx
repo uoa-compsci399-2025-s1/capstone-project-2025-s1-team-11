@@ -3,20 +3,20 @@ import { Button, Space } from "antd";
 
 export function Navigation() {
     return (
-        <nav style={{ width: "100%" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", width: "100%", paddingRight: "24px" }}>
-                <Space>
+        <nav style={{ width: "100%"}}>
+            <div style={{ display: "flex", justifyContent: "space-between", width: "100%", paddingRight: "24px"}}>
+                <Space style={{ margin: 0}}>
                     <NavLink to="/" end>
-                        <Button type="text" style={{ borderRadius: 0, color: "#fff", fontWeight: 500 }}>Home</Button>
+                        <Button type="text" style={{ borderRadius: 0, color: "#000", fontWeight: 500, padding: "2.2em" }}>Home</Button>
                     </NavLink>
                     <NavLink to="/builder" end>
-                        <Button type="text" style={{ borderRadius: 0, color: "#fff", fontWeight: 500 }}>MCQ Builder</Button>
+                        <Button type="text" style={{ borderRadius: 0, color: "#000", fontWeight: 500, padding: "2.2em" }}>MCQ Builder</Button>
                     </NavLink>
                     <NavLink to="/randomiser" end>
-                        <Button type="text" style={{ borderRadius: 0, color: "#fff", fontWeight: 500 }}>MCQ Randomiser</Button>
+                        <Button type="text" style={{ borderRadius: 0, color: "#000", fontWeight: 500, padding: "2.2em" }}>MCQ Randomiser</Button>
                     </NavLink>
                     <NavLink to="/marker" end>
-                        <Button type="text" style={{ borderRadius: 0, color: "#fff", fontWeight: 500 }}>MCQ Automarker</Button>
+                        <Button type="text" style={{ borderRadius: 0, color: "#000", fontWeight: 500, padding: "2.2em" }}>MCQ Automarker</Button>
                     </NavLink>
                 </Space>
                 <a href="/documentation" target="_blank" rel="noopener noreferrer">
