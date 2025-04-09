@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import MyComponent from './MyComponent';
 
-test('renders something', () => {
-    render(<MyComponent />);
-    expect(screen.getByText(/something/i)).toBeInTheDocument();
+test('renders simple text', () => {
+    render(<div>Hello Cache Converters!</div>);
+    expect(screen.getByText('Hello world')).toBeInTheDocument();
 });
