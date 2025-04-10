@@ -2,6 +2,7 @@ import React from 'react';
 import { Layout, Breadcrumb, theme } from 'antd';
 import { Navigation } from "./navigation.jsx";
 import { Link } from 'react-router';
+import logo from "../../public/AssesslyLogoSmall.png";
 
 const { Header, Content, Footer } = Layout;
 
@@ -21,7 +22,7 @@ const MCQLayout = ({ children }) => {
             }}
           >
             {/* update logo */}
-            <div className="logo" style={{ marginRight: '24px'}} /><Navigation />
+            <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} /><Navigation />
       </Header>
       <Content style={{ padding: '32px 48px', flex: 1 }}>
         <div style={{maxWidth: '1200px', margin: '0 auto'}}>
