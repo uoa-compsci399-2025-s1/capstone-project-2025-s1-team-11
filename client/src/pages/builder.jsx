@@ -58,9 +58,12 @@ const Builder = () => {
     };
 
     return (
+        <>
+            <h1> MCQ Builder</h1>
         <MCQProgressWrapper>
             {(currentStep) => renderStageContent(currentStep)}
-        </MCQProgressWrapper>
+            </MCQProgressWrapper>
+        </>
     );
 };
 
