@@ -29,14 +29,14 @@ const Builder = () => {
             case 0:
                 return (
                     <div>
-                        <h1>Cover Page</h1>
+                        <h2>Cover Page</h2>
                         
                     </div>
                 );
             case 1:
                 return (
                     <div>
-                        <h1>Questions</h1>
+                        <h2>MCQ Exam Questions</h2>
             {exam ? (
                 <ExamDisplay exam={exam} fileName={fileName} onAddQuestion={addQuestion} />
             ) : (
@@ -48,7 +48,7 @@ const Builder = () => {
             case 2:
                 return (
                     <div>
-                        <h1>Export</h1>
+                        <h2>Export</h2>
                         <p>Export functionality coming soon.</p>
                     </div>
                 );
