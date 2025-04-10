@@ -49,7 +49,7 @@ const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
           />
         </Card>
       )}
-      <Space style={{ marginTop: "16px" }}>
+      <Space style={{ margin: "16px" }}>
         <Button type="dashed" onClick={onAddQuestion}>
           Add Question
         </Button>
