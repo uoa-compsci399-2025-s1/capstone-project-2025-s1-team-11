@@ -1,6 +1,5 @@
-// src/components/ExamDisplay.jsx
 import React from "react";
-import { Button, Alert, Input, Space, Table, Typography, Card } from "antd";
+import { Button, Alert, Input, Space, Table, Typography } from "antd";
 
 const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
   if (!exam) {
@@ -9,18 +8,16 @@ const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
   return (
     <div>
       {exam && (
-        <Card
-          title={
+        <div style={{ marginTop: 24 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
             <div>
               <Typography.Text strong>Currently editing:</Typography.Text>{' '}
               <Typography.Text>{exam.title}</Typography.Text>
               <br />
               <Typography.Text type="secondary">File: {fileName || "Unknown file"}</Typography.Text>
             </div>
-          }
-          extra={<span>Date: {exam.date}</span>}
-          style={{ marginTop: 24 }}
-        >
+            <span style={{ fontWeight: 500 }}>Date: {exam.date}</span>
+          </div>
           <Table
             dataSource={exam.questions.map((q, index) => ({
               key: q.id,
@@ -47,7 +44,7 @@ const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
             ]}
             pagination={false}
           />
-        </Card>
+        </div>
       )}
       <Space style={{ margin: "16px" }}>
         <Button type="dashed" onClick={onAddQuestion}>
