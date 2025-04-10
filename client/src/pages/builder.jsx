@@ -59,7 +59,7 @@ const Builder = () => {
 
     return (
         <>
-            <h1> MCQ Builder</h1>
+            <h1> Builder</h1>
         <MCQProgressWrapper>
             {(currentStep) => renderStageContent(currentStep)}
             </MCQProgressWrapper>
