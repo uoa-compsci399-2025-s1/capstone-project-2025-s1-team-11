@@ -1,5 +1,6 @@
 ﻿import { render, screen, fireEvent } from '@testing-library/react';
 import ExamFileManager from '../ExamFileManager';
+import React from 'react';
 
 test('reads and handles uploaded file', async () => {
     const file = new File(['<exam>example</exam>'], 'exam.qti', { type: 'text/xml' });
