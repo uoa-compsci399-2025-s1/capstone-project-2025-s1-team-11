@@ -1,28 +1,84 @@
-import { Question } from "./Question.js";
+
+import ExamComponent from './ExamComponent.js';
+import Section from './Section.js';
+import Question from './Question.js';
 
 export default class Exam {
-    constructor(title, date, questions = []) {
-        this.title = title;
-        this.date = date;
-        this.questions = questions; // array of Question instances
+    constructor(examTitle, courseCode, courseName, semester, year) {
+        this.examTitle = examTitle;
+        this.courseCode = courseCode;
+        this.courseName = courseName;
+        this.semester = semester;
+        this.year = year;
+
+        this.versions = [ 1, 2, 3, 4];
+        this.teleformAnswers = [ 'a', 'b', 'c', 'd', 'e'];
+
+        this.coverPage = null; //ExamComponent
+        this.examBody = []; //Array of ExamComponents
+        this.appendix = null; //ExamComponent
+        this.metadata = []; //Other data not used UI or logic
+        //this.markingKey = []; // markingKey[questionNo][correctAnswerMap, marks], e.g. [[1045, 1],[0342, 1.5], ... ]
     }
 
-    // Serialize the exam instance (and its questions) into a JSON string
+    getQuestion(questionNo) {
+        // Traverses examBody to return the specified question object.
+    }
+
+    getNoOfQuestions() {
+        // Traverses examBody and returns the count of questions in the examBody.
+    }
+
     toJSON() {
-        // Convert questions to plain objects first
+        // Serialise exam object to plain text
         const examObj = {
-            title: this.title,
-            date: this.date,
-            questions: this.questions.map(q => q.toObject()),
-        };
-        return JSON.stringify(examObj, null, 2); // Pretty print with 2-space indentation
+            examTitle: this.examTitle,
+            courseCode: this.courseCode,
+            courseName: this.courseName,
+            semester: this.semester,
+            year: this.year,
+            coverPage: this.coverPage ? this.coverPage.toJSON() : null,
+            examBody: this.examBody.map(component => component.toJSON()),
+            appendix: this.appendix ? this.appendix.toJSON() : null,
+            metadata: this.metadata,
+            markingKey: this.markingKey
+        }
+
+        return examObj; // Pretty print with 2-space indentation
     }
 
-    // Create an Exam instance from a JSON string
-    static fromJSON(jsonString) {
-        const data = JSON.parse(jsonString);
-        // Rebuild questions as Question instances
-        const questions = data.questions.map(qData => Question.fromObject(qData));
-        return new Exam(data.title, data.date, questions);
+    static fromJSON(data) {
+        const exam = new Exam(
+            data.examTitle,
+            data.courseCode,
+            data.courseName,
+            data.semester,
+            data.year
+        )
+
+        exam.coverPage = data.coverPage ? ExamComponent.fromJSON(data.coverPage) : null;
+
+        exam.examBody = (data.examBody || []).map(componentData => {
+            switch (componentData.type) {
+                case 'Section' :
+                    return Section.fromJSON(componentData);
+                case 'Question' :
+                    return Question.fromJSON(componentData);
+                case 'Content':
+                default:
+                    if (componentData.type !== 'content') {
+                        console.warn('Unknown component type:', componentData.type);
+                    }
+                    return ExamComponent.fromJSON(componentData);
+            }
+        })
+
+        exam.appendix = data.appendix ? ExamComponent.fromJSON(data.appendix) : null;
+
+        exam.metadata = data.metadata || [];
+        exam.markingKey = data.markingKey || [];
+
+        return exam;
     }
+
 }
