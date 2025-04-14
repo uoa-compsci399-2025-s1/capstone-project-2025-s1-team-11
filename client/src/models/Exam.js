@@ -11,14 +11,13 @@ export default class Exam {
         this.semester = semester;
         this.year = year;
 
-        this.versions = [ 1, 2, 3, 4];
-        this.teleformAnswers = [ 'a', 'b', 'c', 'd', 'e'];
+        this.versions = [ 1, 2, 3, 4]; //Randomised version ID's
+        this.teleformOptions = [ 'a', 'b', 'c', 'd', 'e'];
 
         this.coverPage = null; //ExamComponent
         this.examBody = []; //Array of ExamComponents
         this.appendix = null; //ExamComponent
-        this.metadata = []; //Other data not used UI or logic
-        //this.markingKey = []; // markingKey[questionNo][correctAnswerMap, marks], e.g. [[1045, 1],[0342, 1.5], ... ]
+        this.metadata = []; //Other data not used UI or logic?
     }
 
     getQuestion(questionNo) {
@@ -37,6 +36,8 @@ export default class Exam {
             courseName: this.courseName,
             semester: this.semester,
             year: this.year,
+            versions: this.versions,
+            teleformOptions: this.teleformOptions,
             coverPage: this.coverPage ? this.coverPage.toJSON() : null,
             examBody: this.examBody.map(component => component.toJSON()),
             appendix: this.appendix ? this.appendix.toJSON() : null,
@@ -44,7 +45,7 @@ export default class Exam {
             markingKey: this.markingKey
         }
 
-        return examObj; // Pretty print with 2-space indentation
+        return examObj;
     }
 
     static fromJSON(data) {
@@ -53,8 +54,11 @@ export default class Exam {
             data.courseCode,
             data.courseName,
             data.semester,
-            data.year
+            data.year,
         )
+
+        exam.versions = data.versions;
+        exam.teleformOptions = data.teleformOptions;
 
         exam.coverPage = data.coverPage ? ExamComponent.fromJSON(data.coverPage) : null;
 
@@ -66,7 +70,7 @@ export default class Exam {
                     return Question.fromJSON(componentData);
                 case 'Content':
                 default:
-                    if (componentData.type !== 'content') {
+                    if (componentData.type !== 'Content') {
                         console.warn('Unknown component type:', componentData.type);
                     }
                     return ExamComponent.fromJSON(componentData);
