@@ -1,8 +1,9 @@
-// src/pages/ExamFileManager.jsx
 import React, { useState } from "react";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
 import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
-import { Button, Alert, Space } from "antd";
+import { Button, Alert, Space, Collapse, Typography } from "antd";
+
+const { Panel } = Collapse;
 
 const ExamFileManager = ({ onExamLoaded }) => {
   const [exam, setExam] = useState(null);
@@ -18,7 +19,7 @@ const ExamFileManager = ({ onExamLoaded }) => {
         setExam(result.exam);
         setFileHandle(result.fileHandle);
         // Pass the exam back to the parent
-        onExamLoaded(result.exam);
+        onExamLoaded(result.exam, result.fileHandle?.name);
       }
     } catch (err) {
       setError("Error opening exam: " + err.message);
@@ -37,7 +38,7 @@ const ExamFileManager = ({ onExamLoaded }) => {
           setExam(importedExam);
           setFileHandle(null); // since this exam was imported and not loaded from a JSON file
           // Pass the imported exam back to the parent
-          onExamLoaded(importedExam);
+          onExamLoaded(importedExam, null); // no file name for XML imports
         }
       });
     }
@@ -59,7 +60,6 @@ const ExamFileManager = ({ onExamLoaded }) => {
 
   return (
     <div>
-      <h2>Exam File Manager</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
       {showSuccessAlert && (
         <Alert
@@ -71,29 +71,54 @@ const ExamFileManager = ({ onExamLoaded }) => {
           onClose={() => setShowSuccessAlert(false)}
         />
       )}
-      <p>
-        Currently Editing:{" "}
-        {fileHandle ? fileHandle.name : "No file loaded (unsaved exam)"}
-      </p>
-      <Space wrap style={{ marginTop: "12px" }}>
-        <Button onClick={handleOpenExam}>Open Exam (JSON)</Button>
-
-        <Button>
-          <label style={{ cursor: "pointer", marginBottom: 0 }}>
-            Import Exam (XML)
-            <input
-              type="file"
-              accept=".xml"
-              onChange={handleImportExam}
-              style={{ display: "none" }}
-            />
-          </label>
-        </Button>
-
-        <Button type="primary" onClick={handleSaveExam}>
-          Save Exam
-        </Button>
-      </Space>
+      {exam ? (
+        <>
+          {/*<Typography.Text style={{ display: "block", marginTop: "16px" }}>
+            Currently editing: {fileHandle ? fileHandle.name : "Imported (unsaved) file"}
+          </Typography.Text>*/}
+          <Space style={{ marginTop: "16px", justifyContent: "space-between", width: "100%", display: "flex" }}>
+            <span /> {/* Placeholder for left alignment */}
+            <Button type="primary" onClick={handleSaveExam}>
+              Save Exam
+            </Button>
+          </Space>
+          <Collapse style={{ marginTop: "16px" }}>
+            <Panel header="Upload or Import a Different File" key="1">
+              <Space wrap>
+                <Button onClick={handleOpenExam}>Open Exam (JSON)</Button>
+                <Button>
+                  <label style={{ cursor: "pointer", marginBottom: 0 }}>
+                    Import Exam (XML)
+                    <input
+                      type="file"
+                      accept=".xml"
+                      onChange={handleImportExam}
+                      style={{ display: "none" }}
+                    />
+                  </label>
+                </Button>
+              </Space>
+            </Panel>
+          </Collapse>
+        </>
+      ) : (
+        <>
+          <Space wrap style={{ marginTop: "12px" }}>
+            <Button onClick={handleOpenExam}>Open Exam (JSON)</Button>
+            <Button>
+              <label style={{ cursor: "pointer", marginBottom: 0 }}>
+                Import Exam (XML)
+                <input
+                  type="file"
+                  accept=".xml"
+                  onChange={handleImportExam}
+                  style={{ display: "none" }}
+                />
+              </label>
+            </Button>
+          </Space>
+        </>
+      )}
     </div>
   );
 };
