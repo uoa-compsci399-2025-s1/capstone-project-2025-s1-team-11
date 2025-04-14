@@ -1,14 +1,14 @@
 // src/pages/ExamFileManager.jsx
 import React from "react";
 
-const Randomizer = ({  }) => {
+const Randomiser = ({  }) => {
 
     return (
         <div>
-            <h1>Randomizer</h1>
+            <h1>Randomiser</h1>
 
         </div>
     );
 };
 
-export default Randomizer;
+export default Randomiser;

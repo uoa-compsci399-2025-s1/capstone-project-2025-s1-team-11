@@ -4,7 +4,9 @@ import App from './App.jsx';
 import Home from "./pages/home.jsx";
 import Builder from "./pages/builder.jsx";
 import Marker from "./pages/marker.jsx";
-import Randomizer from "./pages/randomizer.jsx";
+import Randomiser from "./pages/randomiser.jsx";
+import Documentation from "./pages/documentation.jsx";
+
 
 export default function AppRoutes() {
     return (
@@ -12,8 +14,9 @@ export default function AppRoutes() {
             <Route element={<App />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/builder" element={<Builder />} />
-                <Route path="/randomizer" element={<Randomizer />} />
+                <Route path="/randomiser" element={<Randomiser />} />
                 <Route path="/marker" element={<Marker />} />
+                <Route path="/documentation" element={<Documentation />} />
             </Route>
         </Routes>
     );
