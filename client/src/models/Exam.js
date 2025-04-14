@@ -1,6 +1,6 @@
 // src/models/Exam.js
 
-import { Question } from "./QuestionFS.js";
+import { Question } from "./Question.js";
 
 export default class Exam {
     constructor(title, date, questions = []) {
