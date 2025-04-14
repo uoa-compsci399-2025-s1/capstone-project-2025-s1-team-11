@@ -1,6 +1,6 @@
 export default class ExamComponent {
     constructor({
-        componentType = 'Content', 
+        componentType = 'Content', //Component Body
         content = '', 
         format = 'HTML',
     } = {}) {

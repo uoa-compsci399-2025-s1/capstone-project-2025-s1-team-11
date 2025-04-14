@@ -2,7 +2,7 @@ import ExamComponent from "./ExamComponent"
 
 export class Section extends ExamComponent{
     constructor({
-        content = '', 
+        content = '', //Section Body
         format = 'HTML', 
         sectionTitle = '', 
         sectionNumber = null, 
