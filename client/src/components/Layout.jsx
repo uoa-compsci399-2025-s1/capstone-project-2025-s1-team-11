@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router';
 import logo from "../../public/AssesslyLogoSmall.png";
 
 const { Header, Content, Footer } = Layout;
+const isPlainPage = location.pathname === "/" || location.pathname === "/documentation";
 
 const MCQLayout = ({ children }) => {
   const location = useLocation();
@@ -30,8 +31,7 @@ const MCQLayout = ({ children }) => {
 
       <Content style={{ padding: '32px 48px', flex: 1 }}>
         {
-          isHome ? (
-            // If home page, no border, instead wrapped layout
+          isPlainPage ? (
             children
           ) : (
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -54,8 +54,8 @@ const MCQLayout = ({ children }) => {
                 {children}
               </div>
             </div>
-          )
-        }
+          )}
+          
       </Content>
 
       <Footer style={{ textAlign: 'center', padding: '16px 24px' }}>

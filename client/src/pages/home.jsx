@@ -11,7 +11,8 @@ const Home = () => {
                 style={{ 
                     width: "100%", 
                     height: "600px", 
-                    objectFit: "cover", 
+                    objectFit: "cover",
+                    objectPosition: "center 90%",
                     display: "block" 
                 }} 
             />

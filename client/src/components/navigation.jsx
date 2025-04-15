@@ -28,7 +28,7 @@ export function Navigation() {
                     </NavLink>
                 </Space>
                 <a href="/documentation" target="_blank" rel="noopener noreferrer">
-                    <Button type="text" style={{ borderRadius: 0, backgroundColor: "#fff", fontWeight: 500 }}>Documentation</Button>
+                    <Button type="text" style={{ borderRadius: 0, backgroundColor: "#fff", fontWeight: 500 }}>About / Documentation</Button>
                 </a>
             </div>
         </nav>
