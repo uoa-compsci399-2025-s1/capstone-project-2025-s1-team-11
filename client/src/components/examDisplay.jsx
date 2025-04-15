@@ -1,6 +1,12 @@
 // src/components/ExamDisplay.jsx
 import React from "react";
 import { Button, Alert, Input, Space, Table, Typography, Card } from "antd";
+import { useExam } from "../context/examContext.jsx";
+import {Question} from "../models/Question.js";
+
+const ExamDisplay = () => {
+  const { exam, setExam } = useExam();
+  console.log("Exam in display:", exam);
 
 const ExamDisplay = ({ exam, onAddQuestion }) => {
   if (!exam) {
