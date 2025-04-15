@@ -59,7 +59,7 @@ const ExamDisplay = () => {
         </Card>
       )}
       <Space style={{ marginTop: "16px" }}>
-        <Button type="dashed" onClick={onAddQuestion}>
+        <Button type="dashed" onClick={addQuestion}>
           Add Question
         </Button>
       </Space>
