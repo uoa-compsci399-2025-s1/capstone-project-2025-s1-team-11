@@ -21,8 +21,8 @@ export class Question extends ExamComponent{
 
         this.questionNumber = questionNumber;
         this.marks = marks;
-        this.answer = answers;
-        this.correctAnsers = correctAnswers;
+        this.answers = answers;
+        this.correctAnswers = correctAnswers;
         this.lockedPositions = lockedPositions;
         this.answerShuffleMap = answerShuffleMap;
     } 

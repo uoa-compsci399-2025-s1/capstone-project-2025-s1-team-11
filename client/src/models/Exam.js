@@ -30,7 +30,7 @@ export default class Exam {
 
     toJSON() {
         // Serialise exam object to plain text
-        const examObj = {
+        return {
             examTitle: this.examTitle,
             courseCode: this.courseCode,
             courseName: this.courseName,
@@ -42,10 +42,7 @@ export default class Exam {
             examBody: this.examBody.map(component => component.toJSON()),
             appendix: this.appendix ? this.appendix.toJSON() : null,
             metadata: this.metadata,
-            markingKey: this.markingKey
         }
-
-        return examObj;
     }
 
     static fromJSON(data) {
