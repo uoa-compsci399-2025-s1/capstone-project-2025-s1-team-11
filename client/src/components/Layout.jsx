@@ -29,9 +29,9 @@ const MCQLayout = ({ children }) => {
         <Navigation />
       </Header>
 
-      <Content style={{ padding: '32px 48px', flex: 1 }}>
-        {
-          isPlainPage ? (
+      <Content style={{ padding: isHome ? 0 : '32px 48px', flex: 1 }}>
+      {
+          isHome ? (
             children
           ) : (
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>

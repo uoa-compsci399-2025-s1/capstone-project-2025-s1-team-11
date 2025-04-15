@@ -23,7 +23,12 @@ export function Navigation() {
                     </NavLink>
                     <NavLink to="/marker" end>
                         {({ isActive }) => (
-                            <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>MCQ Automarker</Button>
+                            <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>MCQ Auto-Marker</Button>
+                        )}
+                    </NavLink>
+                    <NavLink to="/about" end>
+                        {({ isActive }) => (
+                            <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>About</Button>
                         )}
                     </NavLink>
                 </Space>

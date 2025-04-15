@@ -5,6 +5,7 @@ import Home from "./pages/home.jsx";
 import Builder from "./pages/builder.jsx";
 import Marker from "./pages/marker.jsx";
 import Randomiser from "./pages/randomiser.jsx";
+import About from "./pages/about.jsx";
 import Documentation from "./pages/documentation.jsx";
 
 
@@ -16,6 +17,7 @@ export default function AppRoutes() {
                 <Route path="/builder" element={<Builder />} />
                 <Route path="/randomiser" element={<Randomiser />} />
                 <Route path="/marker" element={<Marker />} />
+                <Route path="/about" element={<About />} />
                 <Route path="/documentation" element={<Documentation />} />
             </Route>
         </Routes>
