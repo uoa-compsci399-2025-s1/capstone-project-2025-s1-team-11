@@ -15,12 +15,12 @@ Assessly Formats
 **Assessly Memory Representation**
 
 Current data model and structure concept for memory exam representation:  
-[![Class Diagram](img.jpg)](https://editor.plantuml.com/uml/dL9DRzim3BtxLn3URNFSk6ilExKfTjcXwv2ZuOCYqQaMI_8eUMqmxBzFRAmeIu5XQ1308X_9z_XnuuEWC9cXa8Fm7Zu_2mE_2e0FFf2sMmWw3CZsdRC1RLWDJkv0kfz83sBxWd3EdJEZin5lEy1Jsx_A5UE8Lkbd1jpcEqhECHY44a40UmMHsBS_9lH1EmllkbOweXW8mled91YTrmorKOMFtwu28sZdExYu0AotDRHjixowhg3fgdRvyUeolkhh65RNDNJ5xoAtcwN-rRTMfqFOZmXSk_GecRYie4pw-2qF3PQSit5kG65XZEDP4OhTRH-GCkVwK2AEAQQeVsZ8ixUJsI31J7x_OftFDQ6pZ-5liy8utoJMPnsClb48LyjACd3OGhOZCKj3zJ0lpFCG_OXIznhzSO_W-Zbmth2VjxXegiE_gIwxLnqd6IkdzkTWswLIJ2bacCIGF5dWCMgDiPYL68DHo4V00GrFWN0az7p7843flaUAHhf34bOvexrW5RagpETwUnGmsHIAYj5K9BVQBECFUaVGQ_89J9Noravx_8_DpOUPFKnXH3XSCuMUhvUtfjoJvVTZC0D_lwo_tfU0GTRCpGHGDYMyNomutkxBCz9Fu4WXeO91-r2a8p_BIJTNt4JTand-0000)![][image2]
+[![Data model class diagram](https://github.com/user-attachments/assets/ab91e4c1-2c0b-416c-82ea-05aab8c8e364)](https://editor.plantuml.com/uml/dL9DRzim3BtxLn3URNFSk6ilExKfTjcXwv2ZuOCYqQaMI_8eUMqmxBzFRAmeIu5XQ1308X_9z_XnuuEWC9cXa8Fm7Zu_2mE_2e0FFf2sMmWw3CZsdRC1RLWDJkv0kfz83sBxWd3EdJEZin5lEy1Jsx_A5UE8Lkbd1jpcEqhECHY44a40UmMHsBS_9lH1EmllkbOweXW8mled91YTrmorKOMFtwu28sZdExYu0AotDRHjixowhg3fgdRvyUeolkhh65RNDNJ5xoAtcwN-rRTMfqFOZmXSk_GecRYie4pw-2qF3PQSit5kG65XZEDP4OhTRH-GCkVwK2AEAQQeVsZ8ixUJsI31J7x_OftFDQ6pZ-5liy8utoJMPnsClb48LyjACd3OGhOZCKj3zJ0lpFCG_OXIznhzSO_W-Zbmth2VjxXegiE_gIwxLnqd6IkdzkTWswLIJ2bacCIGF5dWCMgDiPYL68DHo4V00GrFWN0az7p7843flaUAHhf34bOvexrW5RagpETwUnGmsHIAYj5K9BVQBECFUaVGQ_89J9Noravx_8_DpOUPFKnXH3XSCuMUhvUtfjoJvVTZC0D_lwo_tfU0GTRCpGHGDYMyNomutkxBCz9Fu4WXeO91-r2a8p_BIJTNt4JTand-0000)![Exam components structure](https://github.com/user-attachments/assets/38f89771-b842-44cf-9770-c9995e5e96ab)
 
 **Content representation in the model:**  
 The document content for questions/sections is stored in ExamComponent’s content variable as a string. That is all the supporting information in each section/question.  Currently there is no in-model storage for images, assuming that providing images references in the content string is sufficient.  The content string is expected to be structured as HTML since this should capture enough document formatting for exams while being easy to display in the UI and export to pdf etc. We could equally use Markdown/RTF/LaTeX, or if we want to constrain things more we could use a custom Content class instead of a string.
 
-![][image3]
+![Content diagram](https://github.com/user-attachments/assets/f409ff8a-0e01-4582-8c9d-76d12bd2344a)
 
 **Assessly Save File Format**
 
