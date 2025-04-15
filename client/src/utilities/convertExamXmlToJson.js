@@ -1,10 +1,10 @@
 // src/utils/convertExamXmlToJson.js
 
-import Exam from "../models/ExamFS.js";
-import { Question } from "../models/QuestionFS.js";
+import Exam from "../models/Exam.js";
+import { Question } from "../models/Question.js";
 
 /**
- * Converts an ExamXmlDTO instance into your JSON model instance.
+ * Converts an ExamXmlDTO instance into the JSON model instance.
  */
 export function convertExamXmlDTOToJson(examXmlDTO) {
     const questions = examXmlDTO.questions.map(
