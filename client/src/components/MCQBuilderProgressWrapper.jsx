@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Steps } from 'antd';
 import { Card } from 'antd';
+import { FileWordOutlined, DownloadOutlined, OrderedListOutlined} from '@ant-design/icons';
 
 const { Step } = Steps;
 
@@ -8,14 +9,17 @@ const steps = [
   {
     title: 'Cover Page',
     key: 'cover',
+    icon: <FileWordOutlined style={{width:"20px"}}/>,
   },
   {
-    title: 'Questions',
+    title: 'Exam Questions',
     key: 'questions',
+    icon: <OrderedListOutlined style={{width:"20px"}} />,
   },
   {
-    title: 'Export',
-    key: 'export',
+    title: 'Download Exam',
+    key: 'download',
+    icon: <DownloadOutlined style={{width:"20px"}} />
   },
 ];
 
@@ -39,7 +43,7 @@ const MCQBuilderProgressWrapper = ({ children, onStageChange }) => {
         style={{ marginBottom: '24px' }}
       >
         {steps.map((step, index) => (
-          <Step key={step.key} title={step.title} />
+          <Step key={step.key} title={step.title} description={step.description} icon={step.icon} />
         ))}
       </Steps>
 

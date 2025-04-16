@@ -1,5 +1,7 @@
 import React from "react";
 import MCQRandomiserProgressWrapper from "../components/MCQRandomiserProgressWrapper.jsx";
+import RandomisedExamDisplay from "../components/RandomisedExamDisplay.jsx";
+import { Typography } from "antd";
 
 const Randomiser = ({ }) => {
     
@@ -8,23 +10,26 @@ const Randomiser = ({ }) => {
             case 0:
                 return (
                     <div>
-                        <h2>Upload Exam File</h2>
-                        <h2>Continue with Existing file</h2>
+                        <Typography.Title level={3}>Exam File Upload</Typography.Title>
+                        <Typography.Paragraph type="secondary">
+                            buttons to go here
+                        </Typography.Paragraph>
                         
                     </div>
                 );
             case 1:
                 return (
                     <div>
-                        <h2>Randomise Questions</h2>
-            
+                        <RandomisedExamDisplay />
                     </div>
                 );
             case 2:
                 return (
                     <div>
-                        <h2>Export</h2>
-                        <p>Export functionality coming soon.</p>
+                        <Typography.Title level={3}>Download Exam</Typography.Title>
+                        <Typography.Paragraph type="secondary">
+                             Export functions coming soon
+                        </Typography.Paragraph>
                     </div>
                 );
             default:

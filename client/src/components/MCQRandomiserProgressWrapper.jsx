@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Steps } from 'antd';
 import { Card } from 'antd';
+import { FileTextOutlined, InteractionOutlined, DownloadOutlined } from '@ant-design/icons';
 
 const { Step } = Steps;
 
@@ -8,14 +9,18 @@ const steps = [
   {
     title: 'Exam File',
     key: 'upload',
+    icon: <FileTextOutlined style={{width:"20px"}}/>,
+    
   },
   {
-    title: 'Randomise',
+    title: 'Shuffle Questions',
     key: 'randomise',
+    icon: <InteractionOutlined style={{width:"20px"}} />
   },
   {
-    title: 'Export',
-    key: 'export',
+    title: 'Download Exams',
+    key: 'download',
+    icon: <DownloadOutlined style={{width:"20px"}} />
   },
 ];
 
@@ -39,7 +44,7 @@ const MCQRandomiserProgressWrapper = ({ children, onStageChange }) => {
         style={{ marginBottom: '24px' }}
       >
         {steps.map((step, index) => (
-          <Step key={step.key} title={step.title} />
+          <Step key={step.key} title={step.title} icon={step.icon} />
         ))}
       </Steps>
 

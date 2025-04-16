@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
+import { Typography } from "antd";
 
 const Builder = () => {
     const [exam, setExam] = useState(null);
@@ -29,18 +30,20 @@ const Builder = () => {
             case 0:
                 return (
                     <div>
-                        <h2>Cover Page</h2>
+                        <Typography.Title level={3}>Cover Page</Typography.Title>
                         
                     </div>
                 );
             case 1:
                 return (
                     <div>
-                        <h2>MCQ Exam Questions</h2>
+                        <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
             {exam ? (
                 <ExamDisplay exam={exam} fileName={fileName} onAddQuestion={addQuestion} />
             ) : (
-                <p>No exam loaded.</p>
+                <Typography.Paragraph type="secondary">
+                             No exam loaded.
+                        </Typography.Paragraph>
             )}
             <ExamFileManager onExamLoaded={handleExamLoaded} />
                     </div>
@@ -48,8 +51,10 @@ const Builder = () => {
             case 2:
                 return (
                     <div>
-                        <h2>Export</h2>
-                        <p>Export functionality coming soon.</p>
+                        <Typography.Title level={3}>Download Exam</Typography.Title>
+                        <Typography.Paragraph type="secondary">
+                             Export functions coming soon
+                        </Typography.Paragraph>
                     </div>
                 );
             default:
