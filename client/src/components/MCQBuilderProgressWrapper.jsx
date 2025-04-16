@@ -19,7 +19,7 @@ const steps = [
   },
 ];
 
-const MCQProgressWrapper = ({ children, onStageChange }) => {
+const MCQBuilderProgressWrapper = ({ children, onStageChange }) => {
   const [currentStep, setCurrentStep] = useState(0);
 
   const handleChange = (stepIndex) => {
@@ -50,4 +50,4 @@ const MCQProgressWrapper = ({ children, onStageChange }) => {
   );
 };
 
-export default MCQProgressWrapper;
+export default MCQBuilderProgressWrapper;

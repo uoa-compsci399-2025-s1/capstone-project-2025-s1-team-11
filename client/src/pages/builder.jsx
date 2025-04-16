@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
-import MCQProgressWrapper from "../components/MCQProgressWrapper.jsx";
+import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
 
 const Builder = () => {
     const [exam, setExam] = useState(null);
@@ -60,9 +60,9 @@ const Builder = () => {
     return (
         <>
             <h1> Builder</h1>
-        <MCQProgressWrapper>
+        <MCQBuilderProgressWrapper>
             {(currentStep) => renderStageContent(currentStep)}
-            </MCQProgressWrapper>
+            </MCQBuilderProgressWrapper>
         </>
     );
 };
