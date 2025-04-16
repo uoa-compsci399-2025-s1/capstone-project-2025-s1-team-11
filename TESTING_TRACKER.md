@@ -14,11 +14,13 @@ This doc tracks the testing infrastructure implemented in the project, for easie
 | **Cypress**       | End-to-end testing            | `client/cypress/e2e/`              |
 | **Utility Tests** | Logic & helper functions      | `client/src/utilities/__tests__/`  |
 
+
 **Files:**
 - `jest.config.mjs` — Configures Jest for the client app
 - `cypress.config.js` — Cypress configuration
 - `fileTypeDetection.js` — File type detection utility
 - Test files end in `.test.js` or `.cy.js` (Cypress)
+- `docxImporter.test.js` – tests DOCX exam import logic using test fixtures.
 
 ---
 
