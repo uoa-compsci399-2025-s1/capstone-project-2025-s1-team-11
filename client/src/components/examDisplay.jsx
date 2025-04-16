@@ -1,7 +1,7 @@
 // src/components/ExamDisplay.jsx
 import React from "react";
 import { Button, Space, Table, Typography, Card } from "antd";
-import { useExam } from "../context/examContext.jsx";
+import { useExam } from "../hooks/useExam.js";
 import {Question} from "../models/Question.js";
 
 const ExamDisplay = () => {

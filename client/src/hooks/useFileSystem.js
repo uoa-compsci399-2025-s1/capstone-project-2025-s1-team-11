@@ -1,5 +1,5 @@
 // src/hooks/useFileSystem.js
-import { useExam } from "../context/examContext.jsx";
+import { useExam } from "./useExam.js";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
 import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
 

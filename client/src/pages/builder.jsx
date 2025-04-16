@@ -2,7 +2,7 @@
 import React from "react";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
-import {useExam} from "../context/examContext.jsx";
+import {useExam} from "../hooks/useExam.js";
 
 const Builder = () => {
     const exam = useExam();
