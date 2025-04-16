@@ -1,8 +1,7 @@
 // src/context/examContext.jsx
-import React, { createContext, useState } from "react";
+import React, { useState } from "react";
+import { ExamContext } from "./ExamContext.js";
 import Exam from "../models/Exam.js";
-
-export const ExamContext = createContext();
 
 export const ExamProvider = ({ children }) => {
     const [exam, _setExam] = useState(null);
