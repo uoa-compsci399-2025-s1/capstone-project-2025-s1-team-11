@@ -2,7 +2,7 @@
 import React from "react";
 // import ReduxTest from '../components/ReduxTest';
 
-const Home = ({  }) => {
+const Home = () => {
 
     return (
         <div>
