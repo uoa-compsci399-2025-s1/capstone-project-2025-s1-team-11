@@ -1,8 +1,21 @@
 // src/components/ExamDisplay.jsx
 import React from "react";
-import { Button, Alert, Input, Space, Table, Typography, Card } from "antd";
+import { Button, Space, Table, Typography, Card } from "antd";
+import { useExam } from "../hooks/useExam.js";
+import {Question} from "../models/Question.js";
 
-const ExamDisplay = ({ exam, onAddQuestion }) => {
+const ExamDisplay = () => {
+  const { exam, setExam } = useExam();
+  console.log("Exam in display:", exam);
+
+  const addQuestion = () => {
+    if (!exam) return;
+    const newId = exam.questions.length + 1;
+    const newQuestion = new Question(newId, `New Question ${newId}`, "Answer", ["1", "2", "3", "4"]);
+
+    setExam(exam.addQuestion(newQuestion));
+  };
+
   if (!exam) {
     return <div>No exam loaded.</div>;
   }
@@ -46,7 +59,7 @@ const ExamDisplay = ({ exam, onAddQuestion }) => {
         </Card>
       )}
       <Space style={{ marginTop: "16px" }}>
-        <Button type="dashed" onClick={onAddQuestion}>
+        <Button type="dashed" onClick={addQuestion}>
           Add Question
         </Button>
       </Space>
