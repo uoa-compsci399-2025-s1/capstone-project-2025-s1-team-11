@@ -25,4 +25,9 @@ export default class Exam {
         const questions = data.questions.map(qData => Question.fromObject(qData));
         return new Exam(data.title, data.date, questions);
     }
+
+    addQuestion(newQuestion) {
+        // Return a new Exam instance with the updated questions list
+        return new Exam(this.title, this.date, [...this.questions, newQuestion]);
+    }
 }

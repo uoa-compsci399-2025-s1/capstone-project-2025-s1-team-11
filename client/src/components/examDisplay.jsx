@@ -1,23 +1,35 @@
+// src/components/ExamDisplay.jsx
 import React from "react";
-import { Button, Alert, Input, Space, Table, Typography } from "antd";
+import { Button, Space, Table, Typography, Card } from "antd";
+import { useExam } from "../hooks/useExam.js";
+import {Question} from "../models/Question.js";
 
-const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
+const ExamDisplay = () => {
+  const { exam, setExam } = useExam();
+  console.log("Exam in display:", exam);
+
+  const addQuestion = () => {
+    if (!exam) return;
+    const newId = exam.questions.length + 1;
+    const newQuestion = new Question(newId, `New Question ${newId}`, "Answer", ["1", "2", "3", "4"]);
+
+    setExam(exam.addQuestion(newQuestion));
+  };
+
   if (!exam) {
     return <div>No exam loaded.</div>;
   }
   return (
     <div>
       {exam && (
-        <div style={{ marginTop: 24 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-            <div>
-              <Typography.Text strong>Currently editing:</Typography.Text>{' '}
-              <Typography.Text>{exam.title}</Typography.Text>
-              <br />
-              <Typography.Text type="secondary">File: {fileName || "Unknown file"}</Typography.Text>
-            </div>
-            <span style={{ fontWeight: 500 }}>Date: {exam.date}</span>
-          </div>
+        <Card
+          title={exam.title}
+          extra={<span>Date: {exam.date}</span>}
+          style={{ marginTop: 24 }}
+        >
+          <Typography.Title level={3} style={{ margin: 0, paddingBottom: 8 }}>
+            Questions:
+          </Typography.Title>
           <Table
             dataSource={exam.questions.map((q, index) => ({
               key: q.id,
@@ -44,10 +56,10 @@ const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
             ]}
             pagination={false}
           />
-        </div>
+        </Card>
       )}
-      <Space style={{ margin: "16px" }}>
-        <Button type="dashed" onClick={onAddQuestion}>
+      <Space style={{ marginTop: "16px" }}>
+        <Button type="dashed" onClick={addQuestion}>
           Add Question
         </Button>
       </Space>
