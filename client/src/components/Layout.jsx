@@ -5,11 +5,10 @@ import { Link, useLocation } from 'react-router';
 import logo from "../../public/AssesslyLogoSmall.png";
 
 const { Header, Content, Footer } = Layout;
-const isPlainPage = location.pathname === "/" || location.pathname === "/documentation";
 
 const MCQLayout = ({ children }) => {
   const location = useLocation();
-  const isHome = location.pathname === "/";
+  const isPlainPage = ["/", "/about"].includes(location.pathname); // Borderless pages
 
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -29,33 +28,31 @@ const MCQLayout = ({ children }) => {
         <Navigation />
       </Header>
 
-      <Content style={{ padding: isHome ? 0 : '32px 48px', flex: 1 }}>
-      {
-          isHome ? (
-            children
-          ) : (
-            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-              <Breadcrumb style={{ marginBottom: '24px' }}>
-                <Breadcrumb.Item>
-                  <Link to="/">Home</Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item>
-                  <Link to="/builder">MCQ Builder</Link>
-                </Breadcrumb.Item>
-              </Breadcrumb>
-              <div
-                style={{
-                  background: colorBgContainer,
-                  borderRadius: borderRadiusLG,
-                  minHeight: '800px',
-                  padding: '32px'
-                }}
-              >
-                {children}
-              </div>
+      <Content style={{ padding: isPlainPage ? 0 : '32px 48px', flex: 1 }}>
+        {isPlainPage ? (
+          children
+        ) : (
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <Breadcrumb style={{ marginBottom: '24px' }}>
+              <Breadcrumb.Item>
+                <Link to="/">Home</Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <Link to="/builder">MCQ Builder</Link>
+              </Breadcrumb.Item>
+            </Breadcrumb>
+            <div
+              style={{
+                background: colorBgContainer,
+                borderRadius: borderRadiusLG,
+                minHeight: '800px',
+                padding: '32px'
+              }}
+            >
+              {children}
             </div>
-          )}
-          
+          </div>
+        )}
       </Content>
 
       <Footer style={{ textAlign: 'center', padding: '16px 24px' }}>

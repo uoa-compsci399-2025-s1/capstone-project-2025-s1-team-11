@@ -26,15 +26,17 @@ export function Navigation() {
                             <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>MCQ Auto-Marker</Button>
                         )}
                     </NavLink>
+                </Space>
+                <Space style={{ margin: 0 }}>
                     <NavLink to="/about" end>
                         {({ isActive }) => (
                             <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>About</Button>
                         )}
                     </NavLink>
-                </Space>
                 <a href="/documentation" target="_blank" rel="noopener noreferrer">
-                    <Button type="text" style={{ borderRadius: 0, backgroundColor: "#fff", fontWeight: 500 }}>About / Documentation</Button>
+                    <Button type="text" style={{ borderRadius: 0, backgroundColor: "#fff", fontWeight: 500 }}>Documentation</Button>
                 </a>
+                </Space>
             </div>
         </nav>
     );

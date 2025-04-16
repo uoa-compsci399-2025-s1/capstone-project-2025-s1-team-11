@@ -4,7 +4,7 @@ import homePageImage from "../assets/homePageImage.jpg";
 const Home = () => {
     return (
         <div style={{ width: "100%" }}>
-            <div style={{ position: "relative", width: "100%", height: "600px", overflow: "hidden" }}>
+            <div style={{ position: "relative", width: "100%", height: "650px", overflow: "hidden" }}>
                 <img 
                     src={homePageImage} 
                     alt="Home" 
@@ -34,7 +34,7 @@ const Home = () => {
             </div>
 
             <div style={{ 
-                maxWidth: '1200px', 
+                maxWidth: '1500px', 
                 margin: '40px auto', 
                 background: 'white', 
                 border: '1px solid #d9d9d9',
@@ -42,7 +42,9 @@ const Home = () => {
                 padding: '32px', 
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
             }}>
-                <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Assessly</h2>
+                <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>
+                    Assessly
+                </h2>
                 <p style={{ fontSize: '1.1rem', lineHeight: 1.6 }}>
                     Testing...
                 </p>
