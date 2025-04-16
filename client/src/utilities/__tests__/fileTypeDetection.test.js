@@ -1,4 +1,4 @@
-﻿import { detectFileType } from '../fileTypeDetection';
+﻿import { detectFileType } from '../fileTypeDetection.js';
 
 describe('File type detection utility', () => {
     test('correctly detects file extensions', () => {
