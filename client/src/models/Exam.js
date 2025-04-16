@@ -1,33 +1,85 @@
-// src/models/Exam.js
 
-import { Question } from "./Question.js";
+import ExamComponent from './ExamComponent.js';
+import Section from './Section.js';
+import Question from './Question.js';
 
 export default class Exam {
-    constructor(title, date, questions = []) {
-        this.title = title;
-        this.date = date;
-        this.questions = questions; // Array of Question instances
+    constructor(examTitle, courseCode, courseName, semester, year) {
+        this.examTitle = examTitle;
+        this.courseCode = courseCode;
+        this.courseName = courseName;
+        this.semester = semester;
+        this.year = year;
+
+        this.versions = [ 1, 2, 3, 4]; //Randomised version ID's
+        this.teleformOptions = [ 'a', 'b', 'c', 'd', 'e'];
+
+        this.coverPage = null; //ExamComponent
+        this.examBody = []; //Array of ExamComponents
+        this.appendix = null; //ExamComponent
+        this.metadata = []; //Other data not used UI or logic?
     }
 
-    // Returns a formatted JSON string representing the exam
+    getQuestion(questionNo) {
+        // Traverses examBody to return the specified question object.
+    }
+
+    getNoOfQuestions() {
+        // Traverses examBody and returns the count of questions in the examBody.
+    }
+
     toJSON() {
-        const examObj = {
-            title: this.title,
-            date: this.date,
-            questions: this.questions.map(q => q.toObject()),
-        };
-        return JSON.stringify(examObj, null, 2);
+        // Serialise exam object to plain text
+        return {
+            examTitle: this.examTitle,
+            courseCode: this.courseCode,
+            courseName: this.courseName,
+            semester: this.semester,
+            year: this.year,
+            versions: this.versions,
+            teleformOptions: this.teleformOptions,
+            coverPage: this.coverPage ? this.coverPage.toJSON() : null,
+            examBody: this.examBody.map(component => component.toJSON()),
+            appendix: this.appendix ? this.appendix.toJSON() : null,
+            metadata: this.metadata,
+        }
     }
 
-    // Creates an Exam instance from a JSON string
-    static fromJSON(jsonString) {
-        const data = JSON.parse(jsonString);
-        const questions = data.questions.map(qData => Question.fromObject(qData));
-        return new Exam(data.title, data.date, questions);
+    static fromJSON(data) {
+        const exam = new Exam(
+            data.examTitle,
+            data.courseCode,
+            data.courseName,
+            data.semester,
+            data.year,
+        )
+
+        exam.versions = data.versions;
+        exam.teleformOptions = data.teleformOptions;
+
+        exam.coverPage = data.coverPage ? ExamComponent.fromJSON(data.coverPage) : null;
+
+        exam.examBody = (data.examBody || []).map(componentData => {
+            switch (componentData.type) {
+                case 'Section' :
+                    return Section.fromJSON(componentData);
+                case 'Question' :
+                    return Question.fromJSON(componentData);
+                case 'Content':
+                default:
+                    if (componentData.type !== 'Content') {
+                        console.warn('Unknown component type:', componentData.type);
+                    }
+                    return ExamComponent.fromJSON(componentData);
+            }
+        })
+
+        exam.appendix = data.appendix ? ExamComponent.fromJSON(data.appendix) : null;
+
+        exam.metadata = data.metadata || [];
+        exam.markingKey = data.markingKey || [];
+
+        return exam;
     }
 
-    addQuestion(newQuestion) {
-        // Return a new Exam instance with the updated questions list
-        return new Exam(this.title, this.date, [...this.questions, newQuestion]);
-    }
 }
