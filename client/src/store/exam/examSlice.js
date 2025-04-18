@@ -7,6 +7,12 @@ import {
   createExamComponent,
 } from './examUtils';
 
+import {
+  updateQuestionHelper,
+  removeQuestionHelper,
+  renumberQuestions
+} from './examHelpers';
+
 const initialState = {
   examData: null,
   isLoading: false,
@@ -18,6 +24,7 @@ const examSlice = createSlice({
   initialState,
   reducers: {
     createNewExam: (state, action) => {
+      if (state.examData) return;
       //state.examData = createExam(...action.payload);
       const { examTitle, courseCode, courseName, semester, year } = action.payload;
       state.examData = createExam(examTitle, courseCode, courseName, semester, year);
@@ -29,222 +36,195 @@ const examSlice = createSlice({
 
     addSection: (state, action) => {
       if (!state.examData) return;
-      
       const newSection = createSection(action.payload);
       state.examData.examBody.push(newSection);
     },
     
     // Add a question to end of section at examBody index otherwise end of examBody
     addQuestion: (state, action) => {
-      if (!state.examData) return;
-      
-      const { examBodyIndex, questionData } = action.payload;
+      const { examBodyIndex, questionData } = action.payload; 
+      //examBodyIndex is optional, for when adding to existing section
       const newQuestion = createQuestion(questionData);
+      const examBody = state.examData?.examBody;
 
-      // should add check that target exists
-      const target = state.examData.examBody[examBodyIndex];
-      
-      if (target.type === 'section') {
-        state.examData.examBody[examBodyIndex].questions.push(newQuestion);
+      if (!examBody) return;
+
+      if (examBody[examBodyIndex]) {
+        const target = examBody[examBodyIndex];
+        if (target.type === 'section') {
+          target.questions.push(newQuestion);
+        }
       } else {
-        if (target.type === 'question') {
-          state.examData.examBody.push(newQuestion);
-        }                
+        examBody.push(newQuestion);
       }
+      renumberQuestions(state.examData.examBody);
     },
 
     setCoverPage: (state, action) => {
-      const { contentFormatted, format } = action.payload; //contentFormatted should be parsed from loaded file
-      const coverPage = createExamComponent(contentFormatted, format);
-      state.examData.coverPage = coverPage;  
+      const { contentFormatted, format } = action.payload;
+      if (!state.examData) return;
+      state.examData.coverPage = createExamComponent(contentFormatted, format);
     },
 
     setAppendix: (state, action) => {
-      const { contentFormatted, format = 'HTML' } = action.payload; //contentFormatted should be parsed from loaded file
-      const appendix = createExamComponent(contentFormatted, format);
-      state.examData.appendix = appendix;  
+      const { contentFormatted, format = 'HTML' } = action.payload;
+      if (!state.examData) return;
+      state.examData.appendix = createExamComponent(contentFormatted, format);
     },
 
     removeCoverPage: (state) => {
+      if (!state.examData) return;
       state.examData.coverPage = null;
     },
 
     removeAppendix: (state) => {
+      if (!state.examData) return;
       state.examData.appendix = null;
     },
 
     updateQuestion: (state, action) => {
-      const { location, newData } = action.payload; // location: { examBodyIndex, questionsIndex } or { examBodyIndex }
-      // need to tidy up this function...
-      target = state.examData[location.examBodyIndex]
-      if ('questionsIndex' in location) {
-        if (target.type === 'section') {
-          target.questions[location.questionIndex] = {
-          ...target.question[location.questionIndex],
-          ...newData,
-          };
-        }
-      } else if (target.type === 'question') {
-        state.examData[location.examBodyIndex] = {
-          ...target,
-          ...newData,
-        };
-      }
+      const { location, newData } = action.payload;
+      if (!state.examData) return;
+      updateQuestionHelper(state, location, newData);
     },
 
     updateSection: (state, action) => {
       const { examBodyIndex, newData } = action.payload;
-      const section = state.examData.examBody[examBodyIndex];
+      const section = state.examData?.examBody?.[examBodyIndex];
       if (section && section.type === 'section') {
-        state.examData.examBody[examBodyIndex] = {
-          ...section,
-          ...newData,
-        }
+        Object.assign(section, newData);
       }
     },
 
     moveQuestionToSection: (state, action) => {
       const { fromIndex, toSectionIndex } = action.payload;
-      const [question] = state.examData.examBody.splice(fromIndex, 1);
-      const section = state.examData.examBody[toSectionIndex];
-      if (question && section && section.type === 'section') {
+      const examBody = state.examData?.examBody;
+      if (!examBody) return;
+      const [question] = examBody.splice(fromIndex, 1);
+      const section = examBody[toSectionIndex];
+      if (question && section?.type === 'section') {
         section.questions.push(question);
       }
+      renumberQuestions(state.examData.examBody);
     },
 
     moveQuestion: (state, action) => {
-      const { from, to } = action.payload;
-    
-      // Get the source question
+      const { source, destination } = action.payload;
+      const examBody = state.examData?.examBody;
+      if (!examBody) return;
       let questionToMove;
-    
-      // Remove from section or top-level examBody
-      if ('questionsIndex' in from) {
-        const fromSection = state.examData.examBody[from.examBodyIndex];
-        if (fromSection?.type === 'section') {
-          questionToMove = fromSection.questions.splice(from.questionsIndex, 1)[0];
+
+      if ('questionsIndex' in source) {
+        const sourceSection = examBody[source.examBodyIndex];
+        if (sourceSection?.type === 'section') {
+          questionToMove = sourceSection.questions.splice(source.questionsIndex, 1)[0];
         }
       } else {
-        questionToMove = state.examData.examBody.splice(from.examBodyIndex, 1)[0];
+        questionToMove = examBody.splice(source.examBodyIndex, 1)[0];
       }
-    
+
       if (!questionToMove) return;
-    
-      // Insert into target location
-      if ('questionsIndex' in to) {
-        const toSection = state.examData.examBody[to.examBodyIndex];
-        if (toSection?.type === 'section') {
-          toSection.questions.splice(to.questionsIndex, 0, questionToMove);
+
+      if ('questionsIndex' in destination) {
+        const destSection = examBody[destination.examBodyIndex];
+        if (destSection?.type === 'section') {
+          destSection.questions.splice(destination.questionsIndex, 0, questionToMove);
         }
       } else {
-        state.examData.examBody.splice(to.examBodyIndex, 0, questionToMove);
+        examBody.splice(destination.examBodyIndex, 0, questionToMove);
       }
+      renumberQuestions(state.examData.examBody);
     },
 
     removeSection: (state, action) => {
-      const examBodyIndex = action.payload;
-      state.examData.examBody.splice(examBodyIndex, 1);
-      return;
+      const examBody = state.examData?.examBody;
+      if (!examBody) return;
+      examBody.splice(action.payload, 1);
+      renumberQuestions(state.examData.examBody);
     },
 
     removeQuestion: (state, action) => {
-      const location = action.payload; // location: { examBodyIndex, questionsIndex } or { examBodyIndex }
-      if ('questionsIndex' in location) {
-        if (state.examData.examBody[location.examBodyIndex].type === 'section') {
-          state.examData.examBody[location.examBodyIndex].questions.splice(location.questionsIndex, 1);
-        }
-      } else {
-        if (state.examData.examBody[location.examBodyIndex].type === 'question') {
-          state.examData.examBody.splice(location.examBodyIndex, 1);
-        }
-      }
-      return;
+      if (!state.examData) return;
+      removeQuestionHelper(state, action.payload);
+      renumberQuestions(state.examData.examBody);
     },
 
     updateExamField: (state, action) => {
       const allowedFields = ['examTitle', 'courseCode', 'courseName', 'semester', 'year'];
       const { field, value } = action.payload;
+      if (!state.examData) return;
       if (allowedFields.includes(field)) {
         state.examData[field] = value;
       }
     },
 
     updateExamMetadata: (state, action) => {
-      // does this allow updating exam fields like examTitle, courseCode etc.? 
-      // or do those all need separate reducers?
-      state.examData.metadata = {
-        ...state.examData.metadata,
-        ...action.payload
-      };
+      if (!state.examData) return;
+      if (!state.examData.metadata) state.examData.metadata = {};
+      Object.assign(state.examData.metadata, action.payload);
     },
 
     setExamVersions: (state, action) => {
-      // Payload should be an array of numbers or strings to ID versions
+      if (!state.examData) return;
       state.examData.versions = action.payload; 
     },
 
     setTeleformOptions: (state, action) => {
       // Payload should be an array of option identifiers 'i.' or 'a)' etc. 
-      state.examData.setTeleformOptions = action.payload;
+      if (!state.examData) return;
+      state.examData.teleformOptions = action.payload;
     },
+
     // Generate answer shuffling for all questions
     shuffleAnswers: (state) => {
       if (!state.examData) return;
-      
-      // For each section and question, regenerate the answerShuffleMap
       state.examData.examBody.forEach(section => {
-        if (section.type === 'Section') {
+        if (section.type === 'section') {
           section.questions.forEach(question => {
-            // Generate random shuffling for each version (1-4)
             question.answerShuffleMap = Array(4).fill().map(() => {
-              // Create a shuffled array [0,1,2,3,4]
               const shuffled = [0, 1, 2, 3, 4].sort(() => Math.random() - 0.5);
-              
-              // Handle locked positions
-              question.lockedPositions.forEach((pos, idx) => {
+              question.lockedPositionsMap.forEach((pos, idx) => {
                 if (pos !== -1) {
-                  // Find where the answer currently is in the shuffled array
                   const currentPos = shuffled.indexOf(idx);
-                  // Swap to put it in the locked position
                   if (currentPos !== pos) {
-                    const temp = shuffled[pos];
-                    shuffled[pos] = shuffled[currentPos];
-                    shuffled[currentPos] = temp;
+                    [shuffled[pos], shuffled[currentPos]] = [shuffled[currentPos], shuffled[pos]];
                   }
                 }
               });
-              
               return shuffled;
             });
           });
         }
       });
     },
+
+    importExamFromJSON: (state, action) => {
+      state.examData = action.payload;
+    },
   }
 });
 
+
 // Export actions
 export const { 
-  //Building reducers
   createNewExam, 
+  clearExam,
   addSection, 
   addQuestion, 
-  loadCoverPage, // supplied as document, add from file system via UI
-  loadAppendix, // supplied as document, add from file system via UI
-  //Modifying reducers
+  setCoverPage, // supplied as document, add from file system via UI
+  setAppendix, // supplied as document, add from file system via UI
+  removeCoverPage,
+  removeAppendix,
   updateQuestion, 
   updateSection,
   moveQuestionToSection,
   moveQuestion,
-  removeSection,
   removeQuestion,
-  removeCoverPage,
-  removeAppendix,
+  removeSection,
   updateExamField,
   updateExamMetadata,
   setExamVersions,
   setTeleformOptions,
-  clearExam,
   shuffleAnswers,
   importExamFromJSON,
 } = examSlice.actions;

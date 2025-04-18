@@ -1,46 +1,70 @@
-// this is a placeholder straight out of Claude
-// not sure how/if this works
-// need to transfer some of the methods from the old Class model to here
+// selectors.js
 
-// Basic selector - gets the entire exam
-export const selectExam = (state) => state.exam;
+// Root selector
+export const selectExamState = (state) => state.exam;
 
-// More specific selectors
-export const selectExamTitle = (state) => state.exam?.examTitle;
-export const selectExamSections = (state) => 
-  state.exam?.examBody.filter(comp => comp.type === 'Section') || [];
+// Exam-level selectors
+export const selectExamData = (state) => selectExamState(state).examData;
+export const selectExamMetadata = (state) => selectExamData(state)?.metadata;
+export const selectExamBody = (state) => selectExamData(state)?.examBody;
+export const selectExamStatus = (state) => selectExamState(state).status;
+export const selectExamError = (state) => selectExamState(state).error;
 
-// Computed/derived data
-// export const selectTotalPoints = (state) => {
-//   if (!state.exam) return 0;
-  
-//   return state.exam.examBody
-//     .filter(comp => comp.type === 'Section')
-//     .flatMap(section => section.questions)
-//     .reduce((sum, question) => sum + (question.points || 0), 0);
-// };
+// Section and question selectors
+export const selectSectionByIndex = (state, index) => {
+  const body = selectExamBody(state);
+  const section = body?.[index];
+  return section?.type === 'section' ? section : null;
+};
 
-// Find a specific question (replacing your getQuestion method)
+export const selectQuestionByPath = (state, examBodyIndex, questionIndex) => {
+  const body = selectExamBody(state);
+  const item = body?.[examBodyIndex];
+
+  if (!item) return null;
+
+  if (item.type === 'question') {
+    return examBodyIndex === questionIndex ? item : null;
+  }
+
+  if (item.type === 'section') {
+    return item.questions?.[questionIndex] || null;
+  }
+
+  return null;
+};
+
 export const selectQuestionByNumber = (state, questionNumber) => {
-  if (!state.exam) return null;
-  
-  let currentCount = 0;
-  
-  for (const component of state.exam.examBody) {
-    if (component.type === 'Section') {
-      for (const question of component.questions) {
-        currentCount++;
-        if (currentCount === questionNumber) {
-          return question;
-        }
-      }
-    } else if (component.type === 'Question') {
-      currentCount++;
-      if (currentCount === questionNumber) {
-        return component;
-      }
+  if (!state.exam.examData?.examBody) return null;
+
+  for (const item of state.exam.examData.examBody) {
+    if (item.type === 'question' && item.questionNumber === questionNumber) {
+
+      return item;
+    }
+
+    if (item.type === 'section' && Array.isArray(item.questions)) {
+      const found = item.questions.find(q => q.questionNumber === questionNumber);
+      if (found) return found;
     }
   }
-  
+
   return null;
+};
+
+// Utility selectors
+export const selectAllQuestionsFlat = (state) => {
+  const body = selectExamBody(state);
+  if (!body) return [];
+
+  return body.flatMap((item) => {
+    if (item.type === 'question') return [item];
+    if (item.type === 'section') return item.questions || [];
+    return [];
+  });
+};
+
+export const selectTotalMarks = (state) => {
+  const questions = selectAllQuestionsFlat(state);
+  return questions.reduce((sum, q) => sum + (q.marks || 0), 0);
 };

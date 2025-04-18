@@ -22,7 +22,6 @@ export function Navigation() {
                 <NavLink to="/documentation" end>
                     <Button type="text" style={{ borderRadius: 0, backgroundColor: "#fff", fontWeight: 500 }}>Documentation</Button>
                 </NavLink>
-                <NavLink to="/console">Exam Console</NavLink>
             </div>
         </nav>
     );
