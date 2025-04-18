@@ -1,6 +1,6 @@
 import ExamComponent from "./ExamComponent";
 
-export class Question extends ExamComponent{
+export default class Question extends ExamComponent{
     constructor({
         content = '', //Question Body
         format = 'HTML', 
