@@ -1,6 +1,6 @@
 import ExamComponent from "./ExamComponent"
 
-export class Section extends ExamComponent{
+export default class Section extends ExamComponent{
     constructor({
         content = '', //Section Body
         format = 'HTML', 

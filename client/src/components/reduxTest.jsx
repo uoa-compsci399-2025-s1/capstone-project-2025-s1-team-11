@@ -1,7 +1,7 @@
 // // src/components/ReduxTest.jsx
 // import React from 'react';
 // import { useDispatch, useSelector } from 'react-redux';
-// import { examAdded } from '../features/exam/examSlice';
+// import { examAdded } from '../store/exam/examSlice';
 
 // const ReduxTest = () => {
 //   const dispatch = useDispatch();

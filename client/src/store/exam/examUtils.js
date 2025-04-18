@@ -1,8 +1,16 @@
 // examUtils.js
 
+const DEFAULT_COMPONENT_PROPS = {
+  type: 'content',
+  contentFormatted: '',
+  format: 'HTML',
+  contentText: '', //This is the text only content for table display
+}
+
 // Create a new exam (replaces the constructor)
 export const createExam = (examTitle, courseCode, courseName, semester, year) => {
   return {
+    type: 'exam',
     examTitle,
     courseCode,
     courseName,
@@ -21,28 +29,25 @@ export const createMarkingKey = (exam) => {
   //Takes an exam object and generates a marking key object
 }
 
-export const createExamComponent = ({
-  type = 'ContentBlock',
-  content = '',
-  format = 'HTML',
-} = {}) => ({
-  type,
-  content,
-  format,
+export const shuffleAnswers = (exam) => {
+  //shuffles answer sequence for all questions and versions of an exam
+}
+
+export const createExamComponent = (overrides = {}) => ({
+  ...DEFAULT_COMPONENT_PROPS,
+  ...overrides,
   pageBreakAfter: false,
 })
 
 export const createSection = ({
-  content = '',
-  format = 'HTML', 
   sectionTitle = '', 
   sectionNumber = null, 
   questions = [],
+  ...overrides
 } = {}) => ({
   ...createExamComponent({
-      type: 'Section',
-      content,
-      format,
+      type: 'section',
+      ...overrides
   }),
   sectionTitle,
   sectionNumber,
@@ -50,30 +55,28 @@ export const createSection = ({
 }); 
 
 export const createQuestion = ({
-  content = '', 
-  format = 'HTML', 
   questionNumber = null, 
   marks = null, 
   answers = ['', '', '', '', ''],
   correctAnswers = [1, 0, 0, 0, 0], 
-  lockedPositions = [ -1, -1, -1, -1, -1], 
-  answerShuffleMap = [
+  lockedPositionsMap = [ -1, -1, -1, -1, -1], 
+  answerShuffleMaps = [
       [0, 1, 2, 3, 4],
       [0, 1, 2, 3, 4],
       [0, 1, 2, 3, 4],
       [0, 1, 2, 3, 4],
   ],
+  ...overrides
 } = {}) => ({
   ...createExamComponent({
-      type: 'Question',
-      content,
-      format,
+      type: 'question',
+      ...overrides
   }),
   questionNumber,
   marks,
   answers,
   correctAnswers,
-  lockedPositions,
-  answerShuffleMap,
+  lockedPositionsMap,
+  answerShuffleMaps,
 })
 
