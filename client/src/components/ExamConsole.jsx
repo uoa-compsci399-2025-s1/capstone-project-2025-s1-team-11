@@ -33,7 +33,8 @@ import {
   selectQuestionByPath,
   selectQuestionByNumber,
   selectAllQuestionsFlat,
-  selectTotalMarks
+  selectQuestionsForTable,
+  selectTotalMarks,
 } from '../store/exam/selectors';
 
 function ExamConsole() {
@@ -126,6 +127,9 @@ function ExamConsole() {
           break;
         case 'all-questions':
           displayJSON(getSelectorResult(selectAllQuestionsFlat));
+          break;
+        case 'table-questions':
+          displayJSON(getSelectorResult(selectQuestionsForTable));
           break;
         case 'total-marks':
           displayJSON(getSelectorResult(selectTotalMarks));
@@ -864,6 +868,7 @@ function ExamConsole() {
     addToOutput('  question-path EXAMBODY_INDEX QUESTION_INDEX - Get question by path', 'text');
     addToOutput('  question-number NUMBER - Get question by number', 'text');
     addToOutput('  all-questions - Get all questions flat', 'text');
+    addToOutput('  table-questions - Get all questions flat and normalised for table view', 'text');
     addToOutput('  total-marks - Get total exam marks', 'text');
   };
   

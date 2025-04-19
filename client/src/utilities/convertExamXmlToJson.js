@@ -1,7 +1,5 @@
 // src/utils/convertExamXmlToJson.js
 
-import Exam from "../models/Exam.js";
-import Question from "../models/Question.js";
 
 /**
  * Converts an ExamXmlDTO instance into your JSON model instance.
