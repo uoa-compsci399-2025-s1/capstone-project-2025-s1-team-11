@@ -68,3 +68,33 @@ export const selectTotalMarks = (state) => {
   const questions = selectAllQuestionsFlat(state);
   return questions.reduce((sum, q) => sum + (q.marks || 0), 0);
 };
+
+export const selectQuestionsForTable = (state) => {
+  const body = selectExamBody(state);
+  if (!body) return [];
+
+  const result = [];
+
+  body.forEach((item) => {
+    if (item.type === 'question') {
+      result.push(normaliseQuestionForTable(item, null, result.length));
+    } else if (item.type === 'section') {
+      item.questions?.forEach((q, i) => {
+        result.push(normaliseQuestionForTable(q, item.sectionNo, i));
+      });
+    }
+  });
+
+  return result;
+};
+
+// Normaliser to suit UI table display
+const normaliseQuestionForTable = (question, sectionNo = null, questionIndex = 0) => ({
+  sectionNo,
+  questionNo: questionIndex + 1,
+  questionText: question.questionText || '',
+  marks: question.marks || 0,
+  answers: question.answers || [],
+  correctAnswers: question.correctAnswers || [],
+  lockedPositions: question.lockedPositions || { a: false, b: false, c: false, d: false, e: false },
+});
