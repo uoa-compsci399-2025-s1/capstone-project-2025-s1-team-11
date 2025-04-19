@@ -15,47 +15,51 @@
  */
 export function buildDocxDTO(doc) {
     const paragraphs = Array.from(doc.querySelectorAll('p'));
-    const questions  = [];
-    let currentQuestion = null;
 
-    // Regexes to detect start of question
-    const markRegex       = /^\[\s*\d+\s*mark\]/i;  // “[1 mark] …”
-    const numberRegex     = /^Q\d+\./i;             // “Q1. …”
-    const optionRegex     = /^[A-E]\./i;            // “A. …” through “E. …”
+    // console.log("=== RAW PARAGRAPH STRUCTURE ===");
+    // for (const p of paragraphs) {
+    //     console.log(p.textContent.trim());
+    // }
+
+    const questions = [];
+    let currentQuestion = null;
 
     for (const p of paragraphs) {
         const text = p.textContent.trim();
-        // 1) New question?
-        if (markRegex.test(text) || numberRegex.test(text)) {
-            // commit the last one
-            if (currentQuestion) questions.push(currentQuestion);
 
-            // strip off the “[1 mark]” or “Q1.” prefix
-            const stem = text
-                .replace(markRegex, '')
-                .replace(numberRegex, '')
-                .trim();
+        // 🟢 New question detected
+        if (/^\[\d+ mark\]/i.test(text)) {
+            if (currentQuestion) {
+                questions.push(currentQuestion);
+            }
 
             currentQuestion = {
-                id:      `q${questions.length + 1}`,
-                text:    stem,
+                id: `q${questions.length + 1}`,
+                text: text,
                 options: [],
-                answer:  null,
+                answer: null, // optional: first option as correct
             };
+        }
 
-            // 2) Answer option?
-        } else if (optionRegex.test(text) && currentQuestion) {
-            const opt = text.replace(optionRegex, '').trim();
-            currentQuestion.options.push(opt);
+        // 🟡 Option for current question
+        else if (currentQuestion && text.length > 0) {
+            currentQuestion.options.push(text);
+
+            // If this is the first option, assume it's the correct answer
+            if (currentQuestion.options.length === 1) {
+                currentQuestion.answer = text;
+            }
         }
     }
 
-    // push the last question
-    if (currentQuestion) questions.push(currentQuestion);
+    // Push the final question
+    if (currentQuestion) {
+        questions.push(currentQuestion);
+    }
 
     return {
-        title:     'Imported DOCX Exam',
-        date:      new Date().toISOString().split('T')[0],
+        title: 'Imported DOCX Exam',
+        date: new Date().toISOString().split('T')[0],
         questions,
     };
 }
