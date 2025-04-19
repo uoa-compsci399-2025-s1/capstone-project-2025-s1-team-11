@@ -1,6 +1,6 @@
-﻿// client/src/utilities/docxImporter.js
+﻿// client/src/utilities/docxChecks.js
 
-//THIS IS JUST A STUB!!! IT WILL NOT ACTUALLY PARSE! REMEMBER TO REMOVE THIS!!!!
+//Stub WIP only.
 
 export function importExamDocx(fileBuffer, mockFileName = '') {
     // Convert buffer to string so we can simulate based on filename

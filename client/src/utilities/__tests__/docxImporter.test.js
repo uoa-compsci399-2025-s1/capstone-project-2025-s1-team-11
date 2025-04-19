@@ -5,7 +5,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { importExamDocx } from '../docxImporter.js'; // Stub or real importer
+import { importExamDocx } from '../docxChecks.js'; // Stub or real importer
 
 // Define __dirname manually for ESM compatibility
 const __dirname = path.resolve();
