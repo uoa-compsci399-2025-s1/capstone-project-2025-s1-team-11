@@ -9,8 +9,9 @@ import {
   removeAppendix,
   updateQuestion, 
   updateSection,
-  moveQuestionToSection,
+  // moveQuestionToSection,
   moveQuestion,
+  moveSection,
   removeQuestion,
   removeSection,
   updateExamField,
@@ -192,7 +193,7 @@ function ExamConsole() {
           break;
           
         case 'add-section':
-          // Format: add-section "Section Title" "Optional description"
+          // Format: add-section "Section Title" "Content Text"
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
             break;
@@ -206,15 +207,15 @@ function ExamConsole() {
           const sectionArgs = parseQuotedArgs(trimmedCommand);
           
           dispatch(addSection({
-            title: sectionArgs[1] || 'New Section',
-            description: sectionArgs[2] || ''
+            sectionTitle: sectionArgs[1] || 'New Section',
+            contentText: sectionArgs[2] || ''
           }));
           
           addToOutput('Section added successfully!', 'success');
           break;
           
         case 'add-question':
-          // Format: add-question EXAMBODY_INDEX "Question content" MARKS
+          // Format: add-question "Question content" MARKS EXAMBODY_INDEX 
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
             break;
@@ -227,11 +228,11 @@ function ExamConsole() {
           }
           
           const questionContent = questionArgs[1];
-          const marks = parseInt(questionArgs[2]) || 1;
+          const marks = parseFloat(questionArgs[2]) || 1;
 
           const payload = {
             questionData: {
-              content: questionContent,
+              contentText: questionContent,
               marks,
               answers: ['', '', '', '', ''],
               correctAnswers: [1, 0, 0, 0, 0],
@@ -438,47 +439,47 @@ function ExamConsole() {
           addToOutput(`Updated section ${secField} successfully!`, 'success');
           break;
           
-        case 'move-question-to-section':
-          // Format: move-question-to-section FROM_INDEX TO_SECTION_INDEX
-          if (!examState.examData) {
-            addToOutput('No exam is currently loaded. Create an exam first.', 'error');
-            break;
-          }
+        // case 'move-question-to-section':
+        //   // Format: move-question-to-section FROM_INDEX TO_SECTION_INDEX
+        //   if (!examState.examData) {
+        //     addToOutput('No exam is currently loaded. Create an exam first.', 'error');
+        //     break;
+        //   }
           
-          if (parts.length < 3) {
-            addToOutput('Usage: move-question-to-section FROM_INDEX TO_SECTION_INDEX', 'error');
-            break;
-          }
+        //   if (parts.length < 3) {
+        //     addToOutput('Usage: move-question-to-section FROM_INDEX TO_SECTION_INDEX', 'error');
+        //     break;
+        //   }
           
-          const fromIndex = parseInt(parts[1]);
-          const toSectionIndex = parseInt(parts[2]);
+        //   const fromIndex = parseInt(parts[1]);
+        //   const toSectionIndex = parseInt(parts[2]);
           
-          // Validate indices
-          if (isNaN(fromIndex) || fromIndex < 0 || fromIndex >= examState.examData.examBody.length) {
-            addToOutput('Invalid from index', 'error');
-            break;
-          }
+        //   // Validate indices
+        //   if (isNaN(fromIndex) || fromIndex < 0 || fromIndex >= examState.examData.examBody.length) {
+        //     addToOutput('Invalid from index', 'error');
+        //     break;
+        //   }
           
-          if (isNaN(toSectionIndex) || toSectionIndex < 0 || 
-              toSectionIndex >= examState.examData.examBody.length ||
-              examState.examData.examBody[toSectionIndex].type !== 'section') {
-            addToOutput('Invalid to section index', 'error');
-            break;
-          }
+        //   if (isNaN(toSectionIndex) || toSectionIndex < 0 || 
+        //       toSectionIndex >= examState.examData.examBody.length ||
+        //       examState.examData.examBody[toSectionIndex].type !== 'section') {
+        //     addToOutput('Invalid to section index', 'error');
+        //     break;
+        //   }
           
-          dispatch(moveQuestionToSection({ fromIndex, toSectionIndex }));
-          addToOutput('Question moved to section successfully!', 'success');
-          break;
+        //   dispatch(moveQuestionToSection({ fromIndex, toSectionIndex }));
+        //   addToOutput('Question moved to section successfully!', 'success');
+        //   break;
           
         case 'move-question':
-          // Format: move-question "source.examBodyIndex[.questionsIndex]" "dest.examBodyIndex[.questionsIndex]"
+          // Format: move-question "<source examBodyIndex>.<questionsIndex (optional)>" "<destination examBodyIndex>.<questionsIndex (optional)>"
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
             break;
           }
           
           if (parts.length < 3) {
-            addToOutput('Usage: move-question "source.examBodyIndex[.questionsIndex]" "dest.examBodyIndex[.questionsIndex]"', 'error');
+            addToOutput('Usage: move-question "source <examBodyIndex>.<questionsIndex (optional)>" "destination <examBodyIndex>.<questionsIndex (optional)>"', 'error');
             addToOutput('Example: move-question "0.1" "2.0" (moves question 1 in section 0 to first position in section 2)', 'text');
             addToOutput('Example: move-question "0" "1" (moves examBody item 0 to position 1)', 'text');
             break;
@@ -538,6 +539,40 @@ function ExamConsole() {
           
           dispatch(moveQuestion({ source, destination }));
           addToOutput('Question moved successfully!', 'success');
+          break;
+        
+        case 'move-section':
+          // Format: move-question "<source examBodyIndex>" "<destination examBodyIndex>"
+          if (!examState.examData) {
+            addToOutput('No exam is currently loaded. Create an exam first.', 'error');
+            break;
+          }
+          
+          if (parts.length < 3) {
+            addToOutput('Usage: move-section "<source examBodyIndex>" "<destination examBodyIndex>"', 'error');
+            addToOutput('Example: move-section "0" "1" (moves section at examBody[0] to index 1)', 'text');
+            break;
+          }
+          
+          // Parse source and destination
+          const sourceIndex = parseInt(parts[1]);
+          const destIndex = parseInt(parts[2]);
+          
+          // Validate source and destination
+          if (isNaN(sourceIndex) || sourceIndex < 0 || 
+          sourceIndex >= examState.examData.examBody.length) {
+            addToOutput('Invalid source examBody index', 'error');
+            break;
+          }
+          
+          if (isNaN(destIndex) || destIndex < 0 || 
+          destIndex >= examState.examData.examBody.length) {
+            addToOutput('Invalid destination examBody index', 'error');
+            break;
+          }
+
+          dispatch(moveSection({ sourceIndex, destIndex }));
+          addToOutput('Section moved sucessfully!', 'success');
           break;
           
         case 'remove-section':
@@ -833,21 +868,22 @@ function ExamConsole() {
     addToOutput('\nSection Management:', 'subheading');
     addToOutput('add-section "Title" "Optional Description" - Add a new section', 'text');
     addToOutput('update-section INDEX "field" "value" - Update section fields (title, description)', 'text');
+    addToOutput('move-section: move-section "<source examBodyIndex>" "<destination examBodyIndex>"', 'text');
     addToOutput('remove-section INDEX - Remove a section', 'text');
     
     // Question management
     addToOutput('\nQuestion Management:', 'subheading');
-    addToOutput('add-question EXAMBODY_INDEX "Content" MARKS - Add a question to section or exam body', 'text');
+    addToOutput('add-question "Content" MARKS EXAMBODY_INDEX - Add a question to section or exam depending on optional index', 'text');
     addToOutput('update-question EXAMBODY_INDEX QUESTION_INDEX "field" "value" - Update question fields', 'text');
     addToOutput('  Fields: content, marks, answer, correct', 'text');
     addToOutput('  For answer field use: "answer,INDEX,VALUE"', 'text');
+    addToOutput('move-question "source.examBodyIndex[.questionsIndex]" "dest.examBodyIndex[.questionsIndex]" - Move question', 'text');
     addToOutput('remove-question [SECTION_INDEX.]QUESTION_INDEX - Remove a question', 'text');
     
     // Question movement
-    addToOutput('\nQuestion Movement:', 'subheading');
-    addToOutput('move-question-to-section FROM_INDEX TO_SECTION_INDEX - Move question to a section', 'text');
-    addToOutput('move-question "source.examBodyIndex[.questionsIndex]" "dest.examBodyIndex[.questionsIndex]" - Move question', 'text');
-    
+    // addToOutput('\nQuestion Movement:', 'subheading');
+    // addToOutput('move-question-to-section FROM_INDEX TO_SECTION_INDEX - Move question to a section', 'text');
+
     // Viewing data
     addToOutput('\nViewing Data:', 'subheading');
     addToOutput('show exam - Display full exam data', 'text');

@@ -10,7 +10,8 @@ import {
 import {
   updateQuestionHelper,
   removeQuestionHelper,
-  renumberQuestions
+  renumberQuestions,
+  renumberSections,
 } from './examHelpers';
 
 const initialState = {
@@ -38,6 +39,7 @@ const examSlice = createSlice({
       if (!state.examData) return;
       const newSection = createSection(action.payload);
       state.examData.examBody.push(newSection);
+      renumberSections(state.examData.examBody);
     },
     
     // Add a question to end of section at examBody index otherwise end of examBody
@@ -96,25 +98,28 @@ const examSlice = createSlice({
       }
     },
 
-    moveQuestionToSection: (state, action) => {
-      const { fromIndex, toSectionIndex } = action.payload;
-      const examBody = state.examData?.examBody;
-      if (!examBody) return;
-      const [question] = examBody.splice(fromIndex, 1);
-      const section = examBody[toSectionIndex];
-      if (question && section?.type === 'section') {
-        section.questions.push(question);
-      }
-      renumberQuestions(state.examData.examBody);
-    },
+    // moveQuestionToSection: (state, action) => {
+    //   const { fromIndex, toIndex } = action.payload;
+    //   const examBody = state.examData?.examBody;
+    //   if (!examBody) return;
+    //   const [question] = examBody.splice(fromIndex, 1);
+    //   const section = examBody[toIndex];
+    //   if (question && section?.type === 'section') {
+    //     section.questions.push(question);
+    //   }
+    //   renumberQuestions(state.examData.examBody);
+    // },
 
     moveQuestion: (state, action) => {
       const { source, destination } = action.payload;
+      // expects { source: {examBodyIndex, questionsIndex}, destination {examBodyIndex, questionIndex} }
+      // questionsIndex only required when moving from or to a section.
       const examBody = state.examData?.examBody;
       if (!examBody) return;
       let questionToMove;
 
       if ('questionsIndex' in source) {
+        // Implies source question is in a section
         const sourceSection = examBody[source.examBodyIndex];
         if (sourceSection?.type === 'section') {
           questionToMove = sourceSection.questions.splice(source.questionsIndex, 1)[0];
@@ -126,6 +131,7 @@ const examSlice = createSlice({
       if (!questionToMove) return;
 
       if ('questionsIndex' in destination) {
+        // Implies destination is a section
         const destSection = examBody[destination.examBodyIndex];
         if (destSection?.type === 'section') {
           destSection.questions.splice(destination.questionsIndex, 0, questionToMove);
@@ -136,14 +142,27 @@ const examSlice = createSlice({
       renumberQuestions(state.examData.examBody);
     },
 
+    moveSection: (state, action) => {
+      const { sourceIndex, destIndex } = action.payload;
+      const examBody = state.examData?.examBody;
+      if (!examBody) return;
+      const sectionToMove = examBody.splice(sourceIndex, 1)[0];
+      examBody.splice(destIndex, 0, sectionToMove);
+      renumberSections(examBody);
+      renumberQuestions(examBody);
+    },
+
     removeSection: (state, action) => {
+      // Payload should be examBodyIndex of section to remove
       const examBody = state.examData?.examBody;
       if (!examBody) return;
       examBody.splice(action.payload, 1);
-      renumberQuestions(state.examData.examBody);
+      renumberSections(examBody);
+      renumberQuestions(examBody);
     },
 
     removeQuestion: (state, action) => {
+      // Payload should be examBodyIndex of section to remove
       if (!state.examData) return;
       removeQuestionHelper(state, action.payload);
       renumberQuestions(state.examData.examBody);
@@ -219,6 +238,7 @@ export const {
   updateSection,
   moveQuestionToSection,
   moveQuestion,
+  moveSection,
   removeQuestion,
   removeSection,
   updateExamField,

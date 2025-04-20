@@ -66,4 +66,15 @@
       }
     });
   };
+
+  export const renumberSections = (examBody) => {
+    let sectionNumber = 1;
+  
+    examBody.forEach(item => {
+      console.log(sectionNumber, item.sectionNumber);
+      if (item.type === 'section') {
+        item.sectionNumber = sectionNumber++;
+      }
+  });
+};
   

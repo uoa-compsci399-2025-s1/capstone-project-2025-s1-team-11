@@ -70,14 +70,14 @@ export const selectTotalMarks = (state) => {
 };
 
 export const selectQuestionsForTable = (state) => {
-  const body = selectExamBody(state);
-  if (!body) return [];
+  const examBody = selectExamBody(state);
+  if (!examBody) return [];
 
   const result = [];
 
-  body.forEach((item) => {
+  examBody.forEach((item) => {
     if (item.type === 'question') {
-      result.push(normaliseQuestionForTable(item, null, result.length));
+      result.push(normaliseQuestionForTable(item, null));
     } else if (item.type === 'section') {
       item.questions?.forEach((q, i) => {
         result.push(normaliseQuestionForTable(q, item.sectionNo, i));
@@ -89,10 +89,10 @@ export const selectQuestionsForTable = (state) => {
 };
 
 // Normaliser to suit UI table display
-const normaliseQuestionForTable = (question, sectionNo = null, questionIndex = 0) => ({
-  sectionNo,
-  questionNo: questionIndex + 1,
-  questionText: question.questionText || '',
+const normaliseQuestionForTable = (question, sectionNumber = null) => ({
+  sectionNumber,
+  questionNumber: question.questionNumber,
+  questionText: question.contentText || '',
   marks: question.marks || 0,
   answers: question.answers || [],
   correctAnswers: question.correctAnswers || [],
