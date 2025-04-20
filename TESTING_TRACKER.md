@@ -21,6 +21,7 @@ This doc tracks the testing infrastructure implemented in the project, for easie
 - `fileTypeDetection.js` — File type detection utility
 - Test files end in `.test.js` or `.cy.js` (Cypress)
 - `docxImporter.test.js` – tests DOCX exam import logic using test fixtures.
+- `loadFixtureWithName.js` - Helper fundtion to load docx/xml test fixture files from cypress/fixtures/
 
 ---
 

@@ -16,46 +16,40 @@
 export function buildDocxDTO(doc) {
     const paragraphs = Array.from(doc.querySelectorAll('p'));
 
-    // console.log("=== RAW PARAGRAPH STRUCTURE ===");
-    // for (const p of paragraphs) {
-    //     console.log(p.textContent.trim());
-    // }
-
     const questions = [];
     let currentQuestion = null;
 
     for (const p of paragraphs) {
-        const text = p.textContent.trim();
+        const html = p.innerHTML.trim();
+        const plain = p.textContent.trim();
 
-        // 🟢 New question detected
-        if (/^\[\d+ mark\]/i.test(text)) {
-            if (currentQuestion) {
-                questions.push(currentQuestion);
-            }
+        // Detect start of new question (e.g., "Q1. ..." or "[1 mark] ..." etc)
+        const isQuestionStart = /^Q\d+\./i.test(plain) || /^\[\d+ mark/.test(plain);
 
+        const isOption = /^[A-E]\./.test(plain);
+
+        if (isQuestionStart) {
+            // Save previous question if exists
+            if (currentQuestion) questions.push(currentQuestion);
+
+            // Start a new question
             currentQuestion = {
                 id: `q${questions.length + 1}`,
-                text: text,
+                content: `<p>${html}</p>`,  // This will accumulate full content
                 options: [],
-                answer: null, // optional: first option as correct
+                answer: null,
             };
-        }
-
-        // 🟡 Option for current question
-        else if (currentQuestion && text.length > 0) {
-            currentQuestion.options.push(text);
-
-            // If this is the first option, assume it's the correct answer
-            if (currentQuestion.options.length === 1) {
-                currentQuestion.answer = text;
-            }
+        } else if (isOption && currentQuestion) {
+            const optionText = html.replace(/^[A-E]\.\s*/, '');
+            currentQuestion.options.push(optionText);
+        } else if (currentQuestion) {
+            // Supporting content within the same question (e.g., images, tables, explanation)
+            currentQuestion.content += `<p>${html}</p>`;
         }
     }
 
-    // Push the final question
-    if (currentQuestion) {
-        questions.push(currentQuestion);
-    }
+    // Push final question if not already
+    if (currentQuestion) questions.push(currentQuestion);
 
     return {
         title: 'Imported DOCX Exam',
