@@ -1,9 +1,12 @@
 # Redux Store
-The store contains
+The store contains:
 
-/exam
-examUtils.js: Model object factory functions
+examHelpers.js: Helper functions so simplify some reducers.
+
 examSlice.js: Redux exam slice model including reducers (reducers are like 'setters')
+
+examUtils.js: Model object factory functions
+
 selectors.js: Set of selectors to retreive model data from redux state (selectors are like 'getters')
 
 # Development Console
