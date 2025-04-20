@@ -4,6 +4,7 @@ import MCQLayout from "./components/Layout";
 import DevelopmentWarning from "./components/developmentWarning";
 import PopupWarning from "./components/popupWarning";
 import {Outlet} from "react-router";
+import "./index.css";
 
 const App = () => {
   const [showWarning, setShowWarning] = useState(false);
