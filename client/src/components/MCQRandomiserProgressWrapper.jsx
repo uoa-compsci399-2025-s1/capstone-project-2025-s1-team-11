@@ -13,7 +13,7 @@ const steps = [
     
   },
   {
-    title: 'Shuffle Questions',
+    title: 'Shuffled Questions',
     key: 'randomise',
     icon: <InteractionOutlined style={{width:"20px"}} />
   },

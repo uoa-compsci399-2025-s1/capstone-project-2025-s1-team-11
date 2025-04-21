@@ -1,7 +1,7 @@
 import React from "react";
 import MCQRandomiserProgressWrapper from "../components/MCQRandomiserProgressWrapper.jsx";
 import RandomisedExamDisplay from "../components/RandomisedExamDisplay.jsx";
-import { Typography } from "antd";
+import { Typography, Button } from "antd";
 
 const Randomiser = ({ }) => {
     
@@ -10,11 +10,15 @@ const Randomiser = ({ }) => {
             case 0:
                 return (
                     <div>
+                        
                         <Typography.Title level={3}>Exam File Upload</Typography.Title>
                         <Typography.Paragraph type="secondary">
-                            buttons to go here
-                        </Typography.Paragraph>
-                        
+                                                     No exam loaded.
+                                                </Typography.Paragraph>
+                        <div style={{ display: "flex", gap: "16px", marginTop: "16px" }}>
+                            <Button type="default">Import from MCQ Builder</Button>
+                            <Button type="default">Upload JSON file</Button>
+                        </div>
                     </div>
                 );
             case 1:
