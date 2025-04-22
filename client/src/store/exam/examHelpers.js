@@ -24,28 +24,23 @@
     }
   };
   
-  /**
-   * Removes a question from examBody at the given location.
-   * Returns true if removed, false otherwise.
-   */
-  export const removeQuestionHelper = (examBody, location) => {
-    const { examBodyIndex, sectionIndex } = location;
-    const container = examBody?.[examBodyIndex];
-  
-    if (!container) return false;
-  
-    if (sectionIndex !== undefined && container.type === 'section') {
-      container.questions?.splice(sectionIndex, 1);
-      return true;
-    }
-  
-    if (container.type === 'question') {
-      examBody.splice(examBodyIndex, 1);
-      return true;
-    }
-  
-    return false;
-  };
+/**
+ * Removes a question from examBody at the given location using the new location format.
+ * Mutates the original examBody.
+ */
+export const removeQuestionHelper = (state, location) => {
+  const { examBodyIndex, questionsIndex } = location;
+  const examBody = state.examData?.examBody;
+  if (!examBody || typeof examBodyIndex !== "number") return;
+
+  const target = examBody[examBodyIndex];
+
+  if (target.type === "section" && typeof questionsIndex === "number") {
+    target.questions.splice(questionsIndex, 1);
+  } else if (target.type === "question") {
+    examBody.splice(examBodyIndex, 1);
+  }
+};
   
   /**
    * Renumbers all questions sequentially in the entire examBody.

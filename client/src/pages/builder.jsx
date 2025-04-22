@@ -1,24 +1,26 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
 import { Typography } from "antd";
 
 const Builder = () => {
+    const exam = useSelector((state) => state.exam.examData);
+
     const renderStageContent = (step) => {
         switch (step) {
             case 0:
                 return (
                     <div>
                         <Typography.Title level={3}>Cover Page</Typography.Title>
-                        
                     </div>
                 );
             case 1:
                 return (
                     <div>
                         <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
-                        <ExamDisplay />
+                        <ExamDisplay exam={exam} />
                         <ExamFileManager />
                     </div>
                 );
@@ -27,7 +29,7 @@ const Builder = () => {
                     <div>
                         <Typography.Title level={3}>Download Exam</Typography.Title>
                         <Typography.Paragraph type="secondary">
-                             Export functions coming soon
+                            Export functions coming soon
                         </Typography.Paragraph>
                     </div>
                 );
@@ -39,8 +41,8 @@ const Builder = () => {
     return (
         <>
             <h1> Builder</h1>
-        <MCQBuilderProgressWrapper>
-            {(currentStep) => renderStageContent(currentStep)}
+            <MCQBuilderProgressWrapper>
+                {(currentStep) => renderStageContent(currentStep)}
             </MCQBuilderProgressWrapper>
         </>
     );

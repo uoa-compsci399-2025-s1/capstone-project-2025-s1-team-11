@@ -23,6 +23,9 @@ const ExamFileManager = ({ onExamLoaded }) => {
         dispatch(importExamFromJSON(result.exam));
         console.log("Dispatching importExamFromJSON with:", result.exam);
         setFileHandle(result.fileHandle);
+        if (onExamLoaded) {
+          onExamLoaded(result.exam, result.fileHandle?.name || "Unnamed file");
+        }
       }
     } catch (err) {
       setError("Error opening exam: " + err.message);
@@ -40,6 +43,9 @@ const ExamFileManager = ({ onExamLoaded }) => {
           setError("");
           dispatch(importExamFromJSON(importedExam));
           setFileHandle(null); // since this exam was imported and not loaded from a JSON file
+          if (onExamLoaded) {
+            onExamLoaded(importedExam, file.name);
+          }
         }
       });
     }

@@ -111,13 +111,18 @@ const ExamDisplay = () => {
     }
   };
 
-  const handleDeleteItem = (id) => {
-    const index = exam?.examBody?.findIndex(item => item.id === id);
-    if (index === -1 || index == null) return;
-    if (exam.examBody[index].type === 'section') {
-      dispatch(removeSection(index));
+  const handleDeleteItem = (examBodyIndex, questionsIndex = null) => {
+    console.log("Deleting:", { examBodyIndex, questionsIndex });
+    if (questionsIndex !== null && questionsIndex !== undefined) {
+      dispatch(removeQuestion({ examBodyIndex, questionsIndex }));
     } else {
-      dispatch(removeQuestion({ examBodyIndex: index }));
+      const entry = exam?.examBody?.[examBodyIndex];
+      if (!entry) return;
+      if (entry.type === "section") {
+        dispatch(removeSection(examBodyIndex));
+      } else {
+        dispatch(removeQuestion({ examBodyIndex }));
+      }
     }
   };
   
@@ -222,18 +227,46 @@ const ExamDisplay = () => {
                   <Button size="small" onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>
                     Edit
                   </Button>
-                  <Button size="small" danger onClick={() => handleDeleteItem(record.id)}>
+                  <Button size="small" danger onClick={() => handleDeleteItem(record.examBodyIndex, record.questionsIndex)}>
                     Delete
                   </Button>
                 </>
               ),
             },
           ]}
-          dataSource={(examItems || []).map((item, index) => ({
-            key: item.id || `${item.type}-${index}`,
-            ...item,
-            titleOrQuestion: item.type === "section" ? item.title : item.questionText,
-          }))}
+          dataSource={(examItems || []).map((item, index) => {
+            const examBodyIndex = exam.examBody.findIndex(entry => {
+              if (item.type === "section") return entry.id === item.id;
+              if (item.type === "question") {
+                if (entry.type === "section") {
+                  return entry.questions?.some(q => q.id === item.id);
+                } else {
+                  return entry.id === item.id;
+                }
+              }
+              return false;
+            });
+
+            const questionsIndex =
+              item.type === "question" && exam.examBody[examBodyIndex]?.type === "section"
+                ? exam.examBody[examBodyIndex].questions.findIndex(q => q.id === item.id)
+                : undefined;
+
+            console.log("Item Mapping:", {
+              id: item.id,
+              type: item.type,
+              examBodyIndex,
+              questionsIndex
+            });
+
+            return {
+              key: `${item.type}-${item.id}-${index}`,
+              ...item,
+              titleOrQuestion: item.type === "section" ? item.title : item.questionText,
+              examBodyIndex,
+              questionsIndex,
+            };
+          })}
           pagination={false}
           scroll={{ x: "max-content" }}
         />
