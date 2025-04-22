@@ -1,7 +1,7 @@
 // src/pages/ExamFileManager.jsx
 import React from "react";
 
-const Randomiser = ({  }) => {
+const Randomiser = () => {
 
     return (
         <div>
