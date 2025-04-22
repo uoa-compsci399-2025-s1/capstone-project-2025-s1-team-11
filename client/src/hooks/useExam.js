@@ -1,4 +1,6 @@
 import { useContext } from "react";
-import { ExamContext } from "../context/examContext.js";
+import { ExamContext } from "../context/examContext.jsx";
 
-export const useExam = () => useContext(ExamContext);
+export function useExam() {
+  return useContext(ExamContext); // will return undefined if ExamContext itself is undefined
+}

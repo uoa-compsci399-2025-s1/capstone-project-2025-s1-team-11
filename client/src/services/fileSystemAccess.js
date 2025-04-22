@@ -17,7 +17,8 @@ export async function openExamFile() {
         });
         const file = await fileHandle.getFile();
         const contents = await file.text();
-        return { fileHandle, exam: Exam.fromJSON(contents) };
+        const parsed = JSON.parse(contents); // parse here
+        return { fileHandle, exam: parsed };
     } catch (error) {
         console.error("Error opening file:", error);
         return null;

@@ -4,7 +4,14 @@ import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
 import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
 
 export function useFileSystem() {
-    const { exam, setExam, fileHandle, setFileHandle } = useExam();
+    const examContext = useExam();
+
+    if (!examContext) {
+        console.error("ExamContext not found. Is <ExamProvider> wrapped around your app?");
+        return {};
+    }
+
+    const { exam, setExam, fileHandle, setFileHandle } = examContext;
 
     // Opens the exam file and updates the global state
     const openExam = async () => {

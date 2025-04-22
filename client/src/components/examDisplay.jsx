@@ -1,9 +1,23 @@
+<<<<<<< Updated upstream
 // imports for react and antd ui bits
 import React, { useState, useEffect, useMemo } from "react";
 import { Button, Typography, Modal, Input, Card, message } from "antd";
 import 'quill/dist/quill.snow.css';
 
 message.config({ top: 64 }); // set where the success message appears on the screen
+=======
+// src/components/ExamDisplay.jsx
+import React from "react";
+import { Button, Space, Table, Typography, Card } from "antd";
+import { useExam } from "../hooks/useExam.js";
+//import {Question} from "../models/Question.js";
+
+const ExamDisplay = () => {
+  const examContext = useExam();
+  const exam = examContext?.exam;
+  const setExam = examContext?.setExam;
+  console.log("Exam in display:", exam);
+>>>>>>> Stashed changes
 
 // imports from dnd-kit for drag and drop setup
 import {
@@ -23,6 +37,7 @@ import {
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 
+<<<<<<< Updated upstream
 // setting up inputs
 const { TextArea } = Input;
 
@@ -40,6 +55,9 @@ const SortableItem = ({ item, index, onEdit, onDelete, activeItemId }) => {
     backgroundColor: '#f9f9f9',
     borderRadius: 4,
     boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+=======
+    if (setExam) setExam(exam.addQuestion(newQuestion));
+>>>>>>> Stashed changes
   };
 
   return (
@@ -282,6 +300,42 @@ const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
             message.success("Changes saved successfully");
           }}
         >
+<<<<<<< Updated upstream
+=======
+          <Typography.Title level={3} style={{ margin: 0, paddingBottom: 8 }}>
+            Questions:
+          </Typography.Title>
+          <Table
+            dataSource={(exam?.questions ?? []).map((q, index) => ({
+              key: q.id,
+              number: index + 1,
+              questionText: q.questionText,
+              answer: q.answer,
+              optionA: q.options?.[0] || "",
+              optionB: q.options?.[1] || "",
+              optionC: q.options?.[2] || "",
+              optionD: q.options?.[3] || "",
+            }))}
+            columns={[
+              { title: "#", dataIndex: "number", key: "number" },
+              {
+                title: "Question",
+                dataIndex: "questionText",
+                key: "questionText",
+              },
+              { title: "Answer", dataIndex: "answer", key: "answer" },
+              { title: "Option A", dataIndex: "optionA", key: "optionA" },
+              { title: "Option B", dataIndex: "optionB", key: "optionB" },
+              { title: "Option C", dataIndex: "optionC", key: "optionC" },
+              { title: "Option D", dataIndex: "optionD", key: "optionD" },
+            ]}
+            pagination={false}
+          />
+        </Card>
+      )}
+      <Space style={{ marginTop: "16px" }}>
+        <Button type="dashed" onClick={addQuestion}>
+>>>>>>> Stashed changes
           Add Question
         </Button>
         <Button
