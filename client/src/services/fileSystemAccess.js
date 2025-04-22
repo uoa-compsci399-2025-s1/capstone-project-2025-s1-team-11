@@ -1,7 +1,5 @@
 // src/services/fileSystemAccess.js
 
-import Exam from "../models/ExamFS.js";
-
 /**
  * Opens a file picker and reads an exam from a JSON file.
  * Returns an object with the file handle and the parsed Exam instance.

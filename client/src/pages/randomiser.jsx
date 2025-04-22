@@ -40,6 +40,7 @@ const Randomiser = ({ }) => {
                 return null;
         }
     };
+const Randomiser = () => {
 
     return (
         <div>
