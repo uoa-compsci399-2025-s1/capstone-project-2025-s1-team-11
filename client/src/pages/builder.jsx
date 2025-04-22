@@ -1,30 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
 import { Typography } from "antd";
 
 const Builder = () => {
-    const [exam, setExam] = useState(null);
-    const [fileName, setFileName] = useState(null);
-    
-    const handleExamLoaded = (examData, fileLabel) => {
-        setExam(examData);
-        setFileName(fileLabel);
-      };
-
-    const addQuestion = () => {
-        if (!exam) return;
-        const newId = exam.questions.length + 1;
-        const newQuestion = {
-            id: newId,
-            questionText: `New Question ${newId}`,
-            answer: "Answer",
-            options: ["1", "2", "3", "4"],
-        };
-        setExam({ ...exam, questions: [...exam.questions, newQuestion] });
-    };
-
     const renderStageContent = (step) => {
         switch (step) {
             case 0:
@@ -38,14 +18,8 @@ const Builder = () => {
                 return (
                     <div>
                         <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
-            {exam ? (
-                <ExamDisplay exam={exam} fileName={fileName} onAddQuestion={addQuestion} />
-            ) : (
-                <Typography.Paragraph type="secondary">
-                             No exam loaded.
-                        </Typography.Paragraph>
-            )}
-            <ExamFileManager onExamLoaded={handleExamLoaded} />
+                        <ExamDisplay />
+                        <ExamFileManager />
                     </div>
                 );
             case 2:

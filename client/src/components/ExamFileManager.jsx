@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import { importExamFromJSON } from "../store/exam/examSlice";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
 import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
 import { Button, Alert, Space, Collapse, Typography } from "antd";
@@ -6,7 +8,8 @@ import { Button, Alert, Space, Collapse, Typography } from "antd";
 const { Panel } = Collapse;
 
 const ExamFileManager = ({ onExamLoaded }) => {
-  const [exam, setExam] = useState(null);
+  console.log(" ExamFileManager rendered");
+  const dispatch = useDispatch();
   const [fileHandle, setFileHandle] = useState(null);
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
@@ -16,10 +19,9 @@ const ExamFileManager = ({ onExamLoaded }) => {
     try {
       const result = await openExamFile();
       if (result) {
-        setExam(result.exam);
+        dispatch(importExamFromJSON(result.exam));
+        console.log("Dispatching importExamFromJSON with:", result.exam);
         setFileHandle(result.fileHandle);
-        // Pass the exam back to the parent
-        onExamLoaded(result.exam, result.fileHandle?.name);
       }
     } catch (err) {
       setError("Error opening exam: " + err.message);
@@ -35,10 +37,8 @@ const ExamFileManager = ({ onExamLoaded }) => {
           setError("Error importing exam: " + err.message);
         } else {
           setError("");
-          setExam(importedExam);
+          dispatch(importExamFromJSON(importedExam));
           setFileHandle(null); // since this exam was imported and not loaded from a JSON file
-          // Pass the imported exam back to the parent
-          onExamLoaded(importedExam, null); // no file name for XML imports
         }
       });
     }
@@ -46,10 +46,10 @@ const ExamFileManager = ({ onExamLoaded }) => {
 
   // Inside your ExamFileManager.jsx component
   const handleSaveExam = async () => {
-    if (!exam) return;
+    if (!fileHandle) return;
     try {
       // This will either update the existing file or prompt for a save location.
-      const updatedHandle = await saveExamToFile(exam, fileHandle);
+      const updatedHandle = await saveExamToFile(fileHandle, fileHandle);
       setFileHandle(updatedHandle); // Save the handle for future use.
       setShowSuccessAlert(true);
       console.log("File saved successfully to " + fileHandle.name); // Debug log
@@ -71,7 +71,7 @@ const ExamFileManager = ({ onExamLoaded }) => {
           onClose={() => setShowSuccessAlert(false)}
         />
       )}
-      {exam ? (
+      {fileHandle ? (
         <>
           {/*<Typography.Text style={{ display: "block", marginTop: "16px" }}>
             Currently editing: {fileHandle ? fileHandle.name : "Imported (unsaved) file"}

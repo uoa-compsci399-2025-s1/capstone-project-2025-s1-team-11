@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Button, Typography, Modal, Input, Card, message } from "antd";
+import { Button, Typography, Modal, Input, Card, message, Table } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addSection,
+  addQuestion,
+  removeQuestion,
+  removeSection,
+  updateQuestion,
+  updateSection
+} from "../store/exam/examSlice"; // adjust path if needed
 import 'quill/dist/quill.snow.css';
 import {
   DndContext,
@@ -8,102 +17,44 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragOverlay
 } from "@dnd-kit/core";
 import {
   arrayMove,
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 
 const { TextArea } = Input;
 
-const SortableItem = ({ item, index, onEdit, onDelete, activeItemId }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
 
-  const isDragging = activeItemId === item.id;
-  const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-    transition,
-    marginBottom: isDragging ? 4 : 12,
-    padding: isDragging ? 4 : 12,
-    cursor: "grab",
-    backgroundColor: '#f9f9f9',
-    borderRadius: 4,
-    boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-  };
-
-  return (
-    <div ref={setNodeRef} style={style}>
-      <Card>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            cursor: 'grab',
-            marginBottom: 16,
-            padding: 8,
-            backgroundColor: '#e6f7ff',
-            borderRadius: 4,
-          }}
-          {...listeners}
-          {...attributes}
-        >
-          {item.type === 'section' ? (
-            <div>
-              <Typography.Title level={5} style={{ margin: 0 }}>{item.title}</Typography.Title>
-              {item.subtext && (
-                <Typography.Paragraph type="secondary" style={{ margin: 0 }}>
-                  {item.subtext}
-                </Typography.Paragraph>
-              )}
-            </div>
-          ) : (
-            <Typography.Title level={5} style={{ margin: 0 }}>{`Question ${index}`}</Typography.Title>
-          )}
-        </div>
-
-        {item.type === 'question' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {item.section && (
-              <Typography.Text type="secondary" style={{ fontStyle: "italic" }}>
-                {item.section}
-              </Typography.Text>
-            )}
-            <Typography.Title level={5}>{item.questionText}</Typography.Title>
-            {item.options.map((opt, idx) => {
-              const romanNumerals = ['i', 'ii', 'iii', 'iv', 'v'];
-              return (
-                <Typography.Paragraph key={idx} style={{ marginBottom: 12 }}>
-                  <strong>{romanNumerals[idx]}.</strong> {opt}
-                </Typography.Paragraph>
-              );
-            })}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <Button size="small" onClick={() => onEdit(item)}>Edit</Button>
-              <Button size="small" danger onClick={() => onDelete(item.id)}>Delete</Button>
-            </div>
-          </div>
-        )}
-      </Card>
-    </div>
-  );
-};
-
-const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
+const ExamDisplay = () => {
+  console.log("ExamDisplay mounted");
+  const exam = useSelector((state) => state.exam.examData);
+  useEffect(() => {
+    console.log("💡 useEffect triggered, examData now:", exam);
+  }, [exam]);
   const [examItems, setExamItems] = useState([]);
   const [activeItemId, setActiveItemId] = useState(null);
+  const dispatch = useDispatch();
+  // Move useSensor hooks to top level of the component to ensure consistent hook order
+  const pointerSensor = useSensor(PointerSensor);
+  const keyboardSensor = useSensor(KeyboardSensor);
+  const sensors = useSensors(pointerSensor, keyboardSensor);
 
   useEffect(() => {
-    if (!exam?.examBody?.length) return;
+    console.log("📦 exam:", exam);
+    console.log("📦 examBody:", Array.isArray(exam?.examBody) ? exam.examBody : "Not an array");
+
+    if (!Array.isArray(exam?.examBody)) {
+      console.warn("⚠️ examBody is not an array or missing:", exam?.examBody);
+      return;
+    }
 
     const items = [];
 
     exam.examBody.forEach((entry) => {
-      if (entry.type === "section") {
+      const type = (entry.type || "").toLowerCase();
+
+      if (type === "section") {
         items.push({
           id: entry.id,
           type: "section",
@@ -117,12 +68,19 @@ const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
             section: entry.title,
           });
         });
-      } else if (entry.type === "question") {
+      } else if (type === "question") {
         items.push(entry);
+      } else {
+        console.warn(" Unknown item type:", entry);
       }
     });
 
+    console.log(" Parsed examItems:", items);
     setExamItems(items);
+    console.log(" Final examItems length:", items.length);
+    if (items.length === 0) {
+      console.warn(" No items parsed from examBody:", exam.examBody);
+    }
   }, [exam]);
 
   const questionIndexes = useMemo(() => {
@@ -137,15 +95,36 @@ const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
   }, [examItems]);
 
   const handleEdit = (item) => {
-    message.info(`Edit triggered for ${item.type}: ${item.id}`);
+    if (item.type === 'question') {
+      dispatch(updateQuestion({
+        location: { questionId: item.id },
+        newData: { questionText: "Edited Question" }
+      }));
+    } else if (item.type === 'section') {
+      const index = exam?.examBody?.findIndex(entry => entry.id === item.id);
+      if (index !== -1) {
+        dispatch(updateSection({
+          examBodyIndex: index,
+          newData: { title: "Edited Section Title" }
+        }));
+      }
+    }
   };
 
   const handleDeleteItem = (id) => {
-    setExamItems(prev => prev.filter(item => item.id !== id));
-    message.success("Item deleted");
+    const index = exam?.examBody?.findIndex(item => item.id === id);
+    if (index === -1 || index == null) return;
+    if (exam.examBody[index].type === 'section') {
+      dispatch(removeSection(index));
+    } else {
+      dispatch(removeQuestion({ examBodyIndex: index }));
+    }
   };
+  
+  if (!exam || !Array.isArray(exam.examBody)) {
+    return <div>Exam loaded, but examBody is missing or invalid.</div>;
+  }
 
-  if (!exam) return <div>No exam loaded.</div>;
 
   return (
     <div>
@@ -157,10 +136,7 @@ const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
       </div>
 
       <DndContext
-        sensors={useSensors(
-          useSensor(PointerSensor),
-          useSensor(KeyboardSensor)
-        )}
+        sensors={sensors}
         collisionDetection={closestCenter}
         dropAnimation={{ duration: 250, easing: 'ease' }}
         modifiers={[restrictToVerticalAxis, restrictToParentElement]}
@@ -178,46 +154,111 @@ const ExamDisplay = ({ exam, onAddQuestion, fileName }) => {
           message.success("Reordered");
         }}
       >
-        <DragOverlay>
-          {activeItemId && (
-            <Card size="small">
-              {(() => {
-                const item = examItems.find(i => i.id === activeItemId);
-                return item?.type === 'section' ? item.title : item.questionText;
-              })()}
-            </Card>
-          )}
-        </DragOverlay>
-
-        <SortableContext items={examItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
-          {examItems.map((item, index) => (
-            <SortableItem
-              key={item.id}
-              item={item}
-              index={item.type === 'question' ? questionIndexes[item.id] : null}
-              onEdit={handleEdit}
-              onDelete={handleDeleteItem}
-              activeItemId={activeItemId}
-            />
-          ))}
-        </SortableContext>
+        {examItems.length === 0 && (
+          <div style={{ marginTop: 24, color: 'red' }}>
+            ⚠️ Exam loaded but contains no sections or questions to display.
+          </div>
+        )}
+        <Table
+          columns={[
+            {
+              title: "ID",
+              dataIndex: "id",
+              key: "id",
+            },
+            {
+              title: "Type",
+              dataIndex: "type",
+              key: "type",
+            },
+            {
+              title: "Section",
+              dataIndex: "section",
+              key: "section",
+            },
+            {
+              title: "Title / Question",
+              dataIndex: "titleOrQuestion",
+              key: "titleOrQuestion",
+              render: (text, record) =>
+                record.type === "section" ? (
+                  <div>
+                    <strong>{record.title}</strong>
+                    {record.subtext && (
+                      <div style={{ fontStyle: "italic", color: "#888" }}>{record.subtext}</div>
+                    )}
+                  </div>
+                ) : (
+                  <span>{record.questionText}</span>
+                ),
+            },
+            {
+              title: "Options",
+              dataIndex: "options",
+              key: "options",
+              render: (opts, record) =>
+                record.type === "question" && Array.isArray(opts)
+                  ? opts.map((o, i) => (
+                      <div key={i}>
+                        {String.fromCharCode(97 + i)}) {o}
+                      </div>
+                    ))
+                  : null,
+            },
+            {
+              title: "Correct Answer",
+              dataIndex: "correctIndex",
+              key: "correctIndex",
+              render: (index, record) =>
+                record.type === "question" && Array.isArray(record.options)
+                  ? record.options[index]
+                  : null,
+            },
+            {
+              title: "Actions",
+              key: "actions",
+              render: (_, record) => (
+                <>
+                  <Button size="small" onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>
+                    Edit
+                  </Button>
+                  <Button size="small" danger onClick={() => handleDeleteItem(record.id)}>
+                    Delete
+                  </Button>
+                </>
+              ),
+            },
+          ]}
+          dataSource={(examItems || []).map((item) => ({
+            key: item.id,
+            ...item,
+            titleOrQuestion: item.type === "section" ? item.title : item.questionText,
+          }))}
+          pagination={false}
+          scroll={{ x: "max-content" }}
+        />
       </DndContext>
 
       <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
-        <Button type="dashed" onClick={onAddQuestion}>Add Question</Button>
         <Button type="dashed" onClick={() => {
-          const newSection = {
-            id: `section-${Date.now()}`,
-            title: `Untitled Section`,
-            subtext: "Instructions...",
-            type: "section",
+          const questionData = {
+            questionText: "New Question",
+            options: ["Option A", "Option B", "Option C", "Option D", "Option E"],
+            correctIndex: 0,
+            lockedPositionsMap: [-1, -1, -1, -1, -1],
+            answerShuffleMap: [],
           };
-          setExamItems([...examItems, newSection]);
+          dispatch(addQuestion({ questionData }));
+          message.success("Question added");
+        }}>Add Question</Button>
+        <Button type="dashed" onClick={() => {
+          dispatch(addSection({ title: "Untitled Section", subtext: "Instructions..." }));
           message.success("Section added");
         }}>Add Section</Button>
       </div>
     </div>
   );
+  
 };
 
 export default ExamDisplay;
