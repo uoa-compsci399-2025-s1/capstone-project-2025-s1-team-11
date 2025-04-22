@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { importExamFromJSON } from "../store/exam/examSlice";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
 import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
@@ -44,17 +45,22 @@ const ExamFileManager = ({ onExamLoaded }) => {
     }
   };
 
-  // Inside your ExamFileManager.jsx component
+  // Use Redux state for examData
+  const examData = useSelector((state) => state.exam.examData);
+
   const handleSaveExam = async () => {
-    if (!fileHandle) return;
+    if (!fileHandle || !examData) {
+      setError("Cannot save: Missing file handle or exam data.");
+      return;
+    }
     try {
-      // This will either update the existing file or prompt for a save location.
-      const updatedHandle = await saveExamToFile(fileHandle, fileHandle);
-      setFileHandle(updatedHandle); // Save the handle for future use.
+      const updatedHandle = await saveExamToFile(examData, fileHandle);
+      setFileHandle(updatedHandle);
       setShowSuccessAlert(true);
-      console.log("File saved successfully to " + fileHandle.name); // Debug log
+      console.log(" File saved successfully to", updatedHandle.name);
     } catch (err) {
       setError("Error saving exam: " + err.message);
+      console.error(err);
     }
   };
 

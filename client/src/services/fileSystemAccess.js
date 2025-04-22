@@ -18,7 +18,9 @@ export async function openExamFile() {
         const file = await fileHandle.getFile();
         const contents = await file.text();
         const parsed = JSON.parse(contents); // parse here
-        return { fileHandle, exam: parsed };
+        // Wrap parsed object to ensure it becomes a valid exam instance if needed
+        const exam = parsed; // Placeholder for future integration with exam model classes
+        return { fileHandle, exam };
     } catch (error) {
         console.error("Error opening file:", error);
         return null;
@@ -29,7 +31,6 @@ export async function openExamFile() {
  * Saves the given exam to the file represented by fileHandle.
  */
 export async function saveExamToFile(exam, fileHandle = null) {
-    // If no file handle exists, prompt the user for a save location.
     if (!fileHandle) {
         fileHandle = await window.showSaveFilePicker({
             suggestedName: "Exam.json",
@@ -41,9 +42,15 @@ export async function saveExamToFile(exam, fileHandle = null) {
             ],
         });
     }
-    // Create a writable stream, write the JSON content, and close the stream.
-    const writable = await fileHandle.createWritable();
-    await writable.write(exam.toJSON());
-    await writable.close();
-    return fileHandle; // Return the file handle so it can be stored for future saves.
+
+    try {
+        const writable = await fileHandle.createWritable();
+        const examJSON = typeof exam.toJSON === 'function' ? exam.toJSON() : JSON.stringify(exam, null, 2);
+        await writable.write(examJSON);
+        await writable.close();
+        return fileHandle;
+    } catch (error) {
+        console.error("Failed to save exam:", error);
+        throw error;
+    }
 }
