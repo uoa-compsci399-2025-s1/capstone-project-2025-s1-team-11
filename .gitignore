@@ -1621,3 +1621,4 @@ server/.venv/bin/activate.fish
 server/.venv/bin/activate.csh
 server/.venv/bin/activate
 server/.DS_Store
+node_modules
