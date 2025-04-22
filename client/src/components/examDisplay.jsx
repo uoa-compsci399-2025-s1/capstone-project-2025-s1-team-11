@@ -39,6 +39,11 @@ const ExamDisplay = () => {
   const pointerSensor = useSensor(PointerSensor);
   const keyboardSensor = useSensor(KeyboardSensor);
   const sensors = useSensors(pointerSensor, keyboardSensor);
+  const [editModal, setEditModal] = useState({
+    visible: false,
+    type: "", // "section" | "question"
+    item: null,
+  });
 
   useEffect(() => {
     console.log(" exam:", exam);
@@ -48,7 +53,7 @@ const ExamDisplay = () => {
       console.warn(" examBody is not an array or missing:", exam?.examBody);
       return;
     }
-
+    
     const items = [];
 
     exam.examBody.forEach((entry) => {
@@ -95,21 +100,69 @@ const ExamDisplay = () => {
   }, [examItems]);
 
   const handleEdit = (item) => {
-    if (item.type === 'question') {
-      dispatch(updateQuestion({
-        location: { questionId: item.id },
-        newData: { questionText: "Edited Question" }
-      }));
-    } else if (item.type === 'section') {
-      const index = exam?.examBody?.findIndex(entry => entry.id === item.id);
-      if (index !== -1) {
-        dispatch(updateSection({
-          examBodyIndex: index,
-          newData: { title: "Edited Section Title" }
-        }));
-      }
-    }
+    setEditModal({
+      visible: true,
+      type: item.type,
+      item: { ...item }, // clone for editing
+    });
   };
+    
+  const handleSaveEdit = () => {
+    console.log("saving edit for:", editModal);
+    const { type, item } = editModal;
+  
+    let examBodyIndex = -1;
+    let questionsIndex;
+  
+    if (type === "section") {
+      examBodyIndex = exam.examBody.findIndex((entry) => entry.id === item.id);
+      dispatch(updateSection({
+        examBodyIndex,
+        newData: {
+          title: item.title,
+          subtext: item.subtext,
+        }
+      }));
+    } else if (type === "question") {
+      for (let i = 0; i < exam.examBody.length; i++) {
+        const section = exam.examBody[i];
+        if (section.type === "section") {
+          const qIndex = section.questions?.findIndex((q) => q.id === item.id);
+          if (qIndex >= 0) {
+            examBodyIndex = i;
+            questionsIndex = qIndex;
+            break;
+          }
+        } else if (section.id === item.id) {
+          examBodyIndex = i;
+          break;
+        }
+      }
+  
+      if (examBodyIndex === -1) {
+        message.error("Failed to locate the question to update.");
+        return;
+      }
+  
+      dispatch(updateQuestion({
+        location: {
+          examBodyIndex,
+          questionsIndex,
+          questionId: item.id
+        },
+        newData: {
+          questionText: item.questionText,
+          options: item.options,
+          correctIndex: item.correctIndex
+        }
+      }));
+    }
+  
+    message.success("Saved changes");
+    setEditModal({ visible: false, type: "", item: null });
+  };
+  
+  
 
   const handleDeleteItem = (examBodyIndex, questionsIndex = null) => {
     console.log("Deleting:", { examBodyIndex, questionsIndex });
@@ -139,7 +192,7 @@ const ExamDisplay = () => {
           {exam.courseCode} - {exam.courseName} | {exam.semester} {exam.year}
         </Typography.Text>
       </div>
-
+  
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -149,7 +202,7 @@ const ExamDisplay = () => {
         onDragEnd={({ active, over }) => {
           setActiveItemId(null);
           if (!over || active.id === over.id) return;
-
+  
           const updated = arrayMove(
             examItems,
             examItems.findIndex(i => i.id === active.id),
@@ -246,19 +299,12 @@ const ExamDisplay = () => {
               }
               return false;
             });
-
+  
             const questionsIndex =
               item.type === "question" && exam.examBody[examBodyIndex]?.type === "section"
                 ? exam.examBody[examBodyIndex].questions.findIndex(q => q.id === item.id)
                 : undefined;
-
-            console.log("Item Mapping:", {
-              id: item.id,
-              type: item.type,
-              examBodyIndex,
-              questionsIndex
-            });
-
+  
             return {
               key: `${item.type}-${item.id}-${index}`,
               ...item,
@@ -271,7 +317,7 @@ const ExamDisplay = () => {
           scroll={{ x: "max-content" }}
         />
       </DndContext>
-
+  
       <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
         <Button type="dashed" onClick={() => {
           const questionData = {
@@ -289,8 +335,84 @@ const ExamDisplay = () => {
           message.success("Section added");
         }}>Add Section</Button>
       </div>
+  
+      <Modal
+        open={editModal.visible}
+        title={`Edit ${editModal.type}`}
+        onCancel={() => setEditModal({ visible: false, type: "", item: null })}
+        onOk={handleSaveEdit}
+      >
+        {editModal.type === "section" && (
+          <>
+            <Input
+              value={editModal.item?.title}
+              onChange={(e) => setEditModal((prev) => ({
+                ...prev,
+                item: { ...prev.item, title: e.target.value }
+              }))}
+              placeholder="Section Title"
+              style={{ marginBottom: 8 }}
+            />
+            <TextArea
+              value={editModal.item?.subtext}
+              onChange={(e) => setEditModal((prev) => ({
+                ...prev,
+                item: { ...prev.item, subtext: e.target.value }
+              }))}
+              placeholder="Instructions or Subtext"
+              autoSize
+            />
+          </>
+        )}
+  
+        {editModal.type === "question" && (
+          <>
+            <Input
+              value={editModal.item?.questionText}
+              onChange={(e) =>
+                setEditModal((prev) => ({
+                  ...prev,
+                  item: { ...prev.item, questionText: e.target.value },
+                }))
+              }
+              placeholder="Question Text"
+              style={{ marginBottom: 8 }}
+            />
+            {editModal.item?.options?.map((opt, idx) => (
+              <Input
+                key={idx}
+                value={opt}
+                onChange={(e) => {
+                  const newOpts = [...editModal.item.options];
+                  newOpts[idx] = e.target.value;
+                  setEditModal((prev) => ({
+                    ...prev,
+                    item: { ...prev.item, options: newOpts },
+                  }));
+                }}
+                placeholder={`Option ${String.fromCharCode(97 + idx)}`}
+                style={{ marginBottom: 6 }}
+              />
+            ))}
+            <Input
+              type="number"
+              min={0}
+              max={editModal.item?.options?.length - 1}
+              value={editModal.item?.correctIndex}
+              onChange={(e) =>
+                setEditModal((prev) => ({
+                  ...prev,
+                  item: { ...prev.item, correctIndex: parseInt(e.target.value, 10) },
+                }))
+              }
+              placeholder="Correct Answer Index"
+            />
+          </>
+        )}
+      </Modal>
     </div>
   );
+  
   
 };
 
