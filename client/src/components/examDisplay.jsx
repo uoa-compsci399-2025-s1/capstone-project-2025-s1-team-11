@@ -41,11 +41,11 @@ const ExamDisplay = () => {
   const sensors = useSensors(pointerSensor, keyboardSensor);
 
   useEffect(() => {
-    console.log("📦 exam:", exam);
-    console.log("📦 examBody:", Array.isArray(exam?.examBody) ? exam.examBody : "Not an array");
+    console.log(" exam:", exam);
+    console.log(" examBody:", Array.isArray(exam?.examBody) ? exam.examBody : "Not an array");
 
     if (!Array.isArray(exam?.examBody)) {
-      console.warn("⚠️ examBody is not an array or missing:", exam?.examBody);
+      console.warn(" examBody is not an array or missing:", exam?.examBody);
       return;
     }
 
@@ -229,8 +229,8 @@ const ExamDisplay = () => {
               ),
             },
           ]}
-          dataSource={(examItems || []).map((item) => ({
-            key: item.id,
+          dataSource={(examItems || []).map((item, index) => ({
+            key: item.id || `${item.type}-${index}`,
             ...item,
             titleOrQuestion: item.type === "section" ? item.title : item.questionText,
           }))}
