@@ -7,7 +7,7 @@ import AppRoutes from './AppRoutes.jsx';
 import './index.css';
 
 createRoot(document.getElementById('root')).render(
-  <Provider store={store}>*/
+  <Provider store={store}>
     {/* <ExamProvider> */}
     <BrowserRouter>
       <AppRoutes />
