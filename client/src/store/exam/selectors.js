@@ -1,4 +1,5 @@
 // selectors.js
+import { createSelector } from "@reduxjs/toolkit";
 
 // Root selector
 export const selectExamState = (state) => state.exam;
@@ -53,40 +54,49 @@ export const selectQuestionByNumber = (state, questionNumber) => {
 };
 
 // Utility selectors
-export const selectAllQuestionsFlat = (state) => {
-  const body = selectExamBody(state);
-  if (!body) return [];
+export const selectAllQuestionsFlat = createSelector(
+  [selectExamBody],
+  (examBody) => {
+    if (!examBody) return [];
 
-  return body.flatMap((item) => {
-    if (item.type === 'question') return [item];
-    if (item.type === 'section') return item.questions || [];
-    return [];
-  });
-};
+    return examBody.flatMap((item) => {
+      if (item.type === 'question') return [item];
+      if (item.type === 'section') return item.questions || [];
+      return [];
+    });
+  }
+);
 
-export const selectTotalMarks = (state) => {
-  const questions = selectAllQuestionsFlat(state);
-  return questions.reduce((sum, q) => sum + (q.marks || 0), 0);
-};
+export const selectTotalMarks = createSelector(
+  [selectAllQuestionsFlat],
+  (questions) => questions.reduce((sum, q) => sum + (q.marks || 0), 0)
+);
 
-export const selectQuestionsForTable = (state) => {
-  const examBody = selectExamBody(state);
-  if (!examBody) return [];
+export const selectQuestionCount = createSelector(
+  [selectAllQuestionsFlat],
+  (questions) => questions.length
+);
 
-  const result = [];
+export const selectQuestionsForTable = createSelector(
+  [selectExamBody],
+  (examBody) => {
+    if (!examBody) return [];
+    
+    const result = [];
 
-  examBody.forEach((item) => {
-    if (item.type === 'question') {
-      result.push(normaliseQuestionForTable(item, null));
-    } else if (item.type === 'section') {
-      item.questions?.forEach((q, i) => {
-        result.push(normaliseQuestionForTable(q, item.sectionNo, i));
-      });
-    }
-  });
+    examBody.forEach((item) => {
+      if (item.type === 'question') {
+        result.push(normaliseQuestionForTable(item, null));
+      } else if (item.type === 'section') {
+        item.questions?.forEach((q, i) => {
+          result.push(normaliseQuestionForTable(q, item.sectionNo, i));
+        });
+      }
+    });
 
-  return result;
-};
+    return result;
+  }
+);
 
 // Normaliser to suit UI table display
 const normaliseQuestionForTable = (question, sectionNumber = null) => ({
