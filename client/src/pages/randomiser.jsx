@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Table, Card, Space, Typography } from "antd";
-import { shuffleAnswers } from "../store/exam/examSlice"; // Your existing reducer
+import { regenerateShuffleMaps } from "../store/exam/examSlice"; // Your existing reducer
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 
 const { Title, Text } = Typography;
@@ -19,7 +19,7 @@ const Randomiser = () => {
             return;
         }
         
-        dispatch(shuffleAnswers()); // Using your existing reducer
+        dispatch(regenerateShuffleMaps()); // Using your existing reducer
         //setHasShuffled(true);
     };
 

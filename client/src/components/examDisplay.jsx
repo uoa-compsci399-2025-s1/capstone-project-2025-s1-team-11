@@ -24,6 +24,7 @@ const ExamDisplay = () => {
     const questionData = {
       contentText: 'New Question',
       answers: ['Answer 1', 'Answer 2', 'Answer 3', 'Answer 4', 'Answer 5'],
+      marks: 1,
     };
         
     dispatch(addQuestion({ questionData })); 
@@ -54,7 +55,7 @@ const ExamDisplay = () => {
       title: 'Answers',
       dataIndex: 'answers',
       key: 'answers',
-      render: (answers) => answers.join(', '),
+      render: (answers) => answers.map(a => a?.contentText || '').join(', '),
     },
   ];
 
@@ -74,48 +75,5 @@ const ExamDisplay = () => {
   );
 };
 
-  // if (!exam) {
-  //   return <div>No exam loaded.</div>;
-  // }
-//   return (
-//     <div>
-//       {exam && (
-//         <Card
-//           title={exam.examTitle}
-//           extra={<span>Course: {exam.courseName} ({exam.semester} {exam.year})</span>}
-//           style={{ marginTop: 24 }}
-//         >
-//           <Typography.Title level={3} style={{ margin: 0, paddingBottom: 8 }}>
-//             Questions:
-//           </Typography.Title>
-//           <Table
-//             const questions = useSelector(selectQuestionsForTable);
-//             dataSource={exam.examBody.flatMap(section =>
-//               section.questions.map((q, index) => ({
-//                 key: q.questionNumber, // Use `questionNumber` for the key
-//                 number: index + 1,
-//                 questionText: q.questionText,
-//                 marks: q.marks,  // Marks per question
-//                 answer: q.answers.join(', '),  // Join all possible answers
-//               }))
-//             )}
-//             columns={[
-//               { title: "#", dataIndex: "number", key: "number" },
-//               { title: "Question", dataIndex: "questionText", key: "questionText" },
-//               { title: "Marks", dataIndex: "marks", key: "marks" },
-//               { title: "Answer Options", dataIndex: "answer", key: "answer" },
-//             ]}
-//             pagination={false}
-//           />
-//         </Card>
-//       )}
-//       <Space style={{ marginTop: "16px" }}>
-//         <Button type="dashed" onClick={handleAddQuestion}>
-//           Add Question
-//         </Button>
-//       </Space>
-//     </div>
-//   );
-// };
 
 export default ExamDisplay;

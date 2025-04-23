@@ -57,20 +57,9 @@ export const createSection = ({
 export const createQuestion = ({
   questionNumber = null, 
   marks = null, 
-  answers = ['', '', '', '', ''],
-  correctAnswers = [1, 0, 0, 0, 0], 
-  // [1, 0, 0, 0, 0] indicates answer only at answers[0] is correct
-  lockedPositionsMap = [ -1, -1, -1, -1, -1], 
-  // [ -1, -1, -1, -1, 0] indicates answer[0] ('a') always maps to index 4 ('e') even after shuffling
-  answerShuffleMaps = [
-      [0, 1, 2, 3, 4],
-      [0, 1, 2, 3, 4],
-      [0, 1, 2, 3, 4],
-      [0, 1, 2, 3, 4],
-  ],
-  // e.g. [1, 2, 3, 4, 0],... answer[0] (original 'a') to appear at index 4 (now 'e'), 
-  // and answer[1] (original 'b') to appear at index 0 (now 'a').
+  answers = [],
   contentText = '',
+  // shuffle map is created and managed by reducers
   ...overrides
 } = {}) => ({
   ...createExamComponent({
@@ -81,8 +70,21 @@ export const createQuestion = ({
   questionNumber,
   marks,
   answers,
-  correctAnswers,
-  lockedPositionsMap,
-  answerShuffleMaps,
 })
 
+export const createAnswer = ({
+  type = 'answer',
+  content = '', // for images and formatted text
+  contentText = '',
+  correct = false,
+  fixedPosition = null, // null means "not fixed"
+  //feedback = '', if other than "incorrect" desired
+  //note = '', e.g. "trick", "common mistake"
+  ...overrides
+} = {}) => ({
+  content,
+  contentText,
+  correct,
+  fixedPosition,
+  ...overrides,
+});

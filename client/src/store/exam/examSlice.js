@@ -5,16 +5,18 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { 
   createExam, 
+  createExamComponent,
   createSection, 
   createQuestion,
-  createExamComponent,
+  createAnswer,
 } from './examUtils';
 
 import {
-  updateQuestionHelper,
   removeQuestionHelper,
   renumberQuestions,
   renumberSections,
+  normaliseAnswersToLength,
+  normaliseAnswersPerTeleformOptions,
 } from './examHelpers';
 
 const initialState = {
@@ -43,25 +45,46 @@ const examSlice = createSlice({
       state.examData.examBody.push(newSection);
       renumberSections(state.examData.examBody);
     },
-    
-    // Add a question to end of section at examBody index otherwise end of examBody
+
     addQuestion: (state, action) => {
-      const { examBodyIndex, questionData } = action.payload; 
-      //examBodyIndex is optional, for when adding to existing section
-      const newQuestion = createQuestion(questionData);
-      const examBody = state.examData?.examBody;
+      const { examBodyIndex, questionData } = action.payload;
+      const examData = state.examData;
+      if (!examData) return;
+    
+      const examBody = examData.examBody;
+      const versionCount = examData.versions.length;
+      const optionCount = examData.teleformOptions.length;
+      
+      const rawAnswers = questionData.answers || [];
+      let answers = rawAnswers.map((ans, idx) =>
+        createAnswer(
+          typeof ans === 'string'
+            ? { contentText: ans, correct: idx === 0 }
+            : { ...ans, correct: idx === 0 }
+        )
+      );
 
-      if (!examBody) return;
+      const normalisedAnswers = normaliseAnswersToLength(answers, optionCount);
 
-      if (examBody[examBodyIndex]) {
-        const target = examBody[examBodyIndex];
-        if (target.type === 'section') {
-          target.questions.push(newQuestion);
-        }
+      const newQuestion = createQuestion({
+        ...questionData,
+        answers: normalisedAnswers,
+      });
+    
+      // Create default (non-shuffled) answerShuffleMaps
+      newQuestion.answerShuffleMaps = Array.from({ length: versionCount }, () =>
+        [...Array(optionCount).keys()]
+      );
+    
+      // Add question to examBody or a section
+      if (examBodyIndex != null && examBody[examBodyIndex]?.type === 'section') {
+        examBody[examBodyIndex].questions.push(newQuestion);
       } else {
         examBody.push(newQuestion);
       }
-      renumberQuestions(state.examData.examBody);
+    
+      // Update numbering
+      renumberQuestions(examBody);
     },
 
     setCoverPage: (state, action) => {
@@ -85,18 +108,27 @@ const examSlice = createSlice({
       if (!state.examData) return;
       state.examData.appendix = null;
     },
-
+    //update-question 0 0 "answers" "1|4|5"
     updateQuestion: (state, action) => {
       if (!state.examData.examBody) return;
       const { location, newData } = action.payload;
-      const { examBodyIndex, sectionIndex } = location;
+      const { examBodyIndex, questionsIndex } = location;
+      const optionsCount = state.examData.teleformOptions.length;
       const container = state.examData.examBody?.[examBodyIndex];
       if (!container) return;
     
-      if (sectionIndex !== undefined && container.type === 'section') {
-        Object.assign(container.questions[sectionIndex], newData);
+      if (questionsIndex !== undefined && container.type === 'section') {
+        const question = container.questions[questionsIndex]
+        //Object.assign(container.questions[questionsIndex], newData);
+        Object.assign(question, newData);
+        if (optionsCount !== question.answers.length) {
+          question.answers = normaliseAnswersToLength(question.answers, optionCount);
+        }
       } else if (container.type === 'question') {
         Object.assign(container, newData);
+        if (optionsCount !== container.answers.length) {
+          container.answers = normaliseAnswersToLength(container.answers, optionsCount);
+        }
       }
     },
 
@@ -110,33 +142,40 @@ const examSlice = createSlice({
 
     moveQuestion: (state, action) => {
       const { source, destination } = action.payload;
-      // expects { source: {examBodyIndex, questionsIndex}, destination {examBodyIndex, questionIndex} }
-      // questionsIndex only required when moving from or to a section.
       const examBody = state.examData?.examBody;
       if (!examBody) return;
+    
+      // Cache source and destination references early
+      const sourceIsInSection = 'questionsIndex' in source;
+      const destIsInSection = 'questionsIndex' in destination;
+    
+      const sourceSection = sourceIsInSection ? examBody[source.examBodyIndex] : null;
+      const destSection = destIsInSection ? examBody[destination.examBodyIndex] : null;
+    
+      // Store question to move
       let questionToMove;
-
-      if ('questionsIndex' in source) {
-        // Implies source question is in a section
-        const sourceSection = examBody[source.examBodyIndex];
-        if (sourceSection?.type === 'section') {
-          questionToMove = sourceSection.questions.splice(source.questionsIndex, 1)[0];
-        }
+      if (sourceIsInSection && sourceSection?.type === 'section') {
+        questionToMove = sourceSection.questions[source.questionsIndex];
       } else {
-        questionToMove = examBody.splice(source.examBodyIndex, 1)[0];
+        questionToMove = examBody[source.examBodyIndex];
       }
-
+    
       if (!questionToMove) return;
-
-      if ('questionsIndex' in destination) {
-        // Implies destination is a section
-        const destSection = examBody[destination.examBodyIndex];
-        if (destSection?.type === 'section') {
-          destSection.questions.splice(destination.questionsIndex, 0, questionToMove);
-        }
+    
+      // First, safely remove the question
+      if (sourceIsInSection && sourceSection?.type === 'section') {
+        sourceSection.questions.splice(source.questionsIndex, 1);
+      } else {
+        examBody.splice(source.examBodyIndex, 1);
+      }
+    
+      // Then insert it at destination
+      if (destIsInSection && destSection?.type === 'section') {
+        destSection.questions.splice(destination.questionsIndex, 0, questionToMove);
       } else {
         examBody.splice(destination.examBodyIndex, 0, questionToMove);
       }
+    
       renumberQuestions(state.examData.examBody);
     },
 
@@ -162,7 +201,7 @@ const examSlice = createSlice({
     removeQuestion: (state, action) => {
       // Payload should be examBodyIndex of section to remove
       if (!state.examData.examBody) return;
-      removeQuestionHelper(state, action.payload);
+      removeQuestionHelper(state.examData.examBody, action.payload);
       renumberQuestions(state.examData.examBody);
     },
 
@@ -190,65 +229,70 @@ const examSlice = createSlice({
       // Payload should be an array of option identifiers 'i.' or 'a)' etc. 
       if (!state.examData) return;
       state.examData.teleformOptions = action.payload;
+      normaliseAnswersPerTeleformOptions(state.examData);
     },
 
     // Generate answer shuffling for all questions
-    shuffleAnswers: (state) => {
+    regenerateShuffleMaps: (state) => {
       if (!state.examData) return;
-      
-      // Process exam body items (both sections and directly included questions)
-      state.examData.examBody.forEach(item => {
+    
+      const versionCount = state.examData.versions?.length || 0;
+    
+      const shuffleInPlace = (arr) => {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+      };
+    
+      const generateShuffleMap = (answers) => {
+        //fixedPostion should describe where the current answer falls in the output
+        const count = answers.length;
+        const fixed = {};
+        const movable = [];
+    
+        answers.forEach((ans, i) => {
+          if (
+            ans.fixedPosition !== null &&
+            ans.fixedPosition >= 0 &&
+            ans.fixedPosition < count
+          ) {
+            fixed[i] = ans.fixedPosition;
+          } else {
+            movable.push(i);
+            if (ans.fixedPosition >= count) {
+              ans.fixedPosition = null;  //Reset fixedPosition if beyond answers.length
+            }
+          }
+        });
+    
+        shuffleInPlace(movable);
+    
+        const result = new Array(count).fill(null);
+        let m = 0;
+        for (let i = 0; i < count; i++) {
+          result[i] = fixed[i] !== undefined ? fixed[i] : movable[m++];
+        }
+        return result;
+      };
+    
+      const processQuestion = (question) => {
+        if (!question.answers || !Array.isArray(question.answers)) return;
+    
+        question.answerShuffleMaps = Array.from({ length: versionCount }, () =>
+          generateShuffleMap(question.answers)
+        );
+      };
+    
+      state.examData.examBody.forEach((item) => {
         if (item.type === 'section') {
-          // Handle questions inside sections
-          item.questions.forEach(question => {
-            shuffleQuestionAnswers(question, state.examData.versions.length);
-          });
+          item.questions.forEach(processQuestion);
         } else if (item.type === 'question') {
-          // Handle questions directly in exam body
-          shuffleQuestionAnswers(item, state.examData.versions.length);
+          processQuestion(item);
         }
       });
-      
-      // Helper function to shuffle a single question's answers
-      function shuffleQuestionAnswers(question, versionCount) {
-        // Create a shuffle map for each version
-        question.answerShuffleMaps = Array(versionCount).fill().map(() => {
-          // Start with original order [0,1,2,3,4]
-          const shuffled = [0, 1, 2, 3, 4];
-          
-          // Get positions that can be shuffled (those with -1 in lockedPositionsMap)
-          const shufflableIndices = [];
-          for (let i = 0; i < shuffled.length; i++) {
-            if (question.lockedPositionsMap[i] === -1) {
-              shufflableIndices.push(i);
-            }
-          }
-          
-          // Shuffle only the positions that can be shuffled
-          for (let i = shufflableIndices.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            const indexI = shufflableIndices[i];
-            const indexJ = shufflableIndices[j];
-            [shuffled[indexI], shuffled[indexJ]] = [shuffled[indexJ], shuffled[indexI]];
-          }
-          
-          // Make sure locked positions are enforced
-          question.lockedPositionsMap.forEach((fixedPos, idx) => {
-            if (fixedPos !== -1) {
-              // If this position should be fixed to a specific place
-              const currentPos = shuffled.indexOf(idx);
-              if (currentPos !== fixedPos) {
-                // Swap to put it in the correct position
-                [shuffled[fixedPos], shuffled[currentPos]] = [shuffled[currentPos], shuffled[fixedPos]];
-              }
-            }
-          });
-          
-          return shuffled;
-        });
-      }
     },
-
+    
     importExamFromJSON: (state, action) => {
       state.examData = action.payload;
     },
@@ -277,32 +321,9 @@ export const {
   updateExamMetadata,
   setExamVersions,
   setTeleformOptions,
-  shuffleAnswers,
+  regenerateShuffleMaps,
   importExamFromJSON,
 } = examSlice.actions;
 
 // Export reducer
 export default examSlice.reducer;
-
-// Selectors
-// export const selectCurrentExam = (state) => state.exam.currentExam;
-// export const selectSavedExams = (state) => state.exam.savedExams;
-// export const selectExamHistory = (state) => state.exam.examHistory;
-
-// export const selectExamSections = (state) => 
-//   state.exam.currentExam?.examBody.filter(item => item.type === 'Section') || [];
-
-// export const selectSectionQuestions = (state, sectionIndex) => 
-//   state.exam.currentExam?.examBody[sectionIndex]?.questions || [];
-
-// export const selectQuestionCount = (state) => {
-//   let count = 0;
-//   state.exam.currentExam?.examBody.forEach(section => {
-//     if (section.type === 'Section') {
-//       count += section.questions.length;
-//     }
-//   });
-//   return count;
-// };
-//
-// export const selectExamVersions = (state) => state.exam?.versions || [];
