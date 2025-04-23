@@ -89,7 +89,7 @@ export const selectQuestionsForTable = createSelector(
         result.push(normaliseQuestionForTable(item, null));
       } else if (item.type === 'section') {
         item.questions?.forEach((q, i) => {
-          result.push(normaliseQuestionForTable(q, item.sectionNo, i));
+          result.push(normaliseQuestionForTable(q, item.sectionNumber, i));
         });
       }
     });
