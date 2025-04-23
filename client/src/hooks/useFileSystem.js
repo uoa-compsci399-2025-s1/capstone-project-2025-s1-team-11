@@ -1,16 +1,27 @@
 // src/hooks/useFileSystem.js
-import { useExam } from "./useExam.js";
-import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
-import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
+import { useDispatch, useSelector } from 'react-redux';
+import { createNewExam, clearExam } from '../store/exam/examSlice'; // Or whatever action sets exam
+import { selectExamData } from '../store/exam/selectors';
+import { openExamFile, saveExamToFile } from '../services/fileSystemAccess.js';
+// import { importExamFromXMLtoJSON } from '../services/xmlToJsonExamImporter.js'; // or examImportService
+
+import { useState } from 'react'; // for local fileHandle if not stored in Redux
+
+
 
 export function useFileSystem() {
-    const { exam, setExam, fileHandle, setFileHandle } = useExam();
+    const dispatch = useDispatch();
+    const exam = useSelector(selectExamData);
+
+    const [fileHandle, setFileHandle] = useState(null); // or move this into Redux
 
     // Opens the exam file and updates the global state
     const openExam = async () => {
         const result = await openExamFile();
+
+        //fromJSON?
         if (result) {
-            setExam(result.exam);
+            dispatch(createNewExam(result.exam)); // replace with your actual action
             setFileHandle(result.fileHandle);
         }
         return result;
@@ -25,18 +36,20 @@ export function useFileSystem() {
     };
 
     // Imports the exam from an XML file using a Promise wrapper
+    // Based on initial XML tests - not for actual Coderunner XML's
     const importExam = async (file) => {
-        return new Promise((resolve, reject) => {
-            importExamFromXMLtoJSON(file, (err, importedExam) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    setExam(importedExam);
-                    setFileHandle(null); // imported exam is not associated with a file handle
-                    resolve(importedExam);
-                }
-            });
-        });
+        return;
+        // return new Promise((resolve, reject) => {
+        //     importExamFromXMLtoJSON(file, (err, importedExam) => {
+        //         if (err) {
+        //             reject(err);
+        //         } else {
+        //             dispatch(createNewExam(importedExam))
+        //             setFileHandle(null); // imported exam is not associated with a file handle
+        //             resolve(importedExam);
+        //         }
+        //     });
+        // });
     };
 
     return { exam, fileHandle, openExam, saveExam, importExam };

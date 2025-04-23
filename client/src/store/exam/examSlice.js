@@ -1,4 +1,7 @@
 // examSlice.js
+// To do: 
+// Add contentText <-> contentFormatted link function
+
 import { createSlice } from '@reduxjs/toolkit';
 import { 
   createExam, 
@@ -26,9 +29,8 @@ const examSlice = createSlice({
   reducers: {
     createNewExam: (state, action) => {
       if (state.examData) return;
-      //state.examData = createExam(...action.payload);
-      const { examTitle, courseCode, courseName, semester, year } = action.payload;
-      state.examData = createExam(examTitle, courseCode, courseName, semester, year);
+      // Typical payload: { examTitle, courseCode, courseName, semester, year }
+      state.examData = createExam(action.payload || {});
     },
 
     clearExam: (state) => {
@@ -85,9 +87,17 @@ const examSlice = createSlice({
     },
 
     updateQuestion: (state, action) => {
+      if (!state.examData.examBody) return;
       const { location, newData } = action.payload;
-      if (!state.examData) return;
-      updateQuestionHelper(state, location, newData);
+      const { examBodyIndex, sectionIndex } = location;
+      const container = state.examData.examBody?.[examBodyIndex];
+      if (!container) return;
+    
+      if (sectionIndex !== undefined && container.type === 'section') {
+        Object.assign(container.questions[sectionIndex], newData);
+      } else if (container.type === 'question') {
+        Object.assign(container, newData);
+      }
     },
 
     updateSection: (state, action) => {
@@ -97,18 +107,6 @@ const examSlice = createSlice({
         Object.assign(section, newData);
       }
     },
-
-    // moveQuestionToSection: (state, action) => {
-    //   const { fromIndex, toIndex } = action.payload;
-    //   const examBody = state.examData?.examBody;
-    //   if (!examBody) return;
-    //   const [question] = examBody.splice(fromIndex, 1);
-    //   const section = examBody[toIndex];
-    //   if (question && section?.type === 'section') {
-    //     section.questions.push(question);
-    //   }
-    //   renumberQuestions(state.examData.examBody);
-    // },
 
     moveQuestion: (state, action) => {
       const { source, destination } = action.payload;
@@ -163,7 +161,7 @@ const examSlice = createSlice({
 
     removeQuestion: (state, action) => {
       // Payload should be examBodyIndex of section to remove
-      if (!state.examData) return;
+      if (!state.examData.examBody) return;
       removeQuestionHelper(state, action.payload);
       renumberQuestions(state.examData.examBody);
     },
@@ -197,24 +195,58 @@ const examSlice = createSlice({
     // Generate answer shuffling for all questions
     shuffleAnswers: (state) => {
       if (!state.examData) return;
-      state.examData.examBody.forEach(section => {
-        if (section.type === 'section') {
-          section.questions.forEach(question => {
-            question.answerShuffleMap = Array(4).fill().map(() => {
-              const shuffled = [0, 1, 2, 3, 4].sort(() => Math.random() - 0.5);
-              question.lockedPositionsMap.forEach((pos, idx) => {
-                if (pos !== -1) {
-                  const currentPos = shuffled.indexOf(idx);
-                  if (currentPos !== pos) {
-                    [shuffled[pos], shuffled[currentPos]] = [shuffled[currentPos], shuffled[pos]];
-                  }
-                }
-              });
-              return shuffled;
-            });
+      
+      // Process exam body items (both sections and directly included questions)
+      state.examData.examBody.forEach(item => {
+        if (item.type === 'section') {
+          // Handle questions inside sections
+          item.questions.forEach(question => {
+            shuffleQuestionAnswers(question, state.examData.versions.length);
           });
+        } else if (item.type === 'question') {
+          // Handle questions directly in exam body
+          shuffleQuestionAnswers(item, state.examData.versions.length);
         }
       });
+      
+      // Helper function to shuffle a single question's answers
+      function shuffleQuestionAnswers(question, versionCount) {
+        // Create a shuffle map for each version
+        question.answerShuffleMaps = Array(versionCount).fill().map(() => {
+          // Start with original order [0,1,2,3,4]
+          const shuffled = [0, 1, 2, 3, 4];
+          
+          // Get positions that can be shuffled (those with -1 in lockedPositionsMap)
+          const shufflableIndices = [];
+          for (let i = 0; i < shuffled.length; i++) {
+            if (question.lockedPositionsMap[i] === -1) {
+              shufflableIndices.push(i);
+            }
+          }
+          
+          // Shuffle only the positions that can be shuffled
+          for (let i = shufflableIndices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const indexI = shufflableIndices[i];
+            const indexJ = shufflableIndices[j];
+            [shuffled[indexI], shuffled[indexJ]] = [shuffled[indexJ], shuffled[indexI]];
+          }
+          
+          // Make sure locked positions are enforced
+          question.lockedPositionsMap.forEach((fixedPos, idx) => {
+            if (fixedPos !== -1) {
+              // If this position should be fixed to a specific place
+              const currentPos = shuffled.indexOf(idx);
+              if (currentPos !== fixedPos) {
+                // Swap to put it in the correct position
+                [shuffled[fixedPos], shuffled[currentPos]] = [shuffled[currentPos], shuffled[fixedPos]];
+              }
+            }
+          });
+          
+          return shuffled;
+        });
+      }
     },
 
     importExamFromJSON: (state, action) => {
