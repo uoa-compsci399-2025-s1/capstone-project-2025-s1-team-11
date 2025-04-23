@@ -1,5 +1,5 @@
-﻿import { parseDocxBuffer } from '../../parsers/docxParser.js';
-import { buildDocxDTO } from '../docxDTO.js';
+﻿import { parseDocxBuffer } from '../../parsers/docxParserOLD.js';
+import { buildDocxDTO } from '../docxDTOOLD.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -29,8 +29,14 @@ describe('DOCX to DTO integration', () => {
         expect(dto).toBeDefined();
         expect(dto.questions).toBeInstanceOf(Array);
         expect(dto.questions.length).toBeGreaterThan(0);
-        expect(dto.questions[0]).toHaveProperty('id');
-        expect(dto.questions[0]).toHaveProperty('content');
-        expect(dto.questions[0].options).toBeInstanceOf(Array);
+
+        const q0 = dto.questions[0];
+        expect(q0).toHaveProperty('questionNo');
+        expect(q0).toHaveProperty('questionText');
+        expect(q0).toHaveProperty('answers');
+        expect(q0.answers).toBeInstanceOf(Array);
+        expect(q0.answers.length).toBeGreaterThan(0);
+        expect(q0.correctAnswers).toBeInstanceOf(Array);
+        expect(q0.correctAnswers.filter(x => x === 1).length).toBe(1);
     });
 });

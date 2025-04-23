@@ -2,93 +2,197 @@
 
 /**
  * Walks the parsed XML docx structure and builds a DTO.
- * Uses bookmarks, soft/hard breaks, and image detection.
+ * Uses bookmarks, soft/hard breaks, image detection, and section grouping.
  *
  * @param {object} doc - Parsed document.xml
  * @param {object} rels - Parsed document.xml.rels
- * @param {JSZip} zip - Zip instance for image extraction
+ * @param {import('jszip')} zip - JSZip instance for image extraction
  * @returns {Promise<object>} JSON DTO
  */
 export async function buildDocxDTOFromXml(doc, rels, zip) {
-    const body = doc['w:document']['w:body']['w:p'] || [];
-    const relationships = rels['Relationships']['Relationship'] || [];
+    const body = doc["w:document"]["w:body"]["w:p"] || [];
+    const relationships = rels["Relationships"]["Relationship"] || [];
     const relMap = Object.fromEntries(
-        relationships.map(r => [r['@_Id'], r['@_Target']])
+        relationships.map((r) => [r["@_Id"], r["@_Target"]])
     );
 
-    const questions = [];
+    const examBody = [];
+    let currentSection = null;
+    let sectionContent = [];
+
     let currentQuestion = null;
-    let buffer = [];
+    let inQuestion = false;
+    let sawQuestionText = false;
 
     for (const p of body) {
-        const runs = Array.isArray(p['w:r']) ? p['w:r'] : [p['w:r']];
-        const text = runs.map(r => (r?.['w:t'] ?? '')).join('').trim();
-
-        const hasBookmark = p['w:bookmarkStart'] || (Array.isArray(p['w:bookmarkStart']) && p['w:bookmarkStart'].length);
-        const isLikelyQuestionStart = /^\[\d+ mark/i.test(text);
-
-        if (hasBookmark || isLikelyQuestionStart) {
+        // 1) Detect section break
+        const isSectionBreak = !!p["w:pPr"]?.["w:sectPr"];
+        if (isSectionBreak) {
             if (currentQuestion) {
-                finalizeXmlQuestion(currentQuestion, buffer);
-                questions.push(currentQuestion);
+                finalizeXmlQuestion(currentQuestion);
+                if (!currentSection) {
+                    currentSection = {
+                        type: "section",
+                        sectionTitle: null,
+                        content: "",
+                        questions: [],
+                    };
+                }
+                currentSection.questions.push(currentQuestion);
+                currentQuestion = null;
             }
-            currentQuestion = {
-                sectionNo: null,
-                questionNo: questions.length + 1,
-                questionText: '',
-                supplementalHtml: '',
-                marks: 1,
-                answers: [],
-                correctAnswers: []
+            if (currentSection) {
+                currentSection.content = sectionContent.join("");
+                examBody.push(currentSection);
+            }
+            currentSection = {
+                type: "section",
+                sectionTitle: null,
+                content: "",
+                questions: [],
             };
-            buffer = [];
-        }
-
-        // Extract inline images if present
-        const imgTag = await extractImageFromParagraph(p, relMap, zip);
-        if (imgTag) {
-            buffer.push(imgTag);
+            sectionContent = [];
+            inQuestion = false;
+            sawQuestionText = false;
             continue;
         }
 
-        if (text) {
-            buffer.push(`<p>${text}</p>`);
+        // 2) Extract inline image if any
+        const imgTag = await extractImageFromParagraph(p, relMap, zip);
+
+        // 3) Extract text + <br> markers
+        const runs = Array.isArray(p["w:r"])
+            ? p["w:r"]
+            : p["w:r"]
+                ? [p["w:r"]]
+                : [];
+        const extractText = (r) => {
+            if (!r) return "";
+            const parts = [];
+            if (r["w:t"]) {
+                parts.push(
+                    typeof r["w:t"] === "string" ? r["w:t"] : r["w:t"]["#text"]
+                );
+            }
+            if ("w:br" in r) {
+                parts.push("<br>");
+            }
+            return parts.join("");
+        };
+        const rawText = runs.map(extractText).join("").trim();
+        const html = rawText ? `<p>${rawText}</p>` : null;
+
+        // 4) Detect question start by bookmark or “[n mark]”
+        const isBookmark = !!p["w:bookmarkStart"];
+        const markMatch = rawText.match(/\[(\d+)\s*mark/i);
+        const isQuestionStart = isBookmark || !!markMatch;
+
+        if (isQuestionStart) {
+            if (currentQuestion) {
+                finalizeXmlQuestion(currentQuestion);
+                if (!currentSection) {
+                    currentSection = {
+                        type: "section",
+                        sectionTitle: null,
+                        content: "",
+                        questions: [],
+                    };
+                }
+                currentSection.questions.push(currentQuestion);
+            }
+
+            const marks = markMatch ? parseInt(markMatch[1], 10) : 1;
+            currentQuestion = {
+                type: "question",
+                questionText: "",
+                supplementalHtml: "",
+                marks,
+                answers: [],
+                correctAnswers: [],
+            };
+            inQuestion = true;
+            sawQuestionText = false;
+        }
+
+        // 5) Route into question or section
+        if (inQuestion) {
+            if (!sawQuestionText) {
+                if (imgTag) {
+                    currentQuestion.supplementalHtml += imgTag;
+                } else if (html) {
+                    currentQuestion.questionText = html;
+                    sawQuestionText = true;
+                }
+            } else {
+                if (imgTag) {
+                    currentQuestion.answers.push(imgTag);
+                } else if (html) {
+                    currentQuestion.answers.push(html);
+                }
+            }
+        } else {
+            if (imgTag) {
+                sectionContent.push(imgTag);
+            } else if (html) {
+                sectionContent.push(html);
+            }
         }
     }
 
+    // 6) Finalize last question & section
     if (currentQuestion) {
-        finalizeXmlQuestion(currentQuestion, buffer);
-        questions.push(currentQuestion);
+        finalizeXmlQuestion(currentQuestion);
+        if (!currentSection) {
+            currentSection = {
+                type: "section",
+                sectionTitle: null,
+                content: "",
+                questions: [],
+            };
+        }
+        currentSection.questions.push(currentQuestion);
+    }
+
+    if (currentSection) {
+        currentSection.content = sectionContent.join("");
+        examBody.push(currentSection);
     }
 
     return {
-        title: 'Imported DOCX Exam',
-        date: new Date().toISOString().split('T')[0],
-        questions,
+        title: "Imported DOCX Exam",
+        date: new Date().toISOString().split("T")[0],
+        examBody,
     };
 }
 
-function finalizeXmlQuestion(question, buffer) {
-    question.questionText = buffer[0] || '';
-    question.answers = buffer.slice(1, 6);
-    while (question.answers.length < 5) {
-        question.answers.push('');
-    }
-    const last = question.answers.length - 1;
-    const isAllOrNone = /(all|none).*above/i.test(question.answers[last]);
-    question.correctAnswers = question.answers.map((_, i) => (isAllOrNone ? i === last : i === 0 ? 1 : 0));
+function finalizeXmlQuestion(q) {
+    q.answers = q.answers.slice(0, 5);
+    while (q.answers.length < 5) q.answers.push("");
+    const lastIdx = q.answers.length - 1;
+    const lastLower = q.answers[lastIdx].toLowerCase();
+    const allOrNone = /(all|none).*above|none of the options/.test(lastLower);
+    q.correctAnswers = q.answers.map((_, i) =>
+        allOrNone ? i === lastIdx : i === 0 ? 1 : 0
+    );
 }
 
 async function extractImageFromParagraph(p, relMap, zip) {
-    const drawing = p['w:r']?.['w:drawing'] ?? p['w:drawing'];
-    const blip = drawing?.['wp:inline']?.['a:graphic']?.['a:graphicData']?.['pic:pic']?.['pic:blipFill']?.['a:blip'];
-    const rId = blip?.['@_r:embed'];
+    const drawing = p["w:r"]?.["w:drawing"] ?? p["w:drawing"];
+    const blip =
+        drawing?.["wp:inline"]?.["a:graphic"]?.["a:graphicData"]?.["pic:pic"]?.[
+            "pic:blipFill"
+            ]?.["a:blip"];
+    const rId = blip?.["@_r:embed"];
     if (!rId || !relMap[rId]) return null;
 
-    const imgPath = 'word/' + relMap[rId];
-    const ext = imgPath.split('.').pop();
-    const mime = ext === 'png' ? 'image/png' : ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'application/octet-stream';
-    const base64 = await zip.file(imgPath).async('base64');
-
-    return `<img src="data:${mime};base64,${base64}" />`;
+    const imgPath = "word/" + relMap[rId];
+    const ext = imgPath.split(".").pop().toLowerCase();
+    const mime =
+        ext === "png"
+            ? "image/png"
+            : ext === "jpg" || ext === "jpeg"
+                ? "image/jpeg"
+                : "application/octet-stream";
+    const base64 = await zip.file(imgPath).async("base64");
+    return `<img src="data:${mime};base64,${base64}" alt="Embedded image"/>`;
 }

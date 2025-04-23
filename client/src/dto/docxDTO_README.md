@@ -8,8 +8,8 @@ This module provides functionality to import `.docx` exam files, extract structu
 
 | File                                | Purpose                                                         |
 |-------------------------------------|-----------------------------------------------------------------|
-| `src/parsers/docxParser.js`         | Converts `.docx` files to HTML and parses into a DOM tree       |
-| `src/dto/docxDTO.js`                | Walks the DOM tree and builds a structured JSON DTO             |
+| `src/parsers/docxParserOLD.js`         | Converts `.docx` files to HTML and parses into a DOM tree       |
+| `src/dto/docxDTOOLD.js`                | Walks the DOM tree and builds a structured JSON DTO             |
 | `scripts/logDocxDTO.js`             | CLI script to preview the output DTO from a sample .docx file   |
 | `src/dto/__tests__/docxDTO.test.js` | Jest test to verify structure and parsing results               |
 
@@ -17,10 +17,11 @@ This module provides functionality to import `.docx` exam files, extract structu
 
 ## Prerequisites
 
-Install required packages:
+Install required packages: probably removing mammoth actually
 
 ```bash
 npm install mammoth jsdom
+npm install adm-zip fast-xml-parser
 ```
 
 ---

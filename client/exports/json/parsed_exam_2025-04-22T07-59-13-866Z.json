@@ -1,0 +1,935 @@
+{
+  "title": "Imported DOCX Exam",
+  "date": "2025-04-22",
+  "examBody": [
+    {
+      "type": "section",
+      "sectionTitle": null,
+      "content": "",
+      "questions": [
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Considerthefollowingclass:<br>public class Singleton {<br>private static Singleton instance = null;<br>public static Singleton getInstance() {<br>if (instance == null)<br>instance = new Singleton();<br>return instance;<br>}<br>private Singleton() {  }<br>…<br>How to create an instance of the Singleton class?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>Singleton s =Singleton.getInstance();</p>",
+            "<p>Singleton s = newSingleton();</p>",
+            "<p>Singleton s = newSingleton.getInstance();</p>",
+            "<p>Singleton s =setInstance();</p>",
+            "<p>Singleton s =getInstance(Singleton);</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Which of the following statementsistrue?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>A class variable of a class is shared by all of its instances.</p>",
+            "<p>An instance variable of a class is shared by all of its subclasses.</p>",
+            "<p>A class method of a class can be inherited by all of its superclasses.</p>",
+            "<p>A class variable of a class can be inherited by all of its superclasses.</p>",
+            "<p>All statements are TRUE.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]In UML the third box of a class representation normally contains _________.</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>the names of operations that can be performed</p>",
+            "<p>name of the class</p>",
+            "<p>name of attributes of the class</p>",
+            "<p>name of the package</p>",
+            "<p>name of the interface</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Inheritance explains that a class can have all the features of another class called the ____ part and can also have its own features, called the _________.</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>parent, derived part</p>",
+            "<p>super, normative part</p>",
+            "<p>derived, incremental part</p>",
+            "<p>derived, super class</p>",
+            "<p>normal, super part</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Inheritance is an implementation of the _________ relationship.</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>generalization</p>",
+            "<p>aggregation</p>",
+            "<p>accumulation</p>",
+            "<p>composition</p>",
+            "<p>none of the others</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Which kinds of variables are used tohold information that generallyapplicable to all instances of the class?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>Classvariable</p>",
+            "<p>Globalvariable</p>",
+            "<p>Temporaryvariable</p>",
+            "<p>Instancevariable</p>",
+            "<p>Localvariable</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Invokingsuper.move()is another way of saying</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>start looking for the move method in the next class higher up.</p>",
+            "<p>use the move method from the current class you’re in.</p>",
+            "<p>start looking for the move method in a class that is two classes above.</p>",
+            "<p>start looking for the method in the class you’re in, then look for the method in the class that is higher in the hierarchy.</p>",
+            "<p>start looking for the move method one class down.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Polymorphism is defined as...</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>overloading methods in a super class.</p>",
+            "<p>objects responding to the same message (method name) in different ways.</p>",
+            "<p>a logical representation of the problem.</p>",
+            "<p>when a subclass has access to methods in the superclass.</p>",
+            "<p>when a superclass has access to methods in the subclass.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Which of the following statements isFALSE?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>A class may extend several classes (Multiple inheritance) forming a new class.</p>",
+            "<p>An object is always passed by reference to a method.</p>",
+            "<p>A static method may be called without reference to aninstance of the class.</p>",
+            "<p>An array is always passed by reference to a method.</p>",
+            "<p>You can override a base class method in a derived class.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Which of the following statements isTRUE?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>From a constructor you can call the classes superclass constructor.</p>",
+            "<p>A constructor is inherited.</p>",
+            "<p>A class must have a public constructor.</p>",
+            "<p>The garbage collector is used to get rid of program errors.</p>",
+            "<p>You can place any subclass constructor code ahead of its superclass constructor call.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]A use case models the ____________between a system and the environment in which the information system operates.</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>relationship</p>",
+            "<p>interaction</p>",
+            "<p>choices</p>",
+            "<p>current environment</p>",
+            "<p>behaviours</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Given the following code:<br>public interface AQuestion{<br>public abstract void someMethod();<br>}<br>A Class implementing this interface</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>should havesomeMethodwhich must necessarily be public.</p>",
+            "<p>shouldNecessarily be an abstract class.</p>",
+            "<p>should have the methodpublicabstract void someMethod();</p>",
+            "<p>should have the methodpublic int someMethod()</p>",
+            "<p>should have the methodvoid someMethod()which could be protected.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Considerthe following two classes:<br>package p1;<br>public class Protection {<br>int n_default = 1;<br>}<br><br>package p2;<br>class P2Derived extends p1.Protection {<br>public void method() {<br>System.out.println(\"n_default=\" + n_default);<br>}<br>public static void main(String[] args) {<br>P2Derived b = new P2Derived();<br>b.method();<br>}<br>}<br>What will happen when you attempt to compile and run the main methodofP2Derivedclass?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>CompileTime error</p>",
+            "<p>Output:1</p>",
+            "<p>Runtime error</p>",
+            "<p>Unknown</p>",
+            "<p>Output:0</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Sequence diagrams:<br>i.show a succession of interactions over time.<br>ii.illustrate processing described in use case scenarios.<br>iii.are derived from use case analysis.<br>iv.show relationship between classes</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>i, ii and iii</p>",
+            "<p>ionly</p>",
+            "<p>ii and iii</p>",
+            "<p>iv only</p>",
+            "<p>iand iv</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]An inner class created inside a method can access<br>i.any local variables of a method that contain an inner class.<br>ii.any instance variables of the enclosing class<br>iiiany final variables of the enclosing class or a method that contain an inner class.</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>ii and iii</p>",
+            "<p>i only</p>",
+            "<p>ii only</p>",
+            "<p>iii only</p>",
+            "<p>i, ii, and iii</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Considerthe followingclasses:<br>interface A {<br>String s1 = \"A\";<br>String m1();<br>}<br>interface B implements A {<br>String s1 = \"B\";<br>String m1();<br>}<br>class C implements B {<br>public String m1() {return s1;}<br>public static void main(String[] args) {<br>A a = new C();<br>System.out.print(a.m1());<br>}<br>}<br>What is the result of attempting to compile and run the program?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>Output: A</p>",
+            "<p>Output: B</p>",
+            "<p>Compile-time error.</p>",
+            "<p>Run-time error.</p>",
+            "<p>None of the others.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "sectionTitle": null,
+      "content": "<p>The following THREE questions are based on the following UML</p><p><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></p>",
+      "questions": [
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Considerthe following codefragment:<br>BeachBarbie bb = new BeachBarbie(“Susan”, “Half Moon Bay”);<br>bb.move();<br>Which of the following statementsistrue?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>It will usemove() fromBarbie.</p>",
+            "<p>This code will break; sinceBeachBarbiehas no move method.</p>",
+            "<p>It will usemove() fromBeachBarbie.</p>",
+            "<p>It will usemove() fromRobot.</p>",
+            "<p>None of theothers.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Which of the following code isavalid constructor of theSportyBarbieclass?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>public SportyBarbie(String name, String sport){super(name);<br>this.sportName = sport;<br>}<br></p>",
+            "<p>public SporytBarbie(String name)  {super(sport); }</p>",
+            "<p>public SportyBarbie(String name, String sport){super();<br>this.sportName = sport;<br>}<br></p>",
+            "<p>public SportyBarbie(String name, String sport){this.sportName = sport;<br>super(name);<br>}<br></p>",
+            "<p>public SporytBarbie(String name)  { this.sportName = sport;}</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]What will happen when you attempt to compile and run the following code fragment?<br>Barbie b = new ClubBarbie();<br>b.passOut();</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>Compile time error.</p>",
+            "<p>Compiled successfully and executed the passOut method ofClubBarbie.</p>",
+            "<p>Runtime error; sinceBeachBarbiehas no passOut method</p>",
+            "<p>Unknown.</p>",
+            "<p>Compiled successfully and executed the passOut method ofBarbie.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "sectionTitle": null,
+      "content": "<p>The followingFOURquestions are based on the following classes.</p><p>class A {</p><p>protected int count;</p><p>protected static int i = 1;</p><p>public A() {</p><p>count = i++;</p><p>}</p><p>public String getString() {</p><p>return \"a\"+count;</p><p>}</p><p>public void n() {}</p><p>}</p><p>class B extends A {</p><p>public String getString() {</p><p>return super.getString()+\"b\";</p><p>}</p><p>public void j() {}</p><p>}</p><p>class C extends A {</p><p>public String getString() {</p><p>return super.getString()+\"c\";</p><p>}</p><p>public void k() {}</p><p>}</p><p>public class Q1 {</p><p>public static void main(String[] args) {</p><p>A a1 = new A();</p><p>B b1 = new B();</p><p>C c1 = new C();</p><p>A d1 = c1;</p><p>...</p><p>}</p><p>}</p>",
+      "questions": [
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]What is the output of the following statement?<br>System.out.println(b1.getString());</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>a2b</p>",
+            "<p>a1b</p>",
+            "<p>a0b</p>",
+            "<p>ab</p>",
+            "<p>b</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]What is the output of the following statement?<br>System.out.println(d1.getString());</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>a3c</p>",
+            "<p>a1bc</p>",
+            "<p>a0bc</p>",
+            "<p>c</p>",
+            "<p>a3bc</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[2 marks]Which of the following statements, when added to the bottom of the main method, would be ILLEGAL at COMPILE-time?</p>",
+          "supplementalHtml": "",
+          "marks": 2,
+          "answers": [
+            "<p>b1= (A) b1;</p>",
+            "<p>a1 = b1;</p>",
+            "<p>b1 = (B) a1;</p>",
+            "<p>a1 = c1;</p>",
+            "<p>c1 = (C) a1;</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[2 marks]Which of the following statements, when added to the bottom of the main method, would be LEGAL at COMPILE-time?</p>",
+          "supplementalHtml": "",
+          "marks": 2,
+          "answers": [
+            "<p>((B)a1).j();</p>",
+            "<p>((C)a1).j().k();</p>",
+            "<p>B(a1).k();</p>",
+            "<p>((B)a1).k();</p>",
+            "<p>((A)a1).j();</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "sectionTitle": null,
+      "content": "",
+      "questions": [
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Consider the following string representing an URL: “”. Which of the following statements is TRUE?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>“www.acme.com” represents thehostpart</p>",
+            "<p>“games.html” represents theprotocolpart</p>",
+            "<p>“ref” represents thereferencepart</p>",
+            "<p>“DOWNLOAD” represents thefilepart</p>",
+            "<p>“8080” represent the IP number</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[2 marks] Consider the following code snippet from a Client that uses anUrlConnection:<br>URL yahoo = new URL(\"http://www.yahoo.com/default.html\");<br>URLConnection yc = yahoo.openConnection();<br>BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));<br>Which of the following statements is FALSE?</p>",
+          "supplementalHtml": "",
+          "marks": 2,
+          "answers": [
+            "<p>yahoo.openConnection()downloadsthe HTML page referred to by the givenURL</p>",
+            "<p>yc.getInputStream()returns an input byte stream that reads from the yc connection</p>",
+            "<p>newInputStreamReader(…)buildsa bridge from byte streams to character streams</p>",
+            "<p>newBufferedReader(…)buildsan efficient reader of characters and lines</p>",
+            "<p>yahoo.openConnection()buildsa connection to the remote service referred to by the givenURL</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[2 marks]Consider the following fragments of an HTTP request/response pair:<br>GET /test.htm HTTP/1.1<br>User-Agent: Mozilla/4.0 (…)<br>Host: localhost:8090<br><br>HTTP/1.1 200 OK<br>Server: ASP.NET Development Server/9.0.0.0<br>Date: Thu, 10 Oct 2008 05:08:50 GMT<br>Content-Type: text/html<br>Content-Length: 109<br><br><html><br><head><title>TEST</title></head><br><body><br><h1>This is</h1><br><h2>a text file.</h2><br></body><br></html><br>Which of the following statements is TRUE?</p>",
+          "supplementalHtml": "",
+          "marks": 2,
+          "answers": [
+            "<p>Content-Length: 109 indicates the length of the <html> … </html> payload</p>",
+            "<p>HTTP/1.1 200 OK indicates a server error with code 200</p>",
+            "<p>Content-Length: 109 indicates the longest URL acceptable to this server</p>",
+            "<p>User-Agent: Mozilla/4.0 (…) indicates a download request of the Mozilla/4.0 HTML page</p>",
+            "<p>GET /test.htm HTTP/1.1 indicates an HTTP POST request to update the test.htm page</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Whichof the following statements is FALSE?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>ServerSocket.accept()automatically forks a new Thread</p>",
+            "<p>ServerSocket.accept()blocks until a connection is made</p>",
+            "<p>ServerSocket.accept()returns a Socket</p>",
+            "<p>newServerSocket(4444)createsa server socket, bound to port 4444</p>",
+            "<p>newSocket(“www.acme.com”, 4444)creates a client socketand connects it to port 4444 on host “www.acme.com</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Which of the following statements is FALSE?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>Runnable class implements Thread interface</p>",
+            "<p>Every Runnable object has a run() method</p>",
+            "<p>Every Thread object has a run() method</p>",
+            "<p>Threads can have names, returned by the getName() method</p>",
+            "<p>A Thread’s sleep period can be interrupted</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Which of the following statements is FALSE?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>new Thread.run()starts executing the task indicated by Thread’s own start()</p>",
+            "<p>new Thread().start();starts executing the task indicated by Thread’s own run()</p>",
+            "<p>new Thread(runnable).start();starts executing the task indicated byrunnable’s run()</p>",
+            "<p>Executor.execute(runnable)will executerunnable’s run(), sometime in the future</p>",
+            "<p>Executors.newFixedThreadPool(10)createsa thread pool that reuses 10 threads</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Which of the following statements is FALSE?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>A SwingWorker’s process() method is run by a background thread</p>",
+            "<p>A SwingWorker’s done() method is run by the GUI thread</p>",
+            "<p>A SwingWorker’s process() method receives one or more chunks send by the publish() method</p>",
+            "<p>A SwingWorker’s doInBackground() method can explicitly override, by @Override, the corresponding method from the superclass</p>",
+            "<p>The GUI cannot be directly updated by code in SwingWorker’s doInBackground() method</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Which of the following tasks would you typically assign to the GUI thread?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>Display a message box</p>",
+            "<p>Number crunching code</p>",
+            "<p>Perform IO via sockets</p>",
+            "<p>Execute SQL database operations</p>",
+            "<p>Loading large files</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]Consider an integer counter C, with initial value 20, and three threads updating it, roughly at the same time, in a context without any kind of mutual exclusion: (1) thread #1 will run the code C = C + 10; (2) thread #2 will run the code C = C + 10; (3) thread #3 will run the code C = C - 10. Which of the following statements is FALSE?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>The final value of C can be 50</p>",
+            "<p>The final value of C can be 40</p>",
+            "<p>The final value of C can be 30</p>",
+            "<p>The final value of C can be 20</p>",
+            "<p>The final value of C can be 10</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[1 mark]How does BlockingQueue handle operations that cannot be immediately satisfied? Whichof the following statements isFALSE?</p>",
+          "supplementalHtml": "",
+          "marks": 1,
+          "answers": [
+            "<p>By changing the thread status to daemon</p>",
+            "<p>By throwing an exception</p>",
+            "<p>By returning a special value (boolean or null)</p>",
+            "<p>By blocking indefinitely until the operation can succeed</p>",
+            "<p>By blocking for a given time limit before giving up and returning a special value</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[2 marks] Which of the following statements is TRUE?</p>",
+          "supplementalHtml": "",
+          "marks": 2,
+          "answers": [
+            "<p>A critical region protected bysynchronizedstatements provides only one waiting queue for all threads</p>",
+            "<p>A critical region protected by an explicit Lock, such a RentrantLock, provides only one waiting queue for all threads</p>",
+            "<p>Concurrency management withsynchronizedstatements is the most efficient in all contention scenarios</p>",
+            "<p>Concurrency management with explicit Locks, such as RentrantLock, is the most efficient in all low contention scenarios</p>",
+            "<p>Optimistic concurrency management with compareAndSet is the most efficient in all high contention scenarios</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "sectionTitle": null,
+      "content": "<p>Use the data model below forthe following TWO questions:</p><p>Figure 1 – Entity Relationship Diagram</p>",
+      "questions": [
+        {
+          "type": "question",
+          "questionText": "<p>[3marks]The ERD presented in Figure 1 corresponds in the relational model to amaximumof:</p>",
+          "supplementalHtml": "",
+          "marks": 3,
+          "answers": [
+            "<p>11 Tables, 11 Entity constraints, 10 Referential integrity constraints</p>",
+            "<p>10 Tables, 10 Entity constraints, 5 Referential integrity constraints</p>",
+            "<p>7 Tables, 7 Entity constraints, 6 Referential integrity constraints</p>",
+            "<p>10 Tables, 10 Entity constraints, 9 Referential integrity constraints</p>",
+            "<p>None of the other answers are correct.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[3 marks]The ERD presented in Figure 1 corresponds in the relational model to aminimumof:</p>",
+          "supplementalHtml": "",
+          "marks": 3,
+          "answers": [
+            "<p>5 Tables, 5 Entity constraints, 4 Referential integrity constraints</p>",
+            "<p>6 Tables, 6 Entity constraints, 5 Referential integrity constraints</p>",
+            "<p>6 Tables, 6 Entity constraints, 6 Referential integrity constraints</p>",
+            "<p>7 Tables, 7 Entity constraints, 6 Referential integrity constraints</p>",
+            "<p>None of the other answers are correct.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[3marks]What is the ER diagram that best represents the situation detailed below?Architects Inc. would like to store information about its branches, clients, client projects, and staff. The company has numerous branches, specialising in different types Architecture (e.g. Interior, Landscape, Architectural Engineering, Environmental Design), and on every branch both administrative staff and architects work. Only architects can be allocated to client projects. Architects also specialise in one or more types of Architecture, and therefore can only be allocated to client projects within their area(s) of specialisation. A Branch can also only look after client projects in its area(s) of specialisation. The information about staffs’ dependents is also stored, and only a single staff is associated to a dependent.<br><br>Architects can work concurrently in no more than seven client projects; however junior architects can only work on a single project at a time. Senior architects can be allocated to as many client projects as necessary.</p>",
+          "supplementalHtml": "",
+          "marks": 3,
+          "answers": [
+            "<p><br></p>",
+            "<p><br></p>",
+            "<p><br></p>",
+            "<p><br></p>",
+            "<p>None of the otherdiagramsare correct</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "sectionTitle": null,
+      "content": "<p>The followingFOURquestionsare all based on the following three tables:</p><p>Staff table</p><p>Primary key for staff is StaffID</p><p>Primary key for project is ProjID</p><p>Primary key for</p><p>staffproject is StaffID + ProjID + DateWorked</p>",
+      "questions": [
+        {
+          "type": "question",
+          "questionText": "<p>[3 marks]What is the SQL statement that answers the following question: What are the full names of those staff who work in the project “Yellow Submarine”?</p>",
+          "supplementalHtml": "",
+          "marks": 3,
+          "answers": [
+            "<p>Select distinct Forename, Surname From staff, project, staffprojectWhere StaffID = StaffID AND  ProjID = ProjID AND  Description = “Yellow Submarine”</p>",
+            "<p>Select distinct Forename, Surname  From staff, project, staffprojectW<br>here StaffID = staffproject.StaffID AND ProjID = staffproject.ProjID AND<br>Description = “Yellow Submarine”</p>",
+            "<p>Select distinct Forename, Surname From staff, project, staffprojectWhere staff.StaffID = staffproject.StaffID AND  project.ProjID = staffproject.ProjID AND<br>project.Description = “Yellow Submarine”</p>",
+            "<p>Select *  From staff, project, staffprojectW<br>here StaffID = staffproject.StaffID AND  ProjID = staffproject.ProjID AND Description = “Yellow Submarine”</p>",
+            "<p>None ofthe other answers are correct</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[3marks]What is the SQL statement which generates the following output?<br></p>",
+          "supplementalHtml": "",
+          "marks": 3,
+          "answers": [
+            "<p>Select ProjID, Description, StaffID, nHours<br>From project, staffproject<br>Where ProjID = staffproject.ProjID</p>",
+            "<p>Select project.ProjID, Description, StaffID, nHours<br>From project, staffproject<br>Where project.ProjID = staffproject.ProjID</p>",
+            "<p>Select StaffID, Description, ProjID, nHours<br>From project, staffproject<br>Where project.ProjID = staffproject.ProjID</p>",
+            "<p>Select project.ProjID, Description, StaffID, nHours<br>From project, staffproject<br>Where ProjID = staffproject.ProjID</p>",
+            "<p>None ofthe other answers are correct</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[2 marks]Given the following Java application<br>import java.sql.*;<br>public class ExamJDBC1 {<br>public static void main(String args[]) {<br>String username = \"username1\";<br>String password = \"password\";<br>String url = \"jdbc:mysql://localhost/Database\";<br>ResultSet result, result1;<br>try {<br>Class.forName(\"com.mysql.jdbc.Driver\");<br>System.out.println(\"Driver loaded\");<br>}<br>catch (Exception E) {<br>System.err.println(\"Unable to load driver.\");<br>E.printStackTrace();<br>}<br>try {<br>Connection conn = DriverManager.getConnection<br>(url, username, password);<br>Statement stmt= conn.createStatement();<br>result1 = stmt.executeQuery(\"SELECT distinct * FROM staffproject<br>WHERE nHours > 5 AND nHours < 11 \");<br>ResultSetMetaData  metaData = result1.getMetaData();<br>int columnCount = metaData.getColumnCount();<br>for (int i=1; i<=columnCount; i++) {<br>if (i > 1) System.out.print('\\t');<br>System.out.print(metaData.getColumnLabel(i));<br>}<br>System.out.println();<br>result = stmt.executeQuery(\"SELECT distinct * FROM staffproject<br>WHERE nHours > 6 AND nHours < 11 \");<br>while (result.next()) {<br>for (int i=1; i<= columnCount; i++) {<br>if (i>1) System.out.print('\\t');<br>System.out.print(result.getString(i));<br>}<br>System.out.println();<br>}<br>result.close();<br>conn.close();<br>}<br>catch (SQLException E) {<br>System.out.println(\"SQLException: \" + E.getMessage());<br>System.out.println(\"SQLState:     \" + E.getSQLState());<br>System.out.println(\"VendorError:  \" + E.getErrorCode());<br>}<br>}<br>}<br>The Java application displays _______ rows from its result set:</p>",
+          "supplementalHtml": "",
+          "marks": 2,
+          "answers": [
+            "<p>7 rows</p>",
+            "<p>16 rows</p>",
+            "<p>12 rows</p>",
+            "<p>9 rows</p>",
+            "<p>None of the other answers are correct.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[2 marks]_______________________ is a feature provided by Relational Database Management Systems that stops users or applications from entering inconsistent data representing the relationship between two Entity Types (note: one Entity type, although not common, is also applicable here):</p>",
+          "supplementalHtml": "",
+          "marks": 2,
+          "answers": [
+            "<p>Referential Integrity constraint</p>",
+            "<p>Entity Integrity constraint</p>",
+            "<p>Reciprocity Integrity constraint</p>",
+            "<p>Primarily key constraint</p>",
+            "<p>None of the other answers are correct.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[2 marks]If you doNOTwish to use a pre-compiled SQL statement or stored procedures, which of the following statement type should be used?</p>",
+          "supplementalHtml": "",
+          "marks": 2,
+          "answers": [
+            "<p>Statement</p>",
+            "<p>CallableStatement</p>",
+            "<p>PreparedStatement</p>",
+            "<p>ContentiousStatement</p>",
+            "<p>None of the other answers are correct.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "question",
+          "questionText": "<p>[2 marks]What method shouldNEVERbe used if you are expecting to obtain a ResultSet as the result of executing an SQL statement?</p>",
+          "supplementalHtml": "",
+          "marks": 2,
+          "answers": [
+            "<p>executeUpdate()</p>",
+            "<p>executeQuery()</p>",
+            "<p>execute()</p>",
+            "<p>executeInsert()</p>",
+            "<p>None of the other answers are correct.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "sectionTitle": null,
+      "content": "<p>Given the following Java application<br>import java.sql.*;<br>public class ExamJDBC2 {<br>public static void main(String args[]) {<br>String username = \"username\";<br>String password = \"pass\";<br>String url = \"jdbc:mysql://localhost/Pets\";<br>ResultSet result, result1;<br>try {<br>Class.forName(\"com.mysql.jdbc.Driver\");<br>System.out.println(\"Driver loaded\");<br>}catch (Exception E) {<br>System.err.println(\"Unable to load driver.\");<br>E.printStackTrace();<br>}<br>try {<br>Connection conn = DriverManager.getConnection<br>(url, username, password);<br>Statement stmt= conn.createStatement();<br>result = stmt.executeQuery(\"SELECT * FROM staff\");<br>result = stmt.executeQuery(\"SELECT * FROM staffproject\");<br>result = stmt.executeQuery(\"SELECT * FROM project\");<br>ResultSetMetaData  metaData = result.getMetaData();<br>int columnCount = metaData.getColumnCount();<br>for (int i=1; i<=columnCount; i++) {<br>if (i > 1) System.out.print('\\t');<br>System.out.print(metaData.getColumnLabel(i));<br>}<br>System.out.println();<br>result = stmt.executeQuery(\"SELECT * FROM staff\");<br>result1 = stmt.executeQuery(\"SELECT * FROM staff\");<br>while (result.next()) {<br>for (int i=1; i<= columnCount; i++) {<br>if (i>1) System.out.print('\\t');<br>System.out.print(result.getString(i));<br>}<br>System.out.println();<br>}<br>result.close();<br>conn.close();<br>}catch (SQLException E) {<br>System.out.println(\"SQLException: \" + E.getMessage());<br>System.out.println(\"SQLState:     \" + E.getSQLState());<br>System.out.println(\"VendorError:  \" + E.getErrorCode());<br>}<br>}<br>}</p>",
+      "questions": [
+        {
+          "type": "question",
+          "questionText": "<p>[3marks]What is the output generated by the execution of thecode?</p>",
+          "supplementalHtml": "",
+          "marks": 3,
+          "answers": [
+            "<p><br></p>",
+            "<p><br></p>",
+            "<p><br></p>",
+            "<p><br></p>",
+            "<p>None of the other answers are correct.</p>"
+          ],
+          "correctAnswers": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  ]
+}

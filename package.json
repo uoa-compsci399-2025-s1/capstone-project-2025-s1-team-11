@@ -1,5 +1,9 @@
 {
   "dependencies": {
-    "antd": "^5.24.7"
+    "adm-zip": "^0.5.16",
+    "antd": "^5.24.7",
+    "fast-xml-parser": "^5.2.0",
+    "fs-extra": "^11.3.0",
+    "jszip": "^3.10.1"
   }
 }
