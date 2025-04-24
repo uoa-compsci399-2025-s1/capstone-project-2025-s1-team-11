@@ -19,7 +19,10 @@ export function Navigation() {
                         <Button type="text" style={{ borderRadius: 0, color: "#fff", fontWeight: 500 }}>MCQ Automarker</Button>
                     </NavLink>
                     <NavLink to="/console" end>
-                        <Button type="text" style={{ borderRadius: 0, color: "#fff", fontWeight: 500 }}>Test Console</Button>
+                        <Button type="text" style={{ borderRadius: 0, color: "#fff", fontWeight: 500 }}>Dev Console</Button>
+                    </NavLink>
+                    <NavLink to="/marking" end>
+                        <Button type="text" style={{ borderRadius: 0, color: "#fff", fontWeight: 500 }}>Dev Marking</Button>
                     </NavLink>
                 </Space>
                 <NavLink to="/documentation" end>
