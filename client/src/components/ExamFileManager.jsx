@@ -137,7 +137,6 @@ const ExamFileManager = ({ onExamLoaded }) => {
 
   return (
     <div style={{ padding: "24px", background: "#fff" }}>
-      <Typography.Title level={4} style={{ marginBottom: 0 }}>Exam File Manager</Typography.Title>
       {error && <p style={{ color: "red" }}>{error}</p>}
       {showSuccessAlert && (
         <Alert
