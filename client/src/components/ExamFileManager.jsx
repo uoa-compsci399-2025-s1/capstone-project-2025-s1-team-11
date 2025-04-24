@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { importExamFromJSON } from "../store/exam/examSlice";
+import { importExamFromJSON, clearExam } from "../store/exam/examSlice";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
 import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
 import { Button, Alert, Space, Typography, Modal, Input, message, Card } from "antd";
@@ -28,6 +28,8 @@ const ExamFileManager = ({ onExamLoaded }) => {
     metadataKey: '',
     metadataValue: ''
   });
+
+  const [isClearModalVisible, setIsClearModalVisible] = useState(false);
 
   // Open a JSON exam file
   const handleOpenExam = async () => {
@@ -179,7 +181,9 @@ const ExamFileManager = ({ onExamLoaded }) => {
               Create New Exam
             </Button>
           </Space>
-
+          <Button danger onClick={() => setIsClearModalVisible(true)}>
+            Clear Exam
+          </Button>
         </Space>
       </Card>
       {/* Modal for creating a new exam */}
@@ -306,6 +310,20 @@ const ExamFileManager = ({ onExamLoaded }) => {
           placeholder="Metadata Value (optional)"
           style={{ marginBottom: 16 }}
         />
+      </Modal>
+      <Modal
+        open={isClearModalVisible}
+        title="Are you sure you want to clear the exam?"
+        onOk={() => {
+          dispatch(clearExam());
+          setIsClearModalVisible(false);
+          message.success("Exam cleared");
+        }}
+        onCancel={() => setIsClearModalVisible(false)}
+        okText="Yes, clear it"
+        cancelText="Cancel"
+      >
+        <p>This action cannot be undone.</p>
       </Modal>
     </div>
   );
