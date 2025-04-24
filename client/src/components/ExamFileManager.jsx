@@ -297,6 +297,7 @@ const ExamFileManager = ({ onExamLoaded }) => {
           placeholder="Teleform Options (comma-separated)"
           style={{ marginBottom: 16 }}
         />
+        {/** 
         <Typography.Title level={5}>Metadata</Typography.Title>
         <Typography.Text strong>Key</Typography.Text>
         <Input
@@ -312,6 +313,7 @@ const ExamFileManager = ({ onExamLoaded }) => {
           placeholder="Metadata Value (optional)"
           style={{ marginBottom: 16 }}
         />
+*/}
       </Modal>
       <Modal
         open={isClearModalVisible}
