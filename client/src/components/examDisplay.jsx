@@ -70,11 +70,23 @@ const ExamDisplay = () => {
         (entry.questions || []).forEach((q) => {
           items.push({
             ...q,
-            section: entry.title,
+            type: "question",
+            section: entry.sectionTitle,
+            questionText: q.questionText || q.contentText,
+            options: q.options || (q.answers || []).map(a => a.contentText),
+            correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
           });
         });
+        
       } else if (type === "question") {
-        items.push(entry);
+        items.push({
+          ...entry,
+          type: "question",
+          questionText: entry.questionText || entry.contentText,
+          options: entry.options || (entry.answers || []).map(a => a.contentText),
+          correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
+        });
+      
       } else {
         console.warn(" Unknown item type:", entry);
       }
