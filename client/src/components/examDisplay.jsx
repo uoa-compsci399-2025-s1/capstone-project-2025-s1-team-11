@@ -7,8 +7,10 @@ import {
   removeQuestion,
   removeSection,
   updateQuestion,
-  updateSection
-} from "../store/exam/examSlice"; // adjust path if needed
+  updateSection,
+  moveQuestion,
+  moveSection // added this
+} from "../store/exam/examSlice";
 import 'quill/dist/quill.snow.css';
 import {
   DndContext,
@@ -50,6 +52,36 @@ const ExamDisplay = () => {
     questionsIndex: null,
     isSection: false,
   });
+
+  //  move handler function
+  const handleMove = (direction, examBodyIndex, questionsIndex = null) => {
+    const newIndex = (questionsIndex !== null && questionsIndex !== undefined)
+      ? questionsIndex + direction
+      : examBodyIndex + direction;
+
+    if (questionsIndex !== null && questionsIndex !== undefined) {
+      // Moving a question inside a section
+      dispatch(moveQuestion({
+        source: { examBodyIndex, questionsIndex },
+        destination: { examBodyIndex, questionsIndex: newIndex },
+      }));
+    } else {
+      const examBody = exam.examBody;
+      if (!examBody) return;
+
+      const currentItem = examBody[examBodyIndex];
+      const isSection = currentItem?.type === 'section';
+
+      if (isSection) {
+        dispatch(moveSection({ sourceIndex: examBodyIndex, destIndex: newIndex }));
+      } else {
+        dispatch(moveQuestion({
+          source: { examBodyIndex },
+          destination: { examBodyIndex: newIndex },
+        }));
+      }
+    }
+  };
 
   useEffect(() => {
     if (!Array.isArray(exam?.examBody)) {
@@ -296,6 +328,32 @@ const ExamDisplay = () => {
                 <>
                   <Button size="small" onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>
                     Edit
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={() =>
+                      handleMove(-1, record.examBodyIndex, record.questionsIndex)
+                    }
+                    disabled={record.questionsIndex !== undefined
+                      ? record.questionsIndex === 0
+                      : record.examBodyIndex === 0}
+                    style={{ marginRight: 4 }}
+                  >
+                    ↑
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={() =>
+                      handleMove(1, record.examBodyIndex, record.questionsIndex)
+                    }
+                    disabled={
+                      record.questionsIndex !== undefined
+                        ? record.questionsIndex === exam.examBody[record.examBodyIndex]?.questions.length - 1
+                        : record.examBodyIndex === exam.examBody.length - 1
+                    }
+                    style={{ marginRight: 8 }}
+                  >
+                    ↓
                   </Button>
                   <Button
                     size="small"
