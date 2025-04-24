@@ -277,7 +277,15 @@ const ExamDisplay = () => {
                   <Button size="small" onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>
                     Edit
                   </Button>
-                  <Button size="small" danger onClick={() => handleDeleteItem(record.examBodyIndex, record.questionsIndex)}>
+                  <Button
+                    size="small"
+                    danger
+                    onClick={() =>
+                      record.type === "question"
+                        ? handleDeleteItem(record.examBodyIndex, record.questionsIndex)
+                        : handleDeleteItem(record.examBodyIndex)
+                    }
+                  >
                     Delete
                   </Button>
                 </>
