@@ -44,6 +44,13 @@ const ExamDisplay = () => {
     item: null,
   });
 
+  const [deleteModalState, setDeleteModalState] = useState({
+    visible: false,
+    examBodyIndex: null,
+    questionsIndex: null,
+    isSection: false,
+  });
+
   useEffect(() => {
     if (!Array.isArray(exam?.examBody)) {
       console.warn(" examBody is not an array or missing:", exam?.examBody);
@@ -153,14 +160,26 @@ const ExamDisplay = () => {
     setEditModal({ visible: false, type: "", item: null });
   };
   
-  
-
-  const handleDeleteItem = (examBodyIndex, questionsIndex = null) => {
+  const confirmDeleteItem = (examBodyIndex, questionsIndex = null) => {
     const entry = exam?.examBody?.[examBodyIndex];
     if (!entry) {
       console.warn("No entry found at examBodyIndex:", examBodyIndex);
       return;
     }
+
+    const isSection = questionsIndex === null && entry.type === "section";
+
+    setDeleteModalState({
+      visible: true,
+      examBodyIndex,
+      questionsIndex,
+      isSection,
+    });
+  };
+
+  const executeDeleteItem = () => {
+    const { examBodyIndex, questionsIndex, isSection } = deleteModalState;
+    const entry = exam?.examBody?.[examBodyIndex];
 
     if (questionsIndex !== null && questionsIndex !== undefined) {
       dispatch(removeQuestion({ examBodyIndex, questionsIndex }));
@@ -168,8 +187,9 @@ const ExamDisplay = () => {
       dispatch(removeQuestion({ examBodyIndex }));
     } else if (entry.type === "section") {
       dispatch(removeSection(examBodyIndex));
-    } else {
     }
+
+    setDeleteModalState({ visible: false, examBodyIndex: null, questionsIndex: null, isSection: false });
   };
   
   if (!exam || !Array.isArray(exam.examBody)) {
@@ -282,8 +302,8 @@ const ExamDisplay = () => {
                     danger
                     onClick={() =>
                       record.type === "question"
-                        ? handleDeleteItem(record.examBodyIndex, record.questionsIndex)
-                        : handleDeleteItem(record.examBodyIndex)
+                        ? confirmDeleteItem(record.examBodyIndex, record.questionsIndex)
+                        : confirmDeleteItem(record.examBodyIndex)
                     }
                   >
                     Delete
@@ -414,6 +434,22 @@ const ExamDisplay = () => {
             />
           </>
         )}
+      </Modal>
+
+      <Modal
+        open={deleteModalState.visible}
+        title={deleteModalState.isSection ? "Delete Section and All Its Questions?" : "Delete Question?"}
+        onOk={executeDeleteItem}
+        onCancel={() => setDeleteModalState({ visible: false, examBodyIndex: null, questionsIndex: null, isSection: false })}
+        okText="Yes, delete"
+        cancelText="Cancel"
+        okButtonProps={{ danger: true }}
+      >
+        <p>
+          {deleteModalState.isSection
+            ? "This will permanently remove the section and all its contained questions. This cannot be undone."
+            : "This will permanently remove the question. This cannot be undone."}
+        </p>
       </Modal>
     </div>
   );
