@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Button, Typography, Modal, Input, Card, message, Table } from "antd";
+import React, { useState, useEffect } from "react";
+import { Button, Typography, Modal, Input, message, Table } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addSection,
@@ -27,10 +27,9 @@ const { TextArea } = Input;
 
 
 const ExamDisplay = () => {
-  console.log("ExamDisplay mounted");
   const exam = useSelector((state) => state.exam.examData);
   useEffect(() => {
-    console.log("💡 useEffect triggered, examData now:", exam);
+    // Debugging purpose only
   }, [exam]);
   const [examItems, setExamItems] = useState([]);
   const [activeItemId, setActiveItemId] = useState(null);
@@ -46,9 +45,6 @@ const ExamDisplay = () => {
   });
 
   useEffect(() => {
-    console.log(" exam:", exam);
-    console.log(" examBody:", Array.isArray(exam?.examBody) ? exam.examBody : "Not an array");
-
     if (!Array.isArray(exam?.examBody)) {
       console.warn(" examBody is not an array or missing:", exam?.examBody);
       return;
@@ -92,24 +88,8 @@ const ExamDisplay = () => {
       }
     });
 
-    console.log(" Parsed examItems:", items);
     setExamItems(items);
-    console.log(" Final examItems length:", items.length);
-    if (items.length === 0) {
-      console.warn(" No items parsed from examBody:", exam.examBody);
-    }
   }, [exam]);
-
-  const questionIndexes = useMemo(() => {
-    const indexes = {};
-    let count = 0;
-    examItems.forEach(item => {
-      if (item.type === 'question') {
-        indexes[item.id] = ++count;
-      }
-    });
-    return indexes;
-  }, [examItems]);
 
   const handleEdit = (item) => {
     setEditModal({
@@ -120,7 +100,6 @@ const ExamDisplay = () => {
   };
 
   const handleSaveEdit = () => {
-    console.log("saving edit for:", editModal);
     const { type, item } = editModal;
   
     let examBodyIndex = -1;
@@ -177,17 +156,19 @@ const ExamDisplay = () => {
   
 
   const handleDeleteItem = (examBodyIndex, questionsIndex = null) => {
-    console.log("Deleting:", { examBodyIndex, questionsIndex });
+    const entry = exam?.examBody?.[examBodyIndex];
+    if (!entry) {
+      console.warn("No entry found at examBodyIndex:", examBodyIndex);
+      return;
+    }
+
     if (questionsIndex !== null && questionsIndex !== undefined) {
       dispatch(removeQuestion({ examBodyIndex, questionsIndex }));
+    } else if (entry.type === "question") {
+      dispatch(removeQuestion({ examBodyIndex }));
+    } else if (entry.type === "section") {
+      dispatch(removeSection(examBodyIndex));
     } else {
-      const entry = exam?.examBody?.[examBodyIndex];
-      if (!entry) return;
-      if (entry.type === "section") {
-        dispatch(removeSection(examBodyIndex));
-      } else {
-        dispatch(removeQuestion({ examBodyIndex }));
-      }
     }
   };
   

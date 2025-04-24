@@ -30,16 +30,15 @@ import { createAnswer } from "./examUtils";
  * Removes a question from examBody at the given location using the new location format.
  * Mutates the original examBody.
  */
-export const removeQuestionHelper = (state, location) => {
+export const removeQuestionHelper = (examBody, location) => {
   const { examBodyIndex, questionsIndex } = location;
-  const examBody = state.examData?.examBody;
-  if (!examBody || typeof examBodyIndex !== "number") return;
+  const container = examBody?.[examBodyIndex];
 
-  const target = examBody[examBodyIndex];
+  if (!container) return;
 
-  if (target.type === "section" && typeof questionsIndex === "number") {
-    target.questions.splice(questionsIndex, 1);
-  } else if (target.type === "question") {
+  if (container.type === "section" && typeof questionsIndex === "number") {
+    container.questions?.splice(questionsIndex, 1);
+  } else if (container.type === "question") {
     examBody.splice(examBodyIndex, 1);
   }
 };
