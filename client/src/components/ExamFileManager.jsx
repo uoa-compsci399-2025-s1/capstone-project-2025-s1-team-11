@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { importExamFromJSON, clearExam } from "../store/exam/examSlice";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
 import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
-import { Button, Alert, Space, Typography, Modal, Input, message, Card } from "antd";
+import { Button, Alert, Space, Typography, Modal, Input, message, Card, Divider } from "antd";
 
 const ExamFileManager = ({ onExamLoaded }) => {
   console.log(" ExamFileManager rendered");
@@ -136,7 +136,8 @@ const ExamFileManager = ({ onExamLoaded }) => {
   };
 
   return (
-    <div>
+    <div style={{ padding: "24px", background: "#fff" }}>
+      <Typography.Title level={4} style={{ marginBottom: 0 }}>Exam File Manager</Typography.Title>
       {error && <p style={{ color: "red" }}>{error}</p>}
       {showSuccessAlert && (
         <Alert
@@ -156,13 +157,15 @@ const ExamFileManager = ({ onExamLoaded }) => {
           </Button>
         </Space>
       )}
-      <Card title="File Management" style={{ marginTop: 24 }}>
-        <Space direction="vertical" style={{ width: "100%" }}>
+      <Card style={{ marginTop: 24 }}>
+        <Space wrap style={{ width: "100%", justifyContent: "space-between" }}>
           <Space wrap>
             <Button onClick={async () => {
               await handleOpenExam();
               setFileOptionsOpen(false);
-            }}>Open Exam (JSON)</Button>
+            }}>
+              Open Exam (JSON)
+            </Button>
             <Button>
               <label style={{ cursor: "pointer", marginBottom: 0 }}>
                 Import from XML
