@@ -45,7 +45,7 @@ const Builder = () => {
                 {(currentStep) => renderStageContent(currentStep)}
             </MCQBuilderProgressWrapper>
         </>
-
+/*
         //Check Changes
 import { useDispatch, useSelector } from 'react-redux';
 import { createNewExam } from "../store/exam/examSlice.js";
@@ -68,7 +68,7 @@ const Builder = () => {
         )}
         <ExamFileManager />
       </div>
+          */
     );
   };
-  
   export default Builder;

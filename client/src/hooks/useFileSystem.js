@@ -18,7 +18,6 @@ export function useFileSystem() {
     }
 
     //Check changes...
-    const { exam, setExam, fileHandle, setFileHandle } = examContext;
     const dispatch = useDispatch();
     const exam = useSelector(selectExamData);
 
