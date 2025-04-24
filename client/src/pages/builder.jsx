@@ -1,12 +1,14 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
-import { Typography } from "antd";
+import { Typography, Button } from "antd";
 
 const Builder = () => {
     const exam = useSelector((state) => state.exam.examData);
+    const navigate = useNavigate();
 
     const renderStageContent = (step) => {
         switch (step) {
@@ -27,10 +29,18 @@ const Builder = () => {
             case 2:
                 return (
                     <div>
-                        <Typography.Title level={3}>Download Exam</Typography.Title>
+                        <Typography.Title level={3}>Export & Randomise</Typography.Title>
                         <Typography.Paragraph type="secondary">
                             Export functions coming soon
                         </Typography.Paragraph>
+                        <div style={{ marginTop: 16 }}>
+                            <Button type="default" style={{ marginRight: 8 }}>
+                                Download Exam
+                            </Button>
+                            <Button type="primary" onClick={() => navigate('/randomiser')}>
+                                Open in Randomiser
+                            </Button>
+                        </div>
                     </div>
                 );
             default:

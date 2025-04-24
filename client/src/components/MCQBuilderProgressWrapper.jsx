@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Steps } from 'antd';
 import { Card } from 'antd';
-import { FileWordOutlined, DownloadOutlined, OrderedListOutlined} from '@ant-design/icons';
+import { FileWordOutlined, ExportOutlined, OrderedListOutlined } from '@ant-design/icons';
 
 const { Step } = Steps;
 
@@ -17,9 +17,9 @@ const steps = [
     icon: <OrderedListOutlined style={{width:"20px"}} />,
   },
   {
-    title: 'Download Exam',
+    title: 'Export & Randomise',
     key: 'download',
-    icon: <DownloadOutlined style={{width:"20px"}} />
+    icon: <ExportOutlined style={{width:"20px"}} />
   },
 ];
 
