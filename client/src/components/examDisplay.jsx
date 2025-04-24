@@ -200,9 +200,13 @@ const ExamDisplay = () => {
     <div>
       <div style={{ marginBottom: 16 }}>
         <Typography.Title level={3}>{exam.examTitle}</Typography.Title>
+        {(exam.courseCode || exam.courseName || exam.semester || exam.year) && (
         <Typography.Text type="secondary">
-          {exam.courseCode} - {exam.courseName} | {exam.semester} {exam.year}
+          {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
+          {exam.semester} {exam.year}
         </Typography.Text>
+      )}
+
       </div>
   
       <DndContext

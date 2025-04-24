@@ -85,9 +85,13 @@ const ExamFileManager = ({ onExamLoaded }) => {
       )}
       {fileHandle ? (
         <>
-          {/*<Typography.Text style={{ display: "block", marginTop: "16px" }}>
-            Currently editing: {fileHandle ? fileHandle.name : "Imported (unsaved) file"}
-          </Typography.Text>*/}
+          {(exam.courseCode || exam.courseName || exam.semester || exam.year) && (
+  <Typography.Text type="secondary">
+    {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
+    {exam.semester} {exam.year}
+  </Typography.Text>
+)}
+
           <Space style={{ marginTop: "16px", justifyContent: "space-between", width: "100%", display: "flex" }}>
             <span /> {/* Placeholder for left alignment */}
             <Button type="primary" onClick={handleSaveExam}>
