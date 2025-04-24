@@ -5,6 +5,7 @@ export const ExamContext = createContext(null);
 // Only fileHandle is managed here
 export const ExamProvider = ({ children }) => {
   const [fileHandle, setFileHandle] = useState(null);
+  const [exam, _setExam] = useState(null);
 
     const setExam = (newExam) => {
         console.log("setExam was called with:", newExam); // 👈 Add this line
@@ -22,11 +23,4 @@ export const ExamProvider = ({ children }) => {
             {children}
         </ExamContext.Provider>
     );
-
-    //Unsure
-  return (
-    <ExamContext.Provider value={{ fileHandle, setFileHandle }}>
-      {children}
-    </ExamContext.Provider>
-  );
 };

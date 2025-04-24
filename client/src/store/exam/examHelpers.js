@@ -46,7 +46,7 @@ export const removeQuestionHelper = (state, location) => {
   /**
    * Removes a question from examBody at the given location.
    * Returns true if removed, false otherwise.
-   */
+  
   export const removeQuestionHelper = (examBody, location2) => {
     const { examBodyIndex, sectionIndex } = location2;
     const container = examBody?.[examBodyIndex];
@@ -64,7 +64,7 @@ export const removeQuestionHelper = (state, location) => {
     }
   
     return false;
-  };
+  }; */
   
   /**
    * Renumbers all questions sequentially in the entire examBody.
