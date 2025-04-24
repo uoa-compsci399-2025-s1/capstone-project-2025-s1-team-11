@@ -34,7 +34,7 @@ const Builder = () => {
                             Export functions coming soon
                         </Typography.Paragraph>
                         <div style={{ marginTop: 16 }}>
-                            <Button type="default" style={{ marginRight: 8 }}> {/* does not do anything, to be */}
+                            <Button type="default" style={{ marginRight: 8 }} disabled> {/* intentionally disabled */}
                                 Download Exam
                             </Button>
                             <Button type="primary" onClick={() => navigate('/randomiser')}>

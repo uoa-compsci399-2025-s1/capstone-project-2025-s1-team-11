@@ -4,9 +4,7 @@ import { useSelector } from "react-redux";
 import { importExamFromJSON } from "../store/exam/examSlice";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
 import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
-import { Button, Alert, Space, Collapse, Typography, Modal, Input, message } from "antd";
-
-const { Panel } = Collapse;
+import { Button, Alert, Space, Typography, Modal, Input, message, Card } from "antd";
 
 const ExamFileManager = ({ onExamLoaded }) => {
   console.log(" ExamFileManager rendered");
@@ -156,8 +154,8 @@ const ExamFileManager = ({ onExamLoaded }) => {
           </Button>
         </Space>
       )}
-      <Collapse style={{ marginTop: "16px" }} activeKey={fileOptionsOpen ? ['1'] : []} onChange={() => {}}>
-        <Panel header="File Options" key="1">
+      <Card title="File Management" style={{ marginTop: 24 }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
           <Space wrap>
             <Button onClick={async () => {
               await handleOpenExam();
@@ -165,7 +163,7 @@ const ExamFileManager = ({ onExamLoaded }) => {
             }}>Open Exam (JSON)</Button>
             <Button>
               <label style={{ cursor: "pointer", marginBottom: 0 }}>
-                Import Exam (XML)
+                Import from XML
                 <input
                   type="file"
                   accept=".xml"
@@ -181,8 +179,9 @@ const ExamFileManager = ({ onExamLoaded }) => {
               Create New Exam
             </Button>
           </Space>
-        </Panel>
-      </Collapse>
+
+        </Space>
+      </Card>
       {/* Modal for creating a new exam */}
       <Modal
         open={showCreateModal}
