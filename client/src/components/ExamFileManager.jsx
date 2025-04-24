@@ -228,7 +228,7 @@ const ExamFileManager = ({ onExamLoaded }) => {
         <Input
           value={newExamData.examTitle}
           onChange={e => setNewExamData({ ...newExamData, examTitle: e.target.value })}
-          placeholder="Exam Title"
+          placeholder="Principals of Programming"
           style={{ marginBottom: 16 }}
         />
         <Typography.Text strong>
@@ -237,7 +237,7 @@ const ExamFileManager = ({ onExamLoaded }) => {
         <Input
           value={newExamData.courseCode}
           onChange={e => setNewExamData({ ...newExamData, courseCode: e.target.value })}
-          placeholder="Course Code"
+          placeholder="101"
           style={{ marginBottom: 16 }}
         />
         <Typography.Text strong>
@@ -246,7 +246,7 @@ const ExamFileManager = ({ onExamLoaded }) => {
         <Input
           value={newExamData.courseName}
           onChange={e => setNewExamData({ ...newExamData, courseName: e.target.value })}
-          placeholder="Course Name"
+          placeholder="Computer Science"
           style={{ marginBottom: 16 }}
         />
         <Typography.Text strong>
@@ -255,16 +255,16 @@ const ExamFileManager = ({ onExamLoaded }) => {
         <Input
           value={newExamData.semester}
           onChange={e => setNewExamData({ ...newExamData, semester: e.target.value })}
-          placeholder="Semester"
+          placeholder="Two"
           style={{ marginBottom: 16 }}
         />
         <Typography.Text strong>
           Year <span style={{ color: 'red' }}>*</span>
         </Typography.Text>
         <Input
-          value={newExamData.year}
+          //value={newExamData.year}
           onChange={e => setNewExamData({ ...newExamData, year: e.target.value })}
-          placeholder="Year"
+          placeholder="2010"
           style={{ marginBottom: 16 }}
         />
         <Typography.Text strong>
