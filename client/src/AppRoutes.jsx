@@ -7,6 +7,7 @@ import Marker from "./pages/marker.jsx";
 import Randomiser from "./pages/randomiser.jsx";
 import Documentation from "./pages/documentation.jsx";
 import ExamConsolePage from './pages/examConsole'; 
+import ExamImportTest from './pages/examImport';
 
 
 export default function AppRoutes() {
@@ -19,6 +20,7 @@ export default function AppRoutes() {
                 <Route path="/marker" element={<Marker />} />
                 <Route path="/documentation" element={<Documentation />} />
                 <Route path="/console" element={<ExamConsolePage />} />
+                <Route path="/import" element={<ExamImportTest />} />
             </Route>
         </Routes>
     );

@@ -296,8 +296,39 @@ const examSlice = createSlice({
     importExamFromJSON: (state, action) => {
       state.examData = action.payload;
     },
+
+    importExamStart: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    importExamSuccess: (state, action) => {
+      const exam = action.payload;
+      state.examData = exam;
+      state.loading = false;
+    },
+    importExamFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    // setCurrentExam: (state, action) => {
+    //   state.examData = action.payload;
+    // }
   }
 });
+
+// Thunk for importing an exam
+export const importExam = (exam) => async (dispatch) => {
+  try {
+    dispatch(importExamStart());
+    
+    dispatch(importExamSuccess(exam));
+    return exam;
+  } catch (error) {
+    dispatch(importExamFailure(error.message));
+    throw error;
+  }
+};
+
 
 
 // Export actions
@@ -323,6 +354,9 @@ export const {
   setTeleformOptions,
   regenerateShuffleMaps,
   importExamFromJSON,
+  importExamStart,
+  importExamSuccess,
+  importExamFailure,  
 } = examSlice.actions;
 
 // Export reducer
