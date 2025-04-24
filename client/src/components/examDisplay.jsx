@@ -192,7 +192,7 @@ const ExamDisplay = () => {
   };
   
   if (!exam || !Array.isArray(exam.examBody)) {
-    return <div>Exam loaded, but examBody is missing or invalid.</div>;
+    return <div>Please open an exam or create a new file.</div>;
   }
 
 

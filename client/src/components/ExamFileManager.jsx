@@ -15,6 +15,8 @@ const ExamFileManager = ({ onExamLoaded }) => {
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
+  const [fileOptionsOpen, setFileOptionsOpen] = useState(true);
+
   // State for create new exam modal
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newExamData, setNewExamData] = useState({
@@ -154,29 +156,33 @@ const ExamFileManager = ({ onExamLoaded }) => {
           </Button>
         </Space>
       )}
-      <Collapse style={{ marginTop: "16px" }}>
+      <Collapse style={{ marginTop: "16px" }} activeKey={fileOptionsOpen ? ['1'] : []} onChange={() => {}}>
         <Panel header="File Options" key="1">
           <Space wrap>
-            <Button onClick={handleOpenExam}>Open Exam (JSON)</Button>
+            <Button onClick={async () => {
+              await handleOpenExam();
+              setFileOptionsOpen(false);
+            }}>Open Exam (JSON)</Button>
             <Button>
               <label style={{ cursor: "pointer", marginBottom: 0 }}>
                 Import Exam (XML)
                 <input
                   type="file"
                   accept=".xml"
-                  onChange={handleImportExam}
+                  onChange={async (e) => {
+                    await handleImportExam(e);
+                    setFileOptionsOpen(false);
+                  }}
                   style={{ display: "none" }}
                 />
               </label>
             </Button>
+            <Button type="primary" onClick={() => setShowCreateModal(true)}>
+              Create New Exam
+            </Button>
           </Space>
         </Panel>
       </Collapse>
-      <div style={{ padding: "12px 0", borderTop: "1px solid #f0f0f0", marginTop: "12px" }}>
-        <Button type="primary" onClick={() => setShowCreateModal(true)}>
-          Create New Exam
-        </Button>
-      </div>
       {/* Modal for creating a new exam */}
       <Modal
         open={showCreateModal}
@@ -215,6 +221,7 @@ const ExamFileManager = ({ onExamLoaded }) => {
               onExamLoaded(exam, handle.name);
             }
             setShowCreateModal(false);
+            setFileOptionsOpen(false);
             message.success('New exam created and saved');
           } catch (err) {
             setError("Error saving new exam: " + err.message);
