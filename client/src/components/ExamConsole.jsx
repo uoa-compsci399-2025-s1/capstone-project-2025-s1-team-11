@@ -1,3 +1,4 @@
+//ExamConsole.jsx
 import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
@@ -9,7 +10,6 @@ import {
   removeAppendix,
   updateQuestion, 
   updateSection,
-  // moveQuestionToSection,
   moveQuestion,
   moveSection,
   removeQuestion,
@@ -18,7 +18,7 @@ import {
   updateExamMetadata,
   setExamVersions,
   setTeleformOptions,
-  shuffleAnswers,
+  regenerateShuffleMaps,
   setCoverPage,
   setAppendix
 } from '../store/exam/examSlice';
@@ -37,6 +37,10 @@ import {
   selectQuestionsForTable,
   selectTotalMarks,
 } from '../store/exam/selectors';
+
+import {
+  createAnswer,
+} from '../store/exam/examUtils';
 
 function ExamConsole() {
   const dispatch = useDispatch();
@@ -234,10 +238,6 @@ function ExamConsole() {
             questionData: {
               contentText: questionContent,
               marks,
-              answers: ['', '', '', '', ''],
-              correctAnswers: [1, 0, 0, 0, 0],
-              answerShuffleMap: null,
-              lockedPositionsMap: [-1, -1, -1, -1, -1]
             }
           }
 
@@ -316,86 +316,145 @@ function ExamConsole() {
           dispatch(removeAppendix());
           addToOutput('Appendix removed successfully!', 'success');
           break;
-          
-        case 'update-question':
-          // Format: update-question EXAMBODY_INDEX QUESTION_INDEX "field" "value"
-          if (!examState.examData) {
-            addToOutput('No exam is currently loaded. Create an exam first.', 'error');
-            break;
-          }
-          
-          if (parts.length < 5) {
-            addToOutput('Usage: update-question EXAMBODY_INDEX QUESTION_INDEX "field" "value"', 'error');
-            break;
-          }
-          
-          const updateQuestionArgs = parseQuotedArgs(trimmedCommand);
-          const exBodyIdx = parseInt(updateQuestionArgs[1]);
-          const qIdx = parseInt(updateQuestionArgs[2]);
-          const qField = updateQuestionArgs[3].toLowerCase();
-          const qValue = updateQuestionArgs[4];
-          
-          // Create location object
-          const location = {
-            examBodyIndex: exBodyIdx
-          };
-          
-          // Check if it's a section or direct question
-          const exBodyItem = examState.examData.examBody[exBodyIdx];
-          if (!exBodyItem) {
-            addToOutput('Invalid examBody index', 'error');
-            break;
-          }
-          
-          if (exBodyItem.type === 'section') {
-            location.questionsIndex = qIdx;
-          }
-          
-          // Create update data object
-          const qUpdateData = {};
-          switch (qField) {
-            case 'content':
-              qUpdateData.content = qValue;
+
+          case 'update-question':
+            if (!examState.examData) {
+              addToOutput('No exam is currently loaded. Create an exam first.', 'error');
               break;
-            case 'marks':
-              qUpdateData.marks = parseInt(qValue) || 1;
+            }
+          
+            if (parts.length < 5) {
+              addToOutput('Usage: update-question EXAMBODY_INDEX QUESTION_INDEX "field" "value"', 'error');
               break;
-            case 'answer':
-              const answerParts = qValue.split(',');
-              if (answerParts.length < 2) {
-                addToOutput('For answer field, use format: "answer,INDEX,VALUE"', 'error');
+            }
+          
+            const updateQuestionArgs = parseQuotedArgs(trimmedCommand);
+            const exBodyIdx = parseInt(updateQuestionArgs[1]);
+            const qIdx = parseInt(updateQuestionArgs[2]);
+            const qField = updateQuestionArgs[3].toLowerCase();
+            const qValue = updateQuestionArgs[4];
+          
+            const location = { examBodyIndex: exBodyIdx };
+            const exBodyItem = examState.examData.examBody[exBodyIdx];
+            if (!exBodyItem) {
+              addToOutput('Invalid examBody index', 'error');
+              break;
+            }
+          
+            if (exBodyItem.type === 'section') location.questionsIndex = qIdx;
+            const currentQuestion = exBodyItem.type === 'section'
+              ? exBodyItem.questions[qIdx]
+              : exBodyItem;
+            console.log(`location: ${JSON.stringify(location)}`)
+          
+            if (!currentQuestion) {
+              addToOutput('Invalid question index', 'error');
+              break;
+            }
+          
+            const qUpdateData = {};
+          
+            switch (qField) {
+              case 'contenttext':
+                qUpdateData.contentText = qValue;
                 break;
-              }
-              const answerIdx = parseInt(answerParts[0]);
-              const answerValue = answerParts[1];
-              
-              // Create answers array if needed
-              qUpdateData.answers = [...(exBodyItem.type === 'section' 
-                ? exBodyItem.questions[qIdx].answers || ['', '', '', '', ''] 
-                : exBodyItem.answers || ['', '', '', '', ''])];
-              
-              // Update specific answer
-              if (answerIdx >= 0 && answerIdx < qUpdateData.answers.length) {
-                qUpdateData.answers[answerIdx] = answerValue;
-              }
-              break;
-            case 'correct':
-              const correctIdx = parseInt(qValue);
-              
-              // Create correctAnswers array (all 0s, then 1 at correct index)
-              qUpdateData.correctAnswers = [0, 0, 0, 0, 0];
-              if (correctIdx >= 0 && correctIdx < 5) {
-                qUpdateData.correctAnswers[correctIdx] = 1;
-              }
-              break;
-            default:
-              addToOutput(`Unknown question field: ${qField}`, 'error');
-              return;
-          }
+              case 'contentformatted':
+                qUpdateData.content = qValue;
+                break;
+              case 'questionumber':
+                qUpdateData.questionNumber = parseInt(qValue) || null;
+                break;
+              case 'marks':
+                qUpdateData.marks = parseInt(qValue) || null;
+                break;
+              case 'format':
+              case 'type':
+              case 'pagebreakafter':
+                qUpdateData[qField] = qValue;
+                break;
           
-          dispatch(updateQuestion({ location, newData: qUpdateData }));
-          addToOutput(`Updated question ${qField} successfully!`, 'success');
-          break;
+              case 'answer':
+                // Format: "INDEX,contentText"
+                const ansParts = qValue.split(',');
+                if (ansParts.length < 2) {
+                  addToOutput('For answer field, use format: "INDEX,Text"', 'error');
+                  break;
+                }
+                const ansIdx = parseInt(ansParts[0]);
+                const ansContent = ansParts.slice(1).join(',').trim();
+                qUpdateData.answers = [...(currentQuestion.answers || [])];
+          
+                while (qUpdateData.answers.length <= ansIdx) {
+                  qUpdateData.answers.push(createAnswer({}));
+                }
+          
+                qUpdateData.answers[ansIdx] = {
+                  ...qUpdateData.answers[ansIdx],
+                  contentText: ansContent,
+                };
+                break;
+          
+              case 'answers':
+                // Format: "text1|text2|text3"
+                qUpdateData.answers = qValue.split('|').map((text, i) => ({
+                  ...(currentQuestion.answers?.[i] || createAnswer({})),
+                  contentText: text.trim(),
+                }));
+                break;
+          
+              case 'correctanswer':
+                // Format: "INDEX"
+                const correctIndex = parseInt(qValue);
+                qUpdateData.answers = (currentQuestion.answers || []).map((a, i) => ({
+                  ...a,
+                  correct: i === correctIndex,
+                }));
+                break;
+          
+              case 'correctanswers':
+                // Format: "1,0,0,1"
+                try {
+                  const correctFlags = qValue.split(',').map(v => parseInt(v.trim()) === 1);
+                  qUpdateData.answers = (currentQuestion.answers || []).map((a, i) => ({
+                    ...a,
+                    correct: correctFlags[i] || false,
+                  }));
+                } catch (e) {
+                  addToOutput('Invalid format for correctanswers', 'error');
+                  break;
+                }
+                break;
+          
+              case 'fixedposition':
+                // Format: "INDEX,POSITION"
+                const lockSplit = qValue.split(',');
+                if (lockSplit.length < 2) {
+                  addToOutput('Use format: "fixedposition,INDEX,POSITION"', 'error');
+                  break;
+                }
+                const lockIndex = parseInt(lockSplit[0]);
+                const fixedPos = parseInt(lockSplit[1]);
+                qUpdateData.answers = [...(currentQuestion.answers || [])];
+          
+                while (qUpdateData.answers.length <= lockIndex) {
+                  qUpdateData.answers.push(createAnswer({}));
+                }
+          
+                qUpdateData.answers[lockIndex] = {
+                  ...qUpdateData.answers[lockIndex],
+                  fixedPosition: isNaN(fixedPos) ? null : fixedPos,
+                };
+                break;
+          
+              default:
+                addToOutput(`Unknown question field: ${qField}`, 'error');
+                return;
+            }
+          
+            dispatch(updateQuestion({ location, newData: qUpdateData }));
+            addToOutput(`Updated question ${qField} successfully!`, 'success');
+            break;
+          
           
         case 'update-section':
           // Format: update-section EXAMBODY_INDEX "field" "value"
@@ -438,38 +497,6 @@ function ExamConsole() {
           dispatch(updateSection({ examBodyIndex: secIdx, newData: secUpdateData }));
           addToOutput(`Updated section ${secField} successfully!`, 'success');
           break;
-          
-        // case 'move-question-to-section':
-        //   // Format: move-question-to-section FROM_INDEX TO_SECTION_INDEX
-        //   if (!examState.examData) {
-        //     addToOutput('No exam is currently loaded. Create an exam first.', 'error');
-        //     break;
-        //   }
-          
-        //   if (parts.length < 3) {
-        //     addToOutput('Usage: move-question-to-section FROM_INDEX TO_SECTION_INDEX', 'error');
-        //     break;
-        //   }
-          
-        //   const fromIndex = parseInt(parts[1]);
-        //   const toSectionIndex = parseInt(parts[2]);
-          
-        //   // Validate indices
-        //   if (isNaN(fromIndex) || fromIndex < 0 || fromIndex >= examState.examData.examBody.length) {
-        //     addToOutput('Invalid from index', 'error');
-        //     break;
-        //   }
-          
-        //   if (isNaN(toSectionIndex) || toSectionIndex < 0 || 
-        //       toSectionIndex >= examState.examData.examBody.length ||
-        //       examState.examData.examBody[toSectionIndex].type !== 'section') {
-        //     addToOutput('Invalid to section index', 'error');
-        //     break;
-        //   }
-          
-        //   dispatch(moveQuestionToSection({ fromIndex, toSectionIndex }));
-        //   addToOutput('Question moved to section successfully!', 'success');
-        //   break;
           
         case 'move-question':
           // Format: move-question "<source examBodyIndex>.<questionsIndex (optional)>" "<destination examBodyIndex>.<questionsIndex (optional)>"
@@ -617,7 +644,7 @@ function ExamConsole() {
           const locationParts = locationStr.split('.');
           
           const location2 = {};
-          location.examBodyIndex = parseInt(locationParts[0]);
+          location2.examBodyIndex = parseInt(locationParts[0]);
           
           if (locationParts.length > 1) {
             location2.questionsIndex = parseInt(locationParts[1]);
@@ -715,7 +742,7 @@ function ExamConsole() {
             break;
           }
           
-          dispatch(shuffleAnswers());
+          dispatch(regenerateShuffleMaps());
           addToOutput('Answers shuffled successfully!', 'success');
           break;
           

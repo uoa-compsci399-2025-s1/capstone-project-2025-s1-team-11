@@ -1,5 +1,7 @@
 // examHelpers.js
 
+import { createAnswer } from "./examUtils";
+
 /**
  * Locates a question or section inside the examBody using location object.
  * @param {Array} examBody - The top-level examBody array.
@@ -41,6 +43,28 @@ export const removeQuestionHelper = (state, location) => {
     examBody.splice(examBodyIndex, 1);
   }
 };
+  /**
+   * Removes a question from examBody at the given location.
+   * Returns true if removed, false otherwise.
+   */
+  export const removeQuestionHelper = (examBody, location2) => {
+    const { examBodyIndex, sectionIndex } = location2;
+    const container = examBody?.[examBodyIndex];
+  
+    if (!container) return false;
+  
+    if (sectionIndex !== undefined && container.type === 'section') {
+      container.questions?.splice(sectionIndex, 1);
+      return true;
+    }
+  
+    if (container.type === 'question') {
+      examBody.splice(examBodyIndex, 1);
+      return true;
+    }
+  
+    return false;
+  };
   
   /**
    * Renumbers all questions sequentially in the entire examBody.
@@ -66,10 +90,35 @@ export const removeQuestionHelper = (state, location) => {
     let sectionNumber = 1;
   
     examBody.forEach(item => {
-      console.log(sectionNumber, item.sectionNumber);
       if (item.type === 'section') {
         item.sectionNumber = sectionNumber++;
       }
   });
 };
   
+export const normaliseAnswersToLength = (answers, optionCount) => {
+  const trimmed = answers.slice(0, optionCount);
+  const padded = [...trimmed];
+
+  while (padded.length < optionCount) {
+    padded.push(createAnswer());
+  }
+
+  return padded;
+};
+
+export const normaliseAnswersPerTeleformOptions = (examData) => {
+  const optionCount = examData.teleformOptions.length;
+  const processQuestion = (question) => {
+    if (!question.answers || !Array.isArray(question.answers)) return;
+    question.answers = normaliseAnswersToLength(question.answers, optionCount);
+  };
+
+  examData.examBody.forEach(item => {
+    if (item.type === 'section') {
+      item.questions.forEach(processQuestion);
+    } else if (item.type === 'question') {
+      processQuestion(item);
+    }
+  });
+};

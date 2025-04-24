@@ -20,6 +20,7 @@ Assessly creates a save file which contains exam data.
 ### Installation
 
 #### 1. Client-side
+0. Navigate to client directory ```cd client``` (right?)
 1. Install npm prerequisites ```npm install```
 2. Install Ant Design - run ```npm install antd --save```
 
