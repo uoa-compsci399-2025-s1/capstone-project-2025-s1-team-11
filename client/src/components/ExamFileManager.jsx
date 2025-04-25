@@ -158,32 +158,35 @@ const ExamFileManager = ({ onExamLoaded }) => {
       )}
       <Card style={{ marginTop: 24 }}>
         <Space wrap style={{ width: "100%", justifyContent: "space-between" }}>
-          <Space wrap>
-            <Button onClick={async () => {
-              await handleOpenExam();
-              setFileOptionsOpen(false);
-            }}>
-              Open Exam (JSON)
-            </Button>
-            <Button>
-              <label style={{ cursor: "pointer", marginBottom: 0 }}>
-                Import from XML
-                <input
-                  type="file"
-                  accept=".xml"
-                  onChange={async (e) => {
-                    await handleImportExam(e);
-                    setFileOptionsOpen(false);
-                  }}
-                  style={{ display: "none" }}
-                />
-              </label>
-            </Button>
-            <Button type="primary" onClick={() => setShowCreateModal(true)}>
-              Create New Exam
-            </Button>
-          </Space>
-          <Button danger onClick={() => setIsClearModalVisible(true)}>
+        <Space wrap>
+          <Button type="primary" onClick={() => setShowCreateModal(true)}>
+            Create New Exam
+          </Button>
+          <Button onClick={async () => {
+            await handleOpenExam();
+            setFileOptionsOpen(false);
+          }}>
+            Open Exam (JSON)
+          </Button>
+          <Button>
+            Import from XML
+            <input
+              type="file"
+              accept=".xml"
+              onChange={async (e) => {
+                await handleImportExam(e);
+                setFileOptionsOpen(false);
+              }}
+              style={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                cursor: "pointer",
+              }}
+            />
+          </Button>
+        </Space>
+          <Button danger onClick={() => setIsClearModalVisible(true)} type="primary">
             Clear Exam
           </Button>
         </Space>
