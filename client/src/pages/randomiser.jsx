@@ -1,19 +1,18 @@
 // src/pages/ExamFileManager.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination } from "antd";
+import { Button, Table, Card, Space, Typography, Switch, Select, Spin, Pagination } from "antd";
 import { regenerateShuffleMaps } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 
 const { Title, Text } = Typography;
 
 const Randomiser = () => {
-  // Redux setup
+  // redux setup
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
   const questions = useSelector(selectAllQuestionsFlat);
-
-  // Local UI state
+  // local ui state
   const [selectedVersion, setSelectedVersion] = useState(exam?.versions?.[0] || '');
   const [showRaw, setShowRaw] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
@@ -22,10 +21,12 @@ const Randomiser = () => {
   const [showAnswers, setShowAnswers] = useState(true);
 
   // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5; // Show 5 questions per page
+  const [pagination, setPagination] = useState({current: 1, pageSize: 10, });
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, current: 1 }));
+  }, [selectedSection]);
 
-  // Shuffle answers handler
+  // function to handle shuffling answers for all questions
   const handleShuffleAnswers = () => {
     if (!exam) {
       console.error("No exam data available to shuffle");
@@ -38,13 +39,14 @@ const Randomiser = () => {
     }, 600);
   };
 
-  // Filter and paginate questions
+  // calculate paginated questions
   const filteredQuestions = questions.filter(q => 
     selectedSection === "All" || q.section === selectedSection
   );
+  const { current, pageSize } = pagination;
   const paginatedQuestions = filteredQuestions.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    (current - 1) * pageSize,
+    current * pageSize
   );
 
   return (
@@ -105,7 +107,9 @@ const Randomiser = () => {
             style={{ width: 180 }}
           >
             <Select.Option value="All">All Sections</Select.Option>
-            {/* Original section filter (unchanged) */}
+            {[...new Set(questions.map(q => q.section))].filter(Boolean).map(section => (
+              <Select.Option key={section} value={section}>{section}</Select.Option>
+            ))}
           </Select>
         </div>
 
@@ -148,6 +152,7 @@ const Randomiser = () => {
                       </ul>
                     </div>
                   )}
+                  {/* show either raw or position mapping */}
                   <Text>
                     <strong>{showRaw ? "Raw Mapping:" : "Position Mapping:"}</strong> {showRaw ? rawMap : mappingDetails}
                   </Text>
@@ -157,11 +162,12 @@ const Randomiser = () => {
           </div>
 
           <Pagination
-            current={currentPage}
-            pageSize={pageSize}
+            current={pagination.current}
+            pageSize={pagination.pageSize}
             total={filteredQuestions.length}
-            onChange={(page) => setCurrentPage(page)}
+            onChange={(page) => setPagination(prev => ({ ...prev, current: page }))}
             style={{ marginTop: 16, textAlign: "center" }}
+            showSizeChanger={false} 
           />
         </Spin>
       </Card>
