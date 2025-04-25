@@ -32,7 +32,7 @@ const MCQLayout = ({ children }) => {
         {isPlainPage ? (
           children
         ) : (
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
             <Breadcrumb style={{ marginBottom: '24px' }}>
               <Breadcrumb.Item>
                 <Link to="/">Home</Link>

@@ -28,7 +28,7 @@ export function Navigation() {
                     </NavLink>
                     <NavLink to="/console" end>
                     {({ isActive }) => (
-                            <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em", color: "grey" }}>Test Console</Button>
+                            <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>Test Console</Button>
                         )}
                     </NavLink>
                 </Space>
