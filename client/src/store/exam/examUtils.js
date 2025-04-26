@@ -73,18 +73,18 @@ export const createQuestion = ({
 })
 
 export const createAnswer = ({
+  type = 'answer',
+  content = '', // for images and formatted text
+  contentText = '',
   correct = false,
   fixedPosition = null, // null means "not fixed"
   //feedback = '', if other than "incorrect" desired
   //note = '', e.g. "trick", "common mistake"
-  contentText = '',
   ...overrides
 } = {}) => ({
-  ...createExamComponent({
-    type: 'answer',
-    contentText,
-    ...overrides,
-  }),
+  content,
+  contentText,
   correct,
   fixedPosition,
+  ...overrides,
 });

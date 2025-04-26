@@ -8,7 +8,6 @@ import Randomiser from "./pages/randomiser.jsx";
 import About from "./pages/about.jsx";
 import Documentation from "./pages/documentation.jsx";
 import ExamConsolePage from './pages/examConsole'; 
-import ExamMarkingPanel from './pages/examMarkingPanel'; 
 
 
 export default function AppRoutes() {
@@ -22,7 +21,6 @@ export default function AppRoutes() {
                 <Route path="/about" element={<About />} />
                 <Route path="/documentation" element={<Documentation />} />
                 <Route path="/console" element={<ExamConsolePage />} />
-                <Route path="/marking" element={<ExamMarkingPanel />} />
             </Route>
         </Routes>
     );
