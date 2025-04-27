@@ -135,12 +135,11 @@ const Randomiser = () => {
                 >
                   {showQuestion && (
                     <Text style={{ display: "block", marginBottom: 8 }}>
-                      <strong>Text:</strong> {question.contentText || question.questionText}
+                       {question.contentText || question.questionText}
                     </Text>
                   )}
                   {showAnswers && question.answers?.length > 0 && mapping && (
-                    <div style={{ marginBottom: 8 }}>
-                      <Text strong>Shuffled Answers:</Text>
+                    <div style={{ marginBottom: 8 }}>                      
                       <ul style={{ paddingLeft: "1.5em", marginBottom: 0 }}>
                         {mapping.map((shuffledIndex, originalIndex) => (
                           <li key={originalIndex}>
