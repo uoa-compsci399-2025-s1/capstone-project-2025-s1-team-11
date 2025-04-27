@@ -1,0 +1,545 @@
+[
+  {
+    "type": "question",
+    "contentFormatted": "Which of the following unsigned 8-bit binary to decimal conversions are CORRECT?<br>\n<br>\ni.   11111111= 255<br>\nii.  00111101= 60<br>\niii. 10000001= 129",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "iand iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "iand ii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii and iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ionly"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "iii only"
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Which of the following conversions are CORRECT? All binary values are unsigned integer values.<br>\n<br>\ni.   1101001= 151<br>\nii.  C3= 11000011<br>\niii. 11101= 1D",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "i, ii, and iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii and iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "i, and iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ionly"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "iii only"
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Which of the following calculations are CORRECT? All binary values are in unsigned integer values.<br>\n<br>\ni.   101+ 011= 1000<br>\nii.  110– 101= 101<br>\niii. 10000– 111= 1001",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "iand iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ionly"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii only"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii and iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "iii only"
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Which of the following statements are CORRECT?<br>\n<br>\ni.    Left shifting an unsigned binary value by 2 is equivalent to multiplying the value by 2.<br>\nii.  We need 10 bits to represent 1024 different values.<br>\niii. An unsigned binary value, 10.101 is equivalent toin decimal.",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "ii, iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "iand ii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "i, ii, and iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii only"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ionly"
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Which of the following decimal to 7-bit signed binary conversions are CORRECT?<br>\n<br>\ni.   -21= 1101010(signed magnitude)<br>\nii.  -21= 1101011(one’s complement)<br>\niii. -21= 1101011(two’s complement)",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "iii only"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ionly"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii only"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "iand ii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii and iii"
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Which of the following conversions are CORRECT? All the hexadecimal values are in textbookfloating pointformat.<br>\n<br>\ni.   32= 4006<br>\nii.  4049= 513<br>\niii. The textbookfloating pointformat consists of 16 bits, 1 bit for the sign of mantissa, 9 bits for the mantissa, 1 bit for the sign of exponent, and 5 bits for the exponent.",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "iand iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ionly"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii only"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii and iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "i, ii, and iii"
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Which of the following statements are CORRECT about compression?<br>\n<br>\ni.   A compression ratio is 2 if the original message size has been reduced from 20 characters to 10 characters.<br>\nii.  Run-length encoding (RLE) is generally useful for compressing text messages.<br>\niii. A compression ratio of less than 1 indicates that compression has not been achieved.<br>\niv. Due to the limitations of human perception, lossy compression is well-suited for audio and graphics data.",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "i, iii, iv"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ionly"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "iand iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii and iv"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "i, ii, iii, and iv"
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Which of the following Huffman encodings are CORRECTgiventhe Huffman table above?<br>\n<br>\ni.   0000100110 is the Huffman encoding for \"eat\".<br>\nii.  1101001101011 is the Huffman encoding for \"fox\".<br>\niii. 010100011000 is the Huffman encoding for \"air\".",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "iand iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "i, ii, and iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii and iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii only"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ionly"
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Which logical gate does the above circuit represent?<br>\n<br>\ni.   AND gate<br>\nii.  NAND gate<br>\niii. OR gate<br>\niv. NOR gate",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "i"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "iv"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "None of the options"
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Which of the following Boolean expressions matches the circuit below?<br>\n<img src='/assets/images/image3.png' alt=''><br>\ni.<br>\nii.<br>\niii.<br>\niv.",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "iv"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "i"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "None of the options"
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Which of the following Boolean expressions would give the truth table below?<br>\n<img src='/assets/images/image4.png' alt=''><br>\n<br>\ni.<br>\nii.<br>\niii.<br>\niv.",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "iv"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "i"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "None of the options"
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Which of the following Boolean expressions are logically equivalent?<br>\n<br>\ni.<br>\nii.<br>\niii.<br>\niv.",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "i, iii, and iv"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "iand ii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "i, ii, and iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii and iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "None of the options"
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Which of the following statements are CORRECT?<br>\n<br>\ni.   An output of 1 from a Compare-for-equality (CE) circuit indicates that two values are not equal.<br>\nii.  An n-bit adder can be constructed from n number of 1-bit adders.<br>\niii. A 1-bit adder takes three inputs (a<sub>i</sub>, b<sub>i</sub>, c<sub>i</sub>) and produces two outputs (s<sub>i</sub>, c<sub>i+1</sub>).<br>\niv. Construction ofn-bit subtraction circuit is not related to an n-bit adder.",
+    "marks": 1,
+    "answers": [
+      {
+        "type": "answer",
+        "contentFormatted": "ii and iii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii only"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "i, ii, iii, and iv"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "i,  andiii"
+      },
+      {
+        "type": "answer",
+        "contentFormatted": "ii, iii, and iv"
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "contentFormatted": "<img src='/assets/images/image5.png' alt=''>",
+    "questions": [
+      {
+        "type": "question",
+        "contentFormatted": "Which of the following statements about the NOR SR latches are CORRECT?<br>\n<br>\ni.   If S = 0 and R = 0, the outputhas tobe 0.<br>\nii.  If S = 0 and R = 1, the output will be 0.<br>\niii. If S = 1 and R = 0, the output will be 1.<br>\niv. If S = 1 and R = 1, this SR latch breaks.",
+        "marks": 1,
+        "answers": [
+          {
+            "type": "answer",
+            "contentFormatted": "ii, iii, and iv"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "i, ii, iii, and iv"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "i, ii and iii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "ii and iii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "iii and iv"
+          }
+        ]
+      },
+      {
+        "type": "question",
+        "contentFormatted": "Consider a machine where its memory is organized using a two-dimensional grid, with the same number of rows and columns. The memory row and column decoders each accept 3 bits of input. Which of the following statements about this machine are CORRECT?<br>\n<br>\ni.   The Memory Address Register (MAR) is 6 bits in size.<br>\nii.  The largest possible memory address is 6<sub>3</sub>.<br>\niii. The two-dimension grid approach yields 16 output lines, compared to 64 in the one-dimension approach.",
+        "marks": 1,
+        "answers": [
+          {
+            "type": "answer",
+            "contentFormatted": "i, ii, and iii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "iand ii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "iand iii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "ionly"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "iii only"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "question",
+    "contentFormatted": "Whatis the output produced by the following assembly language program?<br>\n<img src='/assets/images/image6.png' alt=''><br>",
+    "marks": 1,
+    "answers": []
+  },
+  {
+    "type": "section",
+    "contentFormatted": "Here is an assembly language program using the textbook language. Use this program to answer the next two questions. Assume that the first instruction is stored at address 0.",
+    "questions": [
+      {
+        "type": "question",
+        "contentFormatted": "Which of the following statements are CORRECT?<br>\n<br>\ni.  The output when this program runs with inputs of 10 and 1 (in that order) is 2<sub>1</sub>.<br>\nii. The output when this program runs with inputs of 100 and 0 (in that order) is 10<sub>0</sub>.<br>\niii. Regardless of the input, whenever the program ends, the EQ condition code is set to 1, while the GT and LT condition codes are set to 0.",
+        "marks": 1,
+        "answers": [
+          {
+            "type": "answer",
+            "contentFormatted": "iand ii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "ii and iii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "i, ii, and iii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "ii only"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "ionly"
+          }
+        ]
+      },
+      {
+        "type": "question",
+        "contentFormatted": "Whichof the following statements are CORRECT?<br>\n<br>\ni.   The machine code in hexadecimal for the instruction at line 2 is D01<sub>0</sub>.<br>\nii.  The machine code in hexadecimal for the instruction at line 14 is F00<sub>0</sub>.<br>\niii. .DATA pseudo-ops are stored as 16-bit 2’s complement value.",
+        "marks": 1,
+        "answers": [
+          {
+            "type": "answer",
+            "contentFormatted": "ii and iii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "iand iii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "ii only"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "ionly"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "i, ii, and iii"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "contentFormatted": "Here is a machine code program usingthe textbookassembly language. Assume that the first instruction is stored at address 0.",
+    "questions": [
+      {
+        "type": "question",
+        "contentFormatted": "Which of the following statements are CORRECT?<br>\ni. The assembly language instruction for line 13 is HALT.<br>\nii. The code contains five .DATA pseudo-ops, three instances of 0 and two instances of -1.<br>\niii. The assembly language instruction for line 5 is LOAD 15",
+        "marks": 1,
+        "answers": [
+          {
+            "type": "answer",
+            "contentFormatted": "ii and iii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "iand ii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "iand iii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "ii only"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "iii only"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "contentFormatted": "get num1<p>\nget num2<p>\nget stop<p>\nif stop = 0 then<p>\nprint num1<p>\nelse<p>\ncount<p>\nwhile count < stop<p>\nprint num1<p>\nprint \",\"<p>\ntempnum1 + num2<p>\nnum1num2<p>\nnum2temp<p>\ncountcount + 1<p>\nend while<p>\nend if",
+    "questions": [
+      {
+        "type": "question",
+        "contentFormatted": "Which of the following statements are CORRECT given the pseudocode algorithm above?<br>\n<br>\ni.   The output when this algorithm runs with inputs of 0, 1, and 4 (in that order) is 0,1,1,2,3,<br>\nii.  The output when this algorithm runs with inputs of 0, 1, and 4 (in that order) is 0,1,1,2,<br>\niii. The three basic pseudocode constructs are sequential, conditional, and loop constructs.",
+        "marks": 1,
+        "answers": [
+          {
+            "type": "answer",
+            "contentFormatted": "ii and iii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "iand ii"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "ionly"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "iii only"
+          },
+          {
+            "type": "answer",
+            "contentFormatted": "iand iii"
+          }
+        ]
+      }
+    ]
+  }
+]

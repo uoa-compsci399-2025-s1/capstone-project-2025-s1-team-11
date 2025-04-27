@@ -12,7 +12,7 @@
     "test:watch": "jest --watch",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "dump:docx": "node scripts/logDocxDTO.js"
+    "docxdto": "node docxDTO/parseDocxDto.js"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.1",
