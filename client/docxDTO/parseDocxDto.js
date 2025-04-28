@@ -56,7 +56,7 @@ const run = async () => {
 
     console.log(`Reading input file: ${selectedFile}`);
     const { documentXml, relationships } = await extractDocumentXml(inputPath);
-    console.log('Extracted relationships:', relationships);
+//    console.log('Extracted relationships:', relationships);
 
     console.log('Parsing document XML...');
     const parsedXml = parseXmlToJson(documentXml);

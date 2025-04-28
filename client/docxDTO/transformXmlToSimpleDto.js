@@ -16,7 +16,7 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
   ];
 
   // Diagnostic: Log total blocks to understand the content
-  console.log(`Total document blocks: ${blocks.length}`);
+//  console.log(`Total document blocks: ${blocks.length}`);
 
   const dto = [];
 
@@ -46,11 +46,11 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
           currentSection.questions = [];
         }
         currentSection.questions.push(currentQuestion);
-        console.log(`Added question "${currentQuestion.contentFormatted}" to section`);
+//        console.log(`Added question "${currentQuestion.contentFormatted}" to section`);
       } else {
         // Add directly to DTO
         dto.push(currentQuestion);
-        console.log(`Added standalone question "${currentQuestion.contentFormatted}"`);
+//        console.log(`Added standalone question "${currentQuestion.contentFormatted}"`);
       }
 
       currentQuestion = null;
@@ -69,12 +69,12 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
       // Only add section if it has content
       if (currentSection.contentFormatted && currentSection.contentFormatted.trim() !== '') {
         dto.push(currentSection);
-        console.log(`Added section with content: ${currentSection.contentFormatted.substring(0, 30)}...`);
+//        console.log(`Added section with content: ${currentSection.contentFormatted.substring(0, 30)}...`);
       } else {
         // If section has no content, move any nested questions to top level
         if (currentSection.questions && currentSection.questions.length > 0) {
           dto.push(...currentSection.questions);
-          console.log(`Moved ${currentSection.questions.length} questions from empty section to top level`);
+//          console.log(`Moved ${currentSection.questions.length} questions from empty section to top level`);
         }
       }
 
@@ -92,7 +92,7 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
 
     // Check if this is a section break
     if (isSectionBreak(block)) {
-      console.log(`Found section break at block ${i}`);
+//      console.log(`Found section break at block ${i}`);
 
       // Finish current question and section
       flushQuestion();
@@ -108,7 +108,7 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
     const text = buildContentFormatted(runs, { relationships });
 
     if (text.trim() !== '') {
-      console.log(`Block ${i}: ${text.substring(0, 30)}${text.length > 30 ? '...' : ''}`);
+//      console.log(`Block ${i}: ${text.substring(0, 30)}${text.length > 30 ? '...' : ''}`);
     }
 
     // Handle empty lines
@@ -117,7 +117,7 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
 
       // If we have a current question, end it after an empty line (if it has answers)
       if (currentQuestion && emptyLineCounter >= 1 && currentAnswers.length > 0) {
-        console.log(`Empty line detected, ending question "${currentQuestion.contentFormatted}"`);
+//        console.log(`Empty line detected, ending question "${currentQuestion.contentFormatted}"`);
         flushQuestion();
       }
 
@@ -129,7 +129,7 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
 
     // Check if this is a new question
     if (isNewQuestion(text)) {
-      console.log(`Found question marker: ${text.substring(0, 30)}...`);
+//      console.log(`Found question marker: ${text.substring(0, 30)}...`);
 
       // End previous question if any
       flushQuestion();
@@ -144,7 +144,7 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
         inSection = true;
         sectionContentBlocks = [];
         afterSectionBreak = false;
-        console.log(`Created new section from accumulated content`);
+//        console.log(`Created new section from accumulated content`);
       }
 
       // Extract marks and create new question
@@ -158,7 +158,7 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
         answers: []
       };
 
-      console.log(`Created new question: "${questionText}" with ${marks} marks`);
+//      console.log(`Created new question: "${questionText}" with ${marks} marks`);
       continue;
     }
 
@@ -166,7 +166,7 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
     if (afterSectionBreak && !currentQuestion) {
       if (text.trim() !== '') {
         sectionContentBlocks.push(text);
-        console.log(`Added to section content: ${text.substring(0, 30)}...`);
+//        console.log(`Added to section content: ${text.substring(0, 30)}...`);
       }
       continue;
     }
@@ -177,13 +177,13 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
         type: 'answer',
         contentFormatted: text
       });
-      console.log(`Added answer to "${currentQuestion.contentFormatted}": ${text.substring(0, 30)}...`);
+//      console.log(`Added answer to "${currentQuestion.contentFormatted}": ${text.substring(0, 30)}...`);
       continue;
     }
 
     // If we have non-question, non-section content, treat as standalone section content
     if (text.trim() !== '' && !currentQuestion && !inSection && !afterSectionBreak) {
-      console.log(`Found standalone content, creating new section`);
+//      console.log(`Found standalone content, creating new section`);
 
       currentSection = {
         type: 'section',
@@ -199,7 +199,7 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
   flushSection();
 
   // Final diagnostic
-  console.log(`Final DTO has ${dto.length} top-level items`);
+//  console.log(`Final DTO has ${dto.length} top-level items`);
 
   return dto;
 };

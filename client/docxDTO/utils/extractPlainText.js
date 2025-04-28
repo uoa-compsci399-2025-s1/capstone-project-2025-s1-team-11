@@ -19,10 +19,10 @@ export const extractPlainText = (runs, relationships = {}) => {
 
       if (val === 'subscript') {
         isSubscript = true;
-        console.log('Found subscript formatting');
+//        console.log('Found subscript formatting');
       } else if (val === 'superscript') {
         isSuperscript = true;
-        console.log('Found superscript formatting');
+//        console.log('Found superscript formatting');
       }
     }
 
@@ -39,10 +39,10 @@ export const extractPlainText = (runs, relationships = {}) => {
       if (imagePath) {
         const filename = imagePath.split('/').pop();
         const publicPath = `/assets/images/${filename}`;
-        console.log(`📸 Found image: ${publicPath}`);
+//        console.log(`📸 Found image: ${publicPath}`);
         result += `<img src='${publicPath}' alt=''>`;
       } else {
-        console.warn(`⚠️ Warning: No relationship found for image embed ID: ${embedId}`);
+//        console.warn(`⚠️ Warning: No relationship found for image embed ID: ${embedId}`);
       }
     }
 
@@ -66,15 +66,13 @@ export const extractPlainText = (runs, relationships = {}) => {
     }
   }
 
-  // Post-process text for special notation patterns
-
-  // Handle subscript notation with tilde ~xx~
+  // Handle subscript notation with tilde ~xx~ (This is a WIP, not really there yet)
   result = result.replace(/(\w+)~(\d+)~/g, '$1<sub>$2</sub>');
 
-  // Handle superscript notation with caret ^xx^
+  // Handle superscript notation with caret ^xx^ (This is a WIP, not really there yet)
   result = result.replace(/(\w+)\^(\d+)\^/g, '$1<sup>$2</sup>');
 
-  // Handle hex numbers (common pattern in CS questions)
+  // Handle hex numbers (probably need to drop this as it is basically hardcoding)
   // This handles when a number has subscript immediately after without special notation
   result = result.replace(/(\b[A-F0-9]+)(\d{1,2})\.(?=\s|<br>|$)/g, '$1<sub>$2</sub>.');
 

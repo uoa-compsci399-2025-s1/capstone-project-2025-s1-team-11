@@ -9,7 +9,7 @@ export const extractDocumentXml = async (filePath) => {
   // Extract main document
   const documentXml = await zip.file('word/document.xml').async('string');
 
-  // ✅ Extract relationships
+  // Extract relationships
   let relationships = {};
   const relsFile = zip.file('word/_rels/document.xml.rels');
   if (relsFile) {
