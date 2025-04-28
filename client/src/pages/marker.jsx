@@ -109,9 +109,13 @@ const Marker = () => {
         return (
           <>
             <Typography.Title level={3}>Upload Exam Sheet</Typography.Title>
-            <p>
-              Please upload an exam in the Exam Builder page to begin.
-            </p>
+            {examData ? (
+              <p>Exam uploaded: {examData.examTitle || 'Unnamed Exam'}</p>
+            ) : (
+              <p>
+                Please upload an exam in the Exam Builder page to begin.
+              </p>
+            )}
           </>
         );
       case 1:
