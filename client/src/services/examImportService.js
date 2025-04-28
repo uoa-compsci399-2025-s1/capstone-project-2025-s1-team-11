@@ -16,7 +16,7 @@ class ExamImportService {
    * @returns {Promise<Object>} - The normalized exam object ready for Redux
    */
   async importExam(file, format) {
-    if (!this.supportedFormats[format]) {
+    if (!this.importFormats[format]) {
       throw new Error(`Unsupported exam format: ${format}`);
     }
 
@@ -32,9 +32,6 @@ class ExamImportService {
     // This just cleans up the DTO, but doesn't act differently for different sources like docx or xml.
     return this.normalizeForRedux(examDTO);
   }
-
-
-
 
 
   /**
