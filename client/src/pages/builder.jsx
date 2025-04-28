@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
-import { Typography, Button } from "antd";
+import { Typography, Button, Space } from "antd";
 
 const Builder = () => {
     const exam = useSelector((state) => state.exam.examData);
@@ -33,14 +33,24 @@ const Builder = () => {
                         <Typography.Paragraph type="secondary">
                             Export functions coming soon
                         </Typography.Paragraph>
-                        <div style={{ marginTop: 16 }}>
-                            <Button type="default" style={{ marginRight: 8 }} disabled> {/* intentionally disabled */}
-                                Download Exam
-                            </Button>
-                            <Button type="primary" onClick={() => navigate('/randomiser')}>
+                        <div style={{ marginTop: 24, marginBottom: 24 }}>
+                            <Space>
+                                <Button type="primary" onClick={() => navigate('/randomiser')}>
                                 Open in Randomiser
-                            </Button>
-                        </div>
+                                </Button>
+                            </Space>
+                            </div>
+
+                            <div style={{ marginBottom: 24 }}>
+                            <Space>
+                                <Button type="default" onClick={() => {/* TODO: implement DOCX download */}}>
+                                Download as DOCX
+                                </Button>
+                                <Button type="default" onClick={() => {/* TODO: implement PDF download */}}>
+                                Download as PDF
+                                </Button>
+                            </Space>
+                            </div>
                     </div>
                 );
             default:
