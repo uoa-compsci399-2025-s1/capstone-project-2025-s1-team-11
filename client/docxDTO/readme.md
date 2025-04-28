@@ -38,5 +38,5 @@ npm install fast-xml-parser jszip
 - `inputFiles/` — store `.docx` test files here
 - `outputFiles/` — generated JSON output files
 - `parseDocxDto.js` — main runner script
-- `transformXmlToSimpleDto.js` — core transformation logic
+- `transformXmlToDto.js` — core transformation logic
 - `utils/` — helper functions (formatting, text extraction, XML parsing)

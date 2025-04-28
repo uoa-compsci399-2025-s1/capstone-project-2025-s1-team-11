@@ -3,7 +3,7 @@ import path from 'path';
 import readline from 'readline';
 import { extractDocumentXml } from './utils/extractDocumentXml.js';
 import { parseXmlToJson } from './utils/parseXmlToJson.js';
-import { transformXmlToSimpleDto } from './transformXmlToSimpleDto.js';
+import { transformXmlToDto } from './transformXmlToDto.js';
 
 const inputFolder = path.resolve('./docxDTO/inputFiles');
 const outputFolder = path.resolve('./docxDTO/outputFiles');
@@ -62,7 +62,7 @@ const run = async () => {
 
     console.log('Transforming to DTO...');
 
-    const dto = transformXmlToSimpleDto(parsedXml, relationships, imageData);
+    const dto = transformXmlToDto(parsedXml, relationships, imageData);
 
     const timestamp = new Date();
     const hhmm = `${timestamp.getHours().toString().padStart(2, '0')}${timestamp.getMinutes().toString().padStart(2, '0')}`;

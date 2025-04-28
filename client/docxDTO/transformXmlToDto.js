@@ -1,9 +1,9 @@
-// client/docxDTO/transformXmlToSimpleDto.js
+// client/docxDTO/transformXmlToDto.js
 
 import { buildContentFormatted } from './utils/buildContentFormatted.js';
 import { convertOmmlToMathML } from './utils/ommlToMathML.js';
 
-export const transformXmlToSimpleDto = (xmlJson, relationships = {}, imageData = {}) => {
+export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) => {
   const body = xmlJson['w:document']?.['w:body'];
   if (!body) {
     throw new Error('Invalid XML structure: missing w:body');
