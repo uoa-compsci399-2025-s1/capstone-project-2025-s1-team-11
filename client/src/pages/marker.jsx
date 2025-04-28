@@ -73,19 +73,30 @@ const Marker = () => {
       message.error("No marking key available to export.");
       return;
     }
-    const keyToExport = markingKeyType === "legacy" ? markingKey.legacy : markingKey.enhanced;
+    const keyToExport = markingKeyType === "legacy" ? markingKey.legacyKey : markingKey.enhancedKey;
+  
     if (!keyToExport) {
-      message.error("Selected marking key is not available for export.");
+      message.error(`Selected marking key (${markingKeyType}) is not available.`);
       return;
     }
-    const keyDataStr = JSON.stringify(keyToExport, null, 2);
-    const blob = new Blob([keyDataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `marking_key_${markingKeyType}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    console.log("Exporting key:", keyToExport);
+  
+    try {
+      const blob = new Blob([JSON.stringify(keyToExport, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `marking_key_${markingKeyType}.json`;
+      document.body.appendChild(a); 
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export failed:", error);
+      message.error("Failed to export marking key.");
+    }
   };
 
   const handleExportResults = () => {
