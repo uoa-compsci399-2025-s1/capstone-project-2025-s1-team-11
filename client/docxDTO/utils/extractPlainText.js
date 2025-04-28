@@ -15,6 +15,7 @@ export const extractPlainText = (runs, options = {}) => {
     let isUnderline = false;
     let isSubscript = false;
     let isSuperscript = false;
+    let isMonospace = false;
 
     if (r['w:rPr']) {
       // Check for bold formatting
@@ -44,6 +45,31 @@ export const extractPlainText = (runs, options = {}) => {
           isSubscript = true;
         } else if (val === 'superscript') {
           isSuperscript = true;
+        }
+      }
+
+      // Check for monospace/fixed-width font
+      if (r['w:rPr']['w:rFonts']) {
+        const fontInfo = r['w:rPr']['w:rFonts'];
+        // Try different ways to access the font attributes
+        const fontAscii = fontInfo['@_w:ascii'] ||
+            (fontInfo['$'] && fontInfo['$']['w:ascii']);
+        const fontHAnsi = fontInfo['@_w:hAnsi'] ||
+            (fontInfo['$'] && fontInfo['$']['w:hAnsi']);
+
+        // Common monospace fonts in Word
+        const monospaceFonts = [
+          'consolas', 'courier', 'courier new', 'lucida console',
+          'monaco', 'monospace', 'fixedsys', 'terminal'
+        ];
+
+        // Check if either font is a known monospace font
+        const fontAsciiLower = fontAscii ? fontAscii.toLowerCase() : '';
+        const fontHAnsiLower = fontHAnsi ? fontHAnsi.toLowerCase() : '';
+
+        if (monospaceFonts.some(font =>
+            fontAsciiLower.includes(font) || fontHAnsiLower.includes(font))) {
+          isMonospace = true;
         }
       }
     }
@@ -109,6 +135,10 @@ export const extractPlainText = (runs, options = {}) => {
 
       if (isUnderline) {
         textContent = `<u>${textContent}</u>`;
+      }
+
+      if (isMonospace) {
+        textContent = `<code>${textContent}</code>`;
       }
 
       result += textContent;
