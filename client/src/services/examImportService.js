@@ -3,9 +3,9 @@ import { parseExamDocx } from '../dto/DOCX_Exam_DTO';
 // This service handles the import of exams from various formats
 class ExamImportService {
   constructor() {
-    this.supportedFormats = {
+    this.importFormats = {
       'docx': this.processDocxExam,
-      'xml': this.processXmlExam, // Placeholder for future implementation
+      'moodle': this.processMoodleXmlExam, // Placeholder for future implementation
     };
   }
 
@@ -21,14 +21,21 @@ class ExamImportService {
     }
 
     // Convert the file to appropriate content based on format
-    const content = await this.fileToContent(file, format);
+    // This brings in the original file ? so for docx can does it have to unzip etc? I want to let Ollie's code do all that.
+    // const content = await this.fileToContent(file, format);
     
     // Process the content using the appropriate handler
-    const examDTO = await this.supportedFormats[format](content);
+    // This looks like where the import file or it's content gets turned into a DTO ?
+    const examDTO = await this.importFormats[format](content);
     
     // Normalize the DTO for Redux store
+    // This just cleans up the DTO, but doesn't act differently for different sources like docx or xml.
     return this.normalizeForRedux(examDTO);
   }
+
+
+
+
 
   /**
    * Convert a file to the content needed for processing
@@ -43,6 +50,7 @@ class ExamImportService {
       // return await this.convertDocxToHtml(file);
       
       // For demonstration, let's assume we already have the HTML content
+      // This should not read a docx as text since it's a zip...
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -66,11 +74,13 @@ class ExamImportService {
 
   /**
    * Process a DOCX exam file that has been converted to HTML
-   * @param {string} htmlContent - The HTML content from the DOCX file
+   * @param {File} file - The DOCX file
    * @returns {Object} - The exam DTO
    */
-  async processDocxExam(htmlContent) {
-    return parseExamDocx(htmlContent);
+  async processDocxExam(file) {
+    // This should actually pass the file itself to the DOCX DTO script 
+    
+    return parseExamDocx(file);
   }
 
   /**
