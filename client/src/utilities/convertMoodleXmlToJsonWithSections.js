@@ -1,0 +1,85 @@
+export function convertMoodleXmlDTOToJsonWithSections(moodleXmlDTO) {
+    // Group questions by section (assuming first question in each section has a section title)
+    const sections = [];
+    let currentSection = null;
+    
+    moodleXmlDTO.questions.forEach((question) => {
+        // Check if this is a section header question
+        if (question.type === 'category' || question.name.includes('Section')) {
+            // Create new section
+            currentSection = {
+                type: 'section',
+                contentFormatted: question.name,
+                format: 'HTML',
+                pageBreakAfter: true,
+                sectionTitle: question.name,
+                sectionNumber: sections.length,
+                questions: []
+            };
+            sections.push(currentSection);
+        } else if (currentSection) {
+            // Extract marks from question text if present
+            let marks = 1;
+            const marksMatch = question.questionText.match(/\[(\d+)\s*marks?\]/i);
+            if (marksMatch) {
+                marks = parseInt(marksMatch[1]);
+            }
+
+            // Add question to current section
+            currentSection.questions.push({
+                type: 'question',
+                contentFormatted: question.questionText,
+                format: 'HTML',
+                pageBreakAfter: false,
+                questionNumber: currentSection.questions.length,
+                marks: marks,
+                answers: question.answers.map((answer) => ({
+                    type: 'answer',
+                    contentFormatted: answer.text,
+                    format: 'HTML',
+                    correct: answer.fraction > 0
+                }))
+            });
+        }
+    });
+
+    // If no sections were created, create a default section with all questions
+    if (sections.length === 0) {
+        const defaultSection = {
+            type: 'section',
+            contentFormatted: 'Default Section',
+            format: 'HTML',
+            pageBreakAfter: true,
+            sectionTitle: 'Default Section',
+            sectionNumber: 0,
+            questions: moodleXmlDTO.questions.map((question, index) => {
+                // Extract marks from question text if present
+                let marks = 1;
+                const marksMatch = question.questionText.match(/\[(\d+)\s*marks?\]/i);
+                if (marksMatch) {
+                    marks = parseInt(marksMatch[1]);
+                }
+
+                return {
+                    type: 'question',
+                    contentFormatted: question.questionText,
+                    format: 'HTML',
+                    pageBreakAfter: false,
+                    questionNumber: index,
+                    marks: marks,
+                    answers: question.answers.map((answer) => ({
+                        type: 'answer',
+                        contentFormatted: answer.text,
+                        format: 'HTML',
+                        correct: answer.fraction > 0
+                    }))
+                };
+            })
+        };
+        sections.push(defaultSection);
+    }
+
+    return {
+        examBody: sections
+    };
+} 

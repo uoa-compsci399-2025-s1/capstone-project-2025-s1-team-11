@@ -23,10 +23,15 @@ const ExamFileManager = () => {
     const file = event.target.files[0];
     if (file) {
       try {
-        await importExam(file);
-        setError("");
+        const result = await importExam(file);
+        if (result) {
+          setShowSuccessAlert(true);
+          setError("");
+          console.log("File imported and saved successfully to " + (result?.name || "unknown file"));
+        }
       } catch (err) {
         setError("Error importing exam: " + err.message);
+        console.error("Import error:", err);
       }
     }
   };
@@ -45,7 +50,7 @@ const ExamFileManager = () => {
   return (
       <div>
         <h2>Exam File Manager</h2>
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <Alert message="Error" description={error} type="error" showIcon />}
         {showSuccessAlert && (
             <Alert
                 message="Success"
