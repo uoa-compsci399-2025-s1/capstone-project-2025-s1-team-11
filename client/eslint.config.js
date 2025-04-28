@@ -64,9 +64,17 @@ export default [
     },
   },
 
-  // CLI Scripts (e.g. logDocxDTO.js)
+  // CLI Scripts (e.g. 1logDocxDTO.js)
   {
     files: ['scripts/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+
+// DOCX Parsing / Node Utilities
+  {
+    files: ['docxWIP/**/*.js', 'docx/**/*.js', 'docxDTO/**/*.js'],
     languageOptions: {
       globals: globals.node,
     },
