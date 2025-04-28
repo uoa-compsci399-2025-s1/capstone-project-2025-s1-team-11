@@ -1,10 +1,10 @@
 import JSZip from 'jszip';
-import fs from 'fs/promises';
+//import fs from 'fs/promises';
 import { parseXmlToJson } from './parseXmlToJson.js';
 
-export const extractDocumentXml = async (filePath) => {
-  const data = await fs.readFile(filePath);
-  const zip = await JSZip.loadAsync(data);
+export const extractDocumentXml = async (file) => {
+  //const data = await fs.readFile(filePath);
+  const zip = await JSZip.loadAsync(file);
 
   // Extract main document
   const documentXml = await zip.file('word/document.xml').async('string');

@@ -18,8 +18,6 @@ const ExamDisplay = () => {
   const dispatch = useDispatch();
   const questions = useSelector(selectQuestionsForTable);
 
-  console.log("Exam in display:", exam);
-
   const handleAddQuestion = () => {
     const questionData = {
       contentText: 'New Question',

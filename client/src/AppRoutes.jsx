@@ -6,9 +6,9 @@ import Builder from "./pages/builder.jsx";
 import Marker from "./pages/marker.jsx";
 import Randomiser from "./pages/randomiser.jsx";
 import Documentation from "./pages/documentation.jsx";
-import ExamConsolePage from './pages/examConsole'; 
-import ExamImportTest from './pages/examImport';
-import TextEditor from './pages/textEditor';
+// import ExamConsolePage from './pages/examConsole'; 
+// import ExamImportTest from './pages/examImport';
+// import TextEditor from './pages/textEditor';
 
 
 export default function AppRoutes() {
@@ -20,9 +20,9 @@ export default function AppRoutes() {
                 <Route path="/randomiser" element={<Randomiser />} />
                 <Route path="/marker" element={<Marker />} />
                 <Route path="/documentation" element={<Documentation />} />
-                <Route path="/console" element={<ExamConsolePage />} />
+                {/* <Route path="/console" element={<ExamConsolePage />} />
                 <Route path="/import" element={<ExamImportTest />} />
-                <Route path="/textEditor" element={<TextEditor />} />
+                <Route path="/textEditor" element={<TextEditor />} /> */}
             </Route>
         </Routes>
     );

@@ -1,5 +1,6 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState } from "react";
+import { useDispatch } from 'react-redux';
 import { Button, Alert, Space } from "antd";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 
@@ -7,6 +8,11 @@ const ExamFileManager = () => {
   const { exam, fileHandle, openExam, saveExam, importExam } = useFileSystem();
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [file, setFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [format, setFormat] = useState('docx'); // Default format
+
+  const dispatch = useDispatch();
 
   const handleOpenExam = async () => {
     try {
@@ -19,15 +25,28 @@ const ExamFileManager = () => {
     }
   };
 
+  // Determine format and import exam
   const handleImportExam = async (event) => {
-    const file = event.target.files[0];
-    if (file) {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      const fileExtension = selectedFile.name.split('.').pop();
+      let format = '';
+
+      if (fileExtension === 'xml') {
+        format = 'moodle'; // Assuming XML is Moodle format
+      } else if (fileExtension === 'docx') {
+        format = 'docx';
+      } else {
+        setError("Unsupported file format");
+        return;
+      }
+
       try {
-        const result = await importExam(file);
+        const result = await importExam(selectedFile, format);
         if (result) {
           setShowSuccessAlert(true);
           setError("");
-          console.log("File imported and saved successfully to " + (result?.name || "unknown file"));
+          console.log("File imported and saved successfully");
         }
       } catch (err) {
         setError("Error importing exam: " + err.message);

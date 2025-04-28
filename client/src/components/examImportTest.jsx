@@ -35,7 +35,9 @@ const ExamImport = () => {
 
     try {
       const examData = await examImportService.importExam(file, format);
+
       dispatch(importExam(examData));
+      
       setFile(null);
       // You might want to show a success message or redirect
     } catch (err) {

@@ -8,10 +8,10 @@ import { transformXmlToDto } from './transformXmlToDto.js';
  * @param {string} filePath - Path to the DOCX file
  * @returns {Promise<Object>} The parsed document structure
  */
-export async function parseDocx(filePath) {
+export async function parseDocx(file) {
     try {
         // Extract document content
-        const { documentXml, relationships, imageData } = await extractDocumentXml(filePath);
+        const { documentXml, relationships, imageData } = await extractDocumentXml(file);
 
         // Parse XML to JSON
         const parsedXml = parseXmlToJson(documentXml);

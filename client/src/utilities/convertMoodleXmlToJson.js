@@ -1,6 +1,6 @@
-export function convertMoodleXmlDTOToJson(moodleXmlDTO) {
+export function convertMoodleXmlToJson(moodleXmlDTO) {
     // Convert all questions directly to the examBody array
-    const examBody = moodleXmlDTO.questions.map((question, index) => {
+    const examBody = moodleXmlDTO.questions.map((question) => {
         // Extract marks from question text if present
         let marks = 1;
         const marksMatch = question.questionText.match(/\[(\d+)\s*marks?\]/i);
@@ -13,13 +13,13 @@ export function convertMoodleXmlDTOToJson(moodleXmlDTO) {
             contentFormatted: question.questionText,
             format: 'HTML',
             pageBreakAfter: false,
-            questionNumber: index,
+            //questionNumber: index,
             marks: marks,
             answers: question.answers.map((answer) => ({
                 type: 'answer',
                 contentFormatted: answer.text,
                 format: 'HTML',
-                correct: answer.fraction > 0
+                //correct: answer.fraction > 0
             }))
         };
     });
