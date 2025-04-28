@@ -44,8 +44,13 @@ export const extractDocumentXml = async (file) => {
 
           // Get image as ArrayBuffer (browser-compatible)
           const imageArrayBuffer = await imageFile.async('arraybuffer');
-          const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageArrayBuffer)));
 
+          const base64Image = btoa(
+            Array.from(new Uint8Array(imageArrayBuffer))
+              .map(b => String.fromCharCode(b))
+              .join('')
+          );
+          
           // Determine mime type based on file extension
           const fileExt = target.split('.').pop().toLowerCase();
           let mimeType = 'image/jpeg'; // Default

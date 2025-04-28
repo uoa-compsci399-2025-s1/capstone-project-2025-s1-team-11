@@ -141,8 +141,10 @@ export const extractPlainText = (runs, options = {}) => {
         textContent = `<code>${textContent}</code>`;
       }
 
-      result += textContent;
-      lastRunEndedWithSpace = textContent.endsWith(' ');
+      if (typeof textContent === 'string') {
+        result += textContent;
+        lastRunEndedWithSpace = textContent.endsWith(' ');
+      }
     }
   }
 
