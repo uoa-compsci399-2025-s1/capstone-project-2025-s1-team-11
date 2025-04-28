@@ -1,6 +1,4 @@
 // examSlice.js
-// To do: 
-// Add contentText <-> contentFormatted link function
 
 import { createSlice } from '@reduxjs/toolkit';
 import { 
@@ -30,8 +28,7 @@ const examSlice = createSlice({
   initialState,
   reducers: {
     createNewExam: (state, action) => {
-      if (state.examData) return;
-      // Typical payload: { examTitle, courseCode, courseName, semester, year }
+      if (state.examData) { return; }
       state.examData = createExam(action.payload || {});
     },
 
@@ -40,29 +37,43 @@ const examSlice = createSlice({
     },
 
     addSection: (state, action) => {
-      if (!state.examData) return;
+      if (!state.examData) { return; }
       const newSection = createSection(action.payload);
+
+      // fill simplified contentText from contentFormatted
+      newSection.contentText = htmlToText(newSection.contentFormatted || "");
+      for (const question of newSection.questions || []) {
+        question.contentText = htmlToText(question.contentFormatted || "");
+        for (const answer of question.answers || []) {
+          answer.contentText = htmlToText(answer.contentFormatted || "");
+        }
+      }
+
       state.examData.examBody.push(newSection);
       renumberSections(state.examData.examBody);
     },
 
     addQuestion: (state, action) => {
+      if (!state.examData) { return; }
       const { examBodyIndex, questionData } = action.payload;
+
+      questionData.contentText = htmlToText(questionData.contentFormatted || "");
+
       const examData = state.examData;
-      if (!examData) return;
     
       const examBody = examData.examBody;
       const versionCount = examData.versions.length;
       const optionCount = examData.teleformOptions.length;
-      
+
       const rawAnswers = questionData.answers || [];
-      let answers = rawAnswers.map((ans, idx) =>
-        createAnswer(
-          typeof ans === 'string'
-            ? { contentText: ans, correct: idx === 0 }
-            : { ...ans, correct: idx === 0 }
-        )
-      );
+      let answers = rawAnswers.map((ans, idx) => {
+        const contentText = htmlToText(ans.contentFormatted || "");
+        return createAnswer({ 
+          contentFormatted: ans.contentFormatted, 
+          contentText: contentText,
+          correct: idx === 0 
+        });
+      });
 
       const normalisedAnswers = normaliseAnswersToLength(answers, optionCount);
 
@@ -89,33 +100,33 @@ const examSlice = createSlice({
 
     setCoverPage: (state, action) => {
       const { contentFormatted, format } = action.payload;
-      if (!state.examData) return;
+      if (!state.examData) { return; }
       state.examData.coverPage = createExamComponent(contentFormatted, format);
     },
 
     setAppendix: (state, action) => {
       const { contentFormatted, format = 'HTML' } = action.payload;
-      if (!state.examData) return;
+      if (!state.examData) { return; }
       state.examData.appendix = createExamComponent(contentFormatted, format);
     },
 
     removeCoverPage: (state) => {
-      if (!state.examData) return;
+      if (!state.examData) { return; }
       state.examData.coverPage = null;
     },
 
     removeAppendix: (state) => {
-      if (!state.examData) return;
+      if (!state.examData) { return; }
       state.examData.appendix = null;
     },
     //update-question 0 0 "answers" "1|4|5"
     updateQuestion: (state, action) => {
-      if (!state.examData.examBody) return;
+      if (!state.examData.examBody) { return; }
       const { location, newData } = action.payload;
       const { examBodyIndex, questionsIndex } = location;
       const optionsCount = state.examData.teleformOptions.length;
       const container = state.examData.examBody?.[examBodyIndex];
-      if (!container) return;
+      if (!container) { return; }
     
       if (questionsIndex !== undefined && container.type === 'section') {
         const question = container.questions[questionsIndex]
@@ -143,7 +154,7 @@ const examSlice = createSlice({
     moveQuestion: (state, action) => {
       const { source, destination } = action.payload;
       const examBody = state.examData?.examBody;
-      if (!examBody) return;
+      if (!examBody) { return; }
     
       // Cache source and destination references early
       const sourceIsInSection = 'questionsIndex' in source;
@@ -160,7 +171,7 @@ const examSlice = createSlice({
         questionToMove = examBody[source.examBodyIndex];
       }
     
-      if (!questionToMove) return;
+      if (!questionToMove) { return; }
     
       // First, safely remove the question
       if (sourceIsInSection && sourceSection?.type === 'section') {
@@ -182,7 +193,7 @@ const examSlice = createSlice({
     moveSection: (state, action) => {
       const { sourceIndex, destIndex } = action.payload;
       const examBody = state.examData?.examBody;
-      if (!examBody) return;
+      if (!examBody) { return; }
       const sectionToMove = examBody.splice(sourceIndex, 1)[0];
       examBody.splice(destIndex, 0, sectionToMove);
       renumberSections(examBody);
@@ -192,7 +203,7 @@ const examSlice = createSlice({
     removeSection: (state, action) => {
       // Payload should be examBodyIndex of section to remove
       const examBody = state.examData?.examBody;
-      if (!examBody) return;
+      if (!examBody) { return; }
       examBody.splice(action.payload, 1);
       renumberSections(examBody);
       renumberQuestions(examBody);
@@ -200,7 +211,7 @@ const examSlice = createSlice({
 
     removeQuestion: (state, action) => {
       // Payload should be examBodyIndex of section to remove
-      if (!state.examData.examBody) return;
+      if (!state.examData.examBody) { return; }
       removeQuestionHelper(state.examData.examBody, action.payload);
       renumberQuestions(state.examData.examBody);
     },
@@ -208,33 +219,33 @@ const examSlice = createSlice({
     updateExamField: (state, action) => {
       const allowedFields = ['examTitle', 'courseCode', 'courseName', 'semester', 'year'];
       const { field, value } = action.payload;
-      if (!state.examData) return;
+      if (!state.examData) { return; }
       if (allowedFields.includes(field)) {
         state.examData[field] = value;
       }
     },
 
     updateExamMetadata: (state, action) => {
-      if (!state.examData) return;
+      if (!state.examData) { return; }
       if (!state.examData.metadata) state.examData.metadata = {};
       Object.assign(state.examData.metadata, action.payload);
     },
 
     setExamVersions: (state, action) => {
-      if (!state.examData) return;
+      if (!state.examData) { return; }
       state.examData.versions = action.payload; 
     },
 
     setTeleformOptions: (state, action) => {
       // Payload should be an array of option identifiers 'i.' or 'a)' etc. 
-      if (!state.examData) return;
+      if (!state.examData) { return; }
       state.examData.teleformOptions = action.payload;
       normaliseAnswersPerTeleformOptions(state.examData);
     },
 
     // Generate answer shuffling for all questions
     regenerateShuffleMaps: (state) => {
-      if (!state.examData) return;
+      if (!state.examData) { return; }
     
       const versionCount = state.examData.versions?.length || 0;
     
@@ -301,9 +312,7 @@ const examSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    importExamSuccess: (state, action) => {
-      const exam = action.payload;
-      state.examData = exam;
+    importExamSuccess: (state) => {
       state.loading = false;
     },
     importExamFailure: (state, action) => {
@@ -316,20 +325,76 @@ const examSlice = createSlice({
   }
 });
 
-// Thunk for importing an exam
-export const importExam = (exam) => async (dispatch) => {
+
+// Thunk for importing an exam properly
+export const importDTOToState = (examDTO) => async (dispatch) => {
   try {
     dispatch(importExamStart());
-    
-    dispatch(importExamSuccess(exam));
-    return exam;
+
+    dispatch(clearExam());
+
+    dispatch(createNewExam({
+      examTitle: examDTO.examTitle,
+      courseCode: examDTO.courseCode,
+      courseName: examDTO.courseName,
+      semester: examDTO.semester,
+      year: examDTO.year,
+    }));
+
+    // Set versions and teleform options if needed
+    if (examDTO.versions) {
+      dispatch(setExamVersions(examDTO.versions));
+    }
+    if (examDTO.teleformOptions) {
+      dispatch(setTeleformOptions(examDTO.teleformOptions));
+    }
+
+    let examBodyIndexCounter = 0;
+
+    // Import the examBody (sections and/or questions)
+    for (const item of examDTO.examBody || []) {
+      try {
+        if (item.type === 'section') {
+          const { questions, ...sectionWithoutQuestions } = item;
+          await dispatch(addSection(sectionWithoutQuestions));
+          
+          //const sectionIndex = result.payload;
+          //const sectionIndex = state.examData.examBody.length - 1;
+
+          for (const question of item.questions || []) {
+            await dispatch(addQuestion({ 
+              examBodyIndex: examBodyIndexCounter, 
+              questionData: question 
+            }));
+          }
+        } else {
+          await dispatch(addQuestion({ 
+            examBodyIndex: null, 
+            questionData: item 
+          }));
+        }
+        examBodyIndexCounter++;
+      } catch (error) {
+        console.error(`Error while processing item:`, item);
+        console.error(error);
+        throw error;  // still rethrow to trigger importExamFailure
+      }
+    }
+
+    dispatch(importExamSuccess()); // You could even repurpose this to mean "done loading"
+
+    return;
   } catch (error) {
     dispatch(importExamFailure(error.message));
     throw error;
   }
 };
 
-
+function htmlToText(html) {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent || tempDiv.innerText || "";
+}
 
 // Export actions
 export const { 

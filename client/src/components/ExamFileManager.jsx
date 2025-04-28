@@ -1,18 +1,17 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState } from "react";
 import { useDispatch } from 'react-redux';
-import { Button, Alert, Space } from "antd";
+import { Button, Alert, Space, Select } from "antd";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 
 const ExamFileManager = () => {
   const { exam, fileHandle, openExam, saveExam, importExam } = useFileSystem();
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const [file, setFile] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [format, setFormat] = useState('docx'); // Default format
+  //const [isLoading, setIsLoading] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
 
-  const dispatch = useDispatch();
+  //const dispatch = useDispatch();
 
   const handleOpenExam = async () => {
     try {
@@ -55,6 +54,23 @@ const ExamFileManager = () => {
     }
   };
 
+  const handleFormatChange = (value) => {
+    setSelectedFormat(value);
+  };
+
+  // Determine the acceptable file extensions based on selected format
+  const getAcceptExtension = () => {
+    switch (selectedFormat) {
+      case 'moodle':
+        return '.xml';
+      case 'docx':
+        return '.docx';
+      case 'all':
+      default:
+        return '.xml,.docx'; // Show both for "All Files"
+    }
+  };
+
   const handleSaveExam = async () => {
     if (!exam) return;
     try {
@@ -86,17 +102,24 @@ const ExamFileManager = () => {
         </p>
         <Space wrap style={{ marginTop: "12px" }}>
           <Button onClick={handleOpenExam}>Open Exam (JSON)</Button>
+          <Space wrap style={{ marginLeft: 30, marginRight: 30 }}>
           <Button>
             <label style={{ cursor: "pointer", marginBottom: 0 }}>
-              Import Exam (XML)
+              Import Exam
               <input
-                  type="file"
-                  accept=".xml"
-                  onChange={handleImportExam}
-                  style={{ display: "none" }}
+                type="file"
+                accept={getAcceptExtension()} // Dynamically set based on selected format
+                onChange={handleImportExam}
+                style={{ display: "none" }}
               />
             </label>
           </Button>
+          <Select defaultValue="all" onChange={handleFormatChange} style={{ marginRight: 0 }}>
+            <Select.Option value="all">All Files</Select.Option>
+            <Select.Option value="moodle">Moodle XML</Select.Option>
+            <Select.Option value="docx">DOCX</Select.Option>
+          </Select>
+          </Space>
           <Button type="primary" onClick={handleSaveExam}>
             Save Exam
           </Button>

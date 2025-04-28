@@ -2,6 +2,7 @@
 
 import { buildContentFormatted } from './utils/buildContentFormatted.js';
 import { convertOmmlToMathML } from './utils/ommlToMathML.js';
+import { createExam } from '../../store/exam/examUtils.js';
 
 export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) => {
   const body = xmlJson['w:document']?.['w:body'];
@@ -19,7 +20,9 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
   // Diagnostic: Log total blocks to understand the content
 //  console.log(`Total document blocks: ${blocks.length}`);
 
-  const dto = [];
+  //const dto = [];
+  const dto = createExam();
+  
 
   let currentSection = null;
   let currentQuestion = null;
@@ -50,7 +53,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 //        console.log(`Added question "${currentQuestion.contentFormatted}" to section`);
       } else {
         // Add directly to DTO
-        dto.push(currentQuestion);
+        dto.examBody.push(currentQuestion);
 //        console.log(`Added standalone question "${currentQuestion.contentFormatted}"`);
       }
 
@@ -69,12 +72,12 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
       // Only add section if it has content
       if (currentSection.contentFormatted && currentSection.contentFormatted.trim() !== '') {
-        dto.push(currentSection);
+        dto.examBody.push(currentSection);
 //        console.log(`Added section with content: ${currentSection.contentFormatted.substring(0, 30)}...`);
       } else {
         // If section has no content, move any nested questions to top level
         if (currentSection.questions && currentSection.questions.length > 0) {
-          dto.push(...currentSection.questions);
+          dto.examBody.push(...currentSection.questions);
 //          console.log(`Moved ${currentSection.questions.length} questions from empty section to top level`);
         }
       }
@@ -216,7 +219,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
   flushSection();
 
   // Final diagnostic
-//  console.log(`Final DTO has ${dto.length} top-level items`);
+//  console.log(`Final DTO has ${dto.examBody.length} top-level items`);
 
   return dto;
 };

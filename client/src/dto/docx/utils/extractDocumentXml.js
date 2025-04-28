@@ -38,9 +38,13 @@ export const extractDocumentXml = async (file) => {
         const imageFile = zip.file(imagePath);
 
         if (imageFile) {
-          // Get image as base64
-          const imageBuffer = await imageFile.async('nodebuffer');
-          const base64Image = imageBuffer.toString('base64');
+          // Get image as base64 with nodebuffer (not browser compatible)
+          // const imageBuffer = await imageFile.async('nodebuffer');
+          // const base64Image = imageBuffer.toString('base64');
+
+          // Get image as ArrayBuffer (browser-compatible)
+          const imageArrayBuffer = await imageFile.async('arraybuffer');
+          const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageArrayBuffer)));
 
           // Determine mime type based on file extension
           const fileExt = target.split('.').pop().toLowerCase();

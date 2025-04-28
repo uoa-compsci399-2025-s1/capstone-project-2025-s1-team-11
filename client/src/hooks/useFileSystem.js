@@ -1,10 +1,9 @@
 // src/hooks/useFileSystem.js
 import { useDispatch, useSelector } from 'react-redux';
-import { createNewExam } from '../store/exam/examSlice';
+import { createNewExam, importDTOToState } from '../store/exam/examSlice';
 import { selectExamData } from '../store/exam/selectors';
 import { openExamFile, saveExamToFile } from '../services/fileSystemAccess.js';
 import examImportService from '../services/examImportService.js';
-
 
 // import { MoodleXmlDTO } from '../dto/moodleXML/moodleXmlDTO.js'; // Not used yet
 // import { convertMoodleXmlToJson } from '../utilities/convertMoodleXmlToJson.js'; // Not used yet
@@ -41,9 +40,10 @@ export function useFileSystem() {
   // Imports the exam from a file (docx, xml, etc.)
     const importExam = async (file, format) => {
         try {
-        const examData = await examImportService.importExam(file, format);
-        dispatch(createNewExam(examData)); 
-        return examData;
+        const examDTO = await examImportService.importExamToDTO(file, format);
+        dispatch(importDTOToState(examDTO));
+        //dispatch(createNewExam(examData)); 
+        return true;
         } catch (error) {
         throw new Error("Error importing exam: " + error.message);
         }
