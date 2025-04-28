@@ -10,31 +10,10 @@ const { TextArea } = Input;
 
 const Marker = () => {
   const examData = useSelector((state) => state.exam.examData);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
   const [teleformData, setTeleformData] = useState("");
   const [markingKeyType, setMarkingKeyType] = useState("enhanced");
   const [markingKey, setMarkingKey] = useState(null);
   const [results, setResults] = useState(null);
-
-  const uploadProps = {
-    name: "file",
-    multiple: true,
-    action: "https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload",
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== "uploading") {
-        setUploadedFiles(info.fileList);
-      }
-      if (status === "done") {
-        message.success(`${info.file.name} file uploaded successfully.`);
-      } else if (status === "error") {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
-    onDrop(e) {
-      // No change needed here
-    },
-  };
 
   useEffect(() => {
     if (examData) {
