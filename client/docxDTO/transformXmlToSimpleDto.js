@@ -1,6 +1,7 @@
 // client/docxDTO/transformXmlToSimpleDto.js
 
 import { buildContentFormatted } from './utils/buildContentFormatted.js';
+import { convertOmmlToMathML } from './utils/ommlToMathML.js';
 
 export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
   const body = xmlJson['w:document']?.['w:body'];
@@ -103,9 +104,24 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
       continue;
     }
 
+    // Check if this block contains an equation (OMML)
+    let containsEquation = false;
+    let equationContent = '';
+
+    if (block['m:oMath'] || block['m:oMathPara']) {
+      containsEquation = true;
+      equationContent = convertOmmlToMathML(block);
+    }
+
     // Get the runs and text from this block
     const runs = Array.isArray(block['w:r']) ? block['w:r'] : (block['w:r'] ? [block['w:r']] : []);
-    const text = buildContentFormatted(runs, { relationships });
+    let text;
+
+    if (containsEquation) {
+      text = equationContent;
+    } else {
+      text = buildContentFormatted(runs, { relationships });
+    }
 
     if (text.trim() !== '') {
 //      console.log(`Block ${i}: ${text.substring(0, 30)}${text.length > 30 ? '...' : ''}`);

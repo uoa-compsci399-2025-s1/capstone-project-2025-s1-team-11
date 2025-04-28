@@ -65,6 +65,17 @@ export const extractPlainText = (runs, relationships = {}) => {
       }
     }
 
+    // Handle equations (OMML)
+    if (r['m:oMath'] || r['m:oMathPara']) {
+      const equationXml = extractEquationXml(r);
+      if (equationXml) {
+        // Wrap the equation XML in MathML tags that will be rendered with MathJax
+        result += `<span class="math-equation">${equationXml}</span>`;
+        lastRunEndedWithSpace = false;
+        continue;
+      }
+    }
+
     // Extract text content
     let textContent = '';
     const t = r['w:t'];
@@ -120,4 +131,85 @@ export const extractPlainText = (runs, relationships = {}) => {
   result = result.replace(/(\b[A-F0-9]+)(\d{1,2})\.(?=\s|<br>|$)/g, '$1<sub>$2</sub>.');
 
   return result.trim();
+};
+
+// Helper function to extract equation XML from OMML format
+const extractEquationXml = (run) => {
+  try {
+    // Try to find the equation in either oMath or oMathPara
+    const math = run['m:oMath'] || (run['m:oMathPara'] && run['m:oMathPara']['m:oMath']);
+
+    if (!math) return null;
+
+    // Basic conversion from OMML to MathML-like syntax
+    // This is simplified and would need a more complete implementation
+    let mathML = convertOmmlToMathML(math);
+
+    return mathML ? `<math>${mathML}</math>` : '';
+  } catch (error) {
+    console.error('Error extracting equation:', error);
+    return '';
+  }
+};
+
+// Helper function to convert OMML to MathML
+// This is a simplified conversion and would need to be expanded for complex equations
+const convertOmmlToMathML = (omml) => {
+  try {
+    // Basic structure detection
+    let mathML = '';
+
+    // Handle fractions
+    if (omml['m:f']) {
+      const num = processOmmlElement(omml['m:f']['m:num']);
+      const den = processOmmlElement(omml['m:f']['m:den']);
+      mathML = `<mfrac><mrow>${num}</mrow><mrow>${den}</mrow></mfrac>`;
+    }
+    // Handle radical expressions (square roots, etc.)
+    else if (omml['m:rad']) {
+      const deg = omml['m:rad']['m:degHide'] ? '2' : processOmmlElement(omml['m:rad']['m:deg']);
+      const radicand = processOmmlElement(omml['m:rad']['m:e']);
+
+      if (deg === '2') {
+        mathML = `<msqrt>${radicand}</msqrt>`;
+      } else {
+        mathML = `<mroot><mrow>${radicand}</mrow><mn>${deg}</mn></mroot>`;
+      }
+    }
+    // Handle basic text and runs
+    else if (omml['m:r']) {
+      mathML = processOmmlElement(omml['m:r']);
+    }
+    // Handle equations with multiple parts
+    else if (omml['m:e']) {
+      mathML = processOmmlElement(omml['m:e']);
+    }
+
+    return mathML || processOmmlStructure(omml);
+  } catch (error) {
+    console.error('Error converting OMML to MathML:', error);
+    return '';
+  }
+};
+
+// Process specific OMML elements
+const processOmmlElement = (element) => {
+  if (!element) return '';
+
+  if (typeof element === 'string') return element;
+
+  // Handle text content
+  if (element['m:t']) {
+    return `<mtext>${element['m:t']}</mtext>`;
+  }
+
+  // More complex structures like matrices, scripts would need additional handling
+  return processOmmlStructure(element);
+};
+
+// Fallback processor for more complex OMML structures
+const processOmmlStructure = (structure) => {
+  // For more complex equations, you'd need to implement a complete OMML to MathML converter
+  // This is just a placeholder
+  return '<mtext>[equation]</mtext>';
 };
