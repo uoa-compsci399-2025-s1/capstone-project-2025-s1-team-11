@@ -2,7 +2,7 @@
 
 
 /**
- * Converts an ExamXmlDTO instance into the JSON model instance.
+ * Converts an ExamXmlDTO instance into your JSON model instance.
  */
 export function convertExamXmlDTOToJson(examXmlDTO) {
     const questions = examXmlDTO.questions.map(

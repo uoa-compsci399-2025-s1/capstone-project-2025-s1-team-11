@@ -1,10 +1,14 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import cypress from 'eslint-plugin-cypress';
+import jest from 'eslint-plugin-jest';
 
 export default [
   { ignores: ['dist'] },
+
+  // React / Application Code
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -30,4 +34,41 @@ export default [
       ],
     },
   },
-]
+
+  // Jest Unit Tests
+  {
+    files: ['**/__tests__/**/*.js', '**/*.test.js'],
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+        ...globals.node, // For `process`, `global`, etc.
+      },
+    },
+    plugins: {
+      jest,
+    },
+  },
+
+  // Cypress Tests
+  {
+    files: ['cypress/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.cypress,
+      },
+    },
+    plugins: {
+      cypress,
+    },
+  },
+
+  // CLI Scripts (e.g. logDocxDTO.js)
+  {
+    files: ['scripts/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+];
