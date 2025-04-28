@@ -26,10 +26,26 @@ import { createAnswer } from "./examUtils";
     }
   };
   
+/**
+ * Removes a question from examBody at the given location using the new location format.
+ * Mutates the original examBody.
+ */
+export const removeQuestionHelper = (examBody, location) => {
+  const { examBodyIndex, questionsIndex } = location;
+  const container = examBody?.[examBodyIndex];
+
+  if (!container) return;
+
+  if (container.type === "section" && typeof questionsIndex === "number") {
+    container.questions?.splice(questionsIndex, 1);
+  } else if (container.type === "question") {
+    examBody.splice(examBodyIndex, 1);
+  }
+};
   /**
    * Removes a question from examBody at the given location.
    * Returns true if removed, false otherwise.
-   */
+  
   export const removeQuestionHelper = (examBody, location2) => {
     const { examBodyIndex, sectionIndex } = location2;
     const container = examBody?.[examBodyIndex];
@@ -47,7 +63,7 @@ import { createAnswer } from "./examUtils";
     }
   
     return false;
-  };
+  }; */
   
   /**
    * Renumbers all questions sequentially in the entire examBody.
