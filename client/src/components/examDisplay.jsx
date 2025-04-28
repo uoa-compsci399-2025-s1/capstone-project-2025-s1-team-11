@@ -272,6 +272,7 @@ const ExamDisplay = () => {
               title: "ID",
               dataIndex: "id",
               key: "id",
+              render: (id) => id?.split('-').pop(),
             },
             {
               title: "Type",
@@ -290,7 +291,7 @@ const ExamDisplay = () => {
               render: (text, record) =>
                 record.type === "section" ? (
                   <div>
-                    <strong>{record.title}</strong>
+                    <strong>{record.title?.split('-').slice(2).join('-').trim()}</strong>
                     {record.subtext && (
                       <div style={{ fontStyle: "italic", color: "#888" }}>{record.subtext}</div>
                     )}
