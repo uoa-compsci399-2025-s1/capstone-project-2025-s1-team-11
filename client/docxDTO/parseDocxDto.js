@@ -55,15 +55,14 @@ const run = async () => {
     const inputPath = path.join(inputFolder, selectedFile);
 
     console.log(`Reading input file: ${selectedFile}`);
-    const { documentXml, relationships } = await extractDocumentXml(inputPath);
-//    console.log('Extracted relationships:', relationships);
+    const { documentXml, relationships, imageData } = await extractDocumentXml(inputPath);
 
     console.log('Parsing document XML...');
     const parsedXml = parseXmlToJson(documentXml);
 
     console.log('Transforming to DTO...');
 
-    const dto = transformXmlToSimpleDto(parsedXml, relationships);
+    const dto = transformXmlToSimpleDto(parsedXml, relationships, imageData);
 
     const timestamp = new Date();
     const hhmm = `${timestamp.getHours().toString().padStart(2, '0')}${timestamp.getMinutes().toString().padStart(2, '0')}`;

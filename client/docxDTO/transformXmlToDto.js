@@ -3,7 +3,7 @@
 import { buildContentFormatted } from './utils/buildContentFormatted.js';
 import { convertOmmlToMathML } from './utils/ommlToMathML.js';
 
-export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
+export const transformXmlToSimpleDto = (xmlJson, relationships = {}, imageData = {}) => {
   const body = xmlJson['w:document']?.['w:body'];
   if (!body) {
     throw new Error('Invalid XML structure: missing w:body');
@@ -110,6 +110,7 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
 
     if (block['m:oMath'] || block['m:oMathPara']) {
       containsEquation = true;
+      // Use the proper math conversion function
       equationContent = convertOmmlToMathML(block);
     }
 
@@ -120,7 +121,7 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
     if (containsEquation) {
       text = equationContent;
     } else {
-      text = buildContentFormatted(runs, { relationships });
+      text = buildContentFormatted(runs, { relationships, imageData });
     }
 
     if (text.trim() !== '') {
@@ -165,7 +166,7 @@ export const transformXmlToSimpleDto = (xmlJson, relationships = {}) => {
 
       // Extract marks and create new question
       const marks = extractMarks(text);
-      const questionText = buildContentFormatted(runs, { removeMarks: true, relationships });
+      const questionText = buildContentFormatted(runs, { removeMarks: true, relationships, imageData });
 
       currentQuestion = {
         type: 'question',
