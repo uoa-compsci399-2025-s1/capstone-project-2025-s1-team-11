@@ -118,30 +118,26 @@
   },
   {
     "type": "question",
-    "contentFormatted": "This is another example question?",
+    "contentFormatted": "Let’s test<strong>bold</strong>,<em>italics</em>and<u>underline</u>?",
     "marks": 2,
     "answers": [
       {
         "type": "answer",
-        "contentFormatted": "Still plain"
+        "contentFormatted": "<strong>Bold</strong>"
       },
       {
         "type": "answer",
-        "contentFormatted": "Nothing exciting"
+        "contentFormatted": "<em>Italics</em>"
       },
       {
         "type": "answer",
-        "contentFormatted": "No special characters"
-      },
-      {
-        "type": "answer",
-        "contentFormatted": "That will come!"
+        "contentFormatted": "<u>Underline</u>"
       }
     ]
   },
   {
     "type": "question",
-    "contentFormatted": "Another question to pad things out?",
+    "contentFormatted": "Let’stest<sub>subscript</sub>and<sup>superscript</sup>?",
     "marks": 2,
     "answers": [
       {

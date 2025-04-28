@@ -2,33 +2,54 @@ export const extractPlainText = (runs, relationships = {}) => {
   if (!Array.isArray(runs)) return '';
 
   let result = '';
+  let lastRunEndedWithSpace = false;
 
   for (const r of runs) {
     if (!r) continue;
 
-    // Check for subscript or superscript formatting
+    // Check for text formatting
+    let isBold = false;
+    let isItalic = false;
+    let isUnderline = false;
     let isSubscript = false;
     let isSuperscript = false;
 
-    if (r['w:rPr'] && r['w:rPr']['w:vertAlign']) {
-      const vertAlign = r['w:rPr']['w:vertAlign'];
-      // Try different ways to access the value attribute based on XML parser
-      const val = vertAlign['@_w:val'] ||
-          (vertAlign['$'] && vertAlign['$']['w:val']) ||
-          vertAlign['w:val'];
+    if (r['w:rPr']) {
+      // Check for bold formatting
+      if (r['w:rPr']['w:b'] !== undefined) {
+        isBold = true;
+      }
 
-      if (val === 'subscript') {
-        isSubscript = true;
-//        console.log('Found subscript formatting');
-      } else if (val === 'superscript') {
-        isSuperscript = true;
-//        console.log('Found superscript formatting');
+      // Check for italic formatting
+      if (r['w:rPr']['w:i'] !== undefined) {
+        isItalic = true;
+      }
+
+      // Check for underline formatting
+      if (r['w:rPr']['w:u'] !== undefined) {
+        isUnderline = true;
+      }
+
+      // Check for subscript or superscript formatting
+      if (r['w:rPr']['w:vertAlign']) {
+        const vertAlign = r['w:rPr']['w:vertAlign'];
+        // Try different ways to access the value attribute based on XML parser
+        const val = vertAlign['@_w:val'] ||
+            (vertAlign['$'] && vertAlign['$']['w:val']) ||
+            vertAlign['w:val'];
+
+        if (val === 'subscript') {
+          isSubscript = true;
+        } else if (val === 'superscript') {
+          isSuperscript = true;
+        }
       }
     }
 
     // Handle line breaks
     if (r['w:br'] !== undefined) {
       result += '<br>';
+      lastRunEndedWithSpace = false;
     }
 
     // Handle images
@@ -39,10 +60,8 @@ export const extractPlainText = (runs, relationships = {}) => {
       if (imagePath) {
         const filename = imagePath.split('/').pop();
         const publicPath = `/assets/images/${filename}`;
-//        console.log(`📸 Found image: ${publicPath}`);
         result += `<img src='${publicPath}' alt=''>`;
-      } else {
-//        console.warn(`⚠️ Warning: No relationship found for image embed ID: ${embedId}`);
+        lastRunEndedWithSpace = false;
       }
     }
 
@@ -57,12 +76,36 @@ export const extractPlainText = (runs, relationships = {}) => {
 
     // Apply formatting based on XML properties
     if (textContent) {
+      // Check if we need to add a space between runs
+      const punctuationStart = /^[.,:;!?)]/.test(textContent);
+
+      if (!lastRunEndedWithSpace && result.length > 0 && !result.endsWith(' ') &&
+          !result.endsWith('<br>') && !result.endsWith('>') &&
+          textContent.length > 0 && !textContent.startsWith(' ') && !punctuationStart) {
+        result += ' ';
+      }
+
+      // Apply all formatting in the correct order (innermost to outermost)
       if (isSubscript) {
         textContent = `<sub>${textContent}</sub>`;
       } else if (isSuperscript) {
         textContent = `<sup>${textContent}</sup>`;
       }
+
+      if (isBold) {
+        textContent = `<strong>${textContent}</strong>`;
+      }
+
+      if (isItalic) {
+        textContent = `<em>${textContent}</em>`;
+      }
+
+      if (isUnderline) {
+        textContent = `<u>${textContent}</u>`;
+      }
+
       result += textContent;
+      lastRunEndedWithSpace = textContent.endsWith(' ');
     }
   }
 
