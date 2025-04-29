@@ -330,6 +330,15 @@ const ExamDisplay = () => {
                   : null,
             },
             {
+              title: "Marks",
+              dataIndex: "marks",
+              key: "marks",
+              render: (_, record) =>
+                record.type === "question"
+                  ? record.marks ?? 1
+                  : null,
+            },
+            {
               title: "Actions",
               key: "actions",
               render: (_, record) => (
@@ -390,18 +399,19 @@ const ExamDisplay = () => {
               }
               return false;
             });
-  
+
             const questionsIndex =
               item.type === "question" && exam.examBody[examBodyIndex]?.type === "section"
                 ? exam.examBody[examBodyIndex].questions.findIndex(q => q.id === item.id)
                 : undefined;
-  
+
             return {
               key: `${item.type}-${item.id}-${index}`,
               ...item,
               titleOrQuestion: item.type === "section" ? item.title : item.questionText,
               examBodyIndex,
               questionsIndex,
+              marks: item.marks,
             };
           })}
           pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'] }}

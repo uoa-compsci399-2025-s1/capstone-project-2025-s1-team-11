@@ -70,6 +70,7 @@ const ExamFileManager = () => {
           setShowSuccessAlert(true);
           setError("");
           console.log("File imported and saved successfully");
+          setFileHandle(null); // since this exam was imported and not loaded from a JSON file
         }
       } catch (err) {
         setError("Error importing exam: " + err.message);
@@ -95,15 +96,11 @@ const ExamFileManager = () => {
     }
   };
 
-  // Use Redux state for examData
   const examData = useSelector((state) => state.exam.examData);
 
-  // Example: Normalize questions from examData (sectioned or not)
-  // This block can be reused or adapted wherever question items need to be processed
   function getFlatQuestionListFromExam(examData) {
     const items = [];
     if (!examData) return items;
-    // Suppose examData.examBody is an array of entries (sections or questions)
     (examData.examBody || []).forEach((entry) => {
       if (entry.type === "section") {
         (entry.questions || []).forEach((q) => {
@@ -232,7 +229,6 @@ const ExamFileManager = () => {
           </Button>
         </Space>
       </Card>
-      {/* Modal for creating a new exam */}
       <Modal
         open={showCreateModal}
         title="Create New Exam"
@@ -315,7 +311,6 @@ const ExamFileManager = () => {
           Year <span style={{ color: 'red' }}>*</span>
         </Typography.Text>
         <Input
-          //value={newExamData.year}
           onChange={e => setNewExamData({ ...newExamData, year: e.target.value })}
           placeholder="2010"
           style={{ marginBottom: 16 }}
@@ -338,23 +333,6 @@ const ExamFileManager = () => {
           placeholder="Teleform Options (comma-separated)"
           style={{ marginBottom: 16 }}
         />
-        {/** 
-        <Typography.Title level={5}>Metadata</Typography.Title>
-        <Typography.Text strong>Key</Typography.Text>
-        <Input
-          value={newExamData.metadataKey}
-          onChange={e => setNewExamData({ ...newExamData, metadataKey: e.target.value })}
-          placeholder="Metadata Key (optional)"
-          style={{ marginBottom: 16 }}
-        />
-        <Typography.Text strong>Value</Typography.Text>
-        <Input
-          value={newExamData.metadataValue}
-          onChange={e => setNewExamData({ ...newExamData, metadataValue: e.target.value })}
-          placeholder="Metadata Value (optional)"
-          style={{ marginBottom: 16 }}
-        />
-*/}
       </Modal>
       <Modal
         open={isClearModalVisible}
