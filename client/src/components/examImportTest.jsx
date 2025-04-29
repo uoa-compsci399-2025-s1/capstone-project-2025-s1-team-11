@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import examImportService from '../services/examImportService';
+import { importDTOToState } from '../store/exam/examSlice';
 
-// Assuming you have an action creator like this in your examSlice
-import { importExam } from '../store/exam/examSlice';
 
 const ExamImport = () => {
   const [file, setFile] = useState(null);
@@ -36,7 +35,7 @@ const ExamImport = () => {
     try {
       const examData = await examImportService.importExam(file, format);
 
-      dispatch(importExam(examData));
+      dispatch(importDTOToState(examData));
       
       setFile(null);
       // You might want to show a success message or redirect
