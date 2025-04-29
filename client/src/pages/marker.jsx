@@ -262,7 +262,7 @@ const Marker = () => {
 
   return (
     <>
-      <Typography.Title>Auto-Marker</Typography.Title>
+      <Typography.Title>MCQ Auto-Marker</Typography.Title>
       
       <Divider />
       
@@ -272,7 +272,6 @@ const Marker = () => {
       
       <Divider />
       
-      {/* Navigation Buttons */}
       <div>
         <Button onClick={prev} disabled={currentStep === 0} style={{ marginRight: 8 }}>
           Back
