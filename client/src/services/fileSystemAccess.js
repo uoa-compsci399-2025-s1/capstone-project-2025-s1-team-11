@@ -25,8 +25,31 @@ export async function openExamFile() {
       console.error("File open cancelled or failed:", err);
       return null;
     }
-  }
+}
 
+export async function openImportFile() {
+    try {
+      const [fileHandle] = await window.showOpenFilePicker({
+        types: [
+            { 
+                description: 'DOCX, Moodle XML Files', 
+                accept: {
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+                    'application/xml': ['.xml']
+                } 
+            }
+        ],
+        multiple: false,
+      });
+  
+      const file = await fileHandle.getFile();
+      return file;
+    } catch (err) {
+      console.error("File open cancelled or failed:", err);
+      return null;
+    }
+}
+  
 /**
  * Saves the given exam to the file represented by fileHandle.
  */

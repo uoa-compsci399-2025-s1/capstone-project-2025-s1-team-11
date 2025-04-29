@@ -11,6 +11,9 @@ import {
   moveQuestion,
   moveSection // added this
 } from "../store/exam/examSlice";
+import {
+  selectExamData 
+} from "../store/exam/selectors"
 import 'quill/dist/quill.snow.css';
 import {
   DndContext,
@@ -29,7 +32,7 @@ const { TextArea } = Input;
 
 
 const ExamDisplay = () => {
-  const exam = useSelector((state) => state.exam.examData);
+  const exam = useSelector(selectExamData);
   useEffect(() => {
     // Debugging purpose only
   }, [exam]);
@@ -84,8 +87,12 @@ const ExamDisplay = () => {
   };
 
   useEffect(() => {
-    if (!Array.isArray(exam?.examBody)) {
+    if (exam && !Array.isArray(exam?.examBody)) {
       console.warn(" examBody is not an array or missing:", exam?.examBody);
+      return;
+    }
+    if (!exam) {
+      // Do nothing if exam is simply not ready yet
       return;
     }
     

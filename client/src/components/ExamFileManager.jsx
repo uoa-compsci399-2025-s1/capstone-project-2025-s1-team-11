@@ -3,8 +3,8 @@ import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { importExamFromJSON, clearExam } from "../store/exam/examSlice";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
-import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
-import { Button, Alert, Space, Typography, Modal, Input, message, Card, Divider } from "antd";
+import { useFileSystem } from "../hooks/useFileSystem.js";
+import { Button, Alert, Space, Typography, Modal, Input, message, Card, Divider, Select } from "antd";
 
 // dispatch(importExamFromJSON) handles all exam loading internally; no external onExamLoaded required.
 
@@ -14,8 +14,9 @@ const ExamFileManager = () => {
   const [fileHandle, setFileHandle] = useState(null);
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-
+  const { importExam } = useFileSystem();
   const [fileOptionsOpen, setFileOptionsOpen] = useState(true);
+  const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
 
   // State for create new exam modal
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -47,19 +48,51 @@ const ExamFileManager = () => {
     }
   };
 
-  // Import an exam from an XML file
+
   const handleImportExam = async (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      importExamFromXMLtoJSON(file, (err, importedExam) => {
-        if (err) {
-          setError("Error importing exam: " + err.message);
-        } else {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      const fileExtension = selectedFile.name.split('.').pop();
+      let format = '';
+
+      if (fileExtension === 'xml') {
+        format = 'moodle'; // Assuming XML is Moodle format
+      } else if (fileExtension === 'docx') {
+        format = 'docx';
+      } else {
+        setError("Unsupported file format");
+        return;
+      }
+
+      try {
+        const result = await importExam(selectedFile, format);
+        if (result) {
+          setShowSuccessAlert(true);
           setError("");
-          dispatch(importExamFromJSON(importedExam));
+          console.log("File imported and saved successfully");
           setFileHandle(null); // since this exam was imported and not loaded from a JSON file
         }
-      });
+      } catch (err) {
+        setError("Error importing exam: " + err.message);
+        console.error("Import error:", err);
+      }
+    }
+  };
+
+  const handleFormatChange = (value) => {
+    setSelectedFormat(value);
+  };
+
+  // Determine the acceptable file extensions based on selected format
+  const getAcceptExtension = () => {
+    switch (selectedFormat) {
+      case 'moodle':
+        return '.xml';
+      case 'docx':
+        return '.docx';
+      case 'all':
+      default:
+        return '.xml,.docx'; // Show both for "All Files"
     }
   };
 
@@ -161,8 +194,16 @@ const ExamFileManager = () => {
             Open Exam (JSON)
           </Button>
           <Button>
-            Import from XML
-            <input
+          <label style={{ cursor: "pointer", marginBottom: 0 }}>
+              Import Exam
+              <input
+                type="file"
+                accept={getAcceptExtension()} // Dynamically set based on selected format
+                onChange={handleImportExam}
+                style={{ display: "none" }}
+              />
+            </label>
+            {/* <input
               type="file"
               accept=".xml"
               onChange={async (e) => {
@@ -175,8 +216,13 @@ const ExamFileManager = () => {
                 opacity: 0,
                 cursor: "pointer",
               }}
-            />
+            /> */}
           </Button>
+          <Select defaultValue="all" onChange={handleFormatChange} style={{ marginRight: 0 }}>
+            <Select.Option value="all">All Files</Select.Option>
+            <Select.Option value="moodle">Moodle XML</Select.Option>
+            <Select.Option value="docx">DOCX</Select.Option>
+          </Select>
         </Space>
           <Button danger onClick={() => setIsClearModalVisible(true)} type="primary">
             Clear Exam
@@ -212,9 +258,9 @@ const ExamFileManager = () => {
               types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
             };
 
-            const handle = await window.showSaveFilePicker(options);
-            await saveExamToFile(exam, handle);
-            setFileHandle(handle);
+            //const handle = await window.showSaveFilePicker(options);
+            //await saveExamToFile(exam, handle);
+            //setFileHandle(handle);
             dispatch(importExamFromJSON(exam));
             setShowCreateModal(false);
             setFileOptionsOpen(false);

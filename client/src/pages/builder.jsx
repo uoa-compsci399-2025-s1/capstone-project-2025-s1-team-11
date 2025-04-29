@@ -1,14 +1,18 @@
 import React from "react";
-import { useSelector } from "react-redux";
+
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux';
+import { createNewExam } from "../store/exam/examSlice.js";
+import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
 import { Typography, Button, Space } from "antd";
 
 const Builder = () => {
-    const exam = useSelector((state) => state.exam.examData);
+    const exam = useSelector(selectExamData);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const renderStageContent = (step) => {
         switch (step) {

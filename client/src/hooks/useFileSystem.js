@@ -1,38 +1,45 @@
 // src/hooks/useFileSystem.js
 import { useDispatch, useSelector } from 'react-redux';
-import { createNewExam, clearExam } from '../store/exam/examSlice'; // Or whatever action sets exam
+import { createNewExam, importDTOToState } from '../store/exam/examSlice';
 import { selectExamData } from '../store/exam/selectors';
 import { openExamFile, saveExamToFile } from '../services/fileSystemAccess.js';
-// import { importExamFromXMLtoJSON } from '../services/xmlToJsonExamImporter.js'; // or examImportService
+import examImportService from '../services/examImportService.js';
+
+// import { MoodleXmlDTO } from '../dto/moodleXML/moodleXmlDTO.js'; // Not used yet
+// import { convertMoodleXmlToJson } from '../utilities/convertMoodleXmlToJson.js'; // Not used yet
 
 import { useState } from 'react'; // for local fileHandle if not stored in Redux
 
 
 
 export function useFileSystem() {
-    const examContext = useExam();
+    //const examContext = useExam();
+  //   if (!examContext) {
+  //     console.error("Exam not found. Is <ExamProvider> wrapped around your app?");
+  //     return {};
+  // }
 
-    if (!examContext) {
-        console.error("ExamContext not found. Is <ExamProvider> wrapped around your app?");
-        return {};
-    }
 
     //Check changes...
     const dispatch = useDispatch();
     const exam = useSelector(selectExamData);
 
-    const [fileHandle, setFileHandle] = useState(null); // or move this into Redux
-
+  //   if (!exam) {
+  //     console.error("Exam not found. Is <ExamProvider> wrapped around your app?");
+  //     return {};
+  // }
+  
+    const [fileHandle, setFileHandle] = useState(null);
+  
     // Opens the exam file and updates the global state
     const openExam = async () => {
-        const result = await openExamFile();
-
-        //fromJSON?
-        if (result) {
-            dispatch(createNewExam(result.exam)); // replace with your actual action
-            setFileHandle(result.fileHandle);
-        }
-        return result;
+      const result = await openExamFile();
+  
+      if (result) {
+        dispatch(createNewExam(result.exam)); // replace with your actual action
+        setFileHandle(result.fileHandle);
+      }
+      return result;
     };
 
     // Saves the exam and updates the file handle in the global state
@@ -43,21 +50,16 @@ export function useFileSystem() {
         return updatedHandle;
     };
 
-    // Imports the exam from an XML file using a Promise wrapper
-    // Based on initial XML tests - not for actual Coderunner XML's
-    const importExam = async (file) => {
-        return;
-        // return new Promise((resolve, reject) => {
-        //     importExamFromXMLtoJSON(file, (err, importedExam) => {
-        //         if (err) {
-        //             reject(err);
-        //         } else {
-        //             dispatch(createNewExam(importedExam))
-        //             setFileHandle(null); // imported exam is not associated with a file handle
-        //             resolve(importedExam);
-        //         }
-        //     });
-        // });
+  // Imports the exam from a file (docx, xml, etc.)
+    const importExam = async (file, format) => {
+        try {
+        const examDTO = await examImportService.importExamToDTO(file, format);
+        dispatch(importDTOToState(examDTO));
+        //dispatch(createNewExam(examData)); 
+        return true;
+        } catch (error) {
+        throw new Error("Error importing exam: " + error.message);
+        }
     };
 
     return { exam, fileHandle, openExam, saveExam, importExam };
