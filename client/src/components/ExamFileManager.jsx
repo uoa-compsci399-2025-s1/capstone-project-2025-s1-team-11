@@ -6,7 +6,9 @@ import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
 import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
 import { Button, Alert, Space, Typography, Modal, Input, message, Card, Divider } from "antd";
 
-const ExamFileManager = ({ onExamLoaded }) => {
+// dispatch(importExamFromJSON) handles all exam loading internally; no external onExamLoaded required.
+
+const ExamFileManager = () => {
   console.log(" ExamFileManager rendered");
   const dispatch = useDispatch();
   const [fileHandle, setFileHandle] = useState(null);
@@ -39,9 +41,6 @@ const ExamFileManager = ({ onExamLoaded }) => {
         dispatch(importExamFromJSON(result.exam));
         console.log("Dispatching importExamFromJSON with:", result.exam);
         setFileHandle(result.fileHandle);
-        if (onExamLoaded) {
-          onExamLoaded(result.exam, result.fileHandle?.name || "Unnamed file");
-        }
       }
     } catch (err) {
       setError("Error opening exam: " + err.message);
@@ -59,9 +58,6 @@ const ExamFileManager = ({ onExamLoaded }) => {
           setError("");
           dispatch(importExamFromJSON(importedExam));
           setFileHandle(null); // since this exam was imported and not loaded from a JSON file
-          if (onExamLoaded) {
-            onExamLoaded(importedExam, file.name);
-          }
         }
       });
     }
@@ -225,9 +221,6 @@ const ExamFileManager = ({ onExamLoaded }) => {
             await saveExamToFile(exam, handle);
             setFileHandle(handle);
             dispatch(importExamFromJSON(exam));
-            if (onExamLoaded) {
-              onExamLoaded(exam, handle.name);
-            }
             setShowCreateModal(false);
             setFileOptionsOpen(false);
             message.success('New exam created and saved');
