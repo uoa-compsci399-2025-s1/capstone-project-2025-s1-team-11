@@ -1,7 +1,6 @@
 ﻿import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 
 // HTML cleaner — converts very basic tags to docx TextRuns, supports <b>, <i>, <p>.
-
 function parseSimpleHtml(htmlText) {
     const container = document.createElement("div");
     container.innerHTML = htmlText || "";
@@ -38,9 +37,8 @@ function parseSimpleHtml(htmlText) {
     return runs.length ? runs : [new TextRun("")];
 }
 
-// Main export function - fronted call this
-
-export async function exportExamToDocx(examData) {          // frontend call this
+// Main export function
+export async function exportExamToDocx(examData) {
     if (!examData) {
         console.error("No exam data available for export.");
         return;
@@ -61,38 +59,58 @@ export async function exportExamToDocx(examData) {          // frontend call thi
         new Paragraph({ text: "", spacing: { after: 200 } }), // Spacer
     ];
 
-    examData.examBody.forEach(item => {
+    // Process each item in the exam body
+    examData.examBody.forEach((item, idx) => {
         if (item.type === "section") {
             content.push(new Paragraph({
-                text: item.sectionTitle || "Untitled Section",
+                text: item.sectionTitle || `Section ${idx + 1}`,
                 heading: HeadingLevel.HEADING_2,
                 spacing: { after: 100 }
             }));
 
-            item.questions.forEach(question => {
+            // Process questions in section
+            (item.questions || []).forEach((question, qIdx) => {
+                // Get question text from either questionText or contentText
+                const questionText = question.questionText || question.contentText || `Question ${qIdx + 1}`;
+
                 content.push(
-                    new Paragraph({ children: parseSimpleHtml(question.questionText) })
+                    new Paragraph({
+                        children: parseSimpleHtml(questionText),
+                        spacing: { before: 200 }
+                    })
                 );
-                question.answers.forEach((ans, idx) => {
+
+                // Process answers
+                (question.answers || []).forEach((ans, ansIdx) => {
                     content.push(new Paragraph({
-                        text: `${String.fromCharCode(65 + idx)}) ${ans.contentText}`,
+                        text: `${String.fromCharCode(65 + ansIdx)}) ${ans.contentText || ""}`,
                         bullet: { level: 0 }
                     }));
                 });
-                content.push(new Paragraph({ text: "", spacing: { after: 200 } })); // Spacer between questions
+
+                content.push(new Paragraph({ text: "", spacing: { after: 100 } })); // Spacer between questions
             });
 
         } else if (item.type === "question") {
+            // Get question text from either questionText or contentText
+            const questionText = item.questionText || item.contentText || `Question ${idx + 1}`;
+
             content.push(
-                new Paragraph({ children: parseSimpleHtml(item.questionText) })
+                new Paragraph({
+                    children: parseSimpleHtml(questionText),
+                    spacing: { before: 200 }
+                })
             );
-            item.answers.forEach((ans, idx) => {
+
+            // Process answers
+            (item.answers || []).forEach((ans, ansIdx) => {
                 content.push(new Paragraph({
-                    text: `${String.fromCharCode(65 + idx)}) ${ans.contentText}`,
+                    text: `${String.fromCharCode(65 + ansIdx)}) ${ans.contentText || ""}`,
                     bullet: { level: 0 }
                 }));
             });
-            content.push(new Paragraph({ text: "", spacing: { after: 200 } })); // Spacer
+
+            content.push(new Paragraph({ text: "", spacing: { after: 100 } })); // Spacer
         }
     });
 
@@ -108,4 +126,6 @@ export async function exportExamToDocx(examData) {          // frontend call thi
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    return true; // Return success
 }
