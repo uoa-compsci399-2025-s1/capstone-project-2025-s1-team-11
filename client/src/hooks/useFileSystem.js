@@ -10,6 +10,14 @@ import { useState } from 'react'; // for local fileHandle if not stored in Redux
 
 
 export function useFileSystem() {
+    const examContext = useExam();
+
+    if (!examContext) {
+        console.error("ExamContext not found. Is <ExamProvider> wrapped around your app?");
+        return {};
+    }
+
+    //Check changes...
     const dispatch = useDispatch();
     const exam = useSelector(selectExamData);
 

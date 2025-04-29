@@ -1,9 +1,8 @@
-import { configureStore } from '@reduxjs/toolkit';
-import examReducer from '../store/exam/examSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import examReducer from "./exam/examSlice";
 
 export const store = configureStore({
   reducer: {
-    exam: examReducer,
-    // add more reducers here if needed
+    exam: examReducer, // ← must be named `exam`
   },
 });

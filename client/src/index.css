@@ -13,6 +13,10 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+h1, p, span, div, a {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -42,13 +46,11 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #000000;
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover {
-  border-color: #646cff;
-}
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -65,4 +67,18 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+.arrow {
+  transition: transform 0.3s ease;
+}
+
+.arrow:hover {
+  animation: pulse 0.6s ease;
+}
+
+@keyframes pulse {
+  0% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.2); }
+  100% { transform: translateX(-50%) scale(1); }
 }
