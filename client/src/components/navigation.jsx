@@ -23,16 +23,30 @@ export function Navigation() {
                     </NavLink>
                     <NavLink to="/marker" end>
                         {({ isActive }) => (
-                            <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>MCQ Automarker</Button>
+                            <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>MCQ Auto-Marker</Button>
                         )}
                     </NavLink>
                     <NavLink to="/console" end>
-                        <Button type="text" style={{ borderRadius: 0, color: "#fff", fontWeight: 500 }}>Test Console</Button>
+                        {({ isActive }) => (
+                                <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>Dev Console</Button>
+                            )}
+                    </NavLink>
+                    <NavLink to="/marking" end>
+                        {({ isActive }) => (
+                                <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>Dev Marking</Button>
+                            )}
                     </NavLink>
                 </Space>
+                <Space style={{ margin: 0 }}>
+                    <NavLink to="/about" end>
+                        {({ isActive }) => (
+                            <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>About</Button>
+                        )}
+                    </NavLink>
                 <a href="/documentation" target="_blank" rel="noopener noreferrer">
                     <Button type="text" style={{ borderRadius: 0, backgroundColor: "#fff", fontWeight: 500 }}>Documentation</Button>
                 </a>
+                </Space>
             </div>
         </nav>
     );

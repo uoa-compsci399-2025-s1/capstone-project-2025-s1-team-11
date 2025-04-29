@@ -22,6 +22,32 @@ const initialState = {
   isLoading: false,
   error: null,
 };
+const generateId = (() => {
+  let counter = 1;
+  return () => `id-${Date.now()}-${counter++}`;
+})();
+
+function ensureUniqueIds(examData) {
+  const seen = new Set();
+
+  examData.examBody.forEach((entry) => {
+    if (!entry.id || seen.has(entry.id)) {
+      entry.id = generateId();
+    }
+    seen.add(entry.id);
+
+    if (entry.type === "section" && Array.isArray(entry.questions)) {
+      entry.questions.forEach((q) => {
+        if (!q.id || seen.has(q.id)) {
+          q.id = generateId();
+        }
+        seen.add(q.id);
+      });
+    }
+  });
+
+  return examData;
+}
 
 const examSlice = createSlice({
   name: 'exam',
@@ -78,9 +104,11 @@ const examSlice = createSlice({
       const normalisedAnswers = normaliseAnswersToLength(answers, optionCount);
 
       const newQuestion = createQuestion({
+        id: questionData.id || generateId(),
         ...questionData,
         answers: normalisedAnswers,
       });
+      
     
       // Create default (non-shuffled) answerShuffleMaps
       newQuestion.answerShuffleMaps = Array.from({ length: versionCount }, () =>
@@ -305,7 +333,7 @@ const examSlice = createSlice({
     },
     
     importExamFromJSON: (state, action) => {
-      state.examData = action.payload;
+      state.examData = ensureUniqueIds(action.payload);
     },
 
     importExamStart: (state) => {
