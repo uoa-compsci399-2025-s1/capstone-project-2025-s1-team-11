@@ -9,7 +9,6 @@ import { Button, Alert, Space, Typography, Modal, Input, message, Card, Divider,
 // dispatch(importExamFromJSON) handles all exam loading internally; no external onExamLoaded required.
 
 const ExamFileManager = () => {
-  console.log(" ExamFileManager rendered");
   const dispatch = useDispatch();
   const [fileHandle, setFileHandle] = useState(null);
   const [error, setError] = useState("");
