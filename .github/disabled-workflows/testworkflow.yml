@@ -1,12 +1,12 @@
 name: Run Tests on testing-infrastructure branch only
 
-on:
-  push:
-    branches:
-      - testing-infrastructure
-  pull_request:
-    branches:
-      - testing-infrastructure
+#on:
+#  push:
+#    branches:
+#      - testing-infrastructure
+#  pull_request:
+#    branches:
+#      - testing-infrastructure
 
 jobs:
   client-unit-tests:

@@ -1,7 +1,7 @@
 // src/pages/Marker.jsx
 
 import React, { useState, useEffect } from "react";
-import { Typography, message, Button, Radio, Input, Divider } from "antd";
+import { Typography, message, Button, Radio, Input, Divider, Row, Col, Statistic, Progress } from "antd";
 import { useSelector } from "react-redux";
 import { generateMarkingKeys, markExams, generateResultOutput } from "../utilities/createMarkingKey";
 import MarkerProgressWrapper from "../components/MarkerProgressWrapper";
@@ -213,6 +213,77 @@ const Marker = () => {
                 Export Results
               </Button>
             </div>
+
+            {results && results.length > 0 && (
+              <div style={{ marginBottom: 24 }}>
+                <Typography.Title level={4}>Statistics Summary</Typography.Title>
+                <Row gutter={16}>
+                  <Col span={6}>
+                    <Statistic title="Total Students" value={results.length} />
+                  </Col>
+                  <Col span={6}>
+                    <Statistic title="Max Score" value={Math.max(...results.map(r => r.totalMarks || 0))} />
+                  </Col>
+                  <Col span={6}>
+                    <Statistic title="Min Score" value={Math.min(...results.map(r => r.totalMarks || 0))} />
+                  </Col>
+                  <Col span={6}>
+                    <Statistic title="Average Score" value={
+                      (results.reduce((acc, r) => acc + (r.totalMarks || 0), 0) / results.length).toFixed(2)
+                    } />
+                  </Col>
+                </Row>
+                {/* Additional Insights and Distribution */}
+                <div style={{ marginTop: 32, marginBottom: 0 }}>
+                  <div style={{ marginBottom: 24 }}>
+                    <Typography.Title level={5}>Additional Insights</Typography.Title>
+                    <Row gutter={16}>
+                      <Col span={6}>
+                        <Statistic
+                          title="Pass Rate (%)"
+                          value={
+                            (
+                              (results.filter(r => (r.totalMarks / r.maxMarks) >= 0.5).length / results.length) * 100
+                            ).toFixed(1)
+                          }
+                        />
+                      </Col>
+                      <Col span={6}>
+                        <Statistic
+                          title="Score Range"
+                          value={
+                            `${Math.min(...results.map(r => r.totalMarks || 0))} - ${Math.max(...results.map(r => r.totalMarks || 0))}`
+                          }
+                        />
+                      </Col>
+                    </Row>
+
+                    <Divider />
+
+                    <Typography.Title level={5}>Score Distribution</Typography.Title>
+                    {Array.from({ length: 5 }).map((_, idx) => {
+                      const lower = idx * 20;
+                      const upper = lower + 20;
+                      const count = results.filter(r => {
+                        const percent = (r.totalMarks / r.maxMarks) * 100;
+                        return percent >= lower && percent < upper;
+                      }).length;
+
+                      return (
+                        <div key={idx} style={{ marginBottom: 8 }}>
+                          <Typography.Text>{`${lower}% - ${upper}%:`}</Typography.Text>
+                          <Progress
+                            percent={count / results.length * 100}
+                            showInfo={true}
+                            format={percent => `${count} students`}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
             
             <div className="results-preview" style={{ backgroundColor: "#f5f5f5", padding: 16, maxHeight: 400, overflow: "auto" }}>
               <h4>Preview: {results.length} students</h4>
