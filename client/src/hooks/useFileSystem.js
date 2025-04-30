@@ -5,29 +5,15 @@ import { selectExamData } from '../store/exam/selectors';
 import { openExamFile, saveExamToFile } from '../services/fileSystemAccess.js';
 import examImportService from '../services/examImportService.js';
 
-// import { MoodleXmlDTO } from '../dto/moodleXML/moodleXmlDTO.js'; // Not used yet
-// import { convertMoodleXmlToJson } from '../utilities/convertMoodleXmlToJson.js'; // Not used yet
-
 import { useState } from 'react'; // for local fileHandle if not stored in Redux
 
 
 
 export function useFileSystem() {
-    //const examContext = useExam();
-  //   if (!examContext) {
-  //     console.error("Exam not found. Is <ExamProvider> wrapped around your app?");
-  //     return {};
-  // }
-
 
     //Check changes...
     const dispatch = useDispatch();
     const exam = useSelector(selectExamData);
-
-  //   if (!exam) {
-  //     console.error("Exam not found. Is <ExamProvider> wrapped around your app?");
-  //     return {};
-  // }
   
     const [fileHandle, setFileHandle] = useState(null);
   

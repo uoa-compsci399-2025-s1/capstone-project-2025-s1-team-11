@@ -31,11 +31,6 @@ export function Navigation() {
                                 <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>Dev Console</Button>
                             )}
                     </NavLink>
-                    <NavLink to="/marking" end>
-                        {({ isActive }) => (
-                                <Button type={isActive ? "primary" : "text"} style={{ borderRadius: 0, fontWeight: 500, padding: "2.2em" }}>Dev Marking</Button>
-                            )}
-                    </NavLink>
                 </Space>
                 <Space style={{ margin: 0 }}>
                     <NavLink to="/about" end>
