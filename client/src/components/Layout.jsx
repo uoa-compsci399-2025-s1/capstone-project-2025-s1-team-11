@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout, Breadcrumb, theme } from 'antd';
-import { Navigation } from "./navigation.jsx";
+import { StaticContextMenu } from "./staticContextMenu.jsx";
 import { Link, useLocation } from 'react-router';
 import logo from "../../public/AssesslyLogoSmall.png";
 
@@ -25,7 +25,7 @@ const MCQLayout = ({ children }) => {
         }}
       >
         <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} />
-        <Navigation />
+        <StaticContextMenu/>
       </Header>
 
       <Content style={{ padding: isPlainPage ? 0 : '32px 48px', flex: 1 }}>
