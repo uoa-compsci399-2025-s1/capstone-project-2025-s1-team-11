@@ -8,6 +8,7 @@ import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
 import { Typography, Button, Space } from "antd";
+import { exportExamToPdf } from "../services/exportPdf.js";
 
 const Builder = () => {
     const exam = useSelector(selectExamData);
@@ -50,7 +51,7 @@ const Builder = () => {
                                 <Button type="default" onClick={() => {/* TODO: implement DOCX download */}}>
                                 Download as DOCX
                                 </Button>
-                                <Button type="default" onClick={() => {/* TODO: implement PDF download */}}>
+                                <Button type="default" onClick={() => exportExamToPdf(exam)}>
                                 Download as PDF
                                 </Button>
                             </Space>
