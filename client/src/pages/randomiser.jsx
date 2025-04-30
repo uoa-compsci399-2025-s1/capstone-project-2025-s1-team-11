@@ -1,26 +1,27 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Table, Card, Space, Typography, Switch, Select, Spin, Pagination } from "antd";
+import { Button, Table, Card, Space, Typography, Switch, Select, Spin, Pagination, Tabs } from "antd";
 import { regenerateShuffleMaps } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 
 const { Title, Text } = Typography;
+const { TabPane } = Tabs;
+
+import MapDisplay from "../components/mapDisplay";
 
 const Randomiser = () => {
-  // redux setup
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
   const questions = useSelector(selectAllQuestionsFlat);
-  // local ui state
   const [selectedVersion, setSelectedVersion] = useState(exam?.versions?.[0] || '');
   const [showRaw, setShowRaw] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
   const [selectedSection, setSelectedSection] = useState("All");
   const [showQuestion, setShowQuestion] = useState(true);
   const [showAnswers, setShowAnswers] = useState(true);
+  const [displayMode, setDisplayMode] = useState("visual"); 
 
-  // Pagination state
   const [pagination, setPagination] = useState({current: 1, pageSize: 10, });
   useEffect(() => {
     setPagination(prev => ({ ...prev, current: 1 }));
@@ -85,10 +86,22 @@ const Randomiser = () => {
                 <Select.Option key={idx} value={v}>{v}</Select.Option>
               ))}
             </Select>
-            <Space>
-              <Text strong>Show Raw Mapping:</Text>
-              <Switch checked={showRaw} onChange={setShowRaw} />
-            </Space>
+            <Text strong>Display Mode:</Text>
+            <Select
+              value={displayMode}
+              onChange={setDisplayMode}
+              style={{ width: 150 }}
+            >
+              <Select.Option value="visual">Visual Mapping</Select.Option>
+              <Select.Option value="text">Text Mapping</Select.Option>
+            </Select>
+            
+            {displayMode === "text" && (
+              <Space>
+                <Text strong>Show Raw Mapping:</Text>
+                <Switch checked={showRaw} onChange={setShowRaw} />
+              </Space>
+            )}            
             <Space>
               <Text strong>Show Question Text:</Text>
               <Switch checked={showQuestion} onChange={setShowQuestion} />
@@ -151,10 +164,17 @@ const Randomiser = () => {
                       </ul>
                     </div>
                   )}
-                  {/* show either raw or position mapping */}
-                  <Text>
-                    <strong>{showRaw ? "Raw Mapping:" : "Position Mapping:"}</strong> {showRaw ? rawMap : mappingDetails}
-                  </Text>
+                                    {displayMode === "visual" ? (
+                    <MapDisplay 
+                      question={question} 
+                      selectedVersion={selectedVersion} 
+                      exam={exam} 
+                    />
+                  ) : (
+                    <Text>
+                      <strong>{showRaw ? "Raw Mapping:" : "Position Mapping:"}</strong> {showRaw ? rawMap : mappingDetails}
+                    </Text>
+                  )}
                 </Card>
               );
             })}
