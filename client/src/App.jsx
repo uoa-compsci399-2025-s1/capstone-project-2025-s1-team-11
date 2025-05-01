@@ -5,6 +5,7 @@ import DevelopmentWarning from "./components/developmentWarning";
 import PopupWarning from "./components/popupWarning";
 import {Outlet} from "react-router";
 import "./index.css";
+import ThemeToggleButton from "./components/ThemeToggleButton.jsx";
 
 const App = () => {
   const [showWarning, setShowWarning] = useState(false);
