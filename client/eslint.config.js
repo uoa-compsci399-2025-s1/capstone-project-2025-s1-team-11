@@ -51,7 +51,7 @@ export default [
 
   // Cypress Tests
   {
-    files: ['cypress/**/*.js'],
+    files: ['src/tests/e2e/cypress/**/*.js'],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -64,19 +64,16 @@ export default [
     },
   },
 
-  // CLI Scripts (e.g. 1logDocxDTO.js)
+  // Test Scripts
   {
-    files: ['scripts/**/*.js'],
+    files: ["src/tests/scripts/**/*.js"],
     languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
       globals: globals.node,
     },
-  },
-
-// DOCX Parsing / Node Utilities
-  {
-    files: ['docxWIP/**/*.js', 'docx/**/*.js', 'docxDTO/**/*.js'],
-    languageOptions: {
-      globals: globals.node,
+    rules: {
+      "no-console": "off",
     },
   },
 ];
