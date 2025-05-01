@@ -3,17 +3,20 @@ import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { importExamFromJSON, clearExam } from "../store/exam/examSlice";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
-import { importExamFromXMLtoJSON } from "../services/xmlToJsonExamImporter.js";
-import { Button, Alert, Space, Typography, Modal, Input, message, Card, Divider } from "antd";
+import { useFileSystem } from "../hooks/useFileSystem.js";
+import { Button, Alert, Space, Typography, Modal, Input, message, Card, Divider, Select } from "antd";
 
-const ExamFileManager = ({ onExamLoaded }) => {
+// dispatch(importExamFromJSON) handles all exam loading internally; no external onExamLoaded required.
+
+const ExamFileManager = () => {
   console.log(" ExamFileManager rendered");
   const dispatch = useDispatch();
   const [fileHandle, setFileHandle] = useState(null);
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-
+  const { importExam } = useFileSystem();
   const [fileOptionsOpen, setFileOptionsOpen] = useState(true);
+  const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
 
   // State for create new exam modal
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -39,43 +42,65 @@ const ExamFileManager = ({ onExamLoaded }) => {
         dispatch(importExamFromJSON(result.exam));
         console.log("Dispatching importExamFromJSON with:", result.exam);
         setFileHandle(result.fileHandle);
-        if (onExamLoaded) {
-          onExamLoaded(result.exam, result.fileHandle?.name || "Unnamed file");
-        }
       }
     } catch (err) {
       setError("Error opening exam: " + err.message);
     }
   };
 
-  // Import an exam from an XML file
+
   const handleImportExam = async (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      importExamFromXMLtoJSON(file, (err, importedExam) => {
-        if (err) {
-          setError("Error importing exam: " + err.message);
-        } else {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      const fileExtension = selectedFile.name.split('.').pop();
+      let format = '';
+
+      if (fileExtension === 'xml') {
+        format = 'moodle'; // Assuming XML is Moodle format
+      } else if (fileExtension === 'docx') {
+        format = 'docx';
+      } else {
+        setError("Unsupported file format");
+        return;
+      }
+
+      try {
+        const result = await importExam(selectedFile, format);
+        if (result) {
+          setShowSuccessAlert(true);
           setError("");
-          dispatch(importExamFromJSON(importedExam));
+          console.log("File imported and saved successfully");
           setFileHandle(null); // since this exam was imported and not loaded from a JSON file
-          if (onExamLoaded) {
-            onExamLoaded(importedExam, file.name);
-          }
         }
-      });
+      } catch (err) {
+        setError("Error importing exam: " + err.message);
+        console.error("Import error:", err);
+      }
     }
   };
 
-  // Use Redux state for examData
+  const handleFormatChange = (value) => {
+    setSelectedFormat(value);
+  };
+
+  // Determine the acceptable file extensions based on selected format
+  const getAcceptExtension = () => {
+    switch (selectedFormat) {
+      case 'moodle':
+        return '.xml';
+      case 'docx':
+        return '.docx';
+      case 'all':
+      default:
+        return '.xml,.docx'; // Show both for "All Files"
+    }
+  };
+
   const examData = useSelector((state) => state.exam.examData);
 
-  // Example: Normalize questions from examData (sectioned or not)
-  // This block can be reused or adapted wherever question items need to be processed
   function getFlatQuestionListFromExam(examData) {
     const items = [];
     if (!examData) return items;
-    // Suppose examData.examBody is an array of entries (sections or questions)
     (examData.examBody || []).forEach((entry) => {
       if (entry.type === "section") {
         (entry.questions || []).forEach((q) => {
@@ -169,8 +194,16 @@ const ExamFileManager = ({ onExamLoaded }) => {
             Open Exam (JSON)
           </Button>
           <Button>
-            Import from XML
-            <input
+          <label style={{ cursor: "pointer", marginBottom: 0 }}>
+              Import Exam
+              <input
+                type="file"
+                accept={getAcceptExtension()} // Dynamically set based on selected format
+                onChange={handleImportExam}
+                style={{ display: "none" }}
+              />
+            </label>
+            {/* <input
               type="file"
               accept=".xml"
               onChange={async (e) => {
@@ -183,15 +216,19 @@ const ExamFileManager = ({ onExamLoaded }) => {
                 opacity: 0,
                 cursor: "pointer",
               }}
-            />
+            /> */}
           </Button>
+          <Select defaultValue="all" onChange={handleFormatChange} style={{ marginRight: 0 }}>
+            <Select.Option value="all">All Files</Select.Option>
+            <Select.Option value="moodle">Moodle XML</Select.Option>
+            <Select.Option value="docx">DOCX</Select.Option>
+          </Select>
         </Space>
           <Button danger onClick={() => setIsClearModalVisible(true)} type="primary">
             Clear Exam
           </Button>
         </Space>
       </Card>
-      {/* Modal for creating a new exam */}
       <Modal
         open={showCreateModal}
         title="Create New Exam"
@@ -221,13 +258,10 @@ const ExamFileManager = ({ onExamLoaded }) => {
               types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
             };
 
-            const handle = await window.showSaveFilePicker(options);
-            await saveExamToFile(exam, handle);
-            setFileHandle(handle);
+            //const handle = await window.showSaveFilePicker(options);
+            //await saveExamToFile(exam, handle);
+            //setFileHandle(handle);
             dispatch(importExamFromJSON(exam));
-            if (onExamLoaded) {
-              onExamLoaded(exam, handle.name);
-            }
             setShowCreateModal(false);
             setFileOptionsOpen(false);
             message.success('New exam created and saved');
@@ -277,7 +311,6 @@ const ExamFileManager = ({ onExamLoaded }) => {
           Year <span style={{ color: 'red' }}>*</span>
         </Typography.Text>
         <Input
-          //value={newExamData.year}
           onChange={e => setNewExamData({ ...newExamData, year: e.target.value })}
           placeholder="2010"
           style={{ marginBottom: 16 }}
@@ -300,23 +333,6 @@ const ExamFileManager = ({ onExamLoaded }) => {
           placeholder="Teleform Options (comma-separated)"
           style={{ marginBottom: 16 }}
         />
-        {/** 
-        <Typography.Title level={5}>Metadata</Typography.Title>
-        <Typography.Text strong>Key</Typography.Text>
-        <Input
-          value={newExamData.metadataKey}
-          onChange={e => setNewExamData({ ...newExamData, metadataKey: e.target.value })}
-          placeholder="Metadata Key (optional)"
-          style={{ marginBottom: 16 }}
-        />
-        <Typography.Text strong>Value</Typography.Text>
-        <Input
-          value={newExamData.metadataValue}
-          onChange={e => setNewExamData({ ...newExamData, metadataValue: e.target.value })}
-          placeholder="Metadata Value (optional)"
-          style={{ marginBottom: 16 }}
-        />
-*/}
       </Modal>
       <Modal
         open={isClearModalVisible}

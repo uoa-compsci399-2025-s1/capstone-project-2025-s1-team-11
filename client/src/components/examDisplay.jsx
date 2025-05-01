@@ -11,6 +11,9 @@ import {
   moveQuestion,
   moveSection // added this
 } from "../store/exam/examSlice";
+import {
+  selectExamData 
+} from "../store/exam/selectors"
 import 'quill/dist/quill.snow.css';
 import {
   DndContext,
@@ -29,7 +32,7 @@ const { TextArea } = Input;
 
 
 const ExamDisplay = () => {
-  const exam = useSelector((state) => state.exam.examData);
+  const exam = useSelector(selectExamData);
   useEffect(() => {
     // Debugging purpose only
   }, [exam]);
@@ -84,8 +87,12 @@ const ExamDisplay = () => {
   };
 
   useEffect(() => {
-    if (!Array.isArray(exam?.examBody)) {
+    if (exam && !Array.isArray(exam?.examBody)) {
       console.warn(" examBody is not an array or missing:", exam?.examBody);
+      return;
+    }
+    if (!exam) {
+      // Do nothing if exam is simply not ready yet
       return;
     }
     
@@ -323,6 +330,15 @@ const ExamDisplay = () => {
                   : null,
             },
             {
+              title: "Marks",
+              dataIndex: "marks",
+              key: "marks",
+              render: (_, record) =>
+                record.type === "question"
+                  ? record.marks ?? 1
+                  : null,
+            },
+            {
               title: "Actions",
               key: "actions",
               render: (_, record) => (
@@ -383,18 +399,19 @@ const ExamDisplay = () => {
               }
               return false;
             });
-  
+
             const questionsIndex =
               item.type === "question" && exam.examBody[examBodyIndex]?.type === "section"
                 ? exam.examBody[examBodyIndex].questions.findIndex(q => q.id === item.id)
                 : undefined;
-  
+
             return {
               key: `${item.type}-${item.id}-${index}`,
               ...item,
               titleOrQuestion: item.type === "section" ? item.title : item.questionText,
               examBodyIndex,
               questionsIndex,
+              marks: item.marks,
             };
           })}
           pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'] }}
