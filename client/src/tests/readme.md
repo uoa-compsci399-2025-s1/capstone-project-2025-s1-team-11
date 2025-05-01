@@ -1,6 +1,6 @@
-﻿# Comprehensive Testing Guide
+﻿# Testing Guide
 
-This guide explains the testing setup, structure, and workflows for this project.
+
 
 ## Directory Structure
 
@@ -26,7 +26,7 @@ This guide explains the testing setup, structure, and workflows for this project
     testOnTrigger.js                 # Script used by Git hooks
 ```
 
-## Toolchain
+## Tools
 
 | Type                | Tool                      |
 |---------------------|---------------------------|
@@ -39,21 +39,22 @@ This guide explains the testing setup, structure, and workflows for this project
 
 ### 1. Unit Tests
 - Located in: `__tests__` folder **next to** the file being tested
-- Example: `/components/__tests__/popupWarning.test.jsx`
+- Example: `/services/__tests__/fileSystemAccess.test.jsx`
+- Example: `/store/exam/__tests__/EXAMPL_questionModel.test.js`
 - Goal: Test individual functions/components in isolation
 
 ### 2. Integration Tests
 - Located in: `/tests/integration/`
 - Purpose: Test interactions between modules, state, services, etc.
-- Example: `/tests/integration/formWithState.test.js`
+- Example: `/tests/integration/examWorkflow.test.js`
 
-### 3. E2E Tests
+### 3. E2E Tests (WIP)
 - Located in: `/tests/e2e/cypress/e2e/`
 - Use Cypress to simulate user interactions across the app in-browser
-- Example: `/tests/e2e/cypress/e2e/userFileUploadFlow.cy.js`
+- Example: `/tests/e2e/cypress/e2e/sanity.cy.js`
 
 ### 4. Mock Input Files
-- Create a sub-folder within relevant `__tests__` folder
+- Either in `__tests__` or create a sub-folder within relevant `__tests__` folder
 - Example: `__tests__/__mocks__/sampleInput.js`
 
 ## Naming Conventions
@@ -64,13 +65,43 @@ This guide explains the testing setup, structure, and workflows for this project
 | Test folders        | `__tests__`      |
 | Cypress test files  | `*.cy.js`        |
 
+## Writing Tests (Better examples above)
+
+### Jest (Unit) Test Example
+```jsx
+// __tests__/someComponent.test.jsx
+import { render, screen } from '@testing-library/react';
+import SomeComponent from '../SomeComponent';
+
+test('renders title correctly', () => {
+  render(<SomeComponent />);
+  expect(screen.getByText(/hello world/i)).toBeInTheDocument();
+});
+```
+
+### Cypress Example (E2E)
+```js
+// cypress/e2e/login.cy.js
+describe('Login flow', () => {
+  it('logs in successfully', () => {
+    cy.visit('/');
+    cy.get('input[name="username"]').type('admin');
+    cy.get('input[name="password"]').type('123456');
+    cy.get('button[type="submit"]').click();
+    cy.contains('Welcome back').should('exist');
+  });
+});
+```
+
+
 ## Running Tests Manually
 
 ### Jest (Unit/Integration) Tests
 ```bash
-npm run test          # Runs all Jest tests
-npm run test:watch    # Watch mode (during development)
-npm run test:watchAll # Run all tests every time a file changes
+npm run test                                # Runs all Jest tests
+npm test -- EXAMPLE_questionModel.test.js   #runs a specific file on its own
+npm run test:watch                          # Watch mode (during development)
+npm run test:watchAll                       # Run all tests every time a file changes
 ```
 
 ### Cypress (E2E) Tests
@@ -79,9 +110,9 @@ npm run cy:open       # Open Cypress test runner UI
 npm run cy:run        # Run Cypress tests headlessly
 ```
 
-## Automated Testing with Git Hooks
+## Automated Testing with Git Hooks (WIP, semi-functional)
 
-This project uses [Husky](https://typicode.github.io/husky/) to automatically run tests during Git lifecycle events.
+Trying out [Husky](https://typicode.github.io/husky/) to automatically run tests during Git lifecycle events (current triggered on pre-commit, pre-push and post-merge)
 
 ### Setup
 
@@ -148,33 +179,7 @@ node client/src/tests/scripts/testOnTrigger.js pre-commit
 
 This is helpful for debugging without committing/pushing.
 
-## Writing Tests
 
-### Jest (Unit) Test Example
-```jsx
-// __tests__/someComponent.test.jsx
-import { render, screen } from '@testing-library/react';
-import SomeComponent from '../SomeComponent';
-
-test('renders title correctly', () => {
-  render(<SomeComponent />);
-  expect(screen.getByText(/hello world/i)).toBeInTheDocument();
-});
-```
-
-### Cypress Example (E2E)
-```js
-// cypress/e2e/login.cy.js
-describe('Login flow', () => {
-  it('logs in successfully', () => {
-    cy.visit('/');
-    cy.get('input[name="username"]').type('admin');
-    cy.get('input[name="password"]').type('123456');
-    cy.get('button[type="submit"]').click();
-    cy.contains('Welcome back').should('exist');
-  });
-});
-```
 
 ## Jest Watch Mode
 

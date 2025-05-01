@@ -19,7 +19,7 @@
     "cy:open": "src/tests/e2e/cypress open",
     "cy:run": "src/tests/e2e/cypress run",
     "docxdto": "node docxDTO/parseDocxDto.js",
-    "prepare": "husky"
+    "prepare": "npx husky install && node src/tests/scripts/checkHooks.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
