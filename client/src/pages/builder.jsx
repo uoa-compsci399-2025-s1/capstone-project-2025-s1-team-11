@@ -7,44 +7,13 @@ import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
-import { exportExamToDocx } from "../services/docxExport.js";
-import { exportExamToPdf } from "../services/pdfExport.js";
-import { Typography, Button, Space, message } from "antd";
+import { Typography, Button, Space } from "antd";
+import { exportExamToPdf } from "../services/exportPdf.js";
 
 const Builder = () => {
     const exam = useSelector(selectExamData);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
-    const handleDocxExport = async () => {
-        try {
-            if (!exam) {
-                message.error("No exam data available to export");
-                return;
-            }
-
-            await exportExamToDocx(exam);
-            message.success("DOCX successfully exported");
-        } catch (error) {
-            console.error("DOCX export failed:", error);
-            message.error(`DOCX export failed: ${error.message}`);
-        }
-    };
-
-    const handlePdfExport = () => {
-        try {
-            if (!exam) {
-                message.error("No exam data available to export");
-                return;
-            }
-
-            exportExamToPdf(exam);
-            message.success("PDF successfully exported");
-        } catch (error) {
-            console.error("PDF export failed:", error);
-            message.error(`PDF export failed: ${error.message}`);
-        }
-    };
 
     const renderStageContent = (step) => {
         switch (step) {
@@ -67,6 +36,7 @@ const Builder = () => {
                     <div>
                         <Typography.Title level={3}>Export & Randomise</Typography.Title>
                         <Typography.Paragraph type="secondary">
+                            Export functions coming soon
                         </Typography.Paragraph>
                         <div style={{ marginTop: 24, marginBottom: 24 }}>
                             <Space>
@@ -78,11 +48,11 @@ const Builder = () => {
 
                             <div style={{ marginBottom: 24 }}>
                             <Space>
-                                <Button type="default" onClick={handleDocxExport} disabled={!exam}>
-                                    Download as DOCX
+                                <Button type="default" onClick={() => {/* TODO: implement DOCX download */}}>
+                                Download as DOCX
                                 </Button>
-                                <Button type="default" onClick={handlePdfExport} disabled={!exam}>
-                                    Download as PDF
+                                <Button type="default" onClick={() => exportExamToPdf(exam)}>
+                                Download as PDF
                                 </Button>
                             </Space>
                             </div>
