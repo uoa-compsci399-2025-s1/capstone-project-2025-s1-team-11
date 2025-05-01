@@ -4,10 +4,15 @@ import { spawnSync } from 'child_process';
 
 const hookType = process.argv[2] || 'unknown';
 
-// Convert to PascalCase to match config key (e.g., hooks.runPreCommitTests)
-const configKey = `hooks.run${
-    hookType.charAt(0).toUpperCase() + hookType.slice(1)
-}Tests`;
+// Converts kebab-case to PascalCase (e.g., pre-commit -> PreCommit)
+function toPascalCase(hook) {
+  return hook
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('');
+}
+
+const configKey = `hooks.run${toPascalCase(hookType)}Tests`;
 
 let runTests = false;
 
@@ -31,19 +36,42 @@ if (!runTests) {
 console.log(`🔍 Running ${hookType} tests...`);
 
 try {
+  if (hookType === 'pre-commit') {
+    console.log('🔍 Running lint-staged for pre-commit...');
+    const lintStaged = spawnSync('npx', ['lint-staged'], { stdio: 'inherit' });
+    if (lintStaged.status !== 0) {
+      console.error('❌ lint-staged failed.');
+      process.exit(lintStaged.status);
+    }
+    console.log(`✅ ${hookType} tests passed.`);
+    process.exit(0);
+  }
+
   console.log('🔍 Running ESLint...');
-  spawnSync('npm', ['run', 'lint', '--', '--silent'], { stdio: 'inherit' });
+  const lint = spawnSync('npm', ['run', 'lint', '--', '--silent'], { stdio: 'inherit' });
+  if (lint.status !== 0) {
+    console.error('❌ ESLint failed.');
+    process.exit(lint.status);
+  }
 
   console.log('🔍 Running Jest...');
-  spawnSync('npx', ['jest', '--ci', '--silent'], { stdio: 'inherit' });
+  const jest = spawnSync('npx', ['jest', '--ci', '--silent'], { stdio: 'inherit' });
+  if (jest.status !== 0) {
+    console.error('❌ Jest tests failed.');
+    process.exit(jest.status);
+  }
 
   if (hookType === 'pre-push' || hookType === 'post-merge') {
     console.log('🔍 Running Cypress...');
-    spawnSync('npx', ['cypress', 'run', '--quiet'], { stdio: 'inherit' });
+    const cypress = spawnSync('npx', ['cypress', 'run', '--quiet'], { stdio: 'inherit' });
+    if (cypress.status !== 0) {
+      console.error('❌ Cypress tests failed.');
+      process.exit(cypress.status);
+    }
   }
 
   console.log(`✅ ${hookType} tests passed.`);
 } catch (err) {
-  console.error(`❌ ${hookType} tests failed.`);
+  console.error(`❌ Unexpected error in ${hookType} hook:`, err);
   process.exit(1);
 }
