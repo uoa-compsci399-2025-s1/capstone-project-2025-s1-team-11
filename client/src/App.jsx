@@ -7,7 +7,7 @@ import {Outlet} from "react-router";
 import "./index.css";
 import ThemeToggleButton from "./components/ThemeToggleButton.jsx";
 
-const App = () => {
+const App = ({ isDarkMode, toggleTheme }) => {
   const [showWarning, setShowWarning] = useState(false);
 
   // Check for non-Chromium browsers
@@ -20,6 +20,7 @@ const App = () => {
 
   return (
     <MCQLayout>
+      <ThemeToggleButton isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
       <DevelopmentWarning />
       <PopupWarning
         visible={showWarning}
