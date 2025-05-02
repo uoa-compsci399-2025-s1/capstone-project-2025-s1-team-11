@@ -33,14 +33,6 @@ const MCQLayout = ({ children }) => {
           children
         ) : (
           <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
-            <Breadcrumb style={{ marginBottom: '24px' }}>
-              <Breadcrumb.Item>
-                <Link to="/">Home</Link>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <Link to="/builder">MCQ Builder</Link>
-              </Breadcrumb.Item>
-            </Breadcrumb>
             <div
               style={{
                 background: colorBgContainer,
