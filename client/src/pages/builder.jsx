@@ -28,7 +28,7 @@ const Builder = () => {
                     <div>
                         <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
                         <ExamDisplay exam={exam} />
-                        <ExamFileManager />
+                        {/* <ExamFileManager /> */}
                     </div>
                 );
             case 2:
