@@ -1,9 +1,0 @@
-﻿{
-  "private": true,
-  "scripts": {
-    "prepare": "husky && node client/src/tests/scripts/checkHooks.js"
-  },
-  "devDependencies": {
-    "husky": "^9.1.7"
-  }
-}

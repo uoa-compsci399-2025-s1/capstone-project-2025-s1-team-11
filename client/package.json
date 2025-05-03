@@ -19,7 +19,7 @@
     "cy:open": "src/tests/e2e/cypress open",
     "cy:run": "src/tests/e2e/cypress run",
     "docxdto": "node docxDTO/parseDocxDto.js",
-    "prepare": "npx husky install && node src/tests/scripts/checkHooks.js"
+    "prepare": "node src/tests/scripts/huskyInstallFromClient.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -63,6 +63,6 @@
     "jest-environment-jsdom": "^29.7.0",
     "jsdom": "^26.1.0",
     "lint-staged": "^15.5.1",
-    "vite": "^6.2.0"
+    "vite": "^6.2.6"
   }
 }
