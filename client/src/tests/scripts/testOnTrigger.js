@@ -1,7 +1,14 @@
 ﻿#!/usr/bin/env node
 
 import { spawnSync } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// This resolves to your client folder, no matter where script is called from
+const clientPath = path.resolve(__dirname, '../../../');
 // -- Utility Functions --
 
 function toPascalCase(hook) {
@@ -26,7 +33,7 @@ function isHookEnabled(hookType) {
 
 function runLintStaged() {
   console.log('Running lint-staged for pre-commit...');
-  const result = spawnSync('npx', ['lint-staged'], { stdio: 'inherit' });
+  const result = spawnSync('npx', ['lint-staged'], { stdio: 'inherit', cwd: clientPath });
   if (result.status !== 0) {
     const msg = result.status === 1
         ? '❌ lint-staged found errors.'
@@ -38,7 +45,7 @@ function runLintStaged() {
 
 function runESLint() {
   console.log('Running ESLint (validation mode - errors won\'t fail hooks)...');
-  const result = spawnSync('npm', ['run', 'lint', '--', '--silent'], { stdio: 'inherit' });
+  const result = spawnSync('npm', ['run', 'lint', '--', '--silent'], { stdio: 'inherit', cwd: clientPath });
   if (result.status !== 0) {
     console.warn('⚠️ ESLint issues detected (currently not blocking)');
     // Command commented out to prevent hook failure
@@ -52,7 +59,8 @@ function runJest() {
   console.log('Running Jest...');
   const result = spawnSync('npm', ['test'], {
     stdio: 'inherit',
-    shell: true
+    shell: true,
+    cwd: clientPath
   });
 
   if (result.status !== 0) {
@@ -65,7 +73,7 @@ function runJest() {
 
 function runCypress() {
   console.log('Running Cypress...');
-  const result = spawnSync('npx', ['cypress', 'run', '--quiet'], { stdio: 'inherit' });
+  const result = spawnSync('npx', ['cypress', 'run', '--quiet'], { stdio: 'inherit', cwd: clientPath });
   if (result.status !== 0) {
     console.error('❌ Cypress tests failed.');
     process.exit(result.status);
