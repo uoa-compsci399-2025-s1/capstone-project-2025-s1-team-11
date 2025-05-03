@@ -1,8 +1,9 @@
+// eslint.config.js
 import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import cypress from 'eslint-plugin-cypress';
+import pluginCypress from 'eslint-plugin-cypress/flat'; // Only import the flat config version
 import jest from 'eslint-plugin-jest';
 
 export default [
@@ -49,19 +50,26 @@ export default [
     },
   },
 
-  // Cypress Tests
+  // Cypress Tests - Using the flat config format
+  // First add the globals
   {
     files: ['src/tests/e2e/cypress/**/*.js'],
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-        ...globals.cypress,
-      },
-    },
-    plugins: {
-      cypress,
-    },
+    ...pluginCypress.configs.globals
+  },
+
+  // Then add the recommended rules
+  {
+    files: ['src/tests/e2e/cypress/**/*.js'],
+    ...pluginCypress.configs.recommended
+  },
+
+  // Override specific rules if needed
+  {
+    files: ['src/tests/e2e/cypress/**/*.js'],
+    rules: {
+      'cypress/no-unnecessary-waiting': 'off',
+      'no-unused-expressions': 'off' // For chai assertions
+    }
   },
 
   // Test Scripts

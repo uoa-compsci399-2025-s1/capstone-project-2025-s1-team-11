@@ -17,8 +17,19 @@ const mockWritable = {
 };
 
 describe('fileSystemAccess service', () => {
+    let originalConsoleError;
+
     beforeEach(() => {
         jest.clearAllMocks();
+        // Save original console.error
+        originalConsoleError = console.error;
+        // Replace with a mock
+        console.error = jest.fn();
+    });
+
+    afterEach(() => {
+        // Restore original console.error
+        console.error = originalConsoleError;
     });
 
     describe('openExamFile', () => {

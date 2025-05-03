@@ -1,30 +1,18 @@
-﻿// client/src/tests/scripts/huskyInstallFromClient.js
+﻿#!/usr/bin/env node
+
 import { execSync } from 'child_process';
-import { existsSync } from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-const huskyDir = path.resolve(__dirname, '../../../../.husky');
-const checkHooksPath = path.resolve(__dirname, './checkHooks.js');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-if (existsSync(huskyDir)) {
-    try {
-        execSync('npx husky install', { cwd: huskyDir, stdio: 'inherit' });
-        console.log('✅ Husky hooks installed from /client during npm install');
-    } catch (e) {
-        console.error('❌ Failed to install Husky hooks:', e.message);
-    }
-} else {
-    console.warn('⚠️ .husky directory not found at project root.');
-}
+const projectRoot = path.resolve(__dirname, '../../../../');
 
-// ✅ Run checkHooks.js after Husky install
-if (existsSync(checkHooksPath)) {
-    try {
-        execSync(`node ${checkHooksPath}`, { stdio: 'inherit' });
-        console.log('✅ checkHooks.js executed successfully');
-    } catch (e) {
-        console.error('❌ checkHooks.js failed:', e.message);
-    }
-} else {
-    console.warn('⚠️ checkHooks.js not found at expected path.');
+// Run husky installation from project root
+try {
+    execSync('npx husky install', { cwd: projectRoot, stdio: 'inherit' });
+    console.log('✅ Husky installed from /client during npm install');
+} catch (e) {
+    console.error('❌ Failed to install Husky hooks:', e.message);
 }

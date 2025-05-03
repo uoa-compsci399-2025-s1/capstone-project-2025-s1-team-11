@@ -1,20 +1,21 @@
-# Assessly Testing Guide
+# Testing
 
 ## Overview
 
-This guide provides a centralized reference for all testing in the Assessly project. We use a comprehensive testing approach with Jest for unit/integration tests and Cypress for end-to-end testing.
+This project is set up for unit, integration, and E2E testing. You can write and run tests individually using the commands in this guide, enable Git hooks to trigger tests on specific actions (commit, push, etc.), or use Jest watch mode for continuous testing during development.
+### (WIP) Additional test specific guides for writing tests are in: [`client/src/tests/testingGuides`](./testingGuides)
 
 ## Quick Start
 
 ```bash
-# Install dependencies
-npm install
-
 # Run all tests
 npm test
 
-# Run tests in watch mode (during development)
+# Run tests in watch mode (development)
 npm run test:watch
+
+# Run specific test file
+npm test -- path/to/file.test.js
 
 # Run Cypress E2E tests
 npm run cy:open  # Interactive mode
@@ -23,62 +24,37 @@ npm run cy:run   # Headless mode
 
 ## Testing Structure
 
-| Test Type | Location | Purpose |
-|-----------|----------|---------|
-| Unit Tests | `__tests__` folders next to source files | Test individual components/functions |
-| Integration Tests | `/tests/integration/` | Test interactions between components |
-| E2E Tests | `/tests/e2e/cypress/e2e/` | Test complete user workflows |
+| Test Type         | Location                                 | Purpose                              | Examples                                                                         |
+|-------------------|------------------------------------------|--------------------------------------|----------------------------------------------------------------------------------|
+| Unit Tests        | `__tests__` folders next to source files | Test individual components/functions | [EXAMPLE_examUtils.test.js](../store/exam/__tests__/EXAMPLE_examUtils.test.js)   |
+| Integration Tests | `/tests/integration/`                    | Test interactions between components | [EXAMPLE_examSlice.test.js](./integration/EXAMPLE_examSlice.test.js)             |
+| E2E Tests         | `/tests/e2e/cypress/e2e/`                | Test complete user workflows         | [EXAMPLE_basicNavigation.cy.js](./e2e/cypress/e2e/EXAMPLE_basicNavigation.cy.js) |
 
-## Git Hooks (Husky)
+## Naming Conventions
 
-We use Husky to automate testing during Git operations. **Important**: Husky is installed at the project root level (not in the client directory).
+### Unit & Integration Tests
+- Test files: `componentName.test.js` or `serviceName.test.js`
+- Test suites: `describe('componentName', () => {...})`
+- Test cases: `test('should render correctly', () => {...})` or `it('should handle click events', () => {...})`
 
-To enable test hooks:
-```bash
-git config --local hooks.runPreCommitTests true
-```
+### Cypress E2E Tests
+Cypress test files use the `.cy.js` extension and live within the `client/src/tests/e2e/cypress/e2e` directory.
 
-[Learn more about Husky setup →](./docs/testing/huskySetup.md)
 
-## Detailed Guides
 
-We've created specialized guides for each aspect of testing:
+## Common Patterns/Templates
 
-- [**Husky Setup Guide**](./docs/testing/huskySetup.md) - Setting up Git hooks for automated testing
-- [**Unit Testing Guide**](./docs/testing/unitTestingGuide.md) - Writing effective unit tests
-- [**Integration Testing Guide**](./docs/testing/integrationTestingGuide.md) - Testing component interactions
-- [**E2E Testing Guide**](./docs/testing/e2eTestingGuide.md) - End-to-end testing with Cypress
-- [**Testing FAQ**](./docs/testing/testingFAQ.md) - Common questions and solutions
+The following code templates demonstrate common testing patterns. You can copy and adapt these snippets when writing tests for similar scenarios in the codebase. More examples are provided in WIP WIP WIP [./testingGuides](./testingGuides).
 
-## Testing Principles
-
-1. **Write tests for behavior, not implementation** - Focus on what the code does, not how it does it
-2. **Keep tests independent** - Tests should not depend on other tests
-3. **Follow the testing pyramid** - Write many unit tests, fewer integration tests, and a handful of E2E tests
-4. **Test real user workflows** - Prioritize testing common user journeys
-
-## Key Commands
-
-| Command | Purpose |
-|---------|---------|
-| `npm test` | Run all Jest tests |
-| `npm test -- path/to/file.test.js` | Run specific test file |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:coverage` | Generate coverage report |
-| `npm run cy:open` | Open Cypress Test Runner |
-| `npm run cy:run` | Run Cypress tests headlessly |
-
-## Common Patterns
-
-### Test Component with Redux
+### Testing Components with Redux (For components that rely on Redux state)
 
 ```javascript
 // Import necessary tools and components
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import MyComponent from '../MyComponent';
-import rootReducer from '../../store/rootReducer';
+import ExamQuestion from '../ExamQuestion';
+import examReducer from '../../store/exam/examSlice';
 
 // Create test renderer with Redux
 const renderWithRedux = (
@@ -86,7 +62,7 @@ const renderWithRedux = (
   {
     initialState = {},
     store = configureStore({
-      reducer: rootReducer,
+      reducer: { exam: examReducer },
       preloadedState: initialState
     }),
   } = {}
@@ -98,30 +74,87 @@ const renderWithRedux = (
 };
 
 // Use in tests
-test('component with Redux', () => {
-  const { getByText } = renderWithRedux(<MyComponent />);
-  // Test assertions...
+test('displays question content', () => {
+  const mockQuestion = {
+    questionNumber: 1,
+    contentText: 'What is testing?',
+    marks: 2
+  };
+  
+  renderWithRedux(<ExamQuestion question={mockQuestion} />);
+  expect(screen.getByText('What is testing?')).toBeInTheDocument();
 });
 ```
 
-### Mock File System Access
+### Mocking File System Access (For tests involving file operations)
 
 ```javascript
 // Mock the file system API
 jest.mock('../../src/services/fileSystemAccess', () => ({
-  getFileHandle: jest.fn().mockResolvedValue({
-    kind: 'file',
-    name: 'test.json'
+  openExamFile: jest.fn().mockResolvedValue({
+    exam: { examTitle: 'Test Exam' },
+    fileHandle: { name: 'test.json' }
   }),
-  writeFile: jest.fn().mockResolvedValue(undefined),
-  readFile: jest.fn().mockResolvedValue('{"data":"test"}')
+  saveExamToFile: jest.fn().mockResolvedValue({ name: 'test.json' })
 }));
 ```
 
-## CI/CD Integration
+## Git Hooks (Husky)
 
-Tests run automatically via GitHub Actions on pull requests and merges to main.
+We use Husky to automate testing during Git operations. **Important**: Husky is installed at the project root level (not in the client directory).
 
-## Need Help?
+All hooks are **DISABLED by default**. Enable them with:
 
-Check the [Testing FAQ](./docs/testing/testingFAQ.md) for solutions to common issues, or reach out to the team's testing champion.
+```bash
+# Enable pre-commit tests
+git config --local hooks.runPreCommitTests true
+
+# Enable pre-push tests
+git config --local hooks.runPrePushTests true 
+
+# Enable post-merge tests
+git config --local hooks.runPostMergeTests true
+```
+
+When enabled, these hooks run:
+- **pre-commit**: Lint-staged for code style checks on staged files
+- **pre-push**: ESLint and Jest unit tests
+- **post-merge**: Tests to verify code still works after pulling changes
+
+[Learn more about Husky setup →](./testingGuides/huskyGuide.md)
+
+## Watch Mode
+
+Jest's watch mode continuously monitors your files and automatically runs relevant tests when changes are detected. 
+
+```bash
+npm run test:watch
+```
+
+When running in watch mode:
+- Press `a` to run all tests
+- Press `f` to run only failed tests
+- Press `p` to filter by filename
+- Press `t` to filter by test name
+- Press `q` to quit watch mode
+
+## Detailed Testing Guides
+
+For guides:
+
+- STILL WIP [**Unit Testing Guide**](./testingGuides/unitTestingGuide.md) - Writing effective unit tests with examples
+- STILL WIP [**Integration Testing Guide**](./testingGuides/integrationTestingGuide.md) - Testing component interactions
+- STILL WIP [**E2E Testing Guide**](./testingGuides/e2eTestingGuide.md) - End-to-end testing with Cypress
+- STILL WIP [**Testing FAQ**](./testingGuides/testingFAQ.md) - Common questions and solutions
+
+## Command Reference
+
+| Command                            | Purpose                      |
+|------------------------------------|------------------------------|
+| `npm test`                         | Run all Jest tests           |
+| `npm test -- path/to/file.test.js` | Run specific test file       |
+| `npm test -- -t "test name"`       | Run tests matching pattern   |
+| `npm run test:watch`               | Run tests in watch mode      |
+| `npm run test:coverage`            | Generate coverage report     |
+| `npm run cy:open`                  | Open Cypress Test Runner     |
+| `npm run cy:run`                   | Run Cypress tests headless   |

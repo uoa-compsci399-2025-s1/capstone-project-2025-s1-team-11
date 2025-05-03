@@ -1,23 +1,15 @@
 # E2E Testing with Cypress
 
-## Overview
-
-This guide covers end-to-end (E2E) testing for Assessly using Cypress. E2E tests verify that the entire application works correctly from a user's perspective, testing complete workflows and interactions across multiple components.
-
-## What is E2E Testing?
-
-End-to-end testing verifies that the application functions correctly as a complete system. Unlike unit or integration tests that focus on specific parts in isolation, E2E tests:
+End-to-end testing verifies that the application functions correctly as a complete system. 
 
 - Simulate real user behavior in a browser environment
 - Test complete user flows from start to finish
 - Verify that all parts of the application work together correctly
 - Catch integration issues that might not appear in isolated tests
 
-In Assessly, E2E tests help ensure that critical workflows like creating, editing, and saving exams work correctly from a user's perspective.
-
 ## Directory Structure
 
-E2E tests in Assessly are organized as follows:
+E2E tests are organized as follows:
 
 ```
 /tests
@@ -47,27 +39,6 @@ cd client
 
 # Install Cypress
 npm install cypress --save-dev
-```
-
-### Cypress Configuration
-
-Cypress is configured in `cypress.config.js`:
-
-```javascript
-const { defineConfig } = require('cypress');
-
-module.exports = defineConfig({
-  e2e: {
-    baseUrl: 'http://localhost:5173',
-    setupNodeEvents(on, config) {
-      // Implement node event listeners here
-    },
-    experimentalStudio: true
-  },
-  viewportWidth: 1280,
-  viewportHeight: 800,
-  video: false
-});
 ```
 
 ## Writing E2E Tests
@@ -102,7 +73,7 @@ describe('Exam Creation Process', () => {
 
 ### Test Files Naming
 
-Cypress test files use the `.cy.js` extension:
+Cypress test files use the `.cy.js` extension (unlike unit/integration, these tests live within the `client/src/tests/e2e/cypress` directory:
 
 - `createExam.cy.js`
 - `editExam.cy.js`
@@ -334,7 +305,7 @@ cy.fixture('exampleExam.json').then((examData) => {
 Example fixture file:
 
 ```json
-// tests/e2e/cypress/fixtures/exampleExam.json
+
 {
   "title": "Example Exam",
   "questions": [
@@ -496,54 +467,6 @@ module.exports = defineConfig({
     videosFolder: 'tests/e2e/cypress/videos'
   }
 });
-```
-
-## CI/CD Integration
-
-### GitHub Actions Example
-
-```yaml
-# .github/workflows/cypress.yml
-name: Cypress Tests
-
-on: [push, pull_request]
-
-jobs:
-  cypress-run:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          
-      - name: Install dependencies
-        run: |
-          cd client
-          npm ci
-          
-      - name: Start dev server
-        run: |
-          cd client
-          npm run dev &
-          npx wait-on http://localhost:5173
-        
-      - name: Run Cypress tests
-        run: |
-          cd client
-          npm run cy:run
-          
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: cypress-artifacts
-          path: |
-            client/tests/e2e/cypress/screenshots
-            client/tests/e2e/cypress/videos
 ```
 
 ## Advanced Topics

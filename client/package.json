@@ -16,12 +16,13 @@
     "preview": "vite preview",
     "test": "jest",
     "test:watch": "jest --watch",
-    "cy:open": "src/tests/e2e/cypress open",
-    "cy:run": "src/tests/e2e/cypress run",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
     "docxdto": "node docxDTO/parseDocxDto.js",
-    "prepare": "node src/tests/scripts/huskyInstallFromClient.js"
+    "prepare": "node src/tests/scripts/huskyInstallFromClient.js && npm run setup-hooks && node src/tests/scripts/checkHooks.js",
+    "setup-hooks": "node src/tests/scripts/setupHooks.js"
   },
-  "dependencies": {
+    "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
@@ -40,7 +41,7 @@
     "react-router-dom": "^7.5.0",
     "sql.js": "^1.13.0"
   },
-  "devDependencies": {
+    "devDependencies": {
     "@babel/preset-env": "^7.26.9",
     "@babel/preset-react": "^7.26.3",
     "@eslint/js": "^9.21.0",
