@@ -21,6 +21,7 @@ const Randomiser = () => {
   const [showQuestion, setShowQuestion] = useState(true);
   const [showAnswers, setShowAnswers] = useState(true);
   const [displayMode, setDisplayMode] = useState("visual"); 
+  const [visualStyle, setVisualStyle] = useState("grid"); // "grid" or "arrows"
 
   const [pagination, setPagination] = useState({current: 1, pageSize: 10, });
   useEffect(() => {
@@ -53,7 +54,7 @@ const Randomiser = () => {
   return (
     <div style={{ padding: "20px" }}>
       <Title level={2}>Answer Randomiser</Title>
-
+      
       <Card style={{ marginBottom: "20px" }}>
         <Space direction="vertical" size="middle" style={{ width: "100%" }}>
           <Text>
@@ -67,6 +68,25 @@ const Randomiser = () => {
           >
             Shuffle All Answers
           </Button>
+          <div style={{ 
+            marginTop: "12px", 
+            fontSize: "0.9rem", 
+            padding: "12px", 
+            backgroundColor: "#f5f5f5", 
+            borderRadius: "6px",
+            borderLeft: "4px solid #1890ff"
+            }}>
+              <div style={{ marginBottom: "8px", fontWeight: "bold" }}>How to read this grid:</div>
+              <p style={{ margin: "0 0 4px 0" }}>
+                <span style={{ backgroundColor: "#e6f7ff", padding: "2px 4px", borderRadius: "3px" }}>Row</span> = Original answer position in template. (A, B, C...)
+            </p>
+            <p style={{ margin: "0 0 4px 0" }}>
+                <span style={{ backgroundColor: "#f6ffed", padding: "2px 4px", borderRadius: "3px" }}>Column</span> = Randomised position in student's exam. (A, B, C...)
+            </p>
+            <p style={{ margin: "0 0 8px 0" }}>
+                <span style={{ backgroundColor: "#1890ff", color: "white", padding: "2px 4px", borderRadius: "3px" }}>Blue checkmarks</span> show where each original answer appears in the randomised exam.
+            </p>
+            </div>
           {!exam && (
             <Text type="warning">No exam data available. Please create or load an exam first.</Text>
           )}
@@ -74,7 +94,9 @@ const Randomiser = () => {
       </Card>
 
       <Card title="Answer Shuffle Mappings">
+        
         <div style={{ marginBottom: 16 }}>
+          
           <Space wrap>
             <Text strong>Version:</Text>
             <Select
@@ -95,6 +117,20 @@ const Randomiser = () => {
               <Select.Option value="visual">Visual Mapping</Select.Option>
               <Select.Option value="text">Text Mapping</Select.Option>
             </Select>
+            
+            {displayMode === "visual" && (
+              <Space>
+                <Text strong>Visualization Style:</Text>
+                <Select
+                  value={visualStyle}
+                  onChange={setVisualStyle}
+                  style={{ width: 120 }}
+                >
+                  <Select.Option value="grid">Grid View</Select.Option>
+                  <Select.Option value="arrows">Arrow View</Select.Option>
+                </Select>
+              </Space>
+            )}
             
             {displayMode === "text" && (
               <Space>
@@ -164,11 +200,13 @@ const Randomiser = () => {
                       </ul>
                     </div>
                   )}
-                                    {displayMode === "visual" ? (
+                  
+                  {displayMode === "visual" ? (
                     <MapDisplay 
                       question={question} 
                       selectedVersion={selectedVersion} 
                       exam={exam} 
+                      displayStyle={visualStyle}
                     />
                   ) : (
                     <Text>
