@@ -1,4 +1,9 @@
 #!/bin/sh
+
+# NOTE: The lines below are required for Husky v9 and will show a deprecation warning.
+# This project will not upgrade to Husky v10 (deployment in 4-6 weeks), so the warning is safe to ignore.
+
+
 . "$(dirname "$0")/_/husky.sh"
 
 node client/src/tests/scripts/testOnTrigger.js pre-push

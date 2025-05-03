@@ -38,9 +38,12 @@ console.log(`🔍 Running ${hookType} tests...`);
 try {
   if (hookType === 'pre-commit') {
     console.log('🔍 Running lint-staged for pre-commit...');
-    const lintStaged = spawnSync('npx', ['lint-staged'], { stdio: 'inherit' });
-    if (lintStaged.status !== 0) {
-      console.error('❌ lint-staged failed.');
+    const lintStaged = spawnSync('npx', ['lint-staged'], { stdio: 'inherit' });if (lintStaged.status !== 0) {
+      if (lintStaged.status === 1) {
+        console.error('❌ lint-staged found errors.');
+      } else {
+        console.warn('⚠️  lint-staged exited without processing any files.');
+      }
       process.exit(lintStaged.status);
     }
     console.log(`✅ ${hookType} tests passed.`);
