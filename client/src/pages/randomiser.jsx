@@ -61,13 +61,7 @@ const Randomiser = () => {
             Shuffle answer options for all questions and versions of the exam.
             This will randomize the order of answers while respecting any locked positions.
           </Text>
-          <Button 
-            type="primary" 
-            onClick={handleShuffleAnswers} 
-            disabled={!exam}
-          >
-            Shuffle All Answers
-          </Button>
+          
           <div style={{ 
             marginTop: "12px", 
             fontSize: "0.9rem", 
@@ -87,10 +81,49 @@ const Randomiser = () => {
                 <span style={{ backgroundColor: "#1890ff", color: "white", padding: "2px 4px", borderRadius: "3px" }}>Blue checkmarks</span> show where each original answer appears in the randomised exam.
             </p>
             </div>
+            <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "2px",
+            fontSize: "0.85rem",
+          }}
+        >
+            <div
+                style={{
+                padding: "4px 8px",
+                backgroundColor: "#e6f7ff",
+                borderLeft: "4px solid #1890ff",
+                borderRadius: "4px",
+                }}
+            >
+                <strong>Original Position</strong> (answer in exam version template)
+            </div>
+            <div style={{ fontSize: "1rem" }}>→</div>
+            <div
+                style={{
+                padding: "4px 8px",
+                backgroundColor: "#f6ffed",
+                borderLeft: "4px solid #52c41a",
+                borderRadius: "2px",
+                }}
+            >
+                <strong>Randomized Position</strong> (answer in student's exam)
+            </div>
+        </div>
           {!exam && (
             <Text type="warning">No exam data available. Please create or load an exam first.</Text>
           )}
         </Space>
+        <div style={{ marginTop: "16px"}}>
+        <Button 
+            type="primary" 
+            onClick={handleShuffleAnswers} 
+            disabled={!exam}
+          >
+            Shuffle All Answers
+          </Button>
+        </div>
       </Card>
 
       <Card title="Answer Shuffle Mappings">
