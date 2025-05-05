@@ -1,9 +1,8 @@
-# Testing
+# Testing Setup
 
 ## Overview
 
-This project is set up for unit, integration, and E2E testing. You can write and run tests individually using the commands in this guide, enable Git hooks to trigger tests on specific actions (commit, push, etc.), or use Jest watch mode for continuous testing during development.
-### (WIP) Additional test specific guides for writing tests are in: [`client/src/tests/testingGuides`](./testingGuides)
+This project is set up for unit, integration, and E2E testing. You can write and run tests individually using the commands in this guide, enable Git hooks to trigger tests on specific actions (commit, push, merge), or use Jest watch mode (WIP, not yet configured or tested) for continuous testing during development.
 
 ## Quick Start
 
@@ -20,6 +19,9 @@ npm test -- path/to/file.test.js
 # Run Cypress E2E tests
 npm run cy:open  # Interactive mode
 npm run cy:run   # Headless mode
+
+# Setup Git hooks
+npm run setup-hooks
 ```
 
 ## Testing Structure
@@ -40,13 +42,41 @@ npm run cy:run   # Headless mode
 ### Cypress E2E Tests
 Cypress test files use the `.cy.js` extension and live within the `client/src/tests/e2e/cypress/e2e` directory.
 
+## Git Hooks (Lefthook)
 
+We use Lefthook to automate testing during Git operations. Lefthook allows us to run specific tests and checks automatically when you commit, push, or merge code.
 
-## Common Patterns/Templates
+### Setup Git Hooks
 
-The following code templates demonstrate common testing patterns. You can copy and adapt these snippets when writing tests for similar scenarios in the codebase. More examples are provided in WIP WIP WIP [./testingGuides](./testingGuides).
+All hooks are **DISABLED by default**. To configure your local hooks settings, run:
 
-### Testing Components with Redux (For components that rely on Redux state)
+```bash
+npm run setup-hooks
+```
+
+This interactive script will ask you which hooks you want to enable:
+
+- **pre-commit**: Runs lint-staged for code style checks on staged files
+- **pre-push**: Runs ESLint, Jest tests, and E2E tests before pushing
+- **post-merge**: Runs tests to verify code still works after pulling changes
+
+When you run this command, it will set the appropriate Git configuration values to enable or disable specific hooks.
+
+### How Hooks Work
+
+When enabled, these hooks perform the following actions:
+
+- **pre-commit**: Lints and tests only the files you're committing
+- **pre-push**: Runs ESLint, Jest unit tests, and Cypress E2E tests
+- **post-merge**: Runs the same tests as pre-push to verify code still works after merging
+
+If a hook fails, the corresponding Git operation will be aborted, preventing you from committing or pushing code that doesn't pass tests.
+
+## Common Testing Patterns
+
+The following code templates demonstrate common testing patterns. You can copy and adapt these snippets when writing tests for similar scenarios in the codebase.
+
+### Testing Components with Redux
 
 ```javascript
 // Import necessary tools and components
@@ -86,7 +116,7 @@ test('displays question content', () => {
 });
 ```
 
-### Mocking File System Access (For tests involving file operations)
+### Mocking File System Access
 
 ```javascript
 // Mock the file system API
@@ -99,53 +129,27 @@ jest.mock('../../src/services/fileSystemAccess', () => ({
 }));
 ```
 
-## Git Hooks (Husky)
+## E2E Testing with Cypress
 
-We use Husky to automate testing during Git operations. **Important**: Husky is installed at the project root level (not in the client directory).
+Cypress E2E tests run in a real browser and test complete user workflows. Our configuration uses `start-server-and-test` to automatically start a Vite development server before running tests.
 
-All hooks are **DISABLED by default**. Enable them with:
+To run Cypress tests:
 
 ```bash
-# Enable pre-commit tests
-git config --local hooks.runPreCommitTests true
+# Open Cypress Test Runner (interactive)
+npm run cy:open
 
-# Enable pre-push tests
-git config --local hooks.runPrePushTests true 
-
-# Enable post-merge tests
-git config --local hooks.runPostMergeTests true
+# Run Cypress tests headless
+npm run cy:run
 ```
 
-When enabled, these hooks run:
-- **pre-commit**: Lint-staged for code style checks on staged files
-- **pre-push**: ESLint and Jest unit tests
-- **post-merge**: Tests to verify code still works after pulling changes
+## Watch Mode (WIP)
 
-[Learn more about Husky setup →](./testingGuides/huskyGuide.md)
-
-## Watch Mode
-
-Jest's watch mode continuously monitors your files and automatically runs relevant tests when changes are detected. 
+Jest's watch mode continuously monitors your files and automatically runs relevant tests when changes are detected.
 
 ```bash
 npm run test:watch
 ```
-
-When running in watch mode:
-- Press `a` to run all tests
-- Press `f` to run only failed tests
-- Press `p` to filter by filename
-- Press `t` to filter by test name
-- Press `q` to quit watch mode
-
-## Detailed Testing Guides
-
-For guides:
-
-- STILL WIP [**Unit Testing Guide**](./testingGuides/unitTestingGuide.md) - Writing effective unit tests with examples
-- STILL WIP [**Integration Testing Guide**](./testingGuides/integrationTestingGuide.md) - Testing component interactions
-- STILL WIP [**E2E Testing Guide**](./testingGuides/e2eTestingGuide.md) - End-to-end testing with Cypress
-- STILL WIP [**Testing FAQ**](./testingGuides/testingFAQ.md) - Common questions and solutions
 
 ## Command Reference
 
@@ -155,6 +159,6 @@ For guides:
 | `npm test -- path/to/file.test.js` | Run specific test file       |
 | `npm test -- -t "test name"`       | Run tests matching pattern   |
 | `npm run test:watch`               | Run tests in watch mode      |
-| `npm run test:coverage`            | Generate coverage report     |
 | `npm run cy:open`                  | Open Cypress Test Runner     |
 | `npm run cy:run`                   | Run Cypress tests headless   |
+| `npm run setup-hooks`              | Configure Git hooks          |
