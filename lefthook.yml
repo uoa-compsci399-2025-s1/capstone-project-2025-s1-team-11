@@ -1,0 +1,35 @@
+﻿# Pre-commit hook configuration
+pre-commit:
+  parallel: true
+  commands:
+    lint-staged:
+      root: "./client"
+      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePreCommit && npx lint-staged || echo 'Pre-commit hooks disabled'"
+
+# Pre-push hook configuration
+pre-push:
+  parallel: true
+  commands:
+    eslint:
+      root: "./client"
+      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePrePush && npm run lint || echo 'Pre-push hooks disabled'"
+    jest:
+      root: "./client"
+      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePrePush && npm test || echo 'Pre-push hooks disabled'"
+    run-e2e-tests:
+      root: "./client"
+      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePrePush && npm run test:e2e || echo 'Pre-push hooks disabled'"
+
+# Post-merge hook configuration
+post-merge:
+  parallel: true
+  commands:
+    eslint:
+      root: "./client"
+      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePostMerge && npm run lint || echo 'Post-merge hooks disabled'"
+    jest:
+      root: "./client"
+      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePostMerge && npm test || echo 'Post-merge hooks disabled'"
+    run-e2e-tests:
+      root: "./client"
+      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePostMerge && npm run test:e2e || echo 'Post-merge hooks disabled'"

@@ -1,91 +1,72 @@
 ﻿#!/usr/bin/env node
+// client/src/tests/scripts/setupHooks.js
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
+import readline from 'readline';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
-const projectRoot = path.resolve(__dirname, '../../../../');
-const huskyDir = path.resolve(projectRoot, '.husky');
-const testOnTriggerPath = path.join(__dirname, 'testOnTrigger.js').replace(/\\/g, '/');
+// Helper function to prompt for yes/no questions
+const promptYesNo = (question) => {
+    return new Promise((resolve) => {
+        rl.question(`${question} (y/n): `, (answer) => {
+            resolve(answer.toLowerCase().startsWith('y'));
+        });
+    });
+};
 
-// Define hooks to create
-const hooks = [
-    { name: 'pre-commit', command: `node "${testOnTriggerPath}" pre-commit` },
-    { name: 'pre-push', command: `node "${testOnTriggerPath}" pre-push` },
-    { name: 'post-merge', command: `node "${testOnTriggerPath}" post-merge` }
-];
+// Helper function to set git config value
+const setGitConfig = (key, value) => {
+    //console.log(`Setting ${key} to ${value}`);
+    spawnSync('git', ['config', key, value], { stdio: 'inherit' });
+};
 
-console.log('Setting up Husky hooks...');
+// Main setup function
+const setupHooks = async () => {
+    console.log('==================================');
+    console.log('Git Hooks Configuration Assistant');
+    console.log('==================================\n');
+    //console.log('This script will help you configure which git hooks run in your local environment.');
+    //console.log('The team defaults are set in lefthook.yml, but you can customize your personal settings.');
+    //console.log('\n');
 
-// Ensure husky directory exists
-if (!fs.existsSync(huskyDir)) {
-    console.log('Creating .husky directory...');
-    fs.mkdirSync(huskyDir, { recursive: true });
-}
+    // Configure pre-commit hooks
+    const runPreCommit = await promptYesNo('Do you want to run pre-commit hooks (lint-staged)?');
+    setGitConfig('hooks.enablePreCommit', runPreCommit.toString());
 
-for (const hook of hooks) {
-    try {
-        const hookPath = path.join(huskyDir, hook.name);
-        const isWindows = process.platform === 'win32';
+    const runPrePush = await promptYesNo('Do you want to enable pre-push hooks?');
+    setGitConfig('hooks.enablePrePush', runPrePush.toString());
 
-        // Create hook file content
-        const hookContent = isWindows
-            ? `#!/usr/bin/env sh\n. "$(dirname -- "$0")/_/husky.sh"\n\n${hook.command}\n`
-            : `#!/bin/sh\n. "$(dirname -- "$0")/_/husky.sh"\n\n${hook.command}\n`;
+    const runPostMerge = await promptYesNo('Do you want to enable post-merge hooks?');
+    setGitConfig('hooks.enablePostMerge', runPostMerge.toString());
 
-        // Write hook file
-        fs.writeFileSync(hookPath, hookContent, { mode: 0o755 });
+    // // Configure linting
+    // const runLinting = await promptYesNo('Do you want to run ESLint checks?');
+    // setGitConfig('hooks.skipLinting', (!runLinting).toString());
+    //
+    // // Configure Jest tests
+    // const runJestTests = await promptYesNo('Do you want to run Jest tests?');
+    // setGitConfig('hooks.skipJestTests', (!runJestTests).toString());
+    //
+    // // Configure Cypress tests
+    // const runCypressTests = await promptYesNo('Do you want to run Cypress tests?');
+    // setGitConfig('hooks.skipCypressTests', (!runCypressTests).toString());
 
-        console.log(`✅ Created ${hook.name} hook`);
+    //console.log('\n==================================');
+    console.log('\nConfiguration complete.\n');
+    //console.log(`- Pre-commit hooks: ${runPreCommit ? 'Enabled' : 'Disabled'}`);
+    //console.log(`- ESLint checks: ${runLinting ? 'Enabled' : 'Disabled'}`);
+    //console.log(`- Jest tests: ${runJestTests ? 'Enabled' : 'Disabled'}`);
+    //console.log(`- Cypress tests: ${runCypressTests ? 'Enabled' : 'Disabled'}`);
 
-        // Make executable on Unix systems
-        if (!isWindows) {
-            execSync(`chmod +x "${hookPath}"`);
-        }
-    } catch (error) {
-        console.error(`❌ Error creating ${hook.name} hook:`, error.message);
-    }
-}
+    rl.close();
+};
 
-// Create _/husky.sh if it doesn't exist
-const huskyShDir = path.join(huskyDir, '_');
-const huskyShPath = path.join(huskyShDir, 'husky.sh');
-
-if (!fs.existsSync(huskyShDir)) {
-    fs.mkdirSync(huskyShDir, { recursive: true });
-}
-
-if (!fs.existsSync(huskyShPath)) {
-    console.log('Creating husky.sh helper script...');
-    try {
-        // This is a simplified version of husky.sh
-        const huskyShContent = `#!/bin/sh
-if [ -z "$husky_skip_init" ]; then
-  debug () {
-    if [ "$HUSKY_DEBUG" = "1" ]; then
-      echo "husky (debug) - $1"
-    fi
-  }
-
-  readonly hook_name="$(basename -- "$0")"
-  debug "starting $hook_name..."
-fi
-`;
-        fs.writeFileSync(huskyShPath, huskyShContent, { mode: 0o755 });
-
-        // Make executable on Unix systems
-        if (process.platform !== 'win32') {
-            execSync(`chmod +x "${huskyShPath}"`);
-        }
-
-        console.log('✅ Created husky.sh helper script');
-    } catch (error) {
-        console.error('❌ Error creating husky.sh helper script:', error.message);
-    }
-}
-
-console.log('Hook setup complete.');
+// Run the setup
+setupHooks().catch(error => {
+    console.error('Error during setup:', error);
+    process.exit(1);
+});

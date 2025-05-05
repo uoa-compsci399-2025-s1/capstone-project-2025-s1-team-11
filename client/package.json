@@ -15,14 +15,16 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "jest",
+    "test:e2e": "start-server-and-test dev http://localhost:5173 cypress run",
     "test:watch": "jest --watch",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "docxdto": "node docxDTO/parseDocxDto.js",
-    "prepare": "node src/tests/scripts/huskyInstallFromClient.js && npm run setup-hooks && node src/tests/scripts/checkHooks.js",
-    "setup-hooks": "node src/tests/scripts/setupHooks.js"
+    "prepare": "lefthook install",
+    "setup-hooks": "node src/tests/scripts/setupHooks.js",
+    "lefthook-checkconfig": "node src/tests/scripts/lefthookCheckConfig.js"
   },
-    "dependencies": {
+  "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
@@ -41,7 +43,7 @@
     "react-router-dom": "^7.5.0",
     "sql.js": "^1.13.0"
   },
-    "devDependencies": {
+  "devDependencies": {
     "@babel/preset-env": "^7.26.9",
     "@babel/preset-react": "^7.26.3",
     "@eslint/js": "^9.21.0",
@@ -59,11 +61,12 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
-    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jsdom": "^26.1.0",
+    "lefthook": "^1.11.12",
     "lint-staged": "^15.5.1",
+    "start-server-and-test": "^2.0.11",
     "vite": "^6.2.6"
   }
 }
