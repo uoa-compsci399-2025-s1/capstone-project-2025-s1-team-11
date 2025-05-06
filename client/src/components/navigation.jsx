@@ -1,7 +1,9 @@
 import { NavLink } from "react-router";
 import { Button, Space } from "antd";
+import ThemeToggleButton from "./ThemeToggleButton.jsx";
+import React from "react";
 
-export function Navigation({ isDarkMode }) {
+export function Navigation({isDarkMode, setIsDarkMode}) {
   const navStyles = {
     width: "100%",
   };
@@ -32,6 +34,10 @@ export function Navigation({ isDarkMode }) {
     backgroundColor: isDarkMode ? "#1f1f1f" : "#ffffff",
     fontWeight: 500,
     color: isDarkMode ? "#ffffff" : undefined,
+  };
+
+  const toggleTheme = () => {
+    setIsDarkMode(prevMode => !prevMode);
   };
 
   return (
@@ -73,6 +79,7 @@ export function Navigation({ isDarkMode }) {
           <a href="/documentation" target="_blank" rel="noopener noreferrer">
             <Button type="text" style={docButtonStyles}>Documentation</Button>
           </a>
+          <ThemeToggleButton isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
         </Space>
       </div>
     </nav>

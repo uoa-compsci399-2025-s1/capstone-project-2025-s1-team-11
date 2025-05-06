@@ -1,14 +1,15 @@
 import React from "react";
-import { Card, Button } from "antd";
+import { Card, Switch } from "antd";
 
-const ThemeToggleButton = ({ isDarkMode, toggleTheme }) => {
+const ThemeToggleSwitch = ({ isDarkMode, toggleTheme }) => {
   return (
-    <Card style={{ width: "max-content", margin: "1rem" }}>
-      <Button onClick={toggleTheme}>
-        Change Theme to {isDarkMode ? "Light" : "Dark"}
-      </Button>
-    </Card>
+      <Switch
+        checked={isDarkMode}
+        onChange={toggleTheme}
+        checkedChildren="🌙"
+        unCheckedChildren="🌞"
+      />
   );
 };
 
-export default ThemeToggleButton;
+export default ThemeToggleSwitch;

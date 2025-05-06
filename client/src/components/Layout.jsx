@@ -6,7 +6,7 @@ import logo from "../../public/AssesslyLogoSmall.png";
 
 const { Header, Content, Footer } = Layout;
 
-const MCQLayout = ({ children, isDarkMode }) => {
+const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   const location = useLocation();
   const isPlainPage = ["/", "/about"].includes(location.pathname); // Borderless pages
 
@@ -59,7 +59,7 @@ const MCQLayout = ({ children, isDarkMode }) => {
     <Layout style={layoutStyle}>
       <Header style={headerStyle}>
         <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} />
-        <Navigation isDarkMode={isDarkMode} />
+        <Navigation isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}/>
       </Header>
 
       <Content style={contentStyle}>

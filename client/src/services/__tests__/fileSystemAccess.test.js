@@ -22,7 +22,7 @@ describe('fileSystemAccess service', () => {
     });
 
     describe('openExamFile', () => {
-        it('should open a file, read its contents, and parse it', async () => {
+        it('shoulandd open a file, read its contents,  parse it', async () => {
             const mockExam = { title: 'Test Exam' };
             const fileContents = JSON.stringify(mockExam);
             const mockFile = { text: jest.fn().mockResolvedValue(fileContents) };
