@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Switch } from "antd";
+import { Switch } from "antd";
 
 const ThemeToggleSwitch = ({ isDarkMode, toggleTheme }) => {
   return (
