@@ -20,7 +20,7 @@
  */
 function generateMarkingKeys(examData) {
     // Extract all questions from exam (both direct and in sections)
-    const allQuestions = extractAllQuestions(examData);
+    const allQuestions = extractAllQuestions(examData.examBody);
     
     // Generate the legacy format marking key
     const legacyKey = generateLegacyMarkingKey(examData, allQuestions);
@@ -36,16 +36,16 @@ function generateMarkingKeys(examData) {
   
   /**
    * Extracts all questions from an exam, including those in sections
-   * @param {Object} examData - The exam data object
+   * @param {Object} examBody - The exam data object
    * @returns {Array} Array of all questions
    */
-  function extractAllQuestions(examData) {
+  function extractAllQuestions(examBody) {
     const questions = [];
-    
-    examData.examBody.forEach(item => {
+
+    examBody.forEach(item => {
       if (item.type === 'question') {
         questions.push(item);
-      } else if (item.type === 'section' && item.questions) {
+      } else if (item.type === 'section' && Array.isArray(item.questions)) {
         questions.push(...item.questions);
       }
     });
