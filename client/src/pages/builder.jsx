@@ -6,8 +6,7 @@ import { createNewExam } from "../store/exam/examSlice.js";
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
-import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
-import { Typography, Button, Space } from "antd";
+import { Typography, Button, Space, Collapse } from "antd";
 import { exportExamToPdf } from "../services/exportPdf.js";
 
 const Builder = () => {
@@ -15,85 +14,20 @@ const Builder = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const renderStageContent = (step) => {
-        switch (step) {
-            case 0:
-                return (
-                    <div>
-                        <Typography.Title level={3}>Cover Page</Typography.Title>
-                    </div>
-                );
-            case 1:
-                return (
-                    <div>
-                        <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
-                        <ExamDisplay exam={exam} />
-                        {/* <ExamFileManager /> */}
-                    </div>
-                );
-            case 2:
-                return (
-                    <div>
-                        <Typography.Title level={3}>Export & Randomise</Typography.Title>
-                        <Typography.Paragraph type="secondary">
-                            Export functions coming soon
-                        </Typography.Paragraph>
-                        <div style={{ marginTop: 24, marginBottom: 24 }}>
-                            <Space>
-                                <Button type="primary" onClick={() => navigate('/randomiser')}>
-                                Open in Randomiser
-                                </Button>
-                            </Space>
-                            </div>
-
-                            <div style={{ marginBottom: 24 }}>
-                            <Space>
-                                <Button type="default" onClick={() => {/* TODO: implement DOCX download */}}>
-                                Download as DOCX
-                                </Button>
-                                <Button type="default" onClick={() => exportExamToPdf(exam)}>
-                                Download as PDF
-                                </Button>
-                            </Space>
-                            </div>
-                    </div>
-                );
-            default:
-                return null;
-        }
-    };
-
     return (
-        <>
-            <h1> Builder</h1>
-            <MCQBuilderProgressWrapper>
-                {(currentStep) => renderStageContent(currentStep)}
-            </MCQBuilderProgressWrapper>
-        </>
-/*
-        //Check Changes
-import { useDispatch, useSelector } from 'react-redux';
-import { createNewExam } from "../store/exam/examSlice.js";
-import { selectExamData } from "../store/exam/selectors.js";
-import { Button } from "antd";
-
-const Builder = () => {
-    const exam = useSelector(selectExamData); // Get examData from redux
-    const dispatch = useDispatch();
-  
-    return (
-      <div>
-        <h1>MCQ Builder</h1>
-        {exam ? (
-          <ExamDisplay />
-        ) : (
-          <><p>No exam loaded.</p><p><Button onClick={() => dispatch(createNewExam({examTitle: 'New Exam'}))} type="primary" style={{ marginBottom: 16 }}>
-              New Exam
-            </Button></p></>
-        )}
-        <ExamFileManager />
+      <div style={{ padding: 24 }}>
+        <Typography.Title level={2}>Builder</Typography.Title>
+        <Collapse defaultActiveKey={['1']} accordion>
+          <Collapse.Panel header="Cover Page" key="1">
+            <Typography.Paragraph type="secondary">
+              Cover page content goes here.
+            </Typography.Paragraph>
+          </Collapse.Panel>
+          <Collapse.Panel header="Questions" key="2">
+            <ExamDisplay exam={exam} />
+          </Collapse.Panel>
+        </Collapse>
       </div>
-          */
     );
   };
   export default Builder;
