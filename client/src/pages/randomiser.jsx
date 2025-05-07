@@ -61,29 +61,47 @@ const Randomiser = () => {
             Shuffle answer options for all questions and versions of the exam.
             This will randomize the order of answers while respecting any locked positions.
           </Text>
-          
-          <div style={{ 
-            marginTop: "12px", 
-            fontSize: "0.9rem", 
-            padding: "12px", 
-            backgroundColor: "#f5f5f5", 
+
+          <div style={{
+            marginTop: "12px",
+            fontSize: "0.9rem",
+            padding: "12px",
+            backgroundColor: token.colorBgContainer,
             borderRadius: "6px",
-            borderLeft: "4px solid #1890ff"
-            }}>
-              <div style={{ marginBottom: "8px", fontWeight: "bold" }}>How to read this grid:</div>
-              <p style={{ margin: "0 0 4px 0" }}>
-                <span style={{ backgroundColor: "#e6f7ff", padding: "2px 4px", borderRadius: "3px" }}>Row</span> = Original answer position in template. (A, B, C...)
+            borderLeft: `4px solid ${token.colorPrimary}`
+          }}>
+            <div style={{ marginBottom: "8px", fontWeight: "bold" }}>How to read this grid:</div>
+            <p style={{ margin: "0 0 4px 0" }}>
+              <span style={{
+                backgroundColor: token.colorInfoBg,
+                padding: "2px 4px",
+                borderRadius: "3px"
+              }}>
+                Row
+              </span> = Original answer position in template. (A, B, C...)
             </p>
             <p style={{ margin: "0 0 4px 0" }}>
-                <span style={{ backgroundColor: "#f6ffed", padding: "2px 4px", borderRadius: "3px" }}>Column</span> = Randomised position in student's exam. (A, B, C...)
+              <span style={{
+                backgroundColor: token.colorSuccessBg,
+                padding: "2px 4px",
+                borderRadius: "3px"
+              }}>
+                Column
+              </span> = Randomised position in student's exam. (A, B, C...)
             </p>
             <p style={{ margin: "0 0 8px 0" }}>
-                <span style={{ backgroundColor: "#1890ff", color: "white", padding: "2px 4px", borderRadius: "3px" }}>Blue checkmarks</span> show where each original answer appears in the randomised exam.
+              <span style={{
+                backgroundColor: token.colorPrimary,
+                color: token.colorTextLightSolid,
+                padding: "2px 4px",
+                borderRadius: "3px"
+              }}>
+                Blue checkmarks
+              </span> show where each original answer appears in the randomised exam.
             </p>
-            </div>
+          </div>
 
-            <div
-          style={{
+          <div style={{
             display: "flex",
             alignItems: "center",
             gap: "2px",
