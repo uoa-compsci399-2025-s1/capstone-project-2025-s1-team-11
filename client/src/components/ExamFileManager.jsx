@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { importExamFromJSON, clearExam } from "../store/exam/examSlice";
 import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
 import { useFileSystem } from "../hooks/useFileSystem.js";
-import { Button, Alert, Space, Typography, Modal, Input, message, Card, Divider, Select } from "antd";
+import { Button, Alert, Space, Typography, Modal, Input, message, Card, Select } from "antd";
 
 // dispatch(importExamFromJSON) handles all exam loading internally; no external onExamLoaded required.
 

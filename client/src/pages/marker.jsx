@@ -1,16 +1,12 @@
 // src/pages/Marker.jsx
 
 import React, { useState, useEffect } from "react";
-import { Typography, message, Button, Input, Divider, Empty } from "antd";
+import { Typography, message, Button, Input, Divider } from "antd";
 import { useSelector } from "react-redux";
 import { generateMarkingKeys, markExams, generateResultOutput } from "../utilities/createMarkingKey";
-import MarkerProgressWrapper from "../components/MarkerProgressWrapper";
 import {upload} from "../components/marker/upload.jsx";
 import {marking} from "../components/marker/marking.jsx";
 import {results} from "../components/marker/results.jsx"
-
-
-const { TextArea } = Input;
 
 const Marker = () => {
   const examData = useSelector((state) => state.exam.examData);
@@ -151,7 +147,7 @@ const Marker = () => {
       case 0:
         return upload({ examData, setMarkingKeyType, markingKeyType, handleExportMarkingKey, markingKeys} );
       case 1:
-        return marking({setMarkingKeyType,markingKeyType,handleExportMarkingKey,markingKeys,teleformData,handleTeleformDataChange,handleMarkExams});
+        return marking({teleformData,handleTeleformDataChange,handleMarkExams});
       case 2:
         return results({setExportFormat,exportFormat,resultsData,handleExportResults,examData});
       default:
