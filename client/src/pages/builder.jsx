@@ -28,7 +28,6 @@ const Builder = () => {
                     <div>
                         <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
                         <ExamDisplay exam={exam} />
-                        <ExamFileManager />
                     </div>
                 );
             case 2:
@@ -69,6 +68,7 @@ const Builder = () => {
             <MCQBuilderProgressWrapper>
                 {(currentStep) => renderStageContent(currentStep)}
             </MCQBuilderProgressWrapper>
+            <ExamFileManager />
         </>
 /*
         //Check Changes
