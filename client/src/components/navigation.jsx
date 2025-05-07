@@ -1,6 +1,6 @@
 import { NavLink } from "react-router";
 import { Button, Space } from "antd";
-import ThemeToggleButton from "./ThemeToggleButton.jsx";
+import ThemeToggleButton from "./ThemeToggleSwitch.jsx";
 import React from "react";
 
 export function Navigation({isDarkMode, setIsDarkMode}) {
