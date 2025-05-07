@@ -15,14 +15,16 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "jest",
-    "test:e2e": "start-server-and-test dev http://localhost:5173 cypress run",
+    "test:e2e": "start-server-and-test \"dev\" \"http://localhost:5173\" \"cypress run\"",
     "test:watch": "jest --watch",
     "cy:open": "cypress open",
+    "cy:open-with-server": "start-server-and-test \"dev\" \"http://localhost:5173\" \"cy:open\"",
     "cy:run": "cypress run",
+    "cy:run-with-server": "start-server-and-test \"dev\" \"http://localhost:5173\" \"cy:run\"",
     "docxdto": "node docxDTO/parseDocxDto.js",
     "prepare": "lefthook install",
-    "setup-hooks": "node src/tests/scripts/setupHooks.js",
-    "lefthook-checkconfig": "node src/tests/scripts/lefthookCheckConfig.js"
+    "setup-hooks": "node src/testing/scripts/setupHooks.js",
+    "lefthook-checkconfig": "node src/testing/scripts/lefthookCheckConfig.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

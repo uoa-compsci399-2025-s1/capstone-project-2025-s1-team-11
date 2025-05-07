@@ -1,7 +1,7 @@
 ﻿/*
     EXAMPLE_questionModel.test.js
 
-    Run all tests using: npm test (from client)
+    Run all testing using: npm test (from client)
 
     Run this test specifically using: npm test -- EXAMPLE_questionModel.test.js
 

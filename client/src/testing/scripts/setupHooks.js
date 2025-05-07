@@ -1,5 +1,5 @@
 ﻿#!/usr/bin/env node
-// client/src/tests/scripts/setupHooks.js
+// client/src/testing/scripts/setupHooks.js
 
 import { spawnSync } from 'child_process';
 import readline from 'readline';
@@ -47,20 +47,20 @@ const setupHooks = async () => {
     // const runLinting = await promptYesNo('Do you want to run ESLint checks?');
     // setGitConfig('hooks.skipLinting', (!runLinting).toString());
     //
-    // // Configure Jest tests
-    // const runJestTests = await promptYesNo('Do you want to run Jest tests?');
+    // // Configure Jest testing
+    // const runJestTests = await promptYesNo('Do you want to run Jest testing?');
     // setGitConfig('hooks.skipJestTests', (!runJestTests).toString());
     //
-    // // Configure Cypress tests
-    // const runCypressTests = await promptYesNo('Do you want to run Cypress tests?');
+    // // Configure Cypress testing
+    // const runCypressTests = await promptYesNo('Do you want to run Cypress testing?');
     // setGitConfig('hooks.skipCypressTests', (!runCypressTests).toString());
 
     //console.log('\n==================================');
     console.log('\nConfiguration complete.\n');
     //console.log(`- Pre-commit hooks: ${runPreCommit ? 'Enabled' : 'Disabled'}`);
     //console.log(`- ESLint checks: ${runLinting ? 'Enabled' : 'Disabled'}`);
-    //console.log(`- Jest tests: ${runJestTests ? 'Enabled' : 'Disabled'}`);
-    //console.log(`- Cypress tests: ${runCypressTests ? 'Enabled' : 'Disabled'}`);
+    //console.log(`- Jest testing: ${runJestTests ? 'Enabled' : 'Disabled'}`);
+    //console.log(`- Cypress testing: ${runCypressTests ? 'Enabled' : 'Disabled'}`);
 
     rl.close();
 };

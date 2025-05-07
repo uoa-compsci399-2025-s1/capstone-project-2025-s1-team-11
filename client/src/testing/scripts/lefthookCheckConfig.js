@@ -1,5 +1,5 @@
 ﻿#!/usr/bin/env node
-// client/src/tests/scripts/lefthookCheckConfig.js
+// client/src/testing/scripts/lefthookCheckConfig.js
 
 import { spawnSync } from 'child_process';
 

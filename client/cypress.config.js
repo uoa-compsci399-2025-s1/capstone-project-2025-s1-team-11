@@ -8,9 +8,15 @@ export default defineConfig({
     },
   },
 
+  fixturesFolder: "src/testing/e2e/cypress/fixtures",
+  screenshotsFolder: "src/testing/e2e/cypress/screenshots",
+  videosFolder: "src/testing/e2e/cypress/videos",
+  downloadsFolder: "src/testing/e2e/cypress/downloads",
+
   e2e: {
-    supportFile: "src/tests/e2e/cypress/support/e2e.js",
-    specPattern: "src/tests/e2e/**/*.cy.{js,jsx,ts,tsx}",
+    baseUrl: 'http://localhost:5173', // Add t
+    supportFile: "src/testing/e2e/cypress/support/e2e.js",
+    specPattern: "src/testing/e2e/**/*.cy.{js,jsx,ts,tsx}",
     setupNodeEvents(on, config) {
       // implement node event listeners here
     },

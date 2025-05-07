@@ -7,16 +7,16 @@ This project is set up for unit, integration, and E2E testing. You can write and
 ## Quick Start
 
 ```bash
-# Run all tests
+# Run all testing
 npm test
 
-# Run tests in watch mode (development)
+# Run testing in watch mode (development)
 npm run test:watch
 
 # Run specific test file
 npm test -- path/to/file.test.js
 
-# Run Cypress E2E tests
+# Run Cypress E2E testing
 npm run cy:open  # Interactive mode
 npm run cy:run   # Headless mode
 
@@ -44,11 +44,11 @@ Cypress test files use the `.cy.js` extension and live within the `client/src/te
 
 ## Git Hooks (Lefthook)
 
-We use Lefthook to automate testing during Git operations. Lefthook allows us to run specific tests and checks automatically when you commit, push, or merge code.
+Lefthook is used to automate testing during Git operations. This allows us to run specific tests and checks automatically when you commit, push, or merge code.
 
 ### Setup Git Hooks
 
-All hooks are **DISABLED by default**. To configure your local hooks settings, run:
+All hooks are **DISABLED by default**. To configure (enable/disable) your local hooks settings, run:
 
 ```bash
 npm run setup-hooks
@@ -71,6 +71,8 @@ When enabled, these hooks perform the following actions:
 - **post-merge**: Runs the same tests as pre-push to verify code still works after merging
 
 If a hook fails, the corresponding Git operation will be aborted, preventing you from committing or pushing code that doesn't pass tests.
+
+NOTE: the individual hook configuration can only be changed via lefthook.yml
 
 ## Common Testing Patterns
 
@@ -103,7 +105,7 @@ const renderWithRedux = (
   };
 };
 
-// Use in tests
+// Use in testing
 test('displays question content', () => {
   const mockQuestion = {
     questionNumber: 1,
@@ -139,7 +141,7 @@ To run Cypress tests:
 # Open Cypress Test Runner (interactive)
 npm run cy:open
 
-# Run Cypress tests headless
+# Run Cypress testing headless
 npm run cy:run
 ```
 

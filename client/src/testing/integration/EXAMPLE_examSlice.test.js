@@ -1,7 +1,7 @@
 /*
 Example Integration Test for Redux Slice
 
-This test file serves as a reference for writing integration tests using Redux Toolkit.
+This test file serves as a reference for writing integration testing using Redux Toolkit.
 
 It verifies:
 - Initial state is correctly set up
@@ -9,7 +9,7 @@ It verifies:
 - addSection adds a new section (with current known reducer limitations)
 - updateExamField correctly updates fields
 
-These tests demonstrate interaction between actions and reducers
+These testing demonstrate interaction between actions and reducers
 without involving React components or side effects.
 */
 

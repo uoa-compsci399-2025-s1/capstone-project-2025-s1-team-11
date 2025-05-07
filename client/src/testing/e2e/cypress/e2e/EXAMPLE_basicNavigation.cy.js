@@ -22,7 +22,7 @@ describe('Basic Navigation', () => {
   it('loads the home page', () => {
     // Check that the home page loads successfully
     // Replace "Assessly" with text that actually appears on your home page
-    cy.contains('Assessly').should('be.visible');
+    cy.contains('Assessly', { timeout: 6000 }).should('be.visible'); // default timeout is 4000ms, occasionally took longer for me
 
     // Check that the navigation bar is visible
     cy.get('header').should('exist');
@@ -37,6 +37,6 @@ describe('Basic Navigation', () => {
     cy.url().should('include', '/builder');
 
     // Check that the builder page has loaded
-    cy.contains('Builder').should('be.visible');
+    cy.contains('Builder', { timeout: 6000 }).should('be.visible'); // default timeout is 4000ms, occasionally took longer for me
   });
 });

@@ -53,19 +53,19 @@ export default [
   // Cypress Tests - Using the flat config format
   // First add the globals
   {
-    files: ['src/tests/e2e/cypress/**/*.js'],
+    files: ['src/testing/e2e/cypress/**/*.js'],
     ...pluginCypress.configs.globals
   },
 
   // Then add the recommended rules
   {
-    files: ['src/tests/e2e/cypress/**/*.js'],
+    files: ['src/testing/e2e/cypress/**/*.js'],
     ...pluginCypress.configs.recommended
   },
 
   // Override specific rules if needed
   {
-    files: ['src/tests/e2e/cypress/**/*.js'],
+    files: ['src/testing/e2e/cypress/**/*.js'],
     rules: {
       'cypress/no-unnecessary-waiting': 'off',
       'no-unused-expressions': 'off' // For chai assertions
@@ -74,7 +74,7 @@ export default [
 
   // Test Scripts
   {
-    files: ["src/tests/scripts/**/*.js"],
+    files: ["src/testing/scripts/**/*.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",

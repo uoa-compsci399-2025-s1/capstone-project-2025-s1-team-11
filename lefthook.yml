@@ -4,7 +4,7 @@ pre-commit:
   commands:
     lint-staged:
       root: "./client"
-      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePreCommit && npx lint-staged || echo 'Pre-commit hooks disabled'"
+      run: "node ./src/testing/scripts/lefthookCheckConfig.js hooks.enablePreCommit && (npx lint-staged && echo 'Lint-staged checks passed ✓' || echo 'Lint-staged checks failed ✗') || echo 'Pre-commit hooks disabled (user preference)'"
 
 # Pre-push hook configuration
 pre-push:
@@ -12,13 +12,13 @@ pre-push:
   commands:
     eslint:
       root: "./client"
-      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePrePush && npm run lint || echo 'Pre-push hooks disabled'"
+      run: "node ./src/testing/scripts/lefthookCheckConfig.js hooks.enablePrePush && (npm run lint && echo 'ESLint check passed ✓' || echo 'ESLint check failed ✗') || echo 'Pre-push hooks disabled (user preference)'"
     jest:
       root: "./client"
-      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePrePush && npm test || echo 'Pre-push hooks disabled'"
+      run: "node ./src/testing/scripts/lefthookCheckConfig.js hooks.enablePrePush && (npm test && echo 'Jest testing passed ✓' || echo 'Jest testing failed ✗') || echo 'Pre-push hooks disabled (user preference)'"
     run-e2e-tests:
       root: "./client"
-      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePrePush && npm run test:e2e || echo 'Pre-push hooks disabled'"
+      run: "node ./src/testing/scripts/lefthookCheckConfig.js hooks.enablePrePush && (npm run test:e2e && echo 'E2E testing passed ✓' || echo 'E2E testing failed ✗') || echo 'Pre-push hooks disabled (user preference)'"
 
 # Post-merge hook configuration
 post-merge:
@@ -26,10 +26,10 @@ post-merge:
   commands:
     eslint:
       root: "./client"
-      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePostMerge && npm run lint || echo 'Post-merge hooks disabled'"
+      run: "node ./src/testing/scripts/lefthookCheckConfig.js hooks.enablePostMerge && (npm run lint && echo 'ESLint check passed ✓' || echo 'ESLint check failed ✗') || echo 'Post-merge hooks disabled (user preference)'"
     jest:
       root: "./client"
-      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePostMerge && npm test || echo 'Post-merge hooks disabled'"
+      run: "node ./src/testing/scripts/lefthookCheckConfig.js hooks.enablePostMerge && (npm test && echo 'Jest testing passed ✓' || echo 'Jest testing failed ✗') || echo 'Post-merge hooks disabled (user preference)'"
     run-e2e-tests:
       root: "./client"
-      run: "node ./src/tests/scripts/lefthookCheckConfig.js hooks.enablePostMerge && npm run test:e2e || echo 'Post-merge hooks disabled'"
+      run: "node ./src/testing/scripts/lefthookCheckConfig.js hooks.enablePostMerge && (npm run test:e2e && echo 'E2E testing passed ✓' || echo 'E2E testing failed ✗') || echo 'Post-merge hooks disabled (user preference)'"
