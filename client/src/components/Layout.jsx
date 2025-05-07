@@ -6,34 +6,68 @@ import logo from "../../public/AssesslyLogoSmall.png";
 
 const { Header, Content, Footer } = Layout;
 
-const MCQLayout = ({ children }) => {
+const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   const location = useLocation();
   const isPlainPage = ["/", "/about"].includes(location.pathname); // Borderless pages
 
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { borderRadiusLG },
   } = theme.useToken();
 
+  const layoutStyle = {
+    minHeight: '100vh', 
+    minWidth: '100vw', 
+    display: 'flex', 
+    flexDirection: 'column',
+    backgroundColor: isDarkMode ? '#121212' : '#f0f2f5',
+  };
+
+  const headerStyle = {
+    backgroundColor: isDarkMode ? '#1f1f1f' : '#ffffff',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0 24px',
+    color: isDarkMode ? '#ffffff' : '#000000'
+  };
+
+  const contentStyle = { 
+    padding: isPlainPage ? 0 : '32px 48px', 
+    flex: 1 
+  };
+
+  const contentContainerStyle = {
+    background: isDarkMode ? '#1f1f1f' : '#ffffff',
+    borderRadius: borderRadiusLG,
+    minHeight: '800px',
+    padding: '32px',
+    color: isDarkMode ? '#ffffff' : '#000000'
+  };
+
+  const footerStyle = {
+    textAlign: 'center', 
+    padding: '16px 24px',
+    backgroundColor: isDarkMode ? '#1f1f1f' : '#ffffff',
+    color: isDarkMode ? '#ffffff' : '#000000'
+  };
+
+  const breadcrumbStyle = {
+    marginBottom: '24px',
+    color: isDarkMode ? '#ffffff' : 'inherit'
+  };
+
   return (
-    <Layout style={{ minHeight: '100vh', minWidth: '100vw', display: 'flex', flexDirection: 'column' }}>
-      <Header
-        style={{
-          backgroundColor: "#ffffff",
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 24px'
-        }}
-      >
+    <Layout style={layoutStyle}>
+      <Header style={headerStyle}>
         <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} />
-        <Navigation />
+        <Navigation isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}/>
       </Header>
 
-      <Content style={{ padding: isPlainPage ? 0 : '32px 48px', flex: 1 }}>
+      <Content style={contentStyle}>
         {isPlainPage ? (
           children
         ) : (
           <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
-            <Breadcrumb style={{ marginBottom: '24px' }}>
+            <Breadcrumb style={breadcrumbStyle}>
               <Breadcrumb.Item>
                 <Link to="/">Home</Link>
               </Breadcrumb.Item>
@@ -41,21 +75,14 @@ const MCQLayout = ({ children }) => {
                 <Link to="/builder">MCQ Builder</Link>
               </Breadcrumb.Item>
             </Breadcrumb>
-            <div
-              style={{
-                background: colorBgContainer,
-                borderRadius: borderRadiusLG,
-                minHeight: '800px',
-                padding: '32px'
-              }}
-            >
+            <div style={contentContainerStyle}>
               {children}
             </div>
           </div>
         )}
       </Content>
 
-      <Footer style={{ textAlign: 'center', padding: '16px 24px' }}>
+      <Footer style={footerStyle}>
         University of Auckland | {new Date().getFullYear()} | Created by Team 11 (Cache Converters)
       </Footer>
     </Layout>
