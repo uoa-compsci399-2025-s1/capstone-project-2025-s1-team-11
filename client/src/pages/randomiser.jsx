@@ -1,15 +1,12 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  Button, Table, Card, Space, Typography, Switch, Select, Spin, Pagination, Tabs, theme
-} from "antd";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, Tabs, theme} from "antd";
 import { regenerateShuffleMaps } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/mapDisplay";
 
 const { Title, Text } = Typography;
-const { TabPane } = Tabs;
 
 const Randomiser = () => {
   const dispatch = useDispatch();
