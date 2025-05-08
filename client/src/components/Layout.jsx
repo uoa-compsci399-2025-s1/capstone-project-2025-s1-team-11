@@ -66,15 +66,18 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
         {isPlainPage ? (
           children
         ) : (
-          <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
-            <Breadcrumb style={breadcrumbStyle}>
-              <Breadcrumb.Item>
-                <Link to="/">Home</Link>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <Link to="/builder">MCQ Builder</Link>
-              </Breadcrumb.Item>
-            </Breadcrumb>
+          <div style={{ maxWidth: '1550px', margin: '0 auto' }}>
+            <Breadcrumb
+              style={breadcrumbStyle}
+              items={[
+                {
+                  title: <Link to="/">Home</Link>,
+                },
+                {
+                  title: <Link to="/builder">MCQ Builder</Link>,
+                },
+              ]}
+            />
             <div style={contentContainerStyle}>
               {children}
             </div>
