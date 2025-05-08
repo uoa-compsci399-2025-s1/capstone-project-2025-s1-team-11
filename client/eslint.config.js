@@ -9,6 +9,29 @@ import jest from 'eslint-plugin-jest';
 export default [
   { ignores: ['dist'] },
 
+  // Node.js Utilities
+  {
+    files: [
+      '**/docx/**/*.js',      // Your parseDocxDto.js file and related utilities
+      '**/dto/**/*.js',       // DTO handling that might use Node APIs
+      '**/services/**/*.js',  // Service files that might use Node-like features
+      '**/utils/**/*.js'      // Utility files that might need Node.js globals
+    ],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      "no-console": "off",
+    },
+  },
+
+
+
+
   // React / Application Code
   {
     files: ['**/*.{js,jsx}'],
@@ -38,7 +61,7 @@ export default [
 
   // Jest Unit Tests
   {
-    files: ['**/__tests__/**/*.js', '**/*.test.js'],
+    files: ['**/__tests__/**/*.js', '**/__tests__/**/*.jsx', '**/*.test.js', '**/*.test.jsx'],
     languageOptions: {
       globals: {
         ...globals.jest,

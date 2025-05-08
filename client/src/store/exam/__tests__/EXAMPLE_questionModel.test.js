@@ -17,8 +17,8 @@ import { configureStore } from '@reduxjs/toolkit';
 import examReducer, {
     createNewExam,
     addQuestion,
-    updateQuestion,
-    removeQuestion
+//    updateQuestion,
+//    removeQuestion
 } from '../examSlice';
 
 import { selectExamData } from '../selectors';

@@ -17,7 +17,8 @@ export default defineConfig({
     baseUrl: 'http://localhost:5173', // Add t
     supportFile: "src/testing/e2e/cypress/support/e2e.js",
     specPattern: "src/testing/e2e/**/*.cy.{js,jsx,ts,tsx}",
-    setupNodeEvents(on, config) {
+    // eslint-disable-next-line no-unused-vars
+    setupNodeEvents(_on, _config) {
       // implement node event listeners here
     },
   },
