@@ -1,5 +1,5 @@
 import {Button, Col, Divider, Empty, Progress, Radio, Row, Statistic, Typography} from "antd";
-import {generateResultOutput} from "../../utilities/createMarkingKey.js";
+import {generateResultOutput} from "../../utilities/marker/outputFormatter.js";
 import React from "react";
 
 export const results = ({setExportFormat,exportFormat,resultsData,handleExportResults,examData}) => {

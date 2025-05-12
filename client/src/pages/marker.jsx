@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { Typography, message, Button, Input, Divider } from "antd";
 import { useSelector } from "react-redux";
-import { generateMarkingKeys, markExams, generateResultOutput } from "../utilities/createMarkingKey";
+import { generateMarkingKeys } from "../utilities/marker/keyGenerator.js";
+import { markExams } from "../utilities/marker/examMarker.js";
+import { generateResultOutput } from "../utilities/marker/outputFormatter.js";
 import {upload} from "../components/marker/upload.jsx";
 import {marking} from "../components/marker/marking.jsx";
 import {results} from "../components/marker/results.jsx"

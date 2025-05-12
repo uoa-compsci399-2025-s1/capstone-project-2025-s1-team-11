@@ -31,7 +31,7 @@ export const upload = ({ examData, setMarkingKeyType, markingKeyType, handleExpo
 
 
       ) : (
-        <Empty description="Please upload an exam in the Exam Builder page to begin..."/>
+        <Empty description="Please open an exam in the Exam Builder page to begin..."/>
       )}
     </>
   );
