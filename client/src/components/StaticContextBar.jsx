@@ -173,7 +173,7 @@ const StaticContextBar = ({
               </Tooltip>
             ) : (
               <Text type="danger" strong>
-                Warning: No file uploaded.
+                Warning: No file uploaded
               </Text>
             )}
           </div>
