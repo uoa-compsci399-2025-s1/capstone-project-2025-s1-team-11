@@ -20,6 +20,7 @@ const StaticContextBar = ({
   const dispatch = useDispatch();
   const examData = useSelector((state) => state.exam.examData);
   const [fileHandle, setFileHandle] = useState(null);
+  const [fileName, setFileName] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newExamData, setNewExamData] = useState({
     examTitle: '',
@@ -47,6 +48,11 @@ const StaticContextBar = ({
     if (result) {
       dispatch(importExamFromJSON(result.exam));
       setFileHandle(result.fileHandle);
+      if (result.fileHandle && result.fileHandle.name) {
+        setFileName(result.fileHandle.name);
+      } else {
+        setFileName(null);
+      }
     }
   };
 
@@ -70,6 +76,11 @@ const StaticContextBar = ({
       }
       await saveExamToFile(examData, updatedHandle);
       setFileHandle(updatedHandle);
+      if (updatedHandle && updatedHandle.name) {
+        setFileName(updatedHandle.name);
+      } else {
+        setFileName(null);
+      }
       setLastSavedTime(new Date());
       message.success("Exam saved successfully.");
     } catch (error) {
@@ -177,6 +188,10 @@ const StaticContextBar = ({
               </Text>
             )}
           </div>
+          {/* Exam title and file name */}
+          <Text strong style={{ marginLeft: 16 }}>
+            {examTitle} {fileName ? `| ${fileName}` : ''}
+          </Text>
           {/* Right side: Save and Export buttons */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div className="context-button">
