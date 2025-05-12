@@ -54,7 +54,6 @@ const examSlice = createSlice({
   initialState,
   reducers: {
     createNewExam: (state, action) => {
-      if (state.examData) { return; }
       state.examData = createExam(action.payload || {});
     },
 
@@ -97,7 +96,8 @@ const examSlice = createSlice({
         return createAnswer({ 
           contentFormatted: ans.contentFormatted, 
           contentText: contentText,
-          correct: idx === 0 
+          correct: idx === 0,
+          fixedPosition: ans.fixedPosition? ans.fixedPosition : null
         });
       });
 
@@ -119,6 +119,7 @@ const examSlice = createSlice({
       if (examBodyIndex != null && examBody[examBodyIndex]?.type === 'section') {
         examBody[examBodyIndex].questions.push(newQuestion);
       } else {
+        
         examBody.push(newQuestion);
       }
     
