@@ -143,23 +143,6 @@ const StaticContextBar = ({
 
   // Menus
 
-  const fileMenu = (
-    <Menu>
-      <Menu.Item key="new" onClick={handleCreateNewExam}>New Exam</Menu.Item>
-      <Menu.Item key="open" onClick={handleOpenExam}>Open Exam</Menu.Item>
-      <Menu.Item key="close" onClick={handleCloseExam}>Close Exam</Menu.Item>
-    </Menu>
-  );
-
-  const exportMenu = (
-    <Menu>
-      <Menu.Item key="demo" disabled={!canExportDemo} onClick={() => confirmExport("demo")}>Demo Answer Scripts</Menu.Item>
-      <Menu.Item key="randomised" disabled={!canExportRandomised} onClick={() => confirmExport("randomised")}>Randomised Answer Scripts</Menu.Item>
-      <Menu.Item key="exemplar" disabled={!canExportExemplar} onClick={() => confirmExport("exemplar")}>Exemplar Answer Scripts</Menu.Item>
-      <Menu.Item key="marking" disabled={!canExportMarking} onClick={() => confirmExport("marking")}>Marking Scheme</Menu.Item>
-    </Menu>
-  );
-
   return (
     <div className="floating-context-bar">
       <div className="context-bar-wrapper">
@@ -168,7 +151,11 @@ const StaticContextBar = ({
           {/* Left side: File menu and status */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div className="context-button">
-              <Dropdown overlay={fileMenu} trigger={['click']}>
+              <Dropdown menu={{ items: [
+                { key: 'new', label: 'New Exam', onClick: handleCreateNewExam },
+                { key: 'open', label: 'Open Exam', onClick: handleOpenExam },
+                { key: 'close', label: 'Close Exam', onClick: handleCloseExam }
+              ]}} trigger={['click']}>
                 <Tooltip title="File Menu">
                   <Button icon={<FileOutlined />} type="text">
                     <span className="context-button-label">File</span>
@@ -207,7 +194,12 @@ const StaticContextBar = ({
               </Tooltip>
             </div>
             <div className="context-button">
-              <Dropdown overlay={exportMenu} trigger={['click']}>
+              <Dropdown menu={{ items: [
+                { key: 'demo', label: 'Demo Answer Scripts', disabled: !canExportDemo, onClick: () => confirmExport("demo") },
+                { key: 'randomised', label: 'Randomised Answer Scripts', disabled: !canExportRandomised, onClick: () => confirmExport("randomised") },
+                { key: 'exemplar', label: 'Exemplar Answer Scripts', disabled: !canExportExemplar, onClick: () => confirmExport("exemplar") },
+                { key: 'marking', label: 'Marking Scheme', disabled: !canExportMarking, onClick: () => confirmExport("marking") }
+              ]}} trigger={['click']}>
                 <Tooltip title="Export Options">
                   <Button icon={<ExportOutlined />} type="text">
                     <span className="context-button-label">Export</span>
@@ -249,7 +241,7 @@ const StaticContextBar = ({
         {/* Create New Exam Modal */}
         <Modal
           title="Create New Exam"
-          visible={showCreateModal}
+          open={showCreateModal}
           onOk={handleCreateModalOk}
           onCancel={handleCreateModalCancel}
           okText="Create"

@@ -12,7 +12,7 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   const isPlainPage = ["/", "/about"].includes(location.pathname); // Borderless pages
 
   const {
-    token: { borderRadiusLG },
+    token: { borderRadiusLG, colorBgContainer },
   } = theme.useToken();
 
   const layoutStyle = {
