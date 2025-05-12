@@ -7,12 +7,14 @@ import Marker from "./pages/marker.jsx";
 import Randomiser from "./pages/randomiser.jsx";
 import About from "./pages/about.jsx";
 import Documentation from "./pages/documentation.jsx";
-import ExamConsolePage from './pages/examConsole';
+import ExamConsolePage from './pages/examConsole'; 
+import ExamMarkingPanel from './pages/examMarkingPanel'; 
 
-export default function AppRoutes({ isDarkMode, toggleTheme }) {
+
+export default function AppRoutes() {
     return (
         <Routes>
-            <Route element={<App isDarkMode={isDarkMode} toggleTheme={toggleTheme} />}>
+            <Route element={<App />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/builder" element={<Builder />} />
                 <Route path="/randomiser" element={<Randomiser />} />
