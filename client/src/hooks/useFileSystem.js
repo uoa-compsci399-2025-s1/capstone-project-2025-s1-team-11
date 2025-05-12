@@ -38,16 +38,30 @@ export function useFileSystem() {
         return updatedHandle;
     };
 
-  // Imports the exam from a file (docx, xml, etc.)
     const importExam = async (file, format) => {
-        try {
-        const examDTO = await examImportService.importExamToDTO(file, format);
-        dispatch(importDTOToState(examDTO));
-        //dispatch(createNewExam(examData)); 
+      const dto = await examImportService.importExamToDTO(file, format);
+      dispatch(importDTOToState(dto));
+      setFileHandle(null); // reset file handle, this wasn't opened from disk
+      return true;
+    };
+
+    const importFromFileInput = async (file, onError) => {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const format = ext === 'xml' ? 'moodle' : ext === 'docx' ? 'docx' : null;
+
+      if (!format) {
+        onError?.("Unsupported file format");
+        return;
+      }
+
+      try {
+        await importExam(file, format);
         return true;
-        } catch (error) {
-        throw new Error("Error importing exam: " + error.message);
-        }
+      } catch (err) {
+        console.error("Import error:", err);
+        onError?.("Error importing exam: " + err.message);
+        return false;
+      }
     };
 
     return { exam, fileHandle, openExam, saveExam, importExam };
