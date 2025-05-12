@@ -1,8 +1,7 @@
 import React from "react";
 
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from 'react-redux';
-import { createNewExam } from "../store/exam/examSlice.js";
+import { useSelector } from 'react-redux';
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
@@ -13,7 +12,6 @@ import { exportExamToPdf } from "../services/exportPdf.js";
 const Builder = () => {
     const exam = useSelector(selectExamData);
     const navigate = useNavigate();
-    const dispatch = useDispatch();
 
     const renderStageContent = (step) => {
         switch (step) {
