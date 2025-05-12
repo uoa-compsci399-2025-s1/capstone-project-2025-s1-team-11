@@ -155,7 +155,7 @@ const StaticContextBar = ({
         {/* Context Bar Main */}
         <div className="context-bar-main">
           {/* Left side: File menu and status */}
-          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div className="context-button">
               <Dropdown overlay={fileMenu} trigger={['click']}>
                 <Tooltip title="File Menu">
@@ -173,12 +173,12 @@ const StaticContextBar = ({
               </Tooltip>
             ) : (
               <Text type="danger" strong>
-                1 Critical Error
+                Critical Error
               </Text>
             )}
           </div>
           {/* Right side: Save and Export buttons */}
-          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div className="context-button">
               <Tooltip title="Save Exam">
                 <Button

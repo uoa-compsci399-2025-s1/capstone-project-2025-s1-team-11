@@ -96,7 +96,7 @@ button:focus-visible {
   z-index: 1000;
   width: 100%;
   max-width: 1200px;
-  max-height: 72px;
+  max-height: 70px;
   overflow: hidden;
   color: #1f1f1f;
 }

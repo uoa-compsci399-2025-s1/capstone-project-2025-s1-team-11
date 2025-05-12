@@ -30,7 +30,11 @@ const MCQLayout = ({ children }) => {
           <Navigation />
         </div>
       </Header>
-      {["/builder", "/randomiser", "/marker"].includes(location.pathname) && <StaticContextBar />}
+      {["/builder", "/randomiser", "/marker"].includes(location.pathname) && (
+        <div style={{ position: "sticky", top: 0, zIndex: 1000 }}>
+          <StaticContextBar />
+        </div>
+      )}
 
       <Content style={{ paddingBottom: isPlainPage ? 0 : '48px', flex: 1, position: 'relative', zIndex: 1 }}>
         {isPlainPage ? (
