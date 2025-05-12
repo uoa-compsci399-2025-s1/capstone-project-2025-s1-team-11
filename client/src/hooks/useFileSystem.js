@@ -64,5 +64,10 @@ export function useFileSystem() {
       }
     };
 
-    return { exam, fileHandle, openExam, saveExam, importExam };
+      const closeExam = () => {
+        dispatch(clearExamState());
+        setFileHandle(null);
+      };
+
+    return { exam, fileHandle, openExam, saveExam, importExam, closeExam, importFromFileInput };
 }
