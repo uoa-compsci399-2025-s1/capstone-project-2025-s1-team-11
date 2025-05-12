@@ -1,5 +1,10 @@
 // examSlice.js
 
+/*
+ * Important: This module does not handle the file loading of exams, this is used to manage the exam state.
+ * Do not use this module to load, close or import an exam. Use the hook.
+ */
+
 import { createSlice } from '@reduxjs/toolkit';
 import { 
   createExam, 
@@ -53,12 +58,12 @@ const examSlice = createSlice({
   name: 'exam',
   initialState,
   reducers: {
-    createNewExam: (state, action) => {
+    initializeExamState: (state, action) => {
       if (state.examData) { return; }
       state.examData = createExam(action.payload || {});
     },
 
-    clearExam: (state) => {
+    clearExamState: (state) => {
       state.examData = null;
     },
 
@@ -359,9 +364,9 @@ export const importDTOToState = (examDTO) => async (dispatch) => {
   try {
     dispatch(importExamStart());
 
-    dispatch(clearExam());
+    dispatch(clearExamState());
 
-    dispatch(createNewExam({
+    dispatch(initializeExamState({
       examTitle: examDTO.examTitle,
       courseCode: examDTO.courseCode,
       courseName: examDTO.courseName,
@@ -426,8 +431,8 @@ function htmlToText(html) {
 
 // Export actions
 export const { 
-  createNewExam, 
-  clearExam,
+  initializeExamState,
+  clearExamState,
   addSection, 
   addQuestion, 
   setCoverPage, // supplied as document, add from file system via UI
