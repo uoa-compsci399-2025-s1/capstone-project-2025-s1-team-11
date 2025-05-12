@@ -3,6 +3,7 @@ import { Layout, Breadcrumb, theme } from 'antd';
 import { Navigation } from "./navigation.jsx";
 import { Link, useLocation } from 'react-router';
 import logo from "../../public/AssesslyLogoSmall.png";
+import StaticContextBar from './StaticContextBar';
 
 const { Header, Content, Footer } = Layout;
 
@@ -20,19 +21,22 @@ const MCQLayout = ({ children }) => {
         style={{
           backgroundColor: "#ffffff",
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: 'column',
           padding: '0 24px'
         }}
       >
-        <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} />
-        <Navigation />
+        <div style={{ display: 'flex', alignItems: 'center', height: 64 }}>
+          <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} />
+          <Navigation />
+        </div>
       </Header>
+      {["/builder", "/randomiser", "/marker"].includes(location.pathname) && <StaticContextBar />}
 
-      <Content style={{ padding: isPlainPage ? 0 : '32px 48px', flex: 1 }}>
+      <Content style={{ paddingBottom: isPlainPage ? 0 : '48px', flex: 1, position: 'relative', zIndex: 1 }}>
         {isPlainPage ? (
           children
         ) : (
-          <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div
               style={{
                 background: colorBgContainer,

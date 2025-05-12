@@ -23,7 +23,7 @@ a {
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #333;
 }
 
 body {
@@ -81,4 +81,83 @@ button:focus-visible {
   0% { transform: translateX(-50%) scale(1); }
   50% { transform: translateX(-50%) scale(1.2); }
   100% { transform: translateX(-50%) scale(1); }
+}
+
+.context-bar-wrapper {
+  position: sticky;
+  top: 0;
+  margin: 16px auto;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 12px 24px;
+  transition: all 0.25s ease;
+  z-index: 1000;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 72px;
+  overflow: hidden;
+  color: #1f1f1f;
+}
+
+.context-bar-wrapper:hover {
+  max-height: 300px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  border-color: #d0d0d0;
+  /*background: #f7f7f7;*/
+}
+
+.context-bar-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 20px;
+  row-gap: 12px;
+  flex-wrap: wrap;
+  padding: 4px 0;
+}
+
+.context-button .ant-btn {
+  color: #333 !important;
+  border: 1px solid #d9d9d9;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.context-button .ant-btn:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.context-button-label {
+  display: none;
+  margin-left: 8px;
+  font-weight: 500;
+  color: #1f1f1f;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.context-bar-wrapper:hover .context-button-label {
+  display: inline;
+  opacity: 1;
+}
+
+.context-bar-expanded {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  padding-top: 12px;
+  font-size: 14px;
+  color: #595959;
+  line-height: 1.6;
+}
+
+.context-bar-wrapper:hover .context-bar-expanded,
+.context-bar-wrapper:has(.ant-dropdown-open) .context-bar-expanded,
+.context-bar-wrapper:has(.ant-dropdown:hover) .context-bar-expanded {
+  opacity: 1;
 }
