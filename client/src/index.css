@@ -99,7 +99,8 @@ button:focus-visible {
   position: sticky;
   top: 0;
   margin: 16px auto;
-  background: #ffffff;
+  background: var(--header-bg);
+  color: var(--text-color);
   border-radius: 12px;
   border: 1px solid #e0e0e0;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -131,16 +132,17 @@ button:focus-visible {
 }
 
 .context-button .ant-btn {
-  color: #333 !important;
+  color: var(--text-color) !important;
+  background-color: var(--button-bg);
   border: 1px solid #d9d9d9;
-  background-color: #ffffff;
   transition: all 0.3s ease;
   font-weight: 500;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  
 }
 
 .context-button .ant-btn:hover {
-  background: #f0f0f0;
+  background: var(--content-bg);
   border-color: #ccc;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
@@ -149,7 +151,7 @@ button:focus-visible {
   display: none;
   margin-left: 8px;
   font-weight: 500;
-  color: #1f1f1f;
+  color: var(--text-color);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -164,7 +166,7 @@ button:focus-visible {
   transition: opacity 0.4s ease;
   padding-top: 12px;
   font-size: 14px;
-  color: #595959;
+  color: var(--text-color);
   line-height: 1.6;
 }
 
@@ -172,4 +174,19 @@ button:focus-visible {
 .context-bar-wrapper:has(.ant-dropdown-open) .context-bar-expanded,
 .context-bar-wrapper:has(.ant-dropdown:hover) .context-bar-expanded {
   opacity: 1;
+}
+
+/* ant design alert to work for dark mode */
+[data-theme="dark"] .ant-alert {
+  background-color: #2a2a2a !important;
+  border-color: #ff7875 !important;
+}
+
+[data-theme="dark"] .ant-alert-message,
+[data-theme="dark"] .ant-alert-description {
+  color: rgba(255, 255, 255, 0.87) !important;
+}
+
+[data-theme="dark"] .ant-alert-icon {
+  color: #ff7875 !important;
 }

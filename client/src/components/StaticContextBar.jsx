@@ -41,6 +41,8 @@ const StaticContextBar = ({
     unsaved: "red",
   };
 
+  const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
+
   // Handlers
 
   const handleOpenExam = async () => {
@@ -171,7 +173,7 @@ const StaticContextBar = ({
               </Tooltip>
             ) : (
               <Text type="danger" strong>
-                Critical Error
+                Warning: No file uploaded.
               </Text>
             )}
           </div>
@@ -225,14 +227,7 @@ const StaticContextBar = ({
                 message="No exam is currently loaded"
                 description="Create a new exam or open an existing one to begin editing."
                 type="error"
-                showIcon
-                style={{
-                  borderRadius: 8,
-                  padding: '8px 16px',
-                  margin: '8px 0',
-                  backgroundColor: '#fff1f0',
-                  border: '1px solid #ffa39e'
-                }}
+                showIcon              
               />
             )}
           </div>
