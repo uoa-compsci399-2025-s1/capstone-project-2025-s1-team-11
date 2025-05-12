@@ -5,9 +5,10 @@ import { createNewExam } from "../store/exam/examSlice.js";
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
-import ExamSidebar from "../components/ExamSidebar.jsx"; // Import the new sidebar component
+import ExamSidebar from "../components/ExamSidebar.jsx";
 import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
-import { Typography, Button, Space, Row, Col } from "antd";
+import { Typography, Button, Space, Row, Col, Tooltip } from "antd";
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { exportExamToPdf } from "../services/exportPdf.js";
 
 const Builder = () => {
@@ -15,12 +16,18 @@ const Builder = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [currentItemId, setCurrentItemId] = useState(null);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     // Function to handle sidebar navigation
     const handleNavigateToItem = (itemId, itemType) => {
         setCurrentItemId(itemId);
         // Could also add logic here to scroll to the item in the table
         // or highlight it in some way
+    };
+
+    // Function to toggle sidebar visibility
+    const toggleSidebar = () => {
+        setSidebarCollapsed(!sidebarCollapsed);
     };
 
     const renderStageContent = (step) => {
@@ -33,26 +40,49 @@ const Builder = () => {
                 );
             case 1:
                 return (
-                    <Row gutter={24}>
-                        <Col xs={24} xl={18}>
-                            <div>
-                                <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
-                                <ExamDisplay 
-                                    exam={exam} 
-                                    currentItemId={currentItemId}
-                                    setCurrentItemId={setCurrentItemId}
-                                />
-                                <ExamFileManager />
-                            </div>
-                        </Col>
-                        <Col xs={24} xl={6}>
-                            <ExamSidebar 
-                                exam={exam} 
-                                currentItemId={currentItemId}
-                                onNavigateToItem={handleNavigateToItem}
-                            />
-                        </Col>
-                    </Row>
+                    <>
+                        {/* Sidebar Toggle Button with label now above the table */}
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'flex-end', 
+                            marginBottom: 16
+                        }}>
+                            <Tooltip title={sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}>
+                                <Button 
+                                    type="default"
+                                    icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                                    onClick={toggleSidebar}
+                                >
+                                    {sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
+                                </Button>
+                            </Tooltip>
+                        </div>
+                        
+                        <Row gutter={24}>
+                            <Col xs={24} xl={sidebarCollapsed ? 24 : 18} style={{ transition: 'width 0.3s' }}>
+                                <div>
+                                    <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
+                                    <ExamDisplay 
+                                        exam={exam} 
+                                        currentItemId={currentItemId}
+                                        setCurrentItemId={setCurrentItemId}
+                                    />
+                                    <ExamFileManager />
+                                </div>
+                            </Col>
+                            {!sidebarCollapsed && (
+                                <Col xs={6} style={{ transition: 'width 0.3s' }}>
+                                    <ExamSidebar 
+                                        exam={exam} 
+                                        currentItemId={currentItemId}
+                                        onNavigateToItem={handleNavigateToItem}
+                                        collapsed={false}
+                                        onToggleCollapse={toggleSidebar}
+                                    />
+                                </Col>
+                            )}
+                        </Row>
+                    </>
                 );
             case 2:
                 return (

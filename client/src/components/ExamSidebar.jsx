@@ -8,7 +8,9 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
   if (!exam || !exam.examBody || !Array.isArray(exam.examBody)) {
     return (
       <Card className="exam-sidebar">
-        <Text type="secondary">No exam loaded</Text>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text type="secondary">No exam loaded</Text>
+        </div>
       </Card>
     );
   }
@@ -114,8 +116,10 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
 
   return (
     <Card className="exam-sidebar" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-      <Title level={4}>Exam Overview</Title>
-      <Divider />
+      <div style={{ marginBottom: '8px' }}>
+        <Title level={4} style={{ margin: 0 }}>Exam Overview</Title>
+      </div>
+      <Divider style={{ margin: '12px 0' }} />
 
       <div className="exam-stats">
         <Title level={5}>Statistics</Title>
@@ -132,7 +136,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
         </List>
       </div>
 
-      <Divider />
+      <Divider style={{ margin: '12px 0' }} />
 
       <Title level={5}>Structure</Title>
       <Collapse defaultActiveKey={['0']} ghost items={collapseItems} />
@@ -154,7 +158,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
         </List.Item>
       ))}
 
-      <Divider />
+      <Divider style={{ margin: '12px 0' }} />
 
       <div className="section-distribution">
         <Title level={5}>Questions by Section</Title>
