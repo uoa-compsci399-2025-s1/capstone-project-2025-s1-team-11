@@ -6,9 +6,9 @@
  */
 
 import { useDispatch, useSelector } from 'react-redux';
-import { createNewExam, importDTOToState } from '../store/exam/examSlice';
+import {initializeExamState, importDTOToState, clearExamState} from '../store/exam/examSlice';
 import { selectExamData } from '../store/exam/selectors';
-import { openExamFile, saveExamToFile } from '../services/fileSystemAccess.js';
+import { loadExamFromFile, saveExamToDisk } from '../services/fileSystemAccess.js';
 import examImportService from '../services/examImportService.js';
 
 import { useState } from 'react'; // for local fileHandle if not stored in Redux
@@ -21,10 +21,9 @@ export function useFileSystem() {
   
     // Opens the exam file and updates the global state
     const openExam = async () => {
-      const result = await openExamFile();
-  
+      const result = await loadExamFromFile();
       if (result) {
-        dispatch(createNewExam(result.exam)); // replace with your actual action
+        dispatch(initializeExamState(result.exam)); // replace with your actual action
         setFileHandle(result.fileHandle);
       }
       return result;
@@ -33,7 +32,7 @@ export function useFileSystem() {
     // Saves the exam and updates the file handle in the global state
     const saveExam = async () => {
         if (!exam) return null;
-        const updatedHandle = await saveExamToFile(exam, fileHandle);
+        const updatedHandle = await saveExamToDisk(exam, fileHandle);
         setFileHandle(updatedHandle);
         return updatedHandle;
     };
