@@ -1,4 +1,10 @@
 // src/hooks/useFileSystem.js
+
+/*
+ * Important: This file does not load exams and is not used to access the files itself, it is the hook between them.
+ * You should use this file to handle those actions.
+ */
+
 import { useDispatch, useSelector } from 'react-redux';
 import { createNewExam, importDTOToState } from '../store/exam/examSlice';
 import { selectExamData } from '../store/exam/selectors';
@@ -7,14 +13,10 @@ import examImportService from '../services/examImportService.js';
 
 import { useState } from 'react'; // for local fileHandle if not stored in Redux
 
-
-
 export function useFileSystem() {
-
     //Check changes...
     const dispatch = useDispatch();
     const exam = useSelector(selectExamData);
-  
     const [fileHandle, setFileHandle] = useState(null);
   
     // Opens the exam file and updates the global state
