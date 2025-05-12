@@ -267,9 +267,10 @@ const ExamDisplay = () => {
               dataIndex: "options",
               key: "options",
               width: 250,
+              // This should fix the options display?
               render: (opts, record) => record.type === "question" && Array.isArray(opts) ? (
                 <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                  {opts.map((o, i) => (
+                  {opts.filter(opt => opt && opt.trim() !== '').map((o, i) => (
                     <Typography.Paragraph 
                       key={i} 
                       ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
@@ -286,14 +287,17 @@ const ExamDisplay = () => {
               dataIndex: "correctIndex",
               key: "correctIndex",
               width: 150,
-              render: (index, record) => record.type === "question" && Array.isArray(record.options) ? (
-                <Typography.Paragraph 
-                  ellipsis={{ rows: 2, expandable: true, symbol: '...' }} 
-                  style={{ margin: 0 }}
-                >
-                  {record.options[index]}
-                </Typography.Paragraph>
-              ) : null,  
+              render: (index, record) => {
+                const validOptions = (record.options || []).filter(opt => opt && opt.trim() !== '');
+                return record.type === "question" && validOptions.length > 0 ? (
+                  <Typography.Paragraph 
+                    ellipsis={{ rows: 2, expandable: true, symbol: '...' }} 
+                    style={{ margin: 0 }}
+                  >
+                    {validOptions[index]}
+                  </Typography.Paragraph>
+                ) : null;
+              },  
             },
             {
               title: "Marks",
@@ -390,7 +394,7 @@ const ExamDisplay = () => {
               placeholder="Question Text"
               style={{ marginBottom: 8 }}
             />
-            {modalState.item?.options?.map((opt, index) => (
+            {modalState.item?.options?.filter(opt => opt && opt.trim() !== '').map((opt, index) => (
               <Input
                 key={index}
                 value={opt}

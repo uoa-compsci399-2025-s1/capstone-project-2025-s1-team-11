@@ -12,7 +12,7 @@ export default function MapDisplay({ question, selectedVersion, exam, displaySty
   return (
     <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
       {displayStyle === "grid" ? (
-        <AnswerMappingGrid mapping={mapping} />
+        <AnswerMappingGrid question={question} mapping={mapping} />
       ) : (
         <AnswerMappingVisual mapping={mapping} />
       )}
