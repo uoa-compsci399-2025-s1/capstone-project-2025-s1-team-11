@@ -7,4 +7,8 @@
     moduleNameMapper: {
         '^(\\.{1,2}/.*)\\.js$': '$1',
     },
+    // Add testEnvironmentOptions for better IDE integration
+    testEnvironmentOptions: {
+        url: 'http://localhost/'
+    }
 };
