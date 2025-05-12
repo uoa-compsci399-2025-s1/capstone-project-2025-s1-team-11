@@ -1,26 +1,28 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Table, Card, Space, Typography, Switch, Select, Spin, Pagination } from "antd";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme} from "antd";
 import { regenerateShuffleMaps } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
+import MapDisplay from "../components/mapDisplay";
 
 const { Title, Text } = Typography;
 
 const Randomiser = () => {
-  // redux setup
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
   const questions = useSelector(selectAllQuestionsFlat);
-  // local ui state
+  const { token } = theme.useToken();
+
   const [selectedVersion, setSelectedVersion] = useState(exam?.versions?.[0] || '');
   const [showRaw, setShowRaw] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
   const [selectedSection, setSelectedSection] = useState("All");
   const [showQuestion, setShowQuestion] = useState(true);
   const [showAnswers, setShowAnswers] = useState(true);
+  const [displayMode, setDisplayMode] = useState("visual");
+  const [visualStyle, setVisualStyle] = useState("grid");
 
-  // Pagination state
   const [pagination, setPagination] = useState({current: 1, pageSize: 10, });
   useEffect(() => {
     setPagination(prev => ({ ...prev, current: 1 }));
@@ -40,7 +42,7 @@ const Randomiser = () => {
   };
 
   // calculate paginated questions
-  const filteredQuestions = questions.filter(q => 
+  const filteredQuestions = questions.filter(q =>
     selectedSection === "All" || q.section === selectedSection
   );
   const { current, pageSize } = pagination;
@@ -59,21 +61,93 @@ const Randomiser = () => {
             Shuffle answer options for all questions and versions of the exam.
             This will randomize the order of answers while respecting any locked positions.
           </Text>
-          <Button 
-            type="primary" 
-            onClick={handleShuffleAnswers} 
+
+          <div style={{
+            marginTop: "12px",
+            fontSize: "0.9rem",
+            padding: "12px",
+            backgroundColor: token.colorBgContainer,
+            borderRadius: "6px",
+            borderLeft: `4px solid ${token.colorPrimary}`
+          }}>
+            <div style={{ marginBottom: "8px", fontWeight: "bold" }}>How to read this grid:</div>
+            <p style={{ margin: "0 0 4px 0" }}>
+              <span style={{
+                backgroundColor: token.colorInfoBg,
+                padding: "2px 4px",
+                borderRadius: "3px"
+              }}>
+                Row
+              </span> = Original answer position in template. (A, B, C...)
+            </p>
+            <p style={{ margin: "0 0 4px 0" }}>
+              <span style={{
+                backgroundColor: token.colorSuccessBg,
+                padding: "2px 4px",
+                borderRadius: "3px"
+              }}>
+                Column
+              </span> = Randomised position in student's exam. (A, B, C...)
+            </p>
+            <p style={{ margin: "0 0 8px 0" }}>
+              <span style={{
+                backgroundColor: token.colorPrimary,
+                color: token.colorTextLightSolid,
+                padding: "2px 4px",
+                borderRadius: "3px"
+              }}>
+                Blue checkmarks
+              </span> show where each original answer appears in the randomised exam.
+            </p>
+          </div>
+
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "2px",
+            fontSize: "0.85rem",
+          }}>
+            <div style={{
+              padding: "4px 8px",
+              backgroundColor: token.colorInfoBg,
+              borderLeft: `4px solid ${token.colorPrimary}`,
+              borderRadius: "4px"
+            }}>
+              <strong>Original Position</strong>
+            </div>
+            <div style={{ fontSize: "1rem" }}>→</div>
+            <div style={{
+              padding: "4px 8px",
+              backgroundColor: token.colorSuccessBg,
+              borderLeft: `4px solid ${token.colorSuccess}`,
+              borderRadius: "2px"
+            }}>
+              <strong>Randomized Position</strong>
+            </div>
+          </div>
+
+          {!exam && (
+            <Text type="warning">
+              No exam data available. Please create or load an exam first.
+            </Text>
+          )}
+        </Space>
+
+        <div style={{ marginTop: "16px" }}>
+          <Button
+            type="primary"
+            onClick={handleShuffleAnswers}
             disabled={!exam}
           >
             Shuffle All Answers
           </Button>
-          {!exam && (
-            <Text type="warning">No exam data available. Please create or load an exam first.</Text>
-          )}
-        </Space>
+        </div>
       </Card>
 
       <Card title="Answer Shuffle Mappings">
+        
         <div style={{ marginBottom: 16 }}>
+          
           <Space wrap>
             <Text strong>Version:</Text>
             <Select
@@ -85,10 +159,38 @@ const Randomiser = () => {
                 <Select.Option key={idx} value={v}>{v}</Select.Option>
               ))}
             </Select>
-            <Space>
-              <Text strong>Show Raw Mapping:</Text>
-              <Switch checked={showRaw} onChange={setShowRaw} />
-            </Space>
+
+            <Text strong>Display Mode:</Text>
+            <Select
+              value={displayMode}
+              onChange={setDisplayMode}
+              style={{ width: 150 }}
+            >
+              <Select.Option value="visual">Visual Mapping</Select.Option>
+              <Select.Option value="text">Text Mapping</Select.Option>
+            </Select>
+
+            {displayMode === "visual" && (
+              <Space>
+                <Text strong>Visualization Style:</Text>
+                <Select
+                  value={visualStyle}
+                  onChange={setVisualStyle}
+                  style={{ width: 120 }}
+                >
+                  <Select.Option value="grid">Grid View</Select.Option>
+                  <Select.Option value="arrows">Arrow View</Select.Option>
+                </Select>
+              </Space>
+            )}
+
+            {displayMode === "text" && (
+              <Space>
+                <Text strong>Show Raw Mapping:</Text>
+                <Switch checked={showRaw} onChange={setShowRaw} />
+              </Space>
+            )}
+
             <Space>
               <Text strong>Show Question Text:</Text>
               <Switch checked={showQuestion} onChange={setShowQuestion} />
@@ -135,11 +237,11 @@ const Randomiser = () => {
                 >
                   {showQuestion && (
                     <Text style={{ display: "block", marginBottom: 8 }}>
-                       {question.contentText || question.questionText}
+                      {question.contentText || question.questionText}
                     </Text>
                   )}
                   {showAnswers && question.answers?.length > 0 && mapping && (
-                    <div style={{ marginBottom: 8 }}>                      
+                    <div style={{ marginBottom: 8 }}>
                       <ul style={{ paddingLeft: "1.5em", marginBottom: 0 }}>
                         {mapping.map((shuffledIndex, originalIndex) => (
                           <li key={originalIndex}>
@@ -151,10 +253,19 @@ const Randomiser = () => {
                       </ul>
                     </div>
                   )}
-                  {/* show either raw or position mapping */}
-                  <Text>
-                    <strong>{showRaw ? "Raw Mapping:" : "Position Mapping:"}</strong> {showRaw ? rawMap : mappingDetails}
-                  </Text>
+
+                  {displayMode === "visual" ? (
+                    <MapDisplay
+                      question={question}
+                      selectedVersion={selectedVersion}
+                      exam={exam}
+                      displayStyle={visualStyle}
+                    />
+                  ) : (
+                    <Text>
+                      <strong>{showRaw ? "Raw Mapping:" : "Position Mapping:"}</strong> {showRaw ? rawMap : mappingDetails}
+                    </Text>
+                  )}
                 </Card>
               );
             })}
@@ -166,7 +277,7 @@ const Randomiser = () => {
             total={filteredQuestions.length}
             onChange={(page) => setPagination(prev => ({ ...prev, current: page }))}
             style={{ marginTop: 16, textAlign: "center" }}
-            showSizeChanger={false} 
+            showSizeChanger={false}
           />
         </Spin>
       </Card>
