@@ -47,34 +47,14 @@ const ExamFileManager = () => {
     }
   };
 
-
   const handleImportExam = async (event) => {
     const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      const fileExtension = selectedFile.name.split('.').pop();
-      let format = '';
+    if (!selectedFile) return;
 
-      if (fileExtension === 'xml') {
-        format = 'moodle'; // Assuming XML is Moodle format
-      } else if (fileExtension === 'docx') {
-        format = 'docx';
-      } else {
-        setError("Unsupported file format");
-        return;
-      }
-
-      try {
-        const result = await importExam(selectedFile, format);
-        if (result) {
-          setShowSuccessAlert(true);
-          setError("");
-          console.log("File imported and saved successfully");
-          setFileHandle(null); // since this exam was imported and not loaded from a JSON file
-        }
-      } catch (err) {
-        setError("Error importing exam: " + err.message);
-        console.error("Import error:", err);
-      }
+    const success = await importFromFileInput(selectedFile, setError);
+    if (success) {
+      setShowSuccessAlert(true);
+      setError("");
     }
   };
 
