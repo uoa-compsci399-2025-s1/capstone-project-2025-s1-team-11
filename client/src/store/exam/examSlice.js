@@ -445,7 +445,6 @@ export const {
   setExamVersions,
   setTeleformOptions,
   regenerateShuffleMaps,
-  importExamFromJSON,
   importExamStart,
   importExamSuccess,
   importExamFailure,  
