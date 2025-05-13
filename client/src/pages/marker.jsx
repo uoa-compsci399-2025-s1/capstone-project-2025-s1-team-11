@@ -23,6 +23,14 @@ const Marker = () => {
   useEffect(() => {
     if (examData) {
       setMarkingKey(generateMarkingKey(examData))
+      /*
+      markingKey.forEach(key => {
+        console.log(key)
+        console.log(markingKey[key])
+        console.log("----")
+      })
+
+       */
     }
   }, [examData]);
 
