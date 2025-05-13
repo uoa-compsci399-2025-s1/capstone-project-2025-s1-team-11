@@ -3,8 +3,6 @@ import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { Button, Alert, Space, Typography, Modal, Input, message, Card, Select } from "antd";
-import { createNewExam } from "../store/exam/examSlice";
-
 
 const ExamFileManager = () => {
   const dispatch = useDispatch();
@@ -48,7 +46,7 @@ const ExamFileManager = () => {
     const selectedFile = event.target.files[0];
     if (!selectedFile) return;
 
-    const success = await importFromFileInput(selectedFile, setError);
+    const success = await importExam(selectedFile, selectedFormat);
     if (success) {
       setShowSuccessAlert(true);
       setError("");
