@@ -335,4 +335,91 @@ describe('Exam Slice', () => {
             }
         });
     });
+
+    test('should preserve IDs when importing from JSON', () => {
+        // Arrange
+        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        
+        // Add a question and capture its ID
+        store.dispatch(addQuestion({
+            examBodyIndex: null,
+            questionData: {
+                contentFormatted: '<p>Test Question</p>',
+                marks: 5
+            }
+        }));
+        
+        const originalExam = selectExamData(store.getState());
+        const originalQuestionId = originalExam.examBody[0].id;
+        console.log('Original ID:', originalQuestionId);
+        
+        // Convert to JSON and back
+        const examJSON = JSON.parse(JSON.stringify(originalExam));
+        store.dispatch(clearExam());
+        store.dispatch(createNewExam(examJSON)); // uses createNewExam to import from JSON
+        
+        // Check the new ID
+        const importedExam = selectExamData(store.getState());
+        const importedQuestionId = importedExam.examBody[0].id;
+        console.log('Imported ID:', importedQuestionId);
+        
+        // They should match
+        expect(importedQuestionId).toBe(originalQuestionId);
+    });
+
+    test('should correctly import exam from JSON', () => {
+        // Arrange
+        // First create an exam with some content
+        store.dispatch(createNewExam({
+            examTitle: 'Original Exam',
+            courseCode: 'TEST101',
+            courseName: 'Test Course',
+            semester: 'Fall',
+            year: '2025'
+        }));
+    
+        // Add a section with a question
+        store.dispatch(addSection({
+            sectionTitle: 'Test Section',
+            contentFormatted: '<p>Section Content</p>'
+        }));
+    
+        store.dispatch(addQuestion({
+            examBodyIndex: 0,
+            questionData: {
+                contentFormatted: '<p>Test Question</p>',
+                marks: 5,
+                answers: [
+                    { contentFormatted: '<p>Answer 1</p>', correct: true },
+                    { contentFormatted: '<p>Answer 2</p>', correct: false }
+                ]
+            }
+        }));
+    
+        // Get the current state and convert to JSON
+        const originalExam = selectExamData(store.getState());
+        console.log(`JSON test, Original ID: ${JSON.stringify(originalExam.examBody[0].questions[0].id)}`);
+        const examJSON = JSON.parse(JSON.stringify(originalExam));
+    
+        // Clear the exam to ensure we're starting fresh
+        store.dispatch(clearExam());
+    
+        // Act (uses createNewExam to import from JSON) 
+        store.dispatch(createNewExam(examJSON));
+    
+        // Assert
+        const importedExam = selectExamData(store.getState());
+        console.log(`JSON test, imported ID: ${JSON.stringify(importedExam.examBody[0].questions[0].id)}`);
+        // Check that the imported exam matches the original
+        expect(importedExam).toEqual(originalExam);
+        
+        // Verify specific properties to ensure nothing was lost in translation
+        expect(importedExam.examTitle).toBe('Original Exam');
+        expect(importedExam.courseCode).toBe('TEST101');
+        expect(importedExam.examBody.length).toBe(1);
+        expect(importedExam.examBody[0].type).toBe('section');
+        expect(importedExam.examBody[0].questions.length).toBe(1);
+        expect(importedExam.examBody[0].questions[0].marks).toBe(5);
+        expect(importedExam.examBody[0].questions[0].answers.length).toBe(importedExam.teleformOptions.length);
+    });
 });

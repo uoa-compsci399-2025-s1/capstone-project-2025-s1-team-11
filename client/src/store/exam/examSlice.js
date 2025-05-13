@@ -55,6 +55,7 @@ const examSlice = createSlice({
   reducers: {
     createNewExam: (state, action) => {
       state.examData = createExam(action.payload || {});
+      ensureUniqueIds(state.examData);
     },
 
     clearExam: (state) => {
@@ -64,6 +65,7 @@ const examSlice = createSlice({
     addSection: (state, action) => {
       if (!state.examData) { return; }
       const newSection = createSection(action.payload);
+      newSection.id = generateId();
 
       // fill simplified contentText from contentFormatted
       newSection.contentText = htmlToText(newSection.contentFormatted || "");
@@ -333,10 +335,6 @@ const examSlice = createSlice({
       });
     },
     
-    importExamFromJSON: (state, action) => {
-      state.examData = ensureUniqueIds(action.payload);
-    },
-
     importExamStart: (state) => {
       state.loading = true;
       state.error = null;
