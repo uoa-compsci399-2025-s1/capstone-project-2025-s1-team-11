@@ -250,7 +250,7 @@ describe('Exam Store Integration', () => {
             }
         }));
 
-        let state = store.getState();
+        let state;
         let examData;
         let question;
 
