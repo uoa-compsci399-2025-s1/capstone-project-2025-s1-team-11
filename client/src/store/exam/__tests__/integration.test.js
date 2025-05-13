@@ -251,8 +251,8 @@ describe('Exam Store Integration', () => {
         }));
 
         let state = store.getState();
-        let examData = selectExamData(state);
-        let question = examData.examBody[0];
+        let examData;
+        let question;
 
         store.dispatch(regenerateShuffleMaps());
 
