@@ -17,12 +17,14 @@
  */
 export function generateMarkingKey(examData) {
   const questions = extractAllQuestions(examData.examBody);
+  console.log(getCorrectAnswerBitmask(questions[0], 2))
 
   return examData.versions.map((_, versionIndex) => {
     const bitmasks = questions.map(q => getCorrectAnswerBitmask(q, versionIndex));
     const marks = questions.map(q => q.marks);
     return { bitmasks, marks };
   });
+
 }
 
 /**
@@ -34,6 +36,18 @@ function extractAllQuestions(examBody) {
   return examBody
     .flatMap(item => item.type === 'question' ? [item] : item.questions || [])
     .sort((a, b) => a.questionNumber - b.questionNumber);
+}
+
+function getCorrectAnswer(question, versionIndex) {
+  const map = question.answerShuffleMaps[versionIndex];
+  let mask = 0;
+  for (let i = 0; i < question.answers.length; i++) {
+    const original = map.indexOf(i);
+    const answer = question.answers[original];
+    if (answer?.correct) {
+      mask |= (1 << (question.answers.length - 1 - i));
+    }
+  }
 }
 
 /**
