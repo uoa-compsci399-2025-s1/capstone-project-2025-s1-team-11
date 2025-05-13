@@ -3,28 +3,26 @@
 import React, { useState, useEffect } from "react";
 import { Typography, message, Button, Input, Divider } from "antd";
 import { useSelector } from "react-redux";
-import { generateMarkingKeys } from "../utilities/marker/keyGenerator.js";
+import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
 import { markExams } from "../utilities/marker/examMarker.js";
 import { generateResultOutput } from "../utilities/marker/outputFormatter.js";
 import {upload} from "../components/marker/upload.jsx";
 import {marking} from "../components/marker/marking.jsx";
 import {results} from "../components/marker/results.jsx"
+import {teleformReader} from "../components/marker/teleformReader.jsx";
 
 const Marker = () => {
   const examData = useSelector((state) => state.exam.examData);
   const [teleformData, setTeleformData] = useState("");
   const [markingKeyType, setMarkingKeyType] = useState("enhanced");
-  const [markingKeys, setMarkingKeys] = useState(null);
+  const [markingKey, setMarkingKey] = useState(null);
   const [resultsData, setResultsData] = useState([]);
   const [exportFormat, setExportFormat] = useState("json");
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
     if (examData) {
-      console.log(examData)
-      console.log(examData.examBody)
-      const keys = generateMarkingKeys(examData);
-      setMarkingKeys(keys);
+      setMarkingKey(generateMarkingKey(examData))
     }
   }, [examData]);
 
@@ -37,25 +35,16 @@ const Marker = () => {
       message.error("Please enter teleform scan data before marking.");
       return;
     }
-    if (!markingKeys) {
+    if (!markingKey) {
       message.error("Marking key is not available.");
-      return;
-    }
-    
-    const isLegacy = markingKeyType === "legacy";
-    const keyToUse = isLegacy ? markingKeys.legacyKey : markingKeys.enhancedKey;
-    
-    if (!keyToUse) {
-      message.error("Selected marking key is not available.");
       return;
     }
     
     try {
       console.log("Marking exams with data:", teleformData);
-      console.log("Using key:", keyToUse);
-      console.log("Is legacy:", isLegacy);
+
       
-      const examResults = markExams(teleformData, keyToUse, isLegacy);
+      const examResults = markExams(teleformData, markingKey);
       console.log("Exam results:", examResults);
       
       setResultsData(examResults);
@@ -70,7 +59,7 @@ const Marker = () => {
   };
 
   const handleExportMarkingKey = () => {
-    if (!markingKeys) {
+    if (!markingKey) {
       message.error("No marking key available to export.");
       return;
     }
@@ -78,11 +67,11 @@ const Marker = () => {
     let content, filename, type;
     
     if (markingKeyType === "legacy") {
-      content = markingKeys.legacyKey;
+      content = markingKey.legacyKey;
       filename = `${examData.courseCode || 'exam'}_marking_key.txt`;
       type = "text/plain";
     } else {
-      content = JSON.stringify(markingKeys.enhancedKey, null, 2);
+      content = JSON.stringify(markingKey.enhancedKey, null, 2);
       filename = `${examData.courseCode || 'exam'}_marking_key.json`;
       type = "application/json";
     }
@@ -147,9 +136,9 @@ const Marker = () => {
   const renderContent = () => {
     switch (currentStep) {
       case 0:
-        return upload({ examData, setMarkingKeyType, markingKeyType, handleExportMarkingKey, markingKeys} );
+        return upload({ examData, setMarkingKeyType, markingKeyType, handleExportMarkingKey, markingKey} );
       case 1:
-        return marking({teleformData,handleTeleformDataChange,handleMarkExams});
+        return teleformReader({teleformData,handleTeleformDataChange,handleMarkExams});
       case 2:
         return results({setExportFormat,exportFormat,resultsData,handleExportResults,examData});
       default:
