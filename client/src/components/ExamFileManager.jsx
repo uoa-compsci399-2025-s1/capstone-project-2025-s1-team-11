@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { importExamFromJSON } from "../store/exam/examSlice";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { Button, Alert, Space, Typography, Modal, Input, message, Card, Select } from "antd";
+import { createNewExam } from "../store/exam/examSlice";
+
 
 const ExamFileManager = () => {
   const dispatch = useDispatch();
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const { openExam, saveExam, closeExam, importFromFileInput } = useFileSystem();
+  const { openExam, saveExam, closeExam, importExam } = useFileSystem();
   const [fileOptionsOpen, setFileOptionsOpen] = useState(true);
   const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
 
@@ -35,6 +36,8 @@ const ExamFileManager = () => {
       const result = await openExam();
       if (result) {
         setFileOptionsOpen(false);
+        setShowSuccessAlert(true);
+        setError("");
       }
     } catch (err) {
       setError("Error opening exam: " + err.message);
@@ -107,9 +110,11 @@ const ExamFileManager = () => {
       const result = await saveExam();
       if (result) {
         setShowSuccessAlert(true);
+        console.log("File saved successfully");
       }
     } catch (err) {
       setError("Error saving exam: " + err.message);
+      console.error(err);
     }
   };
 
@@ -207,97 +212,103 @@ const ExamFileManager = () => {
                 : []
             };
 
-            try {
-              //await saveExamToFile(exam, handle);
-              dispatch(importExamFromJSON(exam));
-              setShowCreateModal(false);
-              setFileOptionsOpen(false);
-              message.success('New exam created and saved');
-            } catch (err) {
-              setError("Error saving new exam: " + err.message);
-            }
-          }}
-        >
-          <Typography.Title level={5}>Exam Details</Typography.Title>
-          <Typography.Text strong>
-            Exam Title <span style={{ color: 'red' }}>*</span>
-          </Typography.Text>
-          <Input
-            value={newExamData.examTitle}
-            onChange={e => setNewExamData({ ...newExamData, examTitle: e.target.value })}
-            placeholder="Principals of Programming"
-            style={{ marginBottom: 16 }}
-          />
-          <Typography.Text strong>
-            Course Code <span style={{ color: 'red' }}>*</span>
-          </Typography.Text>
-          <Input
-            value={newExamData.courseCode}
-            onChange={e => setNewExamData({ ...newExamData, courseCode: e.target.value })}
-            placeholder="101"
-            style={{ marginBottom: 16 }}
-          />
-          <Typography.Text strong>
-            Course Name <span style={{ color: 'red' }}>*</span>
-          </Typography.Text>
-          <Input
-            value={newExamData.courseName}
-            onChange={e => setNewExamData({ ...newExamData, courseName: e.target.value })}
-            placeholder="Computer Science"
-            style={{ marginBottom: 16 }}
-          />
-          <Typography.Text strong>
-            Semester <span style={{ color: 'red' }}>*</span>
-          </Typography.Text>
-          <Input
-            value={newExamData.semester}
-            onChange={e => setNewExamData({ ...newExamData, semester: e.target.value })}
-            placeholder="Two"
-            style={{ marginBottom: 16 }}
-          />
-          <Typography.Text strong>
-            Year <span style={{ color: 'red' }}>*</span>
-          </Typography.Text>
-          <Input
-            onChange={e => setNewExamData({ ...newExamData, year: e.target.value })}
-            value={newExamData.year}
-            placeholder="2010"
-            style={{ marginBottom: 16 }}
-          />
-          <Typography.Text strong>
-            Versions <span style={{ color: 'red' }}>*</span>
-          </Typography.Text>
-          <Input
-            value={newExamData.versions}
-            onChange={e => setNewExamData({ ...newExamData, versions: e.target.value })}
-            placeholder="Versions (comma-separated)"
-            style={{ marginBottom: 16 }}
-          />
-          <Typography.Text strong>
-            Teleform Options <span style={{ color: 'red' }}>*</span>
-          </Typography.Text>
-          <Input
-            value={newExamData.teleformOptions}
-            onChange={e => setNewExamData({ ...newExamData, teleformOptions: e.target.value })}
-            placeholder="Teleform Options (comma-separated)"
-            style={{ marginBottom: 16 }}
-          />
-        </Modal>
-        <Modal
-          open={isClearModalVisible}
-          title="Are you sure you want to clear the exam?"
-          onOk={() => {
-            closeExam();
-            setIsClearModalVisible(false);
-            message.success("Exam cleared");
-          }}
-          onCancel={() => setIsClearModalVisible(false)}
-          okText="Yes, clear it"
-          cancelText="Cancel"
-        >
-          <p>This action cannot be undone.</p>
-        </Modal>
+          try {
+            // First dispatch to create the exam in Redux
+            dispatch(createNewExam(exam));
 
+            // Then try to save it to a file
+            const result = await saveExam();
+            if (result) {
+              setShowSuccessAlert(true);
+              setError("");
+            }
+
+            setShowCreateModal(false);
+            setFileOptionsOpen(false);
+            message.success('New exam created and saved successfully');
+          } catch (err) {
+            setError("Error creating exam: " + err.message);
+          }
+        }}
+      >
+        <Typography.Title level={5}>Exam Details</Typography.Title>
+        <Typography.Text strong>
+          Exam Title <span style={{ color: 'red' }}>*</span>
+        </Typography.Text>
+        <Input
+          value={newExamData.examTitle}
+          onChange={e => setNewExamData({ ...newExamData, examTitle: e.target.value })}
+          placeholder="Principals of Programming"
+          style={{ marginBottom: 16 }}
+        />
+        <Typography.Text strong>
+          Course Code <span style={{ color: 'red' }}>*</span>
+        </Typography.Text>
+        <Input
+          value={newExamData.courseCode}
+          onChange={e => setNewExamData({ ...newExamData, courseCode: e.target.value })}
+          placeholder="101"
+          style={{ marginBottom: 16 }}
+        />
+        <Typography.Text strong>
+          Course Name <span style={{ color: 'red' }}>*</span>
+        </Typography.Text>
+        <Input
+          value={newExamData.courseName}
+          onChange={e => setNewExamData({ ...newExamData, courseName: e.target.value })}
+          placeholder="Computer Science"
+          style={{ marginBottom: 16 }}
+        />
+        <Typography.Text strong>
+          Semester <span style={{ color: 'red' }}>*</span>
+        </Typography.Text>
+        <Input
+          value={newExamData.semester}
+          onChange={e => setNewExamData({ ...newExamData, semester: e.target.value })}
+          placeholder="Two"
+          style={{ marginBottom: 16 }}
+        />
+        <Typography.Text strong>
+          Year <span style={{ color: 'red' }}>*</span>
+        </Typography.Text>
+        <Input
+          onChange={e => setNewExamData({ ...newExamData, year: e.target.value })}
+          placeholder="2010"
+          style={{ marginBottom: 16 }}
+        />
+        <Typography.Text strong>
+          Versions <span style={{ color: 'red' }}>*</span>
+        </Typography.Text>
+        <Input
+          value={newExamData.versions}
+          onChange={e => setNewExamData({ ...newExamData, versions: e.target.value })}
+          placeholder="Versions (comma-separated)"
+          style={{ marginBottom: 16 }}
+        />
+        <Typography.Text strong>
+          Teleform Options <span style={{ color: 'red' }}>*</span>
+        </Typography.Text>
+        <Input
+          value={newExamData.teleformOptions}
+          onChange={e => setNewExamData({ ...newExamData, teleformOptions: e.target.value })}
+          placeholder="Teleform Options (comma-separated)"
+          style={{ marginBottom: 16 }}
+        />
+      </Modal>
+      <Modal
+        open={isClearModalVisible}
+        title="Are you sure you want to clear the exam?"
+        onOk={() => {
+          dispatch(clearExam());
+          setIsClearModalVisible(false);
+          message.success("Exam cleared");
+        }}
+        onCancel={() => setIsClearModalVisible(false)}
+        okText="Yes, clear it"
+        cancelText="Cancel"
+      >
+        <p>This action cannot be undone.</p>
+      </Modal>
     </Card>
   );
 };

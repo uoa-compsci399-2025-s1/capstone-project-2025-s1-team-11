@@ -59,8 +59,8 @@ const examSlice = createSlice({
   initialState,
   reducers: {
     initializeExamState: (state, action) => {
-      if (state.examData) { return; }
       state.examData = createExam(action.payload || {});
+      ensureUniqueIds(state.examData);
     },
 
     clearExamState: (state) => {
@@ -70,6 +70,7 @@ const examSlice = createSlice({
     addSection: (state, action) => {
       if (!state.examData) { return; }
       const newSection = createSection(action.payload);
+      newSection.id = generateId();
 
       // fill simplified contentText from contentFormatted
       newSection.contentText = htmlToText(newSection.contentFormatted || "");
@@ -102,7 +103,8 @@ const examSlice = createSlice({
         return createAnswer({ 
           contentFormatted: ans.contentFormatted, 
           contentText: contentText,
-          correct: idx === 0 
+          correct: idx === 0,
+          fixedPosition: ans.fixedPosition? ans.fixedPosition : null
         });
       });
 
@@ -124,6 +126,7 @@ const examSlice = createSlice({
       if (examBodyIndex != null && examBody[examBodyIndex]?.type === 'section') {
         examBody[examBodyIndex].questions.push(newQuestion);
       } else {
+
         examBody.push(newQuestion);
       }
     
@@ -336,10 +339,6 @@ const examSlice = createSlice({
         }
       });
     },
-    
-    importExamFromJSON: (state, action) => {
-      state.examData = ensureUniqueIds(action.payload);
-    },
 
     importExamStart: (state) => {
       state.loading = true;
@@ -451,7 +450,6 @@ export const {
   setExamVersions,
   setTeleformOptions,
   regenerateShuffleMaps,
-  importExamFromJSON,
   importExamStart,
   importExamSuccess,
   importExamFailure,  
