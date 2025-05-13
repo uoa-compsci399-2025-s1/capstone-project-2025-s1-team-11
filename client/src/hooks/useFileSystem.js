@@ -23,10 +23,15 @@ export function useFileSystem() {
     const openExam = async () => {
       const result = await loadExamFromFile();
       if (result) {
-        dispatch(initializeExamState(result.exam)); // replace with your actual action
+        dispatch(initializeExamState(result.exam));
         setFileHandle(result.fileHandle);
       }
       return result;
+    };
+
+    const createExam = async (exam) => {
+        dispatch(initializeExamState(exam));
+        setFileHandle(null);
     };
 
     // Saves the exam and updates the file handle in the global state
@@ -68,5 +73,5 @@ export function useFileSystem() {
         setFileHandle(null);
       };
 
-    return { exam, fileHandle, openExam, saveExam, importExam, closeExam, importFromFileInput };
+    return { exam, fileHandle, openExam, createExam, saveExam, importExam, closeExam, importFromFileInput };
 }

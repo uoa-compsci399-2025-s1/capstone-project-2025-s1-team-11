@@ -1,15 +1,12 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { Button, Alert, Space, Typography, Modal, Input, message, Card, Select } from "antd";
 
 const ExamFileManager = () => {
-  const dispatch = useDispatch();
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const { openExam, saveExam, closeExam, importExam } = useFileSystem();
-  const [fileOptionsOpen, setFileOptionsOpen] = useState(true);
+  const { openExam, createExam, saveExam, closeExam, importExam } = useFileSystem();
   const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
 
   // State for create new exam modal
@@ -33,7 +30,6 @@ const ExamFileManager = () => {
     try {
       const result = await openExam();
       if (result) {
-        setFileOptionsOpen(false);
         setShowSuccessAlert(true);
         setError("");
       }
@@ -147,7 +143,6 @@ const ExamFileManager = () => {
             </Button>
             <Button onClick={async () => {
               await handleOpenExam();
-              setFileOptionsOpen(false);
             }}>
               Open Exam (JSON)
             </Button>
@@ -166,7 +161,6 @@ const ExamFileManager = () => {
                 accept=".xml"
                 onChange={async (e) => {
                   await handleImportExam(e);
-                  setFileOptionsOpen(false);
                 }}
                 style={{
                   position: "absolute",
@@ -212,7 +206,7 @@ const ExamFileManager = () => {
 
           try {
             // First dispatch to create the exam in Redux
-            dispatch(createNewExam(exam));
+            await createExam(exam);
 
             // Then try to save it to a file
             const result = await saveExam();
@@ -222,7 +216,6 @@ const ExamFileManager = () => {
             }
 
             setShowCreateModal(false);
-            setFileOptionsOpen(false);
             message.success('New exam created and saved successfully');
           } catch (err) {
             setError("Error creating exam: " + err.message);
@@ -297,7 +290,7 @@ const ExamFileManager = () => {
         open={isClearModalVisible}
         title="Are you sure you want to clear the exam?"
         onOk={() => {
-          dispatch(clearExam());
+          closeExam();
           setIsClearModalVisible(false);
           message.success("Exam cleared");
         }}
