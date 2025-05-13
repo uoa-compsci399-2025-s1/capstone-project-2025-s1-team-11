@@ -1,27 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
+
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from 'react-redux';
 import { createNewExam } from "../store/exam/examSlice.js";
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
-import ExamSidebar from "../components/ExamSidebar.jsx"; // Import the new sidebar component
 import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
-import { Typography, Button, Space, Row, Col } from "antd";
+import { Typography, Button, Space } from "antd";
 import { exportExamToPdf } from "../services/exportPdf.js";
 
 const Builder = () => {
     const exam = useSelector(selectExamData);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const [currentItemId, setCurrentItemId] = useState(null);
-
-    // Function to handle sidebar navigation
-    const handleNavigateToItem = (itemId, itemType) => {
-        setCurrentItemId(itemId);
-        // Could also add logic here to scroll to the item in the table
-        // or highlight it in some way
-    };
 
     const renderStageContent = (step) => {
         switch (step) {
@@ -33,26 +25,11 @@ const Builder = () => {
                 );
             case 1:
                 return (
-                    <Row gutter={24}>
-                        <Col xs={24} xl={18}>
-                            <div>
-                                <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
-                                <ExamDisplay 
-                                    exam={exam} 
-                                    currentItemId={currentItemId}
-                                    setCurrentItemId={setCurrentItemId}
-                                />
-                                <ExamFileManager />
-                            </div>
-                        </Col>
-                        <Col xs={24} xl={6}>
-                            <ExamSidebar 
-                                exam={exam} 
-                                currentItemId={currentItemId}
-                                onNavigateToItem={handleNavigateToItem}
-                            />
-                        </Col>
-                    </Row>
+                    <div>
+                        <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
+                        <ExamDisplay exam={exam} />
+                        <ExamFileManager />
+                    </div>
                 );
             case 2:
                 return (
@@ -88,12 +65,35 @@ const Builder = () => {
 
     return (
         <>
-            <h1>Builder</h1>
+            <h1> Builder</h1>
             <MCQBuilderProgressWrapper>
                 {(currentStep) => renderStageContent(currentStep)}
             </MCQBuilderProgressWrapper>
         </>
-    );
-};
+/*
+        //Check Changes
+import { useDispatch, useSelector } from 'react-redux';
+import { createNewExam } from "../store/exam/examSlice.js";
+import { selectExamData } from "../store/exam/selectors.js";
+import { Button } from "antd";
 
-export default Builder;
+const Builder = () => {
+    const exam = useSelector(selectExamData); // Get examData from redux
+    const dispatch = useDispatch();
+  
+    return (
+      <div>
+        <h1>MCQ Builder</h1>
+        {exam ? (
+          <ExamDisplay />
+        ) : (
+          <><p>No exam loaded.</p><p><Button onClick={() => dispatch(createNewExam({examTitle: 'New Exam'}))} type="primary" style={{ marginBottom: 16 }}>
+              New Exam
+            </Button></p></>
+        )}
+        <ExamFileManager />
+      </div>
+          */
+    );
+  };
+  export default Builder;
