@@ -15,7 +15,8 @@ import {
     selectQuestionByNumber,
     selectAllQuestionsFlat,
     selectTotalMarks,
-    selectQuestionsForTable
+    selectQuestionsForTable,
+    selectCorrectAnswerIndices
 } from '../selectors';
 
 describe('Exam Selectors', () => {
@@ -25,6 +26,7 @@ describe('Exam Selectors', () => {
             examData: {
                 examTitle: 'Test Exam',
                 courseCode: 'TEST101',
+                versions: ['V1', 'V2'],  // Add versions
                 metadata: {
                     author: 'Test Author',
                     department: 'Computer Science'
@@ -44,7 +46,12 @@ describe('Exam Selectors', () => {
                                 marks: 2,
                                 answers: [
                                     { contentText: 'Answer 1', correct: true },
-                                    { contentText: 'Answer 2', correct: false }
+                                    { contentText: 'Answer 2', correct: false },
+                                    { contentText: 'Answer 3', correct: true }
+                                ],
+                                answerShuffleMaps: [
+                                    [1, 2, 0],  // V1: original indices [0,2] become [2,1]
+                                    [2, 0, 1]   // V2: original indices [0,2] become [1,0]
                                 ]
                             },
                             {
@@ -55,7 +62,12 @@ describe('Exam Selectors', () => {
                                 marks: 3,
                                 answers: [
                                     { contentText: 'Answer 1', correct: false },
-                                    { contentText: 'Answer 2', correct: true }
+                                    { contentText: 'Answer 2', correct: true },
+                                    { contentText: 'Answer 3', correct: false }
+                                ],
+                                answerShuffleMaps: [
+                                    [2, 0, 1],  // V1: original index 1 becomes 2
+                                    [1, 2, 0]   // V2: original index 1 becomes 0
                                 ]
                             }
                         ]
@@ -165,6 +177,37 @@ describe('Exam Selectors', () => {
         expect(tableQuestions[2].questionNumber).toBe(3);
         expect(tableQuestions[2].questionText).toBe('Question 3');
         expect(tableQuestions[2].marks).toBe(5);
+    });
+
+    test('selectCorrectAnswerIndices should return correct indices for each version and question', () => {
+        const correctIndices = selectCorrectAnswerIndices(mockState);
+        
+        // Check structure
+        expect(Object.keys(correctIndices)).toEqual(['V1', 'V2']);
+        expect(Object.keys(correctIndices.V1)).toEqual(['1', '2']);
+        
+        // Check Question 1 (has two correct answers)
+        expect(correctIndices.V1[1]).toEqual([1, 2]); // V1 shuffled [0,2] to [2,1]
+        expect(correctIndices.V2[1]).toEqual([0, 1]); // V2 shuffled [0,2] to [1,0]
+        
+        // Check Question 2 (has one correct answer)
+        expect(correctIndices.V1[2]).toEqual([2]); // V1 shuffled 1 to 2
+        expect(correctIndices.V2[2]).toEqual([0]); // V2 shuffled 1 to 0
+    });
+
+    test('selectCorrectAnswerIndices should handle empty or invalid state', () => {
+        const emptyState = { exam: { examData: null } };
+        expect(selectCorrectAnswerIndices(emptyState)).toEqual({});
+        
+        const noVersionsState = { 
+            exam: { 
+                examData: { 
+                    ...mockState.exam.examData,
+                    versions: [] 
+                } 
+            } 
+        };
+        expect(selectCorrectAnswerIndices(noVersionsState)).toEqual({});
     });
 
     test('selectors should handle null or undefined state gracefully', () => {
