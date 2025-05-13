@@ -21,7 +21,7 @@ describe('Exam Utility Functions', () => {
     expect(exam.type).toBe('exam');
     expect(exam.examTitle).toBe('');
     expect(Array.isArray(exam.versions)).toBe(true);
-    expect(exam.versions).toEqual([1, 2, 3, 4]);
+    expect(exam.versions).toEqual(['00000001', '00000002', '00000003', '00000004']);
     expect(exam.examBody).toEqual([]);
   });
 
