@@ -7,7 +7,7 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 import examReducer, {
-    createNewExam,
+    initializeExamState,
     addSection,
     addQuestion,
     updateQuestion,
@@ -41,7 +41,7 @@ describe('Exam Store Integration', () => {
 
     test('should build a complete exam structure and calculate derived data', () => {
         // Create an exam
-        store.dispatch(createNewExam({
+        store.dispatch(initializeExamState({
             examTitle: 'Integration Test Exam',
             courseCode: 'INT101',
             courseName: 'Integration Testing',
@@ -123,7 +123,7 @@ describe('Exam Store Integration', () => {
 
     test('should maintain data integrity through a series of operations', () => {
         // Create an exam
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initializeExamState({ examTitle: 'Test Exam' }));
 
         // Add a section and questions
         store.dispatch(addSection({ sectionTitle: 'Section 1' }));
@@ -178,7 +178,7 @@ describe('Exam Store Integration', () => {
 
     test('should handle answer shuffling correctly', () => {
         // Create an exam with specific versions
-        store.dispatch(createNewExam({
+        store.dispatch(initializeExamState({
             examTitle: 'Shuffle Test',
             versions: ['A', 'B']
         }));
@@ -232,7 +232,7 @@ describe('Exam Store Integration', () => {
     });
 
     test('should handle fixed positions in answer shuffling', () => {
-        store.dispatch(createNewExam({
+        store.dispatch(initializeExamState({
             examTitle: 'Fixed Position Test',
             versions: ['A', 'B']
         }));
