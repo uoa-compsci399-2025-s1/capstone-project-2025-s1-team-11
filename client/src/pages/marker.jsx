@@ -10,9 +10,12 @@ import {upload} from "../components/marker/upload.jsx";
 import {marking} from "../components/marker/marking.jsx";
 import {results} from "../components/marker/results.jsx"
 import {teleformReader} from "../components/marker/teleformReader.jsx";
+import {selectCorrectAnswerIndices} from "../store/exam/selectors.js";
+import AnswerKeyPreview from "../components/marker/AnswerKeyPreview.jsx";
 
 const Marker = () => {
   const examData = useSelector((state) => state.exam.examData);
+  const examAnswers = useSelector(selectCorrectAnswerIndices);
   const [teleformData, setTeleformData] = useState("");
   const [markingKeyType, setMarkingKeyType] = useState("enhanced");
   const [markingKey, setMarkingKey] = useState(null);
@@ -21,18 +24,10 @@ const Marker = () => {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
-    if (examData) {
-      setMarkingKey(generateMarkingKey(examData))
-      /*
-      markingKey.forEach(key => {
-        console.log(key)
-        console.log(markingKey[key])
-        console.log("----")
-      })
-
-       */
+    if (examAnswers) {
+      setMarkingKey(generateMarkingKey(examAnswers));
     }
-  }, [examData]);
+  }, [examAnswers]);
 
   const handleTeleformDataChange = (e) => {
     setTeleformData(e.target.value);
@@ -146,7 +141,7 @@ const Marker = () => {
       case 0:
         return upload({ examData, setMarkingKeyType, markingKeyType, handleExportMarkingKey, markingKey} );
       case 1:
-        return teleformReader({teleformData,handleTeleformDataChange,handleMarkExams});
+        return teleformReader({teleformData,markingKey,handleTeleformDataChange,handleMarkExams});
       case 2:
         return results({setExportFormat,exportFormat,resultsData,handleExportResults,examData});
       default:
@@ -164,8 +159,9 @@ const Marker = () => {
 
   return (
     <>
+
       <Typography.Title>MCQ Auto-Marker</Typography.Title>
-      
+      <AnswerKeyPreview versionMap={markingKey} />
       <Divider />
       
       <div style={{ margin: "24px 0" }}>

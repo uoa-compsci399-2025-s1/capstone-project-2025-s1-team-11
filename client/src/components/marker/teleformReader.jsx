@@ -8,6 +8,7 @@ const { Title } = Typography;
 
 export const teleformReader = ({
                                  teleformData,
+                                 markingKey,
                                  handleTeleformDataChange,
                                  handleMarkExams
                                }) => {
@@ -31,7 +32,7 @@ export const teleformReader = ({
       <Button type="primary" onClick={handleMarkExams} style={{ marginBottom: 24 }}>
         Mark Exams
       </Button>
-      <TeleformTable data={parsedData} />
+      <TeleformTable data={parsedData} answerKey={markingKey}/>
     </div>
   );
 };

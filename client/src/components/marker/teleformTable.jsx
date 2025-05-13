@@ -11,11 +11,25 @@ const columns = (answerKey) => [
     title: 'ANSWERS',
     dataIndex: 'answerString',
     key: 'answerString',
-    render: (text) => <AnswerGrid answerString={text} answerKey={answerKey} />
+    render: (text, record) => {
+      const versionId = record.versionId;
+      const keyUsed = answerKey?.[versionId];
+
+      console.log(`Rendering AnswerGrid for versionId: ${versionId}`);
+      console.log(`Answer key:`, answerKey);
+      console.log(`Answer key found:`, keyUsed);
+
+      return (
+        <AnswerGrid
+          answerString={text}
+          answerKeyString={keyUsed || ''}
+        />
+      );
+    }
   }
 ];
 
-const TeleformTable = ({ data, answerKey }) => (
+const TeleformTable = ({ data, answerKey = {} }) => (
   <Table
     columns={columns(answerKey)}
     dataSource={data.map((row, idx) => ({ ...row, key: idx }))}

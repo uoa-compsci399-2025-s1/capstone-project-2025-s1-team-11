@@ -20,7 +20,7 @@ export function readTeleformLine(line) {
     studentId: line.substring(2, 11),
     lastName: line.substring(12, 23).trim(),
     firstName: line.substring(23, 33).trim(),
-    versionId: line.substring(35, 44),
+    versionId: line.substring(36, 44),
     answerString: line.substring(45).trim()
   };
 }

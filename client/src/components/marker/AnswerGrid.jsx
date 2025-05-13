@@ -2,15 +2,15 @@ import React from "react";
 import { theme } from "antd";
 
 const OPTIONS = ['A', 'B', 'C', 'D', 'E'];
-const MAX_QUESTIONS = 50;
 
 function decodeAnswerString(answerString) {
+  const maxQuestions = Math.floor(answerString.length / 2);
   const matrix = Array.from({ length: 5 }, () => []);
 
-  for (let i = 0; i < MAX_QUESTIONS; i++) {
+  for (let i = 0; i < maxQuestions; i++) {
     const start = i * 2;
     const chunk = answerString.substring(start, start + 2);
-    const decimalValue = parseInt(chunk || '00', 10);
+    const decimalValue = parseInt(chunk, 10) || 0;
     const binary = decimalValue.toString(2).padStart(5, '0');
 
     for (let j = 0; j < 5; j++) {
@@ -21,19 +21,13 @@ function decodeAnswerString(answerString) {
   return matrix;
 }
 
-function bitmaskToBooleanArray(mask) {
-  return mask.toString(2).padStart(5, '0').split('').map(b => b === '1');
-}
-
-const AnswerGrid = ({ answerString, answerKey }) => {
+const AnswerGrid = ({ answerString = '', answerKeyString = '' }) => {
   const { token } = theme.useToken();
-  const matrix = decodeAnswerString(answerString);
 
-  const keyMatrix = answerKey
-    ? Array.from({ length: 5 }, (_, opt) =>
-      answerKey.map(mask => bitmaskToBooleanArray(mask)[opt])
-    )
-    : null;
+  const selectedMatrix = decodeAnswerString(answerString);
+  const correctMatrix = answerKeyString ? decodeAnswerString(answerKeyString) : null;
+
+  const maxQuestions = selectedMatrix[0]?.length || correctMatrix?.[0]?.length || 0;
 
   return (
     <div style={{ overflowX: "auto", border: `1px solid ${token.colorBorderSecondary}`, marginTop: 8 }}>
@@ -48,7 +42,7 @@ const AnswerGrid = ({ answerString, answerKey }) => {
           }}>
             Option
           </th>
-          {Array.from({ length: MAX_QUESTIONS }, (_, i) => (
+          {Array.from({ length: maxQuestions }, (_, i) => (
             <th key={i} style={{
               padding: 4,
               textAlign: 'center',
@@ -60,41 +54,34 @@ const AnswerGrid = ({ answerString, answerKey }) => {
         </tr>
         </thead>
         <tbody>
-        {matrix.map((row, optionIndex) => (
-          <tr key={OPTIONS[optionIndex]}>
+        {OPTIONS.map((label, rowIndex) => (
+          <tr key={label}>
             <td style={{
               padding: 4,
               textAlign: 'center',
               fontWeight: 'bold',
               border: `1px solid ${token.colorBorderSecondary}`
             }}>
-              {OPTIONS[optionIndex]}
+              {label}
             </td>
-            {row.map((isSelected, i) => {
-              const isCorrect = keyMatrix?.[optionIndex]?.[i];
+            {Array.from({ length: maxQuestions }, (_, colIndex) => {
+              const isCorrect = correctMatrix?.[rowIndex]?.[colIndex];
+              const isSelected = selectedMatrix?.[rowIndex]?.[colIndex];
 
-              let bg = token.colorBgContainer;
-              if (isSelected && isCorrect) bg = token.colorSuccess;
-              else if (isSelected && !isCorrect) bg = token.colorError;
+              const bg = isCorrect ? token.colorSuccess : token.colorBgContainer;
+              const symbol = isSelected ? '✔️' : '⬜';
 
               return (
                 <td
-                  key={i}
+                  key={colIndex}
                   style={{
                     padding: 4,
                     textAlign: 'center',
                     border: `1px solid ${token.colorBorderSecondary}`,
                     backgroundColor: bg
                   }}
-                  title={
-                    isSelected
-                      ? isCorrect
-                        ? 'Correct'
-                        : 'Incorrect'
-                      : ''
-                  }
                 >
-                  {isSelected ? '⬛' : '⬜'}
+                  {symbol}
                 </td>
               );
             })}

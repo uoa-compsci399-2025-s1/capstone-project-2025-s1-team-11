@@ -1,70 +1,30 @@
 // utilities/keyGenerator.js
 
 //Example 'Teleform Scan Data' to test with:
-//01387333331 BROWN        JOAN    11000000002 0416080216                                     
-//01722222229 SMITH        BOB     11000000001 1616160201  
+//01387333331 BROWN        JOAN    11000000002 0416080216
+//01722222229 SMITH        BOB     11000000001 1616160201
 
 /**
- * Exam Marking Utility
- * Creates marker keys and provides functionality to mark student exams
+ * Converts correctAnswers object into a version-mapped Teleform string object.
+ * @param {Object} correctAnswers - { [versionId: string]: { [questionIndex: number]: number[] } }
+ * @returns {Object} - { [versionId]: encodedString }
  */
+export function generateMarkingKey(correctAnswers) {
+  const encodedKeys = {};
 
-/**
- * Generates a simplified marking key containing only bitmasks and marks
- * for each version. Only used internally for marking.
- * @param {Object} examData - The structured exam object
- * @returns {Array} Array of versions [{ bitmasks: [], marks: [] }]
- */
-export function generateMarkingKey(examData) {
-  const questions = extractAllQuestions(examData.examBody);
-  console.log(getCorrectAnswerBitmask(questions[0], 2))
+  for (const [versionId, questionMap] of Object.entries(correctAnswers)) {
+    const sortedQuestions = Object.keys(questionMap)
+      .map(Number)
+      .sort((a, b) => a - b);
 
-  return examData.versions.map((_, versionIndex) => {
-    const bitmasks = questions.map(q => getCorrectAnswerBitmask(q, versionIndex));
-    const marks = questions.map(q => q.marks);
-    return { bitmasks, marks };
-  });
-
-}
-
-/**
- * Extracts all questions from an exam body, including those inside sections.
- * @param {Array} examBody - The array of exam items
- * @returns {Array} Flattened list of all questions
- */
-function extractAllQuestions(examBody) {
-  return examBody
-    .flatMap(item => item.type === 'question' ? [item] : item.questions || [])
-    .sort((a, b) => a.questionNumber - b.questionNumber);
-}
-
-function getCorrectAnswer(question, versionIndex) {
-  const map = question.answerShuffleMaps[versionIndex];
-  let mask = 0;
-  for (let i = 0; i < question.answers.length; i++) {
-    const original = map.indexOf(i);
-    const answer = question.answers[original];
-    if (answer?.correct) {
-      mask |= (1 << (question.answers.length - 1 - i));
-    }
+    encodedKeys[versionId] = sortedQuestions
+      .map(qIndex => {
+        const correctIndexes = questionMap[qIndex];
+        const mask = correctIndexes.reduce((acc, i) => acc | (1 << (4 - i)), 0);
+        return String(mask).padStart(2, '0');
+      })
+      .join('');
   }
-}
 
-/**
- * Computes the correct answer bitmask for a question in a specific version.
- * @param {Object} question - The question object
- * @param {Number} versionIndex - Index of the version
- * @returns {Number} Bitmask of correct answers
- */
-function getCorrectAnswerBitmask(question, versionIndex) {
-  const map = question.answerShuffleMaps[versionIndex];
-  let mask = 0;
-  for (let i = 0; i < question.answers.length; i++) {
-    const original = map.indexOf(i);
-    const answer = question.answers[original];
-    if (answer?.correct) {
-      mask |= (1 << (question.answers.length - 1 - i));
-    }
-  }
-  return mask;
+  return encodedKeys;
 }
