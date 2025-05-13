@@ -1,14 +1,12 @@
 // src/components/AnswerMappingGrid.jsx
 import React from "react";
 
-const AnswerMappingGrid = ({ mapping, question }) => {
+const AnswerMappingGrid = ({ mapping }) => {
   if (!mapping || !mapping.length) return null;
-  const validAnswers = (question?.answers || [])
-    .filter(answer => answer && answer.contentText && answer.contentText.trim() !== '');
-  const validMapping = mapping.slice(0, validAnswers.length);
-  const letters = validMapping.map((_, i) => String.fromCharCode(65 + i));
 
-  if (validMapping.length === 0) return null;
+  const letters = Array.from({ length: mapping.length }, (_, i) =>
+    String.fromCharCode(65 + i)
+  );
 
   return (
     <div className="mapping-grid-container" style={{ marginTop: "12px" }}>
@@ -17,7 +15,7 @@ const AnswerMappingGrid = ({ mapping, question }) => {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: `68px repeat(${validMapping.length}, 36px)`,
+            gridTemplateColumns: `68px repeat(${mapping.length}, 36px)`,
             gap: "2px",
             fontSize: "0.8rem",
           }}
@@ -59,7 +57,7 @@ const AnswerMappingGrid = ({ mapping, question }) => {
           ))}
 
           {/* Rows */}
-          {validMapping.map((targetPos, originalIndex) => (
+          {mapping.map((targetPos, originalIndex) => (
             <React.Fragment key={`row-${originalIndex}`}>
               <div
                 style={{
@@ -118,11 +116,11 @@ const AnswerMappingGrid = ({ mapping, question }) => {
           ))}
         </div>
         {/* Example */}
-        {validMapping.length > 0 && (
+        {mapping.length > 0 && (
             <div style={{ marginTop: "6px", fontStyle: "italic", fontSize: "0.85rem" }}>
                 <p style={{ margin: "0 0 4px 0" }}>
                 Example: Original answer <strong>{letters[0]}</strong> is now in position{" "}
-                <strong>{letters[validMapping[0]]}</strong> in the student's exam.
+                <strong>{letters[mapping[0]]}</strong> in the student's exam.
                 </p>
             </div>
         )}
