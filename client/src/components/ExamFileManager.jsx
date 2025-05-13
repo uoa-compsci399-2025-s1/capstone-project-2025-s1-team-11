@@ -1,19 +1,17 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { importExamFromJSON, clearExam } from "../store/exam/examSlice";
-import { openExamFile, saveExamToFile } from "../services/fileSystemAccess.js";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { Button, Alert, Space, Typography, Modal, Input, message, Card, Divider, Select } from "antd";
+import { createNewExam } from "../store/exam/examSlice";
 
-// dispatch(importExamFromJSON) handles all exam loading internally; no external onExamLoaded required.
 
 const ExamFileManager = () => {
   const dispatch = useDispatch();
   const [fileHandle, setFileHandle] = useState(null);
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const { importExam } = useFileSystem();
+  const { openExam, saveExam, importExam } = useFileSystem();
   const [fileOptionsOpen, setFileOptionsOpen] = useState(true);
   const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
 
@@ -36,11 +34,10 @@ const ExamFileManager = () => {
   // Open a JSON exam file
   const handleOpenExam = async () => {
     try {
-      const result = await openExamFile();
+      const result = await openExam();
       if (result) {
-        dispatch(importExamFromJSON(result.exam));
-        console.log("Dispatching importExamFromJSON with:", result.exam);
-        setFileHandle(result.fileHandle);
+        setShowSuccessAlert(true);
+        setError("");
       }
     } catch (err) {
       setError("Error opening exam: " + err.message);
@@ -134,25 +131,11 @@ const ExamFileManager = () => {
     }
 
     try {
-      let updatedHandle = fileHandle;
-
-      if (!fileHandle && window.showSaveFilePicker) {
-        const options = {
-          suggestedName: `${examData.examTitle || 'Untitled_Exam'}.json`,
-          types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
-        };
-        updatedHandle = await window.showSaveFilePicker(options);
+      const result = await saveExam();
+      if (result) {
+        setShowSuccessAlert(true);
+        console.log("File saved successfully");
       }
-
-      if (!updatedHandle) {
-        setError("No file handle available for saving.");
-        return;
-      }
-
-      updatedHandle = await saveExamToFile(examData, updatedHandle);
-      setFileHandle(updatedHandle);
-      setShowSuccessAlert(true);
-      console.log(" File saved successfully to", updatedHandle.name);
     } catch (err) {
       setError("Error saving exam: " + err.message);
       console.error(err);
@@ -252,20 +235,21 @@ const ExamFileManager = () => {
           };
 
           try {
-            const options = {
-              suggestedName: `${exam.examTitle || 'Untitled_Exam'}.json`,
-              types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
-            };
-
-            //const handle = await window.showSaveFilePicker(options);
-            //await saveExamToFile(exam, handle);
-            //setFileHandle(handle);
-            dispatch(importExamFromJSON(exam));
+            // First dispatch to create the exam in Redux
+            dispatch(createNewExam(exam));
+            
+            // Then try to save it to a file
+            const result = await saveExam();
+            if (result) {
+              setShowSuccessAlert(true);
+              setError("");
+            }
+            
             setShowCreateModal(false);
             setFileOptionsOpen(false);
-            message.success('New exam created and saved');
+            message.success('New exam created and saved successfully');
           } catch (err) {
-            setError("Error saving new exam: " + err.message);
+            setError("Error creating exam: " + err.message);
           }
         }}
       >
