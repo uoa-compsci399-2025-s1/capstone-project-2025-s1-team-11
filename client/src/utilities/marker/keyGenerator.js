@@ -15,7 +15,7 @@
  * @param {Object} examData - The structured exam object
  * @returns {Array} Array of versions [{ bitmasks: [], marks: [] }]
  */
-export function generateMarkingKeys(examData) {
+export function generateMarkingKey(examData) {
   const questions = extractAllQuestions(examData.examBody);
 
   return examData.versions.map((_, versionIndex) => {
