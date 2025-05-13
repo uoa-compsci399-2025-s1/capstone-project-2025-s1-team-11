@@ -224,122 +224,80 @@ const ExamDisplay = () => {
               dataIndex: "id",
               key: "id",
               render: (id) => id?.split('-').pop(),
-              width: 70,
             },
             {
               title: "Type",
               dataIndex: "type",
               key: "type",
-              width: 100,
             },
             {
               title: "Section",
               dataIndex: "section",
               key: "section",
-              width: 120,
-              ellipsis: true,
             },
             {
               title: "Title / Question",
               dataIndex: "titleOrQuestion",
               key: "titleOrQuestion",
-              width: 300, // Set fixed width for this column
               render: (text, record) => (record.type === "section" ? (
                 <div>
                   <strong>{record.title?.split('-').slice(2).join('-').trim()}</strong>
                   {record.subtext && <div style={{ fontStyle: "italic", color: "#888" }}>{record.subtext}</div>}
                 </div>
-              ) : (
-                <Typography.Paragraph
-                  style={{ margin: 0, maxWidth: 280 }}
-                  ellipsis={{ 
-                    rows: 3,
-                    expandable: true,
-                    symbol: 'more'
-                  }}
-                >
-                  {record.questionText}
-                </Typography.Paragraph>
-              )),
+              ) : <span>{record.questionText}</span>),
             },
             {
               title: "Options",
               dataIndex: "options",
               key: "options",
-              width: 250,
-              render: (opts, record) => record.type === "question" && Array.isArray(opts) ? (
-                <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                  {opts.map((o, i) => (
-                    <Typography.Paragraph 
-                      key={i} 
-                      ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
-                      style={{ margin: '2px 0' }}
-                    >
-                      {String.fromCharCode(97 + i)}) {o}
-                    </Typography.Paragraph>
-                  ))}
-                </div>
-              ) : null,
+              render: (opts, record) => record.type === "question" && Array.isArray(opts) ? opts.map((o, i) => (
+                <div key={i}>{String.fromCharCode(97 + i)}) {o}</div>
+              )) : null,
             },
             {
               title: "Correct Answer",
               dataIndex: "correctIndex",
               key: "correctIndex",
-              width: 150,
-              render: (index, record) => record.type === "question" && Array.isArray(record.options) ? (
-                <Typography.Paragraph 
-                  ellipsis={{ rows: 2, expandable: true, symbol: '...' }} 
-                  style={{ margin: 0 }}
-                >
-                  {record.options[index]}
-                </Typography.Paragraph>
-              ) : null,  
+              render: (index, record) => record.type === "question" && Array.isArray(record.options) ? record.options[index] : null,
             },
             {
               title: "Marks",
               dataIndex: "marks",
               key: "marks",
-              width: 80,
               render: (_, record) => record.type === "question" ? record.marks ?? 1 : null,
             },
             {
               title: "Actions",
               key: "actions",
-              fixed: 'right',
-              width: 140,
               render: (_, record) => (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Button size="small" onClick={() => handleEdit(record)}>
-                      Edit
-                    </Button>
-                    <div>
-                      <Button
-                        size="small"
-                        onClick={() => handleMove(-1, record.examBodyIndex, record.questionsIndex)}
-                        disabled={record.questionsIndex === 0 || record.examBodyIndex === 0}
-                        style={{ marginRight: 4 }}
-                      >
-                        ↑
-                      </Button>
-                      <Button
-                        size="small"
-                        onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex)}
-                        disabled={record.questionsIndex === exam.examBody[record.examBodyIndex]?.questions.length - 1 || record.examBodyIndex === exam.examBody.length - 1}
-                      >
-                        ↓
-                      </Button>
-                    </div>
-                  </div>
+                <>
+                  <Button size="small" onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>
+                    Edit
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={() => handleMove(-1, record.examBodyIndex, record.questionsIndex)}
+                    disabled={record.questionsIndex === 0 || record.examBodyIndex === 0}
+                    style={{ marginRight: 4 }}
+                  >
+                    ↑
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex)}
+                    disabled={record.questionsIndex === exam.examBody[record.examBodyIndex]?.questions.length - 1 || record.examBodyIndex === exam.examBody.length - 1}
+                    style={{ marginRight: 8 }}
+                  >
+                    ↓
+                  </Button>
                   <Button
                     size="small"
                     danger
                     onClick={() => confirmDeleteItem(record.examBodyIndex, record.questionsIndex)}
-                    style={{ width: '100%' }}
                   >
                     Delete
                   </Button>
-                </div>
+                </>
               ),
             },
           ]}
