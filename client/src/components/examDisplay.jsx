@@ -23,12 +23,11 @@ const ExamDisplay = () => {
   const exam = useSelector(selectExamData);
   const dispatch = useDispatch();
 
-  // State management for the modal
   const [modalState, setModalState] = useState({
     visible: false,
-    type: "", // "section" | "question"
+    type: "", 
     item: null,
-    isDelete: false, // Flag to track delete actions
+    isDelete: false, 
   });
 
   const [examItems, setExamItems] = useState([]);
@@ -44,18 +43,16 @@ const ExamDisplay = () => {
       exam.examBody.forEach((entry, examBodyIndex) => {
         const type = (entry.type || "").toLowerCase();
         if (type === "section") {
-          // Ensure key is always unique even if id is undefined
           const sectionKey = entry.id ? `section-${entry.id}` : `section-index-${examBodyIndex}`;
           items.push({ 
             id: entry.id, 
             type: "section", 
             title: entry.title, 
             subtext: entry.subtext,
-            examBodyIndex, // Add index for reference
-            key: sectionKey // Ensure unique key with prefix or index fallback
+            examBodyIndex, 
+            key: sectionKey 
           });
           (entry.questions || []).forEach((q, questionsIndex) => {
-            // Ensure key is always unique even if q.id is undefined
             const questionKey = q.id ? 
               `question-${q.id}-${examBodyIndex}-${questionsIndex}` : 
               `question-index-${examBodyIndex}-${questionsIndex}`;
@@ -67,13 +64,12 @@ const ExamDisplay = () => {
               questionText: q.questionText || q.contentText,
               options: q.options || (q.answers || []).map(a => a.contentText),
               correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
-              examBodyIndex, // Add section index
-              questionsIndex, // Add question index
-              key: questionKey // Ensure unique key with more specific format
+              examBodyIndex, 
+              questionsIndex, 
+              key: questionKey 
             });
           });
         } else if (type === "question") {
-          // Ensure key is always unique even if entry.id is undefined
           const questionKey = entry.id ? 
             `standalone-question-${entry.id}-${examBodyIndex}` : 
             `standalone-question-index-${examBodyIndex}`;
@@ -84,8 +80,8 @@ const ExamDisplay = () => {
             questionText: entry.questionText || entry.contentText,
             options: entry.options || (entry.answers || []).map(a => a.contentText),
             correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
-            examBodyIndex, // Add index for reference
-            key: questionKey // Ensure unique key with more specific format
+            examBodyIndex, 
+            key: questionKey 
           });
         }
       });
@@ -93,18 +89,29 @@ const ExamDisplay = () => {
     }
   }, [exam]);
 
-  // Move item handler
   const handleMove = (direction, examBodyIndex, questionsIndex = null) => {
-    const newIndex = questionsIndex !== null ? questionsIndex + direction : examBodyIndex + direction;
-    if (questionsIndex !== null) {
+    if (examBodyIndex === undefined) return;
+
+    if (questionsIndex !== null && questionsIndex !== undefined) {
+      const newIndex = questionsIndex + direction;
+      
+      const section = exam.examBody[examBodyIndex];
+      if (newIndex < 0 || newIndex >= (section?.questions?.length || 0)) return;
+      
       dispatch(moveQuestion({
         source: { examBodyIndex, questionsIndex },
         destination: { examBodyIndex, questionsIndex: newIndex },
       }));
-    } else {
+    } 
+    else {
+      const newIndex = examBodyIndex + direction;
+      
+      if (newIndex < 0 || newIndex >= exam.examBody.length) return;
+      
       const examBody = exam.examBody;
       const currentItem = examBody[examBodyIndex];
-      const isSection = currentItem?.type === 'section';
+      const isSection = currentItem?.type?.toLowerCase() === 'section';
+      
       if (isSection) {
         dispatch(moveSection({ sourceIndex: examBodyIndex, destIndex: newIndex }));
       } else {
@@ -276,7 +283,7 @@ const ExamDisplay = () => {
               title: "Title / Question",
               dataIndex: "titleOrQuestion",
               key: "title-question-column",
-              width: 300, // Set fixed width for this column
+              width: 300, 
               render: (text, record) => (record.type === "section" ? (
                 <div>
                   <strong>{record.title?.split('-').slice(2).join('-').trim()}</strong>
@@ -304,7 +311,7 @@ const ExamDisplay = () => {
                 <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
                   {opts.filter(opt => opt && opt.trim() !== '').map((o, i) => (
                     <Typography.Paragraph 
-                      key={`${record.key}-option-${i}`} // Use record.key instead of record.id
+                      key={`${record.key}-option-${i}`} 
                       ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
                       style={{ margin: '2px 0' }}
                     >
@@ -352,19 +359,22 @@ const ExamDisplay = () => {
                     <div>
                       <Button
                         size="small"
-                        onClick={() => handleMove(-1, record.examBodyIndex, record.questionsIndex)}
-                        disabled={record.questionsIndex === 0 || record.examBodyIndex === 0}
+                        onClick={() => handleMove(-1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
+                        disabled={
+                          (record.questionsIndex !== undefined && record.questionsIndex === 0) || 
+                          (record.questionsIndex === undefined && record.examBodyIndex === 0)
+                        }
                         style={{ marginRight: 4 }}
                       >
                         ↑
                       </Button>
                       <Button
                         size="small"
-                        onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex)}
+                        onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
                         disabled={
                           (record.questionsIndex !== undefined && 
-                           record.questionsIndex === exam.examBody[record.examBodyIndex]?.questions?.length - 1) || 
-                          record.examBodyIndex === exam.examBody.length - 1
+                           record.questionsIndex === (exam.examBody[record.examBodyIndex]?.questions?.length - 1)) || 
+                          (record.questionsIndex === undefined && record.examBodyIndex === (exam.examBody.length - 1))
                         }
                       >
                         ↓
@@ -374,7 +384,7 @@ const ExamDisplay = () => {
                   <Button
                     size="small"
                     danger
-                    onClick={() => confirmDeleteItem(record.examBodyIndex, record.questionsIndex)}
+                    onClick={() => confirmDeleteItem(record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
                     style={{ width: '100%' }}
                   >
                     Delete
