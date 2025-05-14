@@ -14,17 +14,22 @@ export const buildContentFormatted = (runs, options = {}) => {
     const { removeMarks = false, relationships = {}, imageData = {} } = options;
 
     let text = extractPlainText(runs, { relationships, imageData });
+    console.log('buildContentFormatted - Initial text:', JSON.stringify(text));
     text = text.replace(/{{math_\d+}}/g, '<span class="math-placeholder">[math]</span>');
     text = text.replace(/§CODE§(.*?)§\/CODE§/gs, (_, code) => {
         return `<pre><code>${escapeHtml(code)}</code></pre>`;
     });
 
     if (removeMarks) {
-        text = text.replace(/^\[\d+(?:\.\d+)?\s*marks?\]\s*/i, '');
+        console.log('buildContentFormatted - Before br replacement:', JSON.stringify(text));
+        // Remove only the marks pattern itself, preserving everything that follows
+        text = text.replace(/^\[\d+(?:\.\d+)?\s*marks?\]/i, '');
     }
 
     // Add newline after every <br>
-    text = text.replace(/<br>/g, '<br>\n');
+    // text = text.replace(/<br>/g, '<br>\n');
+
+    console.log('buildContentFormatted - After br replacement:', JSON.stringify(text));
 
     function escapeHtml(str) {
         return str

@@ -21,9 +21,12 @@ function fixSubpoints(html) {
     for (let line of lines) {
         const trimmed = line.trim();
 
-        // Detect "i. something" to reset
-        if (/^i\.\s*/i.test(trimmed)) {
-            subpointIndex = 1;
+        // Detect existing roman numeral labels
+        if (/^(i{1,3}|iv|v|vi{0,3})\.\s*/i.test(trimmed)) {
+            // Find which subpoint this is
+            const match = trimmed.match(/^(i{1,3}|iv|v|vi{0,3})\.\s*/i);
+            const label = match[1].toLowerCase();
+            subpointIndex = subpoints.indexOf(label) + 1;
             fixedLines.push(trimmed);
             continue;
         }

@@ -49,11 +49,11 @@ const App = () => {
       }}
     >
       <MCQLayout isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}>
-        <DevelopmentWarning />
-        <PopupWarning
-          visible={showWarning}
-          onClose={() => setShowWarning(false)}
-        />
+        {/*<DevelopmentWarning />*/}
+        {/*<PopupWarning*/}
+        {/*  visible={showWarning}*/}
+        {/*  onClose={() => setShowWarning(false)}*/}
+        {/*/>*/}
         <main>
           <Outlet />
         </main>

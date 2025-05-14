@@ -119,7 +119,8 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
     }
 
     // Get the runs and text from this block
-    const runs = Array.isArray(block['w:r']) ? block['w:r'] : (block['w:r'] ? [block['w:r']] : []);
+    const para = block['w:p'] ?? block;
+    const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
     let text;
 
     if (containsEquation) {
@@ -127,6 +128,9 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
     } else {
       text = buildContentFormatted(runs, { relationships, imageData });
     }
+
+    console.log(`Block ${i}: type=${block['w:p'] ? 'paragraph' : 'other'}, text="${text}"`,
+        text.trim() === '' ? '(EMPTY)' : '');
 
     if (text.trim() !== '') {
 //      console.log(`Block ${i}: ${text.substring(0, 30)}${text.length > 30 ? '...' : ''}`);
