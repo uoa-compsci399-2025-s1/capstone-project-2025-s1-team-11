@@ -41,27 +41,51 @@ const ExamDisplay = () => {
   useEffect(() => {
     if (exam && Array.isArray(exam.examBody)) {
       const items = [];
-      exam.examBody.forEach((entry) => {
+      exam.examBody.forEach((entry, examBodyIndex) => {
         const type = (entry.type || "").toLowerCase();
         if (type === "section") {
-          items.push({ id: entry.id, type: "section", title: entry.title, subtext: entry.subtext });
-          (entry.questions || []).forEach((q) => {
+          // Ensure key is always unique even if id is undefined
+          const sectionKey = entry.id ? `section-${entry.id}` : `section-index-${examBodyIndex}`;
+          items.push({ 
+            id: entry.id, 
+            type: "section", 
+            title: entry.title, 
+            subtext: entry.subtext,
+            examBodyIndex, // Add index for reference
+            key: sectionKey // Ensure unique key with prefix or index fallback
+          });
+          (entry.questions || []).forEach((q, questionsIndex) => {
+            // Ensure key is always unique even if q.id is undefined
+            const questionKey = q.id ? 
+              `question-${q.id}-${examBodyIndex}-${questionsIndex}` : 
+              `question-index-${examBodyIndex}-${questionsIndex}`;
+            
             items.push({
               ...q,
               type: "question",
-              section: entry.sectionTitle,
+              section: entry.title,
               questionText: q.questionText || q.contentText,
               options: q.options || (q.answers || []).map(a => a.contentText),
               correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
+              examBodyIndex, // Add section index
+              questionsIndex, // Add question index
+              key: questionKey // Ensure unique key with more specific format
             });
           });
         } else if (type === "question") {
+          // Ensure key is always unique even if entry.id is undefined
+          const questionKey = entry.id ? 
+            `standalone-question-${entry.id}-${examBodyIndex}` : 
+            `standalone-question-index-${examBodyIndex}`;
+            
           items.push({
             ...entry,
             type: "question",
             questionText: entry.questionText || entry.contentText,
             options: entry.options || (entry.answers || []).map(a => a.contentText),
             correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
+            examBodyIndex, // Add index for reference
+            key: questionKey // Ensure unique key with more specific format
           });
         }
       });
@@ -163,17 +187,25 @@ const ExamDisplay = () => {
       type: '',
       item: null,
       isDelete: true,
+      examBodyIndex,
+      questionsIndex
     });
   };
 
   // Execute delete item
   const executeDeleteItem = () => {
     const { examBodyIndex, questionsIndex, isDelete } = modalState;
+    
+    if (!isDelete || examBodyIndex === undefined) {
+      setModalState({ visible: false, type: '', item: null, isDelete: false });
+      return;
+    }
+    
     const entry = exam?.examBody?.[examBodyIndex];
 
     if (questionsIndex !== null && questionsIndex !== undefined) {
       dispatch(removeQuestion({ examBodyIndex, questionsIndex }));
-    } else if (entry.type === "section") {
+    } else if (entry?.type === "section") {
       dispatch(removeSection(examBodyIndex));
     }
 
@@ -218,31 +250,32 @@ const ExamDisplay = () => {
         {/* Render Table with Data */}
         <Table
           rowClassName="highlighted-table-row"
+          rowKey="key" // Using key property for uniqueness
           columns={[
             {
               title: "ID",
               dataIndex: "id",
-              key: "id",
+              key: "id-column",
               render: (id) => id?.split('-').pop(),
               width: 70,
             },
             {
               title: "Type",
               dataIndex: "type",
-              key: "type",
+              key: "type-column",
               width: 100,
             },
             {
               title: "Section",
               dataIndex: "section",
-              key: "section",
+              key: "section-column",
               width: 120,
               ellipsis: true,
             },
             {
               title: "Title / Question",
               dataIndex: "titleOrQuestion",
-              key: "titleOrQuestion",
+              key: "title-question-column",
               width: 300, // Set fixed width for this column
               render: (text, record) => (record.type === "section" ? (
                 <div>
@@ -265,14 +298,13 @@ const ExamDisplay = () => {
             {
               title: "Options",
               dataIndex: "options",
-              key: "options",
+              key: "options-column",
               width: 250,
-              // This should fix the options display?
               render: (opts, record) => record.type === "question" && Array.isArray(opts) ? (
                 <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
                   {opts.filter(opt => opt && opt.trim() !== '').map((o, i) => (
                     <Typography.Paragraph 
-                      key={i} 
+                      key={`${record.key}-option-${i}`} // Use record.key instead of record.id
                       ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
                       style={{ margin: '2px 0' }}
                     >
@@ -285,7 +317,7 @@ const ExamDisplay = () => {
             {
               title: "Correct Answer",
               dataIndex: "correctIndex",
-              key: "correctIndex",
+              key: "correct-answer-column",
               width: 150,
               render: (index, record) => {
                 const validOptions = (record.options || []).filter(opt => opt && opt.trim() !== '');
@@ -302,13 +334,13 @@ const ExamDisplay = () => {
             {
               title: "Marks",
               dataIndex: "marks",
-              key: "marks",
+              key: "marks-column",
               width: 80,
               render: (_, record) => record.type === "question" ? record.marks ?? 1 : null,
             },
             {
               title: "Actions",
-              key: "actions",
+              key: "actions-column",
               fixed: 'right',
               width: 140,
               render: (_, record) => (
@@ -329,7 +361,11 @@ const ExamDisplay = () => {
                       <Button
                         size="small"
                         onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex)}
-                        disabled={record.questionsIndex === exam.examBody[record.examBodyIndex]?.questions.length - 1 || record.examBodyIndex === exam.examBody.length - 1}
+                        disabled={
+                          (record.questionsIndex !== undefined && 
+                           record.questionsIndex === exam.examBody[record.examBodyIndex]?.questions?.length - 1) || 
+                          record.examBodyIndex === exam.examBody.length - 1
+                        }
                       >
                         ↓
                       </Button>
@@ -356,11 +392,13 @@ const ExamDisplay = () => {
       {/* Modal for Edit Section or Question */}
       <Modal
         open={modalState.visible}
-        title={`Edit ${modalState.type}`}
+        title={modalState.isDelete ? 'Confirm Delete' : `Edit ${modalState.type}`}
         onCancel={() => setModalState({ visible: false })}
-        onOk={handleSaveEdit}
+        onOk={modalState.isDelete ? executeDeleteItem : handleSaveEdit}
       >
-        {modalState.type === "section" && (
+        {modalState.isDelete ? (
+          <p>Are you sure you want to delete this item?</p>
+        ) : modalState.type === "section" ? (
           <>
             <Input
               value={modalState.item?.title}
@@ -381,9 +419,7 @@ const ExamDisplay = () => {
               autoSize
             />
           </>
-        )}
-
-        {modalState.type === "question" && (
+        ) : modalState.type === "question" && (
           <>
             <Input
               value={modalState.item?.questionText}
@@ -396,7 +432,7 @@ const ExamDisplay = () => {
             />
             {modalState.item?.options?.filter(opt => opt && opt.trim() !== '').map((opt, index) => (
               <Input
-                key={index}
+                key={`modal-option-${index}`}
                 value={opt}
                 onChange={(e) => {
                   const updatedOptions = [...modalState.item.options];
