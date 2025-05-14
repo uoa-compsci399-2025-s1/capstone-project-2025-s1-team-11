@@ -108,3 +108,44 @@ const normaliseQuestionForTable = (question, sectionNumber = null) => ({
   correctAnswers: question.correctAnswers || [],
   lockedPositions: question.lockedPositions || { a: false, b: false, c: false, d: false, e: false },
 });
+
+export const selectCorrectAnswerIndices = createSelector(
+  [selectExamData, selectAllQuestionsFlat],
+  (examData, questions) => {
+    if (!examData?.versions || !questions.length) return {};
+
+    const result = {};
+
+    // Initialize result structure for each version
+    examData.versions.forEach(versionId => {
+      result[versionId] = {};
+    });
+
+    // For each question
+    questions.forEach(question => {
+      const questionNumber = question.questionNumber;
+      if (!questionNumber) return;
+
+      // Get original correct answer indices
+      const originalCorrectIndices = question.answers
+        .map((answer, index) => answer.correct ? index : -1)
+        .filter(index => index !== -1);
+
+      // For each version, map the original correct indices through the shuffle map
+      examData.versions.forEach((versionId, versionIndex) => {
+        const shuffleMap = question.answerShuffleMaps?.[versionIndex];
+        if (!shuffleMap) return;
+
+        // Map the original correct indices through the shuffle map
+        const shuffledCorrectIndices = originalCorrectIndices
+          .map(originalIndex => shuffleMap.indexOf(originalIndex))
+          .filter(index => index !== -1)
+          .sort((a, b) => a - b);
+
+        result[versionId][questionNumber] = shuffledCorrectIndices;
+      });
+    });
+
+    return result;
+  }
+);

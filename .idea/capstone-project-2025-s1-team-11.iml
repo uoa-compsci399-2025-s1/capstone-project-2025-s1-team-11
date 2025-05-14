@@ -18,5 +18,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Python 3.11 (capstone-project-2025-s1-team-11) (2) interpreter library" level="application" />
+    <orderEntry type="library" name="@types/jest" level="application" />
   </component>
 </module>
