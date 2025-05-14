@@ -102,7 +102,6 @@ button:focus-visible {
   background: var(--header-bg);
   color: var(--text-color);
   border-radius: 12px;
-  border: 1px solid #e0e0e0;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   padding: 12px 24px;
   transition: all 0.25s ease;
@@ -111,11 +110,10 @@ button:focus-visible {
   max-width: 1200px;
   max-height: 70px;
   overflow: hidden;
-  color: #1f1f1f;
 }
 
 .context-bar-wrapper:hover {
-  max-height: 300px;
+  max-height: 420px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
   border-color: #d0d0d0;
   /*background: #f7f7f7;*/
@@ -129,6 +127,8 @@ button:focus-visible {
   row-gap: 12px;
   flex-wrap: wrap;
   padding: 4px 0;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .context-button .ant-btn {
@@ -142,9 +142,13 @@ button:focus-visible {
 }
 
 .context-button .ant-btn:hover {
-  background: var(--content-bg);
+  background: rgba(0, 0, 0, 0.03); /* Light hover tint */
   border-color: #ccc;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .context-button .ant-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .context-button-label {
@@ -163,17 +167,14 @@ button:focus-visible {
 
 .context-bar-expanded {
   opacity: 0;
-  transition: opacity 0.4s ease;
-  padding-top: 12px;
-  font-size: 14px;
-  color: var(--text-color);
-  line-height: 1.6;
+  max-height: 0;
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
-.context-bar-wrapper:hover .context-bar-expanded,
-.context-bar-wrapper:has(.ant-dropdown-open) .context-bar-expanded,
-.context-bar-wrapper:has(.ant-dropdown:hover) .context-bar-expanded {
+.context-bar-expanded.show {
   opacity: 1;
+  max-height: 520px;
 }
 
 /* ant design alert to work for dark mode */
@@ -189,4 +190,13 @@ button:focus-visible {
 
 [data-theme="dark"] .ant-alert-icon {
   color: #ff7875 !important;
+}
+
+/* Hide Ant Design's edit icon by default, show only when context bar is hovered */
+.ant-typography-edit {
+  display: none;
+}
+
+.context-bar-wrapper:hover .ant-typography-edit {
+  display: inline-block;
 }
