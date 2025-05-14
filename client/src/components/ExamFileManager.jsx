@@ -48,13 +48,15 @@ const ExamFileManager = () => {
   const handleImportExam = async (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
-      const fileExtension = selectedFile.name.split('.').pop();
+      const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
       let format = '';
 
       if (fileExtension === 'xml') {
         format = 'moodle'; // Assuming XML is Moodle format
       } else if (fileExtension === 'docx') {
         format = 'docx';
+      } else if (fileExtension === 'tex') {
+        format = 'latex';
       } else {
         setError("Unsupported file format");
         return;
@@ -86,9 +88,11 @@ const ExamFileManager = () => {
         return '.xml';
       case 'docx':
         return '.docx';
+      case 'latex':
+        return '.tex';
       case 'all':
       default:
-        return '.xml,.docx'; // Show both for "All Files"
+        return '.xml,.docx,.tex'; // Show all supported formats
     }
   };
 
@@ -204,6 +208,7 @@ const ExamFileManager = () => {
             <Select.Option value="all">All Files</Select.Option>
             <Select.Option value="moodle">Moodle XML</Select.Option>
             <Select.Option value="docx">DOCX</Select.Option>
+            <Select.Option value="latex">LaTeX</Select.Option>
           </Select>
         </Space>
           <Button danger onClick={() => setIsClearModalVisible(true)} type="primary">
