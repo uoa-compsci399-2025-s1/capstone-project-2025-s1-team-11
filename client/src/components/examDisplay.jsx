@@ -260,6 +260,53 @@ const ExamDisplay = () => {
           rowKey="key" // Using key property for uniqueness
           columns={[
             {
+              title: "Actions",
+              key: "actions-column",
+              fixed: 'left',
+              width: 140,
+              render: (_, record) => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Button size="small" onClick={() => handleEdit(record)}>
+                      Edit
+                    </Button>
+                    <div>
+                      <Button
+                        size="small"
+                        onClick={() => handleMove(-1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
+                        disabled={
+                          (record.questionsIndex !== undefined && record.questionsIndex === 0) || 
+                          (record.questionsIndex === undefined && record.examBodyIndex === 0)
+                        }
+                        style={{ marginRight: 4 }}
+                      >
+                        ↑
+                      </Button>
+                      <Button
+                        size="small"
+                        onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
+                        disabled={
+                          (record.questionsIndex !== undefined && 
+                           record.questionsIndex === (exam.examBody[record.examBodyIndex]?.questions?.length - 1)) || 
+                          (record.questionsIndex === undefined && record.examBodyIndex === (exam.examBody.length - 1))
+                        }
+                      >
+                        ↓
+                      </Button>
+                    </div>
+                  </div>
+                  <Button
+                    size="small"
+                    danger
+                    onClick={() => confirmDeleteItem(record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
+                    style={{ width: '100%' }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              ),
+            },
+            {
               title: "ID",
               dataIndex: "id",
               key: "id-column",
@@ -344,53 +391,6 @@ const ExamDisplay = () => {
               key: "marks-column",
               width: 80,
               render: (_, record) => record.type === "question" ? record.marks ?? 1 : null,
-            },
-            {
-              title: "Actions",
-              key: "actions-column",
-              fixed: 'right',
-              width: 140,
-              render: (_, record) => (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Button size="small" onClick={() => handleEdit(record)}>
-                      Edit
-                    </Button>
-                    <div>
-                      <Button
-                        size="small"
-                        onClick={() => handleMove(-1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
-                        disabled={
-                          (record.questionsIndex !== undefined && record.questionsIndex === 0) || 
-                          (record.questionsIndex === undefined && record.examBodyIndex === 0)
-                        }
-                        style={{ marginRight: 4 }}
-                      >
-                        ↑
-                      </Button>
-                      <Button
-                        size="small"
-                        onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
-                        disabled={
-                          (record.questionsIndex !== undefined && 
-                           record.questionsIndex === (exam.examBody[record.examBodyIndex]?.questions?.length - 1)) || 
-                          (record.questionsIndex === undefined && record.examBodyIndex === (exam.examBody.length - 1))
-                        }
-                      >
-                        ↓
-                      </Button>
-                    </div>
-                  </div>
-                  <Button
-                    size="small"
-                    danger
-                    onClick={() => confirmDeleteItem(record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
-                    style={{ width: '100%' }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              ),
             },
           ]}
           dataSource={examItems}
