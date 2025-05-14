@@ -3,6 +3,7 @@
 import { buildContentFormatted } from './utils/buildContentFormatted.js';
 import { convertOmmlToMathML } from './utils/ommlToMathML.js';
 import { createExam } from '../../store/exam/examUtils.js';
+import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
 
 export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) => {
   const body = xmlJson['w:document']?.['w:body'];
@@ -173,7 +174,8 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
       currentQuestion = {
         type: 'question',
-        contentFormatted: questionText,
+        //contentFormatted: questionText,
+        contentFormatted: sanitizeContentFormatted(questionText),
         marks: marks,
         answers: []
       };
@@ -195,7 +197,8 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
     if (currentQuestion) {
       currentAnswers.push({
         type: 'answer',
-        contentFormatted: text
+        //contentFormatted: text
+        contentFormatted: sanitizeContentFormatted(text)
       });
 //      console.log(`Added answer to "${currentQuestion.contentFormatted}": ${text.substring(0, 30)}...`);
       continue;

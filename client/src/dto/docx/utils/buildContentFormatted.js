@@ -14,6 +14,10 @@ export const buildContentFormatted = (runs, options = {}) => {
     const { removeMarks = false, relationships = {}, imageData = {} } = options;
 
     let text = extractPlainText(runs, { relationships, imageData });
+    text = text.replace(/{{math_\d+}}/g, '<span class="math-placeholder">[math]</span>');
+    text = text.replace(/§CODE§(.*?)§\/CODE§/gs, (_, code) => {
+        return `<pre><code>${escapeHtml(code)}</code></pre>`;
+    });
 
     if (removeMarks) {
         text = text.replace(/^\[\d+(?:\.\d+)?\s*marks?\]\s*/i, '');
@@ -21,6 +25,13 @@ export const buildContentFormatted = (runs, options = {}) => {
 
     // Add newline after every <br>
     text = text.replace(/<br>/g, '<br>\n');
+
+    function escapeHtml(str) {
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
 
     return text.trim();
 };
