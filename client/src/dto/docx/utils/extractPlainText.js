@@ -90,7 +90,7 @@ export const extractPlainText = (runs, options = {}) => {
         // Fallback to placeholder if we can't find the image data
         const alt = "Image";
         result += `<img alt="${alt}" src="[Image Placeholder]">`;
-        console.warn(`Could not find image data for drawing. Embed ID: ${embedId}`);
+        //console.warn(`Could not find image data for drawing. Embed ID: ${embedId}`);
       }
 
       lastRunWasLineBreak = false; // Reset the flag
