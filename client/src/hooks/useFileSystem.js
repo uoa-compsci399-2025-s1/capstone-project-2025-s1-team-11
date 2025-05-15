@@ -6,11 +6,11 @@
  */
 
 import { useDispatch, useSelector } from 'react-redux';
-import {initializeExamState, importDTOToState, clearExamState} from '../store/exam/examSlice';
+import {initializeExamState, clearExamState} from '../store/exam/examSlice';
 import { selectExamData } from '../store/exam/selectors';
 import { loadExamFromFile, saveExamToDisk } from '../services/fileSystemAccess.js';
-import examImportService from '../services/examImportService.js';
-
+import examImportService  from '../services/examImportService.js';
+import { importDTOToState } from '../services/examImportService.js';
 import { useState } from 'react'; // for local fileHandle if not stored in Redux
 
 export function useFileSystem() {
@@ -43,11 +43,24 @@ export function useFileSystem() {
     };
 
     const importExam = async (file, format) => {
-      const dto = await examImportService.importExamToDTO(file, format);
+      // If format is 'all' or not specified, determine it from file extension
+      let formatToUse = format;
+      if (!format || format === 'all') {
+        const ext = file.name.split('.').pop().toLowerCase();
+        formatToUse = ext === 'xml' ? 'moodle' : ext === 'docx' ? 'docx' : null;
+        
+        if (!formatToUse) {
+          throw new Error("Unsupported file format. Please use .xml or .docx files.");
+        }
+      }
+
+      const dto = await examImportService.importExamToDTO(file, formatToUse);
       dispatch(importDTOToState(dto));
       setFileHandle(null); // reset file handle, this wasn't opened from disk
       return true;
     };
+
+
 
     const importFromFileInput = async (file, onError) => {
       const ext = file.name.split('.').pop().toLowerCase();

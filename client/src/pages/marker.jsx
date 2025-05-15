@@ -42,7 +42,6 @@ const Marker = () => {
     
     try {
       console.log("Marking exams with data:", teleformData);
-
       
       const examResults = markExams(examData, teleformData, markingKey);
       console.log("Exam results:", examResults);

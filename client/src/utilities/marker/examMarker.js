@@ -1,44 +1,80 @@
 import {readTeleform} from "./teleformReader.js";
+import { setResults, setLoading, setError } from '../../store/exam/examResultsSlice.js';
+import { store } from '../../store/store.js';
 
 /**
  * Processes teleform scan data and marks students' exams
  * @param examData
  * @param {String} teleformData - String containing teleform scan data
  * @param {Object} markingKey - The marker key (either legacy or enhanced)
- * @returns {Array} Results for each student
+ * @returns {Object} Results for each student
  */
 export function markExams(examData, teleformData, markingKey) {
-  const results = [];
+  try {
+    store.dispatch(setLoading());
 
-  const studentEntries = readTeleform(teleformData);
-  /*
-    answerString : "0108080108010101041602160116161604160808"
-    firstName : "BODNIHD"
-    lastName : "VE"
-    studentId : "483316245"
-    versionId : "00000004"
-   */
-  studentEntries.forEach(({ studentId, firstName, lastName, versionId, answerString }) => {
-    const studentResult = markStudentExam(
-      studentId,
-      firstName,
-      lastName,
-      versionId,
-      answerString,
-      markingKey,
-      examData,
-    );
+    const results = {
+      all: [],                  // Maintain ordered array of all results
+      byStudentId: {},         // Map of results indexed by studentId
+      summary: {
+        totalStudents: 0,
+        averageMark: 0,
+        highestMark: 0,
+        lowestMark: Infinity
+      }
+    };
 
-    results.push(studentResult);
-  });
+    const studentEntries = readTeleform(teleformData);
+    /*
+      answerString : "0108080108010101041602160116161604160808"
+      firstName : "BODNIHD"
+      lastName : "VE"
+      studentId : "483316245"
+      versionId : "00000004"
+     */
+    studentEntries.forEach(({ studentId, firstName, lastName, versionId, answerString }) => {
+      const studentResult = markStudentExam(
+        firstName,
+        lastName,
+        versionId,
+        answerString,
+        markingKey,
+        examData,
+      );
 
-  return results;
+      // Add to both array and lookup map
+      results.all.push(studentResult);
+      results.byStudentId[studentId] = studentResult;
+
+      // Update summary statistics
+      results.summary.totalStudents++;
+      results.summary.averageMark += studentResult.totalMarks;
+      results.summary.highestMark = Math.max(results.summary.highestMark, studentResult.totalMarks);
+      results.summary.lowestMark = Math.min(results.summary.lowestMark, studentResult.totalMarks);
+    });
+
+    // Finalize average calculation
+    if (results.summary.totalStudents > 0) {
+      results.summary.averageMark = results.summary.averageMark / results.summary.totalStudents;
+    }
+    
+    // Handle edge case where no students were processed
+    if (results.summary.lowestMark === Infinity) {
+      results.summary.lowestMark = 0;
+    }
+
+    // Dispatch results to Redux store
+    store.dispatch(setResults(results));
+    return results;
+  } catch (error) {
+    store.dispatch(setError(error.message));
+    throw error;
+  }
 }
 
 
 /**
  * Marks an individual student's exam
- * @param {String} studentId - Student ID
  * @param {String} firstName - First name
  * @param {String} lastName - Last name
  * @param {String} versionId - Version ID
@@ -47,7 +83,7 @@ export function markExams(examData, teleformData, markingKey) {
  * @param {Boolean} useLegacyKey - Flag indicating whether to use legacy key
  * @returns {Object} Student's results
  */
-function markStudentExam(studentId, firstName, lastName, versionId, answerString, markingKey, examData) {
+function markStudentExam(firstName, lastName, versionId, answerString, markingKey, examData) {
   const versionKey = markingKey[versionId];
   if (!versionKey) {
     throw new Error(`Marking key for version ${versionId} not found.`);
@@ -56,76 +92,72 @@ function markStudentExam(studentId, firstName, lastName, versionId, answerString
   const examBody = Array.isArray(examData?.examBody) ? examData.examBody : [];
 
   const studentResult = {
-    studentId,
     firstName,
     lastName,
     versionId,
     totalMarks: 0,
     maxMarks: 0,
-    questions: []
+    questions: []        // Detailed information about each question
   };
 
-  console.log('versionId:', versionId);
-  console.log('markingKey:', markingKey);
-  console.log('versionKey:', versionKey);
+  // Process the answer string into pairs of digits
+  const studentAnswers = [];
+  for (let i = 0; i < answerString.length; i += 2) {
+    const twoDigits = answerString.substr(i, 2);
+    studentAnswers.push(parseInt(twoDigits, 10) || 0);  // Keep as bitmask
+  }
 
-  versionKey.questions.forEach((questionAnswerKey, index) => {
-    console.log('questionKey:', questionAnswerKey);
-    /*
-    const rawAnswer = answerString.substring(index * 2, index * 2 + 2);
-    const studentAnswer = parseInt(rawAnswer, 10);
-    const validAnswer = isNaN(studentAnswer) ? 0 : studentAnswer;
+  // Process the version key into pairs of digits
+  const correctAnswers = [];
+  for (let i = 0; i < versionKey.length; i += 2) {
+    const twoDigits = versionKey.substr(i, 2);
+    correctAnswers.push(parseInt(twoDigits, 10) || 0);  // Keep as bitmask
+  }
 
-    // Lookup actual question in examData to get marks
+  // Mark each answer
+  studentAnswers.forEach((studentAnswer, index) => {
+    const correctAnswer = correctAnswers[index] || 0;
+    
+    // Find the corresponding question in examBody
     const examQuestion = examBody.find(
-      q => q?.type === 'question' && q?.questionNumber === questionKey.questionNumber
+      q => q?.type === 'question' && q?.questionNumber === (index + 1)
     );
-
-    const maxMarks = examQuestion?.marks ?? 0;
-    const isCorrect = (questionKey.correctBitmask & validAnswer) !== 0;
+    
+    const maxMarks = examQuestion?.marks ?? 1; // Default to 1 mark if not specified
+    const isCorrect = studentAnswer === correctAnswer;
     const earnedMarks = isCorrect ? maxMarks : 0;
+
+    // Find the corresponding option text for both answers
+    const findOptionText = (bitmask) => {
+      // Convert bitmask to index (01->0, 02->1, 04->2, 08->3, 16->4)
+      const index = Math.log2(bitmask);
+      return examData?.teleformOptions?.[index] || 'None';
+    };
 
     studentResult.totalMarks += earnedMarks;
     studentResult.maxMarks += maxMarks;
-
+    
     studentResult.questions.push({
-      questionNumber: questionKey.questionNumber ?? index + 1,
-      studentAnswer: validAnswer,
-      studentAnswerLetter: bitmaskToLetter(validAnswer),
-      correctAnswer: questionKey.correctBitmask,
-      correctAnswerLetters: (questionKey.correctAnswers || []).map(a => a.letter),
+      questionNumber: index + 1,
+      studentAnswer: formatBitmask(studentAnswer),  // Format as '01', '02', etc.
+      studentAnswerLetter: findOptionText(studentAnswer),
+      correctAnswer: formatBitmask(correctAnswer),  // Format as '01', '02', etc.
+      correctAnswerLetter: findOptionText(correctAnswer),
       isCorrect,
       marks: earnedMarks,
       maxMarks,
-      feedback: isCorrect
-        ? questionKey.feedback?.correct ?? "Correct"
-        : questionKey.feedback?.incorrect ?? "Incorrect"
+      feedback: isCorrect ? "Correct" : "Incorrect"
     });
-
-     */
   });
-
-
 
   return studentResult;
 }
 
 /**
- * Converts a bitmask to a letter or letters
- * @param {Number} bitmask - Bitmask representing selected answers
- * @returns {String} Corresponding letter(s)
+ * Formats a bitmask number as a two-digit string
+ * @param {Number} bitmask - The bitmask value (1, 2, 4, 8, or 16)
+ * @returns {String} Two-digit string representation ('01', '02', '04', '08', '16')
  */
-function bitmaskToLetter(bitmask) {
-  if (bitmask === 0) return "None";
-
-  const letters = [];
-  const options = ['A', 'B', 'C', 'D', 'E'];
-
-  for (let i = 0; i < options.length; i++) {
-    if (bitmask & (1 << (options.length - 1 - i))) {
-      letters.push(options[i]);
-    }
-  }
-
-  return letters.join(', ');
+function formatBitmask(bitmask) {
+  return bitmask.toString().padStart(2, '0');
 }

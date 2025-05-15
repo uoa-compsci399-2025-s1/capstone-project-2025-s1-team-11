@@ -156,19 +156,6 @@ const ExamFileManager = () => {
                   style={{ display: "none" }}
                 />
               </label>
-              {/* <input
-                type="file"
-                accept=".xml"
-                onChange={async (e) => {
-                  await handleImportExam(e);
-                }}
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  opacity: 0,
-                  cursor: "pointer",
-                }}
-              /> */}
             </Button>
             <Select defaultValue="all" onChange={handleFormatChange} style={{ marginRight: 0 }}>
               <Select.Option value="all">All Files</Select.Option>
