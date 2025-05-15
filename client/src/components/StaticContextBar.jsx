@@ -1,10 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Dropdown, Button, Space, Typography, Tag, message, Modal, Input, Form, Tooltip, Alert, Divider, Radio } from 'antd';
+import { Menu, Dropdown, Button, Space, Typography, Tag, Tooltip, Alert, Divider } from 'antd';
+import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined } from '@ant-design/icons';
 import { updateExamField } from "../store/exam/examSlice";
+import { createNewExam } from "../store/exam/examSlice";
+import { setTeleformOptions } from "../store/exam/examSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { selectExamData } from '../store/exam/selectors.js';
+import CreateExamModal from './CreateExamModal';
+import EditExamModal from './EditExamModal';
+import { exportExamToPdf } from "../services/exportPdf";
 import '../index.css';
 
 const { Text } = Typography;
@@ -31,7 +37,8 @@ const StaticContextBar = ({
     versions: '',
     teleformOptions: '',
     metadataKey: '',
-    metadataValue: ''
+    metadataValue: '',
+    answerOptions: 4,
   });
   const [lastSavedTime, setLastSavedTime] = useState(null);
   // For auto-save debounce and state
@@ -47,6 +54,8 @@ const StaticContextBar = ({
     semester: '',
     year: ''
   });
+
+  const { message } = AntApp.useApp();
 
   const fileDropdownRef = useRef(null);
   const exportDropdownRef = useRef(null);
@@ -64,29 +73,29 @@ const StaticContextBar = ({
   const handleOpenExam = async () => {
     const result = await openExam();
     if (result) {
-      message.success("Exam opened successfully.");
+      setTimeout(() => message.success("Exam opened successfully."), 0);
     }
   };
 
   const handleSaveExam = async () => {
     if (!exam) {
-      message.error("No exam data to save.");
+      setTimeout(() => message.error("No exam data to save."), 0);
       return;
     }
     try {
       const updatedHandle = await saveExam();
       if (!updatedHandle) {
-        message.error("Save cancelled or no file handle available.");
+        setTimeout(() => message.error("Save cancelled or no file handle available."), 0);
         return;
       }
-      message.success("Exam saved successfully.");
+      setTimeout(() => message.success("Exam saved successfully."), 0);
     } catch (error) {
-      message.error("Failed to save exam: " + error.message);
+      setTimeout(() => message.error("Failed to save exam: " + error.message), 0);
     }
   };
 
   const handleCloseExam = () => {
-    message.info("Clearing exam...");
+    setTimeout(() => message.info("Clearing exam..."), 0);
     window.location.reload(); // or dispatch(clearExam()) if you want to retain the Redux method
   };
 
@@ -108,6 +117,7 @@ const StaticContextBar = ({
 
   const handleCreateModalOk = () => {
     const exam = {
+      answerOptions: parseInt(newExamData.answerOptions) || 4,
       examTitle: newExamData.examTitle || "Untitled Exam",
       courseCode: newExamData.courseCode || "",
       courseName: newExamData.courseName || "",
@@ -122,21 +132,34 @@ const StaticContextBar = ({
           ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
           : []
     };
-    dispatch(importExamFromJSON(exam));
+    dispatch(createNewExam(exam));
+    // Set teleform options according to answerOptions
+    const options = Array.from({ length: parseInt(newExamData.answerOptions) || 4 }, (_, i) =>
+      String.fromCharCode(65 + i)
+    );
+    dispatch(setTeleformOptions(options));
     setShowCreateModal(false);
-    message.success("New exam created successfully.");
+    setTimeout(() => message.success("New exam created successfully."), 0);
   };
 
   const handleCreateModalCancel = () => {
     setShowCreateModal(false);
-    message.info("Exam creation cancelled.");
+    setTimeout(() => message.info("Exam creation cancelled."), 0);
   };
 
   const confirmExport = (type) => {
     if (["demo", "exemplar"].includes(type)) {
       if (!window.confirm("Are you sure you want to export this? It may be incomplete.")) return;
     }
-    if (onExport) onExport(type);
+    // For now, call exportExamToPdf. In future, branch by type.
+    if (exam) {
+      // Stub branching for future formats
+      if (type === 'demo' || type === 'randomised' || type === 'exemplar' || type === 'marking') {
+        exportExamToPdf(exam);
+      } else {
+        console.log('Unknown export type:', type);
+      }
+    }
   };
 
   const handleMouseEnter = () => setIsHovered(true);
@@ -161,7 +184,7 @@ const StaticContextBar = ({
     dispatch(updateExamField({ field: 'semester', value: editDetailsData.semester }));
     dispatch(updateExamField({ field: 'year', value: editDetailsData.year }));
     setShowEditDetailsModal(false);
-    message.success("Exam details updated.");
+    setTimeout(() => message.success("Exam details updated."), 0);
   };
 
   useEffect(() => {
@@ -249,7 +272,7 @@ const StaticContextBar = ({
                   key: 'new',
                   label: 'New Exam',
                   onClick: () => {
-                    message.info("Creating new exam...");
+                    setTimeout(() => message.info("Creating new exam..."), 0);
                     handleCreateNewExam();
                   }
                 },
@@ -257,7 +280,7 @@ const StaticContextBar = ({
                   key: 'open',
                   label: 'Open Exam',
                   onClick: () => {
-                    message.info("Opening exam...");
+                    setTimeout(() => message.info("Opening exam..."), 0);
                     handleOpenExam();
                   }
                 },
@@ -265,7 +288,7 @@ const StaticContextBar = ({
                   key: 'close',
                   label: 'Close Exam',
                   onClick: () => {
-                    message.info("Closing exam...");
+                    setTimeout(() => message.info("Closing exam..."), 0);
                     handleCloseExam();
                   }
                 }
@@ -331,7 +354,7 @@ const StaticContextBar = ({
                   label: 'Demo Answer Scripts',
                   disabled: !canExportDemo,
                   onClick: () => {
-                    message.info("Exporting demo scripts...");
+                    setTimeout(() => message.info("Exporting demo scripts..."), 0);
                     confirmExport("demo");
                   }
                 },
@@ -340,7 +363,7 @@ const StaticContextBar = ({
                   label: 'Randomised Answer Scripts',
                   disabled: !canExportRandomised,
                   onClick: () => {
-                    message.info("Exporting randomised scripts...");
+                    setTimeout(() => message.info("Exporting randomised scripts..."), 0);
                     confirmExport("randomised");
                   }
                 },
@@ -349,7 +372,7 @@ const StaticContextBar = ({
                   label: 'Exemplar Answer Scripts',
                   disabled: !canExportExemplar,
                   onClick: () => {
-                    message.info("Exporting exemplar scripts...");
+                    setTimeout(() => message.info("Exporting exemplar scripts..."), 0);
                     confirmExport("exemplar");
                   }
                 },
@@ -358,7 +381,7 @@ const StaticContextBar = ({
                   label: 'Marking Scheme',
                   disabled: !canExportMarking,
                   onClick: () => {
-                    message.info("Exporting marking scheme...");
+                    setTimeout(() => message.info("Exporting marking scheme..."), 0);
                     confirmExport("marking");
                   }
                 }
@@ -406,7 +429,7 @@ const StaticContextBar = ({
                     <Button
                       type="primary"
                       onClick={() => {
-                        message.info("Editing exam details...");
+                        setTimeout(() => message.info("Editing exam details..."), 0);
                         openEditDetailsModal();
                       }}
                       style={{ marginLeft: 16 }}
@@ -428,112 +451,23 @@ const StaticContextBar = ({
         </div>
 
         {/* Create New Exam Modal */}
-        <Modal
-          title="Create New Exam"
+        <CreateExamModal
           open={showCreateModal}
           onOk={handleCreateModalOk}
           onCancel={handleCreateModalCancel}
-          okText="Create"
-        >
-          <Form layout="vertical">
-            <Divider orientation="left">Basic Details</Divider>
-            <Form.Item label="Exam Title">
-              <Input
-                placeholder="Exam Title"
-                value={newExamData.examTitle}
-                onChange={(e) => setNewExamData({ ...newExamData, examTitle: e.target.value })}
-              />
-            </Form.Item>
-            <Form.Item label="Course Code">
-              <Input
-                placeholder="Course Code"
-                value={newExamData.courseCode}
-                onChange={(e) => setNewExamData({ ...newExamData, courseCode: e.target.value })}
-              />
-            </Form.Item>
-            <Form.Item label="Course Name">
-              <Input
-                placeholder="Course Name"
-                value={newExamData.courseName}
-                onChange={(e) => setNewExamData({ ...newExamData, courseName: e.target.value })}
-              />
-            </Form.Item>
-
-            <Divider orientation="left">Exam Info</Divider>
-            <Form.Item label="Semester">
-              <Input
-                placeholder="One"
-                value={newExamData.semester}
-                onChange={(e) => setNewExamData({ ...newExamData, semester: e.target.value })}
-              />
-            </Form.Item>
-            <Form.Item label="Year">
-              <Input
-                placeholder="2025"
-                value={newExamData.year}
-                onChange={(e) => setNewExamData({ ...newExamData, year: e.target.value })}
-              />
-            </Form.Item>
-            <Form.Item label="Number of Versions">
-              <Radio.Group
-                value={versionCount}
-                onChange={(e) => setVersionCount(e.target.value)}
-              >
-                <Radio value={4}>4 Versions (A, B, C, D)</Radio>
-                <Radio value={5}>5 Versions (A, B, C, D, E)</Radio>
-              </Radio.Group>
-            </Form.Item>
-          </Form>
-        </Modal>
-
+          newExamData={newExamData}
+          setNewExamData={setNewExamData}
+          versionCount={versionCount}
+          setVersionCount={setVersionCount}
+        />
         {/* Edit Exam Details Modal */}
-        <Modal
-          title="Edit Exam Details"
+        <EditExamModal
           open={showEditDetailsModal}
           onOk={handleEditDetailsSave}
           onCancel={() => setShowEditDetailsModal(false)}
-          okText="Save"
-        >
-          <Form layout="vertical">
-            <Divider orientation="left">Basic Details</Divider>
-            <Form.Item label="Exam Title">
-              <Input
-                placeholder="Exam Title"
-                value={editDetailsData.examTitle}
-                onChange={(e) => setEditDetailsData({ ...editDetailsData, examTitle: e.target.value })}
-              />
-            </Form.Item>
-            <Form.Item label="Course Code">
-              <Input
-                placeholder="Course Code"
-                value={editDetailsData.courseCode}
-                onChange={(e) => setEditDetailsData({ ...editDetailsData, courseCode: e.target.value })}
-              />
-            </Form.Item>
-            <Form.Item label="Course Name">
-              <Input
-                placeholder="Course Name"
-                value={editDetailsData.courseName}
-                onChange={(e) => setEditDetailsData({ ...editDetailsData, courseName: e.target.value })}
-              />
-            </Form.Item>
-            <Divider orientation="left">Exam Info</Divider>
-            <Form.Item label="Semester">
-              <Input
-                placeholder="One"
-                value={editDetailsData.semester}
-                onChange={(e) => setEditDetailsData({ ...editDetailsData, semester: e.target.value })}
-              />
-            </Form.Item>
-            <Form.Item label="Year">
-              <Input
-                placeholder="2025"
-                value={editDetailsData.year}
-                onChange={(e) => setEditDetailsData({ ...editDetailsData, year: e.target.value })}
-              />
-            </Form.Item>
-          </Form>
-        </Modal>
+          editDetailsData={editDetailsData}
+          setEditDetailsData={setEditDetailsData}
+        />
 
       </div>
     </div>
