@@ -174,9 +174,13 @@ const StaticContextBar = ({
     }
   };
 
-  // Keep context bar open if hovering over dropdowns
-  const handleMouseEnter = () => setIsHovered(true);
+  // Hover intent delay for bar expansion
+  const hoverTimeout = useRef(null);
+  const handleMouseEnter = () => {
+    hoverTimeout.current = setTimeout(() => setIsHovered(true), 150);
+  };
   const handleMouseLeave = () => {
+    clearTimeout(hoverTimeout.current);
     setTimeout(() => {
       if (!fileDropdownOpen && !exportDropdownOpen) {
         setIsHovered(false);
@@ -247,6 +251,7 @@ const StaticContextBar = ({
       } catch (err) {
         console.error("Auto-save failed:", err);
         setSaveState('unsaved');
+        antdMessage.error("Auto-save failed. Check your connection or file permissions.");
       }
     }, 2000);
     // Cleanup
@@ -255,6 +260,7 @@ const StaticContextBar = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exam, autoSaveEnabled]);
+
 
   return (
     <div className="floating-context-bar">
@@ -340,11 +346,19 @@ const StaticContextBar = ({
             )}
           </div>
           {/* Exam title and file name */}
-          <div className="editable-title-wrapper" style={{ marginLeft: "12" }}>
+          <div className="editable-title-wrapper" style={{ marginLeft: "12", display: "flex", alignItems: "center" }}>
             {exam ? (
-              <Text strong style={{ marginRight: 8 }}>
-                {`${exam?.courseName || "Unknown Course"} ${exam?.courseCode || ""}: ${exam?.examTitle || "Untitled Exam"}`}
-              </Text>
+              <>
+                <Text strong style={{ marginRight: 8 }}>
+                  {`${exam?.courseName || "Unknown Course"} ${exam?.courseCode || ""}: ${exam?.examTitle || "Untitled Exam"}`}
+                </Text>
+                {/* Inline warning if key fields are missing */}
+                {(!exam?.examTitle || !exam?.courseCode) && (
+                  <Text className="context-warning" type="warning" style={{ marginLeft: 12 }}>
+                    Missing required exam details
+                  </Text>
+                )}
+              </>
             ) : (
               <Text type="danger" strong>No exam uploaded</Text>
             )}
@@ -462,7 +476,11 @@ const StaticContextBar = ({
                   </div>
                   <div>
                     <div style={{ marginBottom: 4 }}><strong>Versions:</strong></div>
-                    <div>{(exam?.versions || []).join(', ') || "N/A"}</div>
+                    <div className="version-tags">
+                      {(exam?.versions || []).length > 0
+                        ? exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)
+                        : "N/A"}
+                    </div>
                   </div>
                   <div>
                     <Button
