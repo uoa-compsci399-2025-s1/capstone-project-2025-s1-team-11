@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Tiptap Editor Test</title>
+    <!-- Load React -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    
+    <!-- Load Tiptap libraries (using ESM bundle) -->
+    <script type="module">
+        import { Editor } from 'https://esm.sh/@tiptap/core@2.1.13'
+        import StarterKit from 'https://esm.sh/@tiptap/starter-kit@2.1.13'
+        import Underline from 'https://esm.sh/@tiptap/extension-underline@2.1.13'
+        import TextStyle from 'https://esm.sh/@tiptap/extension-text-style@2.1.13'
+        import FontFamily from 'https://esm.sh/@tiptap/extension-font-family@2.1.13'
+
+        // Make them available globally
+        window.TiptapEditor = Editor;
+        window.StarterKit = StarterKit;
+        window.Underline = Underline;
+        window.TextStyle = TextStyle;
+        window.FontFamily = FontFamily;
+
+        // Initialize editor once everything is loaded
+        window.addEventListener('load', () => {
+            const editor = new Editor({
+                element: document.querySelector('#editor'),
+                extensions: [
+                    StarterKit.configure({
+                        heading: false, // Disable heading since we don't need it for this test
+                    }),
+                    Underline,
+                    TextStyle,
+                    FontFamily.configure({
+                        types: ['textStyle'],
+                    }),
+                ],
+                content: '<p>Test content here. Try formatting this text.</p>',
+                onSelectionUpdate: ({ editor }) => {
+                    // Update font selector when selection changes
+                    const fontSelect = document.querySelector('#fontSelect');
+                    if (fontSelect) {
+                        const currentFont = editor.getAttributes('textStyle').fontFamily;
+                        fontSelect.value = currentFont || 'default';
+                    }
+                },
+            });
+
+            // Add some basic controls
+            const controls = document.createElement('div');
+            controls.style.marginBottom = '10px';
+            
+            const boldBtn = document.createElement('button');
+            boldBtn.textContent = 'Bold';
+            boldBtn.onclick = () => editor.chain().focus().toggleBold().run();
+            
+            const fontSelect = document.createElement('select');
+            fontSelect.id = 'fontSelect'; // Add ID for easy reference
+            fontSelect.innerHTML = `
+                <option value="default">Default</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Arial">Arial</option>
+                <option value="Courier New">Courier New</option>
+            `;
+
+            // Enhanced font change handler
+            fontSelect.onchange = (e) => {
+                const newFont = e.target.value;
+                editor.chain().focus();
+                
+                if (newFont === 'default') {
+                    editor.chain().focus().unsetFontFamily().run();
+                } else {
+                    // Force update even if selecting the same font
+                    editor.chain().focus().setFontFamily(newFont).run();
+                }
+                
+                // Ensure the dropdown reflects the current selection
+                setTimeout(() => {
+                    const currentFont = editor.getAttributes('textStyle').fontFamily;
+                    e.target.value = currentFont || 'default';
+                }, 0);
+            };
+
+            // Update font selector when editor content changes
+            editor.on('update', () => {
+                const currentFont = editor.getAttributes('textStyle').fontFamily;
+                fontSelect.value = currentFont || 'default';
+            });
+
+            controls.appendChild(boldBtn);
+            controls.appendChild(fontSelect);
+            document.querySelector('.editor-container').insertBefore(controls, document.querySelector('.editor-content'));
+
+            // Debug logging
+            editor.on('update', () => {
+                console.log('Editor HTML:', editor.getHTML());
+                console.log('Is bold active:', editor.isActive('bold'));
+                console.log('Current marks:', editor.getAttributes('textStyle'));
+            });
+        });
+    </script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.24.15/antd.min.css">
+    <style>
+        /* Reset any potential inherited styles */
+        .editor-test {
+            all: initial;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .editor-container {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .editor-content {
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            padding: 16px;
+            margin-top: 10px;
+        }
+
+        /* Explicitly ensure text formatting works */
+        .ProseMirror strong {
+            font-weight: bold !important;
+        }
+
+        .ProseMirror em {
+            font-style: italic !important;
+        }
+
+        .ProseMirror u {
+            text-decoration: underline !important;
+        }
+
+        .ProseMirror [style*="font-family"] {
+            font-family: inherit;  /* Let the inline style take precedence */
+        }
+
+        /* Font family styles */
+        .ProseMirror [style*="font-family: 'Times New Roman'"],
+        .ProseMirror [style*='font-family: Times New Roman'] {
+            font-family: 'Times New Roman', Times, serif !important;
+        }
+
+        .ProseMirror [style*="font-family: 'Arial'"],
+        .ProseMirror [style*='font-family: Arial'] {
+            font-family: Arial, Helvetica, sans-serif !important;
+        }
+
+        .ProseMirror [style*="font-family: 'Courier New'"],
+        .ProseMirror [style*='font-family: Courier New'] {
+            font-family: 'Courier New', Courier, monospace !important;
+        }
+
+        /* Debug styles */
+        .debug-bold {
+            outline: 1px solid blue;  /* Visualize bold elements */
+        }
+
+        /* Basic button styles */
+        button {
+            margin: 0 4px;
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #f0f0f0;
+        }
+
+        select {
+            margin: 0 4px;
+            padding: 4px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+        }
+
+        /* Style for active button */
+        button.is-active {
+            background-color: #e6f7ff;
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-test">
+        <div class="editor-container">
+            <h2>Tiptap Editor Test (Isolated Environment)</h2>
+            <div id="editor" class="editor-content">
+                <p>Test content here. Try formatting this text.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

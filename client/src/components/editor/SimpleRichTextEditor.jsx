@@ -1,88 +1,87 @@
-import React from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
-import Document from '@tiptap/extension-document';
-import Paragraph from '@tiptap/extension-paragraph';
-import Text from '@tiptap/extension-text';
-import Bold from '@tiptap/extension-bold';
-import Italic from '@tiptap/extension-italic';
-import Underline from '@tiptap/extension-underline';
-import TextStyle from '@tiptap/extension-text-style';
-import FontFamily from '@tiptap/extension-font-family';
-import { Button, Select } from 'antd';
-import { BoldOutlined, ItalicOutlined, UnderlineOutlined } from '@ant-design/icons';
+import React, { useState } from "react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import Image from "@tiptap/extension-image";
+//import { BsTypeBold, BsTypeUnderline, BsTypeItalic } from "react-icons/bs";
+//import Placeholder from "@tiptap/extension-placeholder";
 
-const { Option } = Select;
+//import { BsLink45Deg } from "react-icons/bs";
+//import { BiUnlink } from "react-icons/bi";
+import "../editor/SimpleRichTextEditor.css";
+//import { AddImageLink } from "./Image/AddImageLink";
+//import { RiImageAddFill } from "react-icons/ri";
+//import { AddMeme } from "./meme/AddMeme";
+//import { AddLinkBox } from "./link/AddLinkBox";
+//import { TextOperation } from "./text/TextOperations";
 
-const SimpleRichTextEditor = ({ content, onChange }) => {
+export const SimpleRichTextEditor = () => {
   const editor = useEditor({
-    extensions: [
-      Document,
-      Paragraph,
-      Text,
-      Bold.configure({
-        HTMLAttributes: {
-          style: 'font-weight: 700;'
-        }
-      }),
-      Italic,
-      Underline,
-      TextStyle,
-      FontFamily,
-    ],
-    content,
-    onUpdate: ({ editor }) => {
-      onChange?.(editor.getHTML());
-    },
+    extensions: [StarterKit, Underline, Image],
+    autofocus: false
   });
 
-  if (!editor) {
-    return null;
-  }
-
-  const toggleMark = (mark) => {
-    editor.chain().focus().toggleMark(mark).run();
-  };
-
-  const setFontFamily = (value) => {
-    if (value === 'default') {
-      editor.chain().focus().unsetFontFamily().run();
-    } else {
-      editor.chain().focus().setFontFamily(value).run();
-    }
-  };
-
   return (
-    <div className="simple-editor">
-      <div className="simple-editor-toolbar">
-        <Button
-          type={editor.isActive('bold') ? 'primary' : 'default'}
-          icon={<BoldOutlined />}
-          onClick={() => toggleMark('bold')}
-        />
-        <Button
-          type={editor.isActive('italic') ? 'primary' : 'default'}
-          icon={<ItalicOutlined />}
-          onClick={() => toggleMark('italic')}
-        />
-        <Button
-          type={editor.isActive('underline') ? 'primary' : 'default'}
-          icon={<UnderlineOutlined />}
-          onClick={() => toggleMark('underline')}
-        />
-        <Select
-          defaultValue="default"
-          style={{ width: 120 }}
-          onChange={setFontFamily}
-          value={editor.getAttributes('textStyle').fontFamily || 'default'}
+    <div className="container">
+      <div className="btn-array gap-1 mtb1-rem">
+        <div className="flex">
+        <button
+          title="bold"
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          className={editor.isActive("bold") ? "is-active" : ""}
         >
-          <Option value="default">Default</Option>
-          <Option value="Times New Roman">Times New Roman</Option>
-          <Option value="Courier New">Courier New</Option>
-          <Option value="Arial">Arial</Option>
-        </Select>
+          {/* <BsTypeBold size={28} /> */}
+        </button>
+        <button
+          title="Italics"
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          className={editor.isActive("italic") ? "is-active" : ""}
+        >
+          {/* <BsTypeItalic size={28} /> */}
+        </button>
+        <button
+          title="underline"
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          className={editor.isActive("underline") ? "is-active" : ""}
+        >
+          {/* <BsTypeUnderline size={28} /> */}
+        </button>
+      </div>
+      <div className="flex">
+        <div className="relative" onMouseLeave={() => setImageModal(false)}>
+          <button onClick={() => setImageModal(true)}>
+            {/* <RiImageAddFill size={28} /> */}
+          </button>
+          {/* {imageModal && (
+            <AddImageLink
+              editor={editor}
+              modal={imageModal}
+              setModal={setImageModal}
+            />
+          )} */}
+        </div>
+        <div className="relative" onMouseLeave={() => setModal(false)}>
+          {editor.isActive("link") ? (
+            <button
+              className="unlink"
+              title="Remove link"
+              onClick={() => editor.chain().focus().unsetLink().run()}
+            >
+              {/* <BiUnlink size={28} /> */}
+            </button>
+          ) : (
+            <button title="add a link" onClick={() => setModal(true)}>
+              {/* <BsLink45Deg size={28} /> */}
+            </button>
+          )}
+          {/* {modal && (
+            <AddLinkBox editor={editor} modal={modal} setModal={setModal} />
+          )} */}
+        </div>
+        {/* <AddMeme editor={editor} /> */}
       </div>
       <EditorContent editor={editor} />
-    </div>
+    </div></div>
   );
 };
 
