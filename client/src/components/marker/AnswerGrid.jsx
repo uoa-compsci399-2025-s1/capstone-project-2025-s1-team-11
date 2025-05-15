@@ -11,20 +11,11 @@ function decodeAnswerString(answerString) {
     const start = i * 2;
     const chunk = answerString.substring(start, start + 2);
     const decimalValue = parseInt(chunk, 10) || 0;
-    
-    // Map each bit position directly to the corresponding option
-    // bit 0 (value 1) = A
-    // bit 1 (value 2) = B
-    // bit 2 (value 4) = C
-    // bit 3 (value 8) = D
-    // bit 4 (value 16) = E
-    
-    // Create a new array for each question with the corresponding bit values
-    matrix[0].push((decimalValue & 1) === 1);  // Option A (bit 0)
-    matrix[1].push((decimalValue & 2) === 2);  // Option B (bit 1)
-    matrix[2].push((decimalValue & 4) === 4);  // Option C (bit 2)
-    matrix[3].push((decimalValue & 8) === 8);  // Option D (bit 3)
-    matrix[4].push((decimalValue & 16) === 16); // Option E (bit 4)
+    const binary = decimalValue.toString(2).padStart(5, '0');
+
+    for (let j = 0; j < 5; j++) {
+      matrix[j].push(binary[j] === '1');
+    }
   }
 
   return matrix;

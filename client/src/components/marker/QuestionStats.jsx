@@ -22,16 +22,23 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
   // Get teleform options
   const teleformOptions = examData?.teleformOptions || ['A', 'B', 'C', 'D', 'E'];
   
-  // Helper function to convert bitmask to options
+  // Helper function to convert bitmask to options - adjusted for the 4-i mapping
   const bitmaskToOptionLetters = (bitmask) => {
     if (!bitmask || bitmask === 0) return 'None';
     
+    // Convert to binary and pad with 0s
+    const binary = bitmask.toString(2).padStart(5, '0');
     const options = [];
-    if (bitmask & 1) options.push(teleformOptions[0]);
-    if (bitmask & 2) options.push(teleformOptions[1]);
-    if (bitmask & 4) options.push(teleformOptions[2]);
-    if (bitmask & 8) options.push(teleformOptions[3]);
-    if (bitmask & 16) options.push(teleformOptions[4]);
+    
+    // In this format, the bits are reversed
+    // Binary "10000" (16) would be option A
+    // Binary "01000" (8) would be option B
+    // etc.
+    if (binary[0] === '1') options.push(teleformOptions[0]);
+    if (binary[1] === '1') options.push(teleformOptions[1]);
+    if (binary[2] === '1') options.push(teleformOptions[2]);
+    if (binary[3] === '1') options.push(teleformOptions[3]);
+    if (binary[4] === '1') options.push(teleformOptions[4]);
     
     return options.join(', ');
   };
@@ -44,12 +51,15 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
     const answerFreq = stats.answerFrequency || {};
     const correctAnswerNum = parseInt(stats.correctAnswer || '0', 10);
     
+    // Convert to binary representation for determining correct options
+    const binary = correctAnswerNum.toString(2).padStart(5, '0');
+    
     return [
-      { option: teleformOptions[0], value: answerFreq['01'] || 0, isCorrect: Boolean(correctAnswerNum & 1) },
-      { option: teleformOptions[1], value: answerFreq['02'] || 0, isCorrect: Boolean(correctAnswerNum & 2) },
-      { option: teleformOptions[2], value: answerFreq['04'] || 0, isCorrect: Boolean(correctAnswerNum & 4) },
-      { option: teleformOptions[3], value: answerFreq['08'] || 0, isCorrect: Boolean(correctAnswerNum & 8) },
-      { option: teleformOptions[4], value: answerFreq['16'] || 0, isCorrect: Boolean(correctAnswerNum & 16) },
+      { option: teleformOptions[0], value: answerFreq['01'] || 0, isCorrect: binary[0] === '1' },
+      { option: teleformOptions[1], value: answerFreq['02'] || 0, isCorrect: binary[1] === '1' },
+      { option: teleformOptions[2], value: answerFreq['04'] || 0, isCorrect: binary[2] === '1' },
+      { option: teleformOptions[3], value: answerFreq['08'] || 0, isCorrect: binary[3] === '1' },
+      { option: teleformOptions[4], value: answerFreq['16'] || 0, isCorrect: binary[4] === '1' },
     ];
   };
   
@@ -61,10 +71,11 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
     }
   };
   
-  // Handle selecting options for multiple correct answers
+  // Handle selecting options for multiple correct answers - adjusted for 4-i mapping
   const handleSelectOption = (questionNumber, option) => {
-    const bitmaskValues = { 'A': 1, 'B': 2, 'C': 4, 'D': 8, 'E': 16 };
-    const optionValue = bitmaskValues[option];
+    const optionIndex = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4 }[option];
+    const bitPosition = 4 - optionIndex; // Reverse the bit position for 4-i mapping
+    const optionValue = 1 << bitPosition;
     
     // Toggle the bit for this option
     const currentValue = newCorrectAnswer[questionNumber] || 0;
@@ -87,14 +98,17 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
     return <Tag color={colorMap[difficultyLevel] || 'default'}>{difficultyLevel}</Tag>;
   };
   
-  // Convert a bitmask to an array of selected options
+  // Convert a bitmask to an array of selected options - adjusted for 4-i mapping
   const bitmaskToOptions = (bitmask) => {
+    const binary = bitmask.toString(2).padStart(5, '0');
     const options = [];
-    if (bitmask & 1) options.push('A');
-    if (bitmask & 2) options.push('B');
-    if (bitmask & 4) options.push('C');
-    if (bitmask & 8) options.push('D');
-    if (bitmask & 16) options.push('E');
+    
+    if (binary[0] === '1') options.push('A');
+    if (binary[1] === '1') options.push('B');
+    if (binary[2] === '1') options.push('C');
+    if (binary[3] === '1') options.push('D');
+    if (binary[4] === '1') options.push('E');
+    
     return options;
   };
   
@@ -239,24 +253,25 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
                 <Radio.Group 
                   value={bitmaskToOptions(newCorrectAnswer[selectedQuestion] || 0)}
                 >
-                  {teleformOptions.map((option, i) => (
-                    <Radio.Button 
-                      key={i} 
-                      value={option}
-                      checked={Boolean(newCorrectAnswer[selectedQuestion] & (1 << i))}
-                      onClick={() => handleSelectOption(selectedQuestion, option)}
-                      style={{
-                        backgroundColor: (newCorrectAnswer[selectedQuestion] & (1 << i)) 
-                          ? '#52c41a' 
-                          : undefined,
-                        color: (newCorrectAnswer[selectedQuestion] & (1 << i)) 
-                          ? 'white' 
-                          : undefined,
-                      }}
-                    >
-                      {option}
-                    </Radio.Button>
-                  ))}
+                  {teleformOptions.map((option, i) => {
+                    const bitPosition = 4 - i; // Reverse for 4-i mapping
+                    const isSelected = Boolean((newCorrectAnswer[selectedQuestion] || 0) & (1 << bitPosition));
+                    
+                    return (
+                      <Radio.Button 
+                        key={i} 
+                        value={option}
+                        checked={isSelected}
+                        onClick={() => handleSelectOption(selectedQuestion, option)}
+                        style={{
+                          backgroundColor: isSelected ? '#52c41a' : undefined,
+                          color: isSelected ? 'white' : undefined,
+                        }}
+                      >
+                        {option}
+                      </Radio.Button>
+                    );
+                  })}
                 </Radio.Group>
               ) : (
                 // Use our helper function to convert bitmask to options
