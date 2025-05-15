@@ -8,7 +8,7 @@ import Typography from '@tiptap/extension-typography';
 import FontFamily from '@tiptap/extension-font-family';
 import TextStyle from '@tiptap/extension-text-style';
 import { Extension } from '@tiptap/core';
-import { Button, Tooltip, message, Select, Upload } from 'antd';
+import { Button, Tooltip, message, Select, Upload, Slider } from 'antd';
 import {
   BoldOutlined, ItalicOutlined, UnderlineOutlined,
   AlignLeftOutlined, AlignCenterOutlined, AlignRightOutlined,
@@ -93,7 +93,7 @@ const CustomIndentExtension = Extension.create({
   },
 });
 
-const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content...' }) => {
+const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content...', imageScale, onImageScaleChange }) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -128,6 +128,42 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
       }),
       Typography,
       CustomIndentExtension,
+      Image.configure({
+        allowBase64: true,
+        inline: false,
+        HTMLAttributes: {
+          // class: 'content-image', // Optional class for general styling
+        },
+        addAttributes() {
+          return {
+            // Ensure Tiptap's default attributes like src, alt, title are kept.
+            // This spread might need to be this.parentAttrs or similar depending on Tiptap version specifics
+            // For Tiptap 2, it usually inherits default attributes automatically.
+            // Let's assume defaults are kept and just add ours.
+            src: { default: null },
+            alt: { default: null },
+            title: { default: null },
+
+            customWidth: {
+              default: '100%', // Default to 100% if no specific width is set
+              parseHTML: element => {
+                let widthToStore = '100%';
+                if (element.style.width && element.style.width.includes('%')) {
+                  widthToStore = element.style.width;
+                } else if (element.getAttribute('width') && element.getAttribute('width').includes('%')) {
+                  widthToStore = element.getAttribute('width');
+                }
+                // Note: We are not parsing pixel widths into percentages here for simplicity.
+                return widthToStore;
+              },
+              renderHTML: attributes => {
+                // This style will be applied to the <img> tag in the editor and in getHTML()
+                return { style: `width: ${attributes.customWidth || '100%'}; height: auto;` };
+              },
+            },
+          };
+        },
+      }),
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -137,6 +173,7 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
       attributes: {
         class: 'compact-editor-content',
         spellcheck: 'false',
+        style: `--image-scale-percent: ${imageScale}%;`
       },
     },
   });
@@ -315,6 +352,20 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
             />
           </Upload>
         </Tooltip>
+
+        {onImageScaleChange && (
+          <Tooltip title={`Image Scale: ${imageScale}%`}>
+            <Slider 
+              min={40} 
+              max={100} 
+              value={imageScale} 
+              onChange={onImageScaleChange} 
+              style={{ width: '70px', marginLeft: '8px', marginRight: '4px'}}
+              tipFormatter={value => `${value}%`}
+            />
+          </Tooltip>
+        )}
+
       </div>
       <EditorContent editor={editor} className="compact-editor-content-wrapper" />
     </div>
