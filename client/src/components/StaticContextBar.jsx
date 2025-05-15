@@ -160,18 +160,16 @@ const StaticContextBar = ({
   };
 
   const confirmExport = (type) => {
+    if (!exam) {
+      message.error("No exam available to export.");
+      return;
+    }
+
     if (["demo", "exemplar"].includes(type)) {
       if (!window.confirm("Are you sure you want to export this? It may be incomplete.")) return;
     }
-    // For now, call exportExamToPdf. In future, branch by type.
-    if (exam) {
-      // Stub branching for future formats
-      if (type === 'demo' || type === 'randomised' || type === 'exemplar' || type === 'marking') {
-        exportExamToPdf(exam);
-      } else {
-        console.log('Unknown export type:', type);
-      }
-    }
+
+    exportExamToPdf(exam);
   };
 
   // Hover intent delay for bar expansion
@@ -284,6 +282,7 @@ const StaticContextBar = ({
                       onClick: () => {
                         setTimeout(() => message.info("Creating new exam..."), 0);
                         handleCreateNewExam();
+                        setFileDropdownOpen(false);
                       }
                     },
                     {
@@ -292,6 +291,7 @@ const StaticContextBar = ({
                       onClick: () => {
                         setTimeout(() => message.info("Opening exam..."), 0);
                         handleOpenExam();
+                        setFileDropdownOpen(false);
                       }
                     },
                     {
@@ -300,6 +300,7 @@ const StaticContextBar = ({
                       onClick: () => {
                         setTimeout(() => message.info("Closing exam..."), 0);
                         handleCloseExam();
+                        setFileDropdownOpen(false);
                       }
                     }
                   ]
@@ -382,12 +383,22 @@ const StaticContextBar = ({
                 menu={{
                   items: [
                     {
+                      key: 'pdf',
+                      label: 'Download as PDF',
+                      onClick: () => {
+                        setTimeout(() => message.info("Exporting PDF..."), 0);
+                        exportExamToPdf(exam);
+                        setExportDropdownOpen(false);
+                      }
+                    },
+                    {
                       key: 'demo',
                       label: 'Demo Answer Scripts',
                       disabled: !canExportDemo,
                       onClick: () => {
                         setTimeout(() => message.info("Exporting demo scripts..."), 0);
                         confirmExport("demo");
+                        setExportDropdownOpen(false);
                       }
                     },
                     {
@@ -397,6 +408,7 @@ const StaticContextBar = ({
                       onClick: () => {
                         setTimeout(() => message.info("Exporting randomised scripts..."), 0);
                         confirmExport("randomised");
+                        setExportDropdownOpen(false);
                       }
                     },
                     {
@@ -406,6 +418,7 @@ const StaticContextBar = ({
                       onClick: () => {
                         setTimeout(() => message.info("Exporting exemplar scripts..."), 0);
                         confirmExport("exemplar");
+                        setExportDropdownOpen(false);
                       }
                     },
                     {
@@ -415,6 +428,7 @@ const StaticContextBar = ({
                       onClick: () => {
                         setTimeout(() => message.info("Exporting marking scheme..."), 0);
                         confirmExport("marking");
+                        setExportDropdownOpen(false);
                       }
                     }
                   ]
