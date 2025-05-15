@@ -7,7 +7,7 @@ import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
 import { markExams } from "../utilities/marker/examMarker.js";
 import { generateResultOutput } from "../utilities/marker/outputFormatter.js";
 import {dataReview} from "../components/marker/dataReview.jsx";
-import {results} from "../components/marker/results.jsx"
+import {Results} from "../components/marker/results.jsx"
 import {teleformReader} from "../components/marker/teleformReader.jsx";
 import {selectCorrectAnswerIndices} from "../store/exam/selectors.js";
 
@@ -58,7 +58,7 @@ const Marker = () => {
   };
 
   const handleExportResults = () => {
-    if (!results || results.length === 0) {
+    if (!resultsData || resultsData.length === 0) {
       message.error("No results available to export.");
       return;
     }
@@ -66,12 +66,12 @@ const Marker = () => {
     let content, filename, type;
     
     if (exportFormat === "json") {
-      content = JSON.stringify(results, null, 2);
+      content = JSON.stringify(resultsData, null, 2);
       filename = `${examData.courseCode || 'exam'}_results.json`;
       type = "application/json";
     } else {
       // Text format (similar to legacy output)
-      content = results.map(res => generateResultOutput(res, examData)).join('\n\n');
+      content = resultsData.map(res => generateResultOutput(res, examData)).join('\n\n');
       filename = `${examData.courseCode || 'exam'}_results.txt`;
       type = "text/plain";
     }
@@ -103,7 +103,15 @@ const Marker = () => {
       case 1:
         return teleformReader({teleformData,markingKey,handleTeleformDataChange,handleMarkExams});
       case 2:
-        return results({setExportFormat,exportFormat,resultsData,handleExportResults,examData});
+        return Results({
+          setExportFormat,
+          exportFormat,
+          resultsData: resultsData.all || [],
+          handleExportResults,
+          examData,
+          teleformData,
+          markingKey
+        });
       default:
         return null;
     }
