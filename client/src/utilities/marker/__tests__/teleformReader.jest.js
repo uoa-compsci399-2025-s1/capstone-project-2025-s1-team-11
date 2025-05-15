@@ -10,7 +10,7 @@ describe('readTeleformLine', () => {
       studentId: "483316245",
       lastName: "VE",
       firstName: "BODNIHD",
-      versionId: "100000004",
+      versionId: "00000004",
       answerString: "0108080108010101041602160116161604160808"
     });
   });

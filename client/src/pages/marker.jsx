@@ -6,18 +6,15 @@ import { useSelector } from "react-redux";
 import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
 import { markExams } from "../utilities/marker/examMarker.js";
 import { generateResultOutput } from "../utilities/marker/outputFormatter.js";
-import {upload} from "../components/marker/upload.jsx";
-import {marking} from "../components/marker/marking.jsx";
+import {dataReview} from "../components/marker/dataReview.jsx";
 import {results} from "../components/marker/results.jsx"
 import {teleformReader} from "../components/marker/teleformReader.jsx";
 import {selectCorrectAnswerIndices} from "../store/exam/selectors.js";
-import AnswerKeyPreview from "../components/marker/AnswerKeyPreview.jsx";
 
 const Marker = () => {
   const examData = useSelector((state) => state.exam.examData);
   const examAnswers = useSelector(selectCorrectAnswerIndices);
   const [teleformData, setTeleformData] = useState("");
-  const [markingKeyType, setMarkingKeyType] = useState("enhanced");
   const [markingKey, setMarkingKey] = useState(null);
   const [resultsData, setResultsData] = useState([]);
   const [exportFormat, setExportFormat] = useState("json");
@@ -47,7 +44,7 @@ const Marker = () => {
       console.log("Marking exams with data:", teleformData);
 
       
-      const examResults = markExams(teleformData, markingKey);
+      const examResults = markExams(examData, teleformData, markingKey);
       console.log("Exam results:", examResults);
       
       setResultsData(examResults);
@@ -58,42 +55,6 @@ const Marker = () => {
     } catch (error) {
       console.error("Error marking exams:", error);
       message.error("Failed to mark exams: " + error.message);
-    }
-  };
-
-  const handleExportMarkingKey = () => {
-    if (!markingKey) {
-      message.error("No marking key available to export.");
-      return;
-    }
-    
-    let content, filename, type;
-    
-    if (markingKeyType === "legacy") {
-      content = markingKey.legacyKey;
-      filename = `${examData.courseCode || 'exam'}_marking_key.txt`;
-      type = "text/plain";
-    } else {
-      content = JSON.stringify(markingKey.enhancedKey, null, 2);
-      filename = `${examData.courseCode || 'exam'}_marking_key.json`;
-      type = "application/json";
-    }
-    
-    try {
-      const blob = new Blob([content], { type });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a); 
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      message.success("Marking key exported successfully.");
-    } catch (error) {
-      console.error("Export failed:", error);
-      message.error("Failed to export marking key.");
     }
   };
 
@@ -139,7 +100,7 @@ const Marker = () => {
   const renderContent = () => {
     switch (currentStep) {
       case 0:
-        return upload({ examData, setMarkingKeyType, markingKeyType, handleExportMarkingKey, markingKey} );
+        return dataReview({ examData, markingKey} );
       case 1:
         return teleformReader({teleformData,markingKey,handleTeleformDataChange,handleMarkExams});
       case 2:
@@ -161,7 +122,6 @@ const Marker = () => {
     <>
 
       <Typography.Title>MCQ Auto-Marker</Typography.Title>
-      <AnswerKeyPreview versionMap={markingKey} />
       <Divider />
       
       <div style={{ margin: "24px 0" }}>

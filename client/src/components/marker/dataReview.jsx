@@ -1,15 +1,16 @@
 import {Alert, Button, Card, Empty, Radio, Space, Typography} from "antd";
 import React from "react";
 import {ExamDisplay} from "../shared/examDisplay.jsx";
-import AnswerGrid from "./AnswerGrid";
+import AnswerKeyPreview from "./AnswerKeyPreview.jsx";
 
-export const upload = ({ examData, setMarkingKeyType, markingKeyType, handleExportMarkingKey, markingKey} ) => {
+export const dataReview = ({ examData, markingKey} ) => {
   return (
     <>
       <Typography.Title level={3}>Review Exam</Typography.Title>
       {examData ? (
         <div>
           <ExamDisplay exam={examData} />
+          <AnswerKeyPreview versionMap={markingKey} />
           {/*
           <Card>
             <Typography.Title level={3}>Export marking scheme to another tool</Typography.Title>

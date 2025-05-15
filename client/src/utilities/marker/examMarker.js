@@ -2,16 +2,22 @@ import {readTeleform} from "./teleformReader.js";
 
 /**
  * Processes teleform scan data and marks students' exams
+ * @param examData
  * @param {String} teleformData - String containing teleform scan data
  * @param {Object} markingKey - The marker key (either legacy or enhanced)
- * @param {Boolean} useLegacyKey - Flag indicating whether to use legacy key format
  * @returns {Array} Results for each student
  */
-export function markExams(teleformData, markingKey, useLegacyKey = false) {
+export function markExams(examData, teleformData, markingKey) {
   const results = [];
 
   const studentEntries = readTeleform(teleformData);
-
+  /*
+    answerString : "0108080108010101041602160116161604160808"
+    firstName : "BODNIHD"
+    lastName : "VE"
+    studentId : "483316245"
+    versionId : "00000004"
+   */
   studentEntries.forEach(({ studentId, firstName, lastName, versionId, answerString }) => {
     const studentResult = markStudentExam(
       studentId,
@@ -20,7 +26,7 @@ export function markExams(teleformData, markingKey, useLegacyKey = false) {
       versionId,
       answerString,
       markingKey,
-      useLegacyKey
+      examData,
     );
 
     results.push(studentResult);
@@ -41,104 +47,67 @@ export function markExams(teleformData, markingKey, useLegacyKey = false) {
  * @param {Boolean} useLegacyKey - Flag indicating whether to use legacy key
  * @returns {Object} Student's results
  */
-function markStudentExam(studentId, firstName, lastName, versionId, answerString, markingKey, useLegacyKey) {
+function markStudentExam(studentId, firstName, lastName, versionId, answerString, markingKey, examData) {
+  const versionKey = markingKey[versionId];
+  if (!versionKey) {
+    throw new Error(`Marking key for version ${versionId} not found.`);
+  }
 
-  const versionNumber = parseInt(versionId, 10);
-  const result = {
+  const examBody = Array.isArray(examData?.examBody) ? examData.examBody : [];
+
+  const studentResult = {
     studentId,
     firstName,
     lastName,
-    versionNumber,
+    versionId,
     totalMarks: 0,
     maxMarks: 0,
     questions: []
   };
 
-  let versionKey;
-  let marks;
+  console.log('versionId:', versionId);
+  console.log('markingKey:', markingKey);
+  console.log('versionKey:', versionKey);
 
-  // Get the marker key for this version
-  if (useLegacyKey) {
-    // Parse legacy key
-    // Note need to add validation so teleform can't accept multiple answers otherwise '31' ticks all answers
-    // which would be a way to get always correct.
-    const legacyLines = markingKey.split('\n');
-    const versionLine = legacyLines.find(line => {
-      const firstField = line.split(",")[0];
-      return parseInt(firstField, 10) === parseInt(versionId, 10);
+  versionKey.questions.forEach((questionAnswerKey, index) => {
+    console.log('questionKey:', questionAnswerKey);
+    /*
+    const rawAnswer = answerString.substring(index * 2, index * 2 + 2);
+    const studentAnswer = parseInt(rawAnswer, 10);
+    const validAnswer = isNaN(studentAnswer) ? 0 : studentAnswer;
+
+    // Lookup actual question in examData to get marks
+    const examQuestion = examBody.find(
+      q => q?.type === 'question' && q?.questionNumber === questionKey.questionNumber
+    );
+
+    const maxMarks = examQuestion?.marks ?? 0;
+    const isCorrect = (questionKey.correctBitmask & validAnswer) !== 0;
+    const earnedMarks = isCorrect ? maxMarks : 0;
+
+    studentResult.totalMarks += earnedMarks;
+    studentResult.maxMarks += maxMarks;
+
+    studentResult.questions.push({
+      questionNumber: questionKey.questionNumber ?? index + 1,
+      studentAnswer: validAnswer,
+      studentAnswerLetter: bitmaskToLetter(validAnswer),
+      correctAnswer: questionKey.correctBitmask,
+      correctAnswerLetters: (questionKey.correctAnswers || []).map(a => a.letter),
+      isCorrect,
+      marks: earnedMarks,
+      maxMarks,
+      feedback: isCorrect
+        ? questionKey.feedback?.correct ?? "Correct"
+        : questionKey.feedback?.incorrect ?? "Incorrect"
     });
-    if (!versionLine) {
-      throw new Error(`Version ${versionNumber} not found in marking key`);
-    }
 
-    const parts = versionLine.split(',');
-    const answerKey = parts[1];
-    marks = parts[2];
+     */
+  });
 
-    // Process each question (2 digits per question in legacy format)
-    for (let q = 0; q < answerKey.length / 2; q++) {
-      const correctBitmask = parseInt(answerKey.substring(q * 2, q * 2 + 2), 10);
-      const questionMarks = parseInt(marks.substring(q * 2, q * 2 + 2), 10);
-      const studentAnswer = parseInt(answerString.substring(q * 2, q * 2 + 2), 10);
 
-      // Student gets the mark if any of their selected answers are correct
-      const isCorrect = (correctBitmask & studentAnswer) !== 0;
-      const feedbackText = isCorrect ? "Correct. Well Done!" : "Incorrect.";
-      const questionMark = isCorrect ? questionMarks : 0;
 
-      result.maxMarks += questionMarks;
-      result.totalMarks += questionMark;
-      const answerLetter = bitmaskToLetter(studentAnswer);
-
-      result.questions.push({
-        questionNumber: q + 1,
-        studentAnswer,
-        studentAnswerLetter: answerLetter,
-        correctAnswer: correctBitmask,
-        isCorrect,
-        marks: questionMark,
-        maxMarks: questionMarks,
-        feedback: feedbackText
-      });
-    }
-  } else {
-    // Use enhanced JSON key
-    versionKey = markingKey.versions.find(v => v.versionNumber === versionNumber);
-
-    if (!versionKey) {
-      throw new Error(`Version ${versionNumber} not found in marking key`);
-    }
-
-    // Process each question
-    for (let q = 0; q < versionKey.questions.length; q++) {
-      const questionKey = versionKey.questions[q];
-      const studentAnswer = parseInt(answerString.substring(q * 2, q * 2 + 2), 10);
-
-      const isCorrect = (questionKey.correctBitmask & studentAnswer) !== 0;
-      const feedbackText = isCorrect ? questionKey.feedback.correct : questionKey.feedback.incorrect;
-      const questionMark = isCorrect ? questionKey.marks : 0;
-
-      result.maxMarks += questionKey.marks;
-      result.totalMarks += questionMark;
-
-      // Convert student answer to letter
-      const answerLetter = bitmaskToLetter(studentAnswer);
-
-      result.questions.push({
-        questionNumber: questionKey.questionNumber,
-        studentAnswer,
-        studentAnswerLetter: answerLetter,
-        correctAnswer: questionKey.correctBitmask,
-        correctAnswerLetters: questionKey.correctAnswers.map(a => a.letter),
-        isCorrect,
-        marks: questionMark,
-        maxMarks: questionKey.marks,
-        feedback: feedbackText
-      });
-    }
-  }
-
-  return result;
+  return studentResult;
 }
 
 /**
