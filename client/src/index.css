@@ -200,3 +200,31 @@ button:focus-visible {
 .context-bar-wrapper:hover .ant-typography-edit {
   display: inline-block;
 }
+.context-bar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.metadata-preview {
+  padding: 8px 12px;
+  background-color: var(--content-bg);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  margin-top: 8px;
+}
+
+.context-bar-expanded .section-block {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  font-size: 14px;
+}
+
+.context-bar-wrapper .ant-btn,
+.context-bar-wrapper .ant-switch {
+  vertical-align: middle;
+}

@@ -1,16 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Dropdown, Button, Space, Typography, Tag, Tooltip, Alert, Divider } from 'antd';
+import { Menu, Dropdown, Button, Space, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, message as antdMessage } from 'antd';
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined } from '@ant-design/icons';
 import { updateExamField } from "../store/exam/examSlice";
 import { createNewExam } from "../store/exam/examSlice";
 import { setTeleformOptions } from "../store/exam/examSlice";
+import { setExamVersions } from "../store/exam/examSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { selectExamData } from '../store/exam/selectors.js';
 import CreateExamModal from './CreateExamModal';
 import EditExamModal from './EditExamModal';
 import { exportExamToPdf } from "../services/exportPdf";
+import { saveExamToFile } from "../services/fileSystemAccess";
+import { selectQuestionCount, selectTotalMarks } from '../store/exam/selectors';
 import '../index.css';
 
 const { Text } = Typography;
@@ -54,6 +57,12 @@ const StaticContextBar = ({
     semester: '',
     year: ''
   });
+  // Manual auto-save toggle
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+
+  // Exam progress
+  const questionCount = useSelector(selectQuestionCount);
+  const totalMarks = useSelector(selectTotalMarks);
 
   const { message } = AntApp.useApp();
 
@@ -172,7 +181,8 @@ const StaticContextBar = ({
       courseCode: exam.courseCode || '',
       courseName: exam.courseName || '',
       semester: exam.semester || '',
-      year: exam.year || ''
+      year: exam.year || '',
+      versions: exam.versions || []
     });
     setShowEditDetailsModal(true);
   };
@@ -183,6 +193,12 @@ const StaticContextBar = ({
     dispatch(updateExamField({ field: 'courseName', value: editDetailsData.courseName }));
     dispatch(updateExamField({ field: 'semester', value: editDetailsData.semester }));
     dispatch(updateExamField({ field: 'year', value: editDetailsData.year }));
+    // Set exam versions from editDetailsData.versions if available
+    const versionsArray = typeof editDetailsData.versions === 'string'
+      ? editDetailsData.versions.split(',').map(v => v.trim())
+      : editDetailsData.versions;
+    console.log("Setting versions to:", versionsArray);
+    dispatch(setExamVersions(versionsArray));
     setShowEditDetailsModal(false);
     setTimeout(() => message.success("Exam details updated."), 0);
   };
@@ -229,6 +245,7 @@ const StaticContextBar = ({
   }, [exam]);
   // Auto-save effect: save after 2 seconds of inactivity when exam changes.
   useEffect(() => {
+    if (!autoSaveEnabled) return;
     if (!exam) return;
     // Mark as unsaved when exam changes
     setSaveState('unsaved');
@@ -253,7 +270,7 @@ const StaticContextBar = ({
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exam]);
+  }, [exam, autoSaveEnabled]);
 
   return (
     <div className="floating-context-bar">
@@ -313,6 +330,9 @@ const StaticContextBar = ({
                             : 'Saved'
                         )
                       : (saveState === 'saving' ? 'Saving...' : 'Unsaved')}
+                    {saveState === 'saving' && (
+                      <Spin size="small" style={{ marginLeft: 6 }} />
+                    )}
                   </Tag>
                 </Tooltip>
                 {fileHandle && fileHandle.name && (
@@ -335,12 +355,12 @@ const StaticContextBar = ({
           </div>
           {/* Right side: Save and Export buttons */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div className="context-button">
+            <div className="context-button" style={{ display: "flex", alignItems: "center" }}>
               <Tooltip title="Save Exam">
                 <Button
+                  icon={<SaveOutlined />}
                   onClick={handleSaveExam}
                   disabled={!exam}
-                  icon={<SaveOutlined />}
                   type="text"
                 >
                   <span className="context-button-label">Save</span>
@@ -395,6 +415,18 @@ const StaticContextBar = ({
                 </div>
               </Dropdown>
             </div>
+            {/* Manual Auto-Save Toggle */}
+            <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: 8 }}>
+              <Tooltip title="Enable or disable auto-save">
+                <Switch
+                  checked={autoSaveEnabled}
+                  onChange={setAutoSaveEnabled}
+                  size="small"
+                  style={{ marginRight: 4 }}
+                />
+              </Tooltip>
+              <span style={{ fontSize: 12 }}>{autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}</span>
+            </div>
           </div>
         </div>
 
@@ -437,6 +469,29 @@ const StaticContextBar = ({
                       Edit Exam Details
                     </Button>
                   </div>
+                </div>
+                <Divider orientation="left" style={{ marginTop: 24, marginBottom: 16 }}>Exam Progress</Divider>
+                <div style={{ display: "flex", gap: "32px", marginBottom: 12 }}>
+                  <div>
+                    <strong>Total Questions:</strong> {typeof questionCount === "number" ? questionCount : "N/A"}
+                  </div>
+                  <div>
+                    <strong>Total Marks:</strong> {typeof totalMarks === "number" ? totalMarks : "N/A"}
+                  </div>
+                </div>
+                <Divider orientation="left" style={{ marginTop: 24, marginBottom: 16 }}>Metadata Quick View</Divider>
+                <div>
+                  {exam?.metadata && typeof exam.metadata === "object" && Object.keys(exam.metadata).length > 0 ? (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "32px" }}>
+                      {Object.entries(exam.metadata).map(([key, value]) => (
+                        <div key={key}>
+                          <strong>{key}:</strong> {typeof value === "object" ? JSON.stringify(value) : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span>No metadata available.</span>
+                  )}
                 </div>
               </>
             ) : (
