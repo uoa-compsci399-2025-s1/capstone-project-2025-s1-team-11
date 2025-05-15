@@ -8,22 +8,29 @@ import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js
 export const Results = ({setExportFormat, exportFormat, resultsData, handleExportResults, examData, teleformData, markingKey}) => {
   console.log("Results component received:", resultsData);
   
+  // Always define hooks at the top level, never conditionally
   const [activeTab, setActiveTab] = useState("summary");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [questionStats, setQuestionStats] = useState({});
+  const [hasValidData, setHasValidData] = useState(false);
 
   // When results data changes, calculate the statistics
   useEffect(() => {
     if (!resultsData || !Array.isArray(resultsData) || resultsData.length === 0) {
       console.log("No valid results data to process");
+      setHasValidData(false);
       return;
     }
 
+    setHasValidData(true);
+
     // Calculate question statistics from all students
     const stats = resultsData.reduce((stats, student) => {
-      if (!student.questions || !Array.isArray(student.questions)) return stats;
+      if (!student || !student.questions || !Array.isArray(student.questions)) return stats;
       
       student.questions.forEach(q => {
+        if (!q || !q.questionNumber) return;
+        
         const qNum = q.questionNumber;
         
         // Initialize question stats if not already done
@@ -52,8 +59,11 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
           stats[qNum].incorrectCount++;
         }
         
-        // Increment answer frequency
-        stats[qNum].answerFrequency[q.studentAnswer]++;
+        // Increment answer frequency if student answer is valid
+        if (q.studentAnswer) {
+          // Ensure the answer format is recognized
+          stats[qNum].answerFrequency[q.studentAnswer]++;
+        }
       });
       return stats;
     }, {});
@@ -61,16 +71,21 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
     // Calculate the percentage for each question
     Object.keys(stats).forEach(qNum => {
       const questionStat = stats[qNum];
-      questionStat.correctPercentage = ((questionStat.correctCount / questionStat.totalAnswers) * 100).toFixed(1);
-      
-      // Set difficulty level
-      const correctPercentage = parseFloat(questionStat.correctPercentage);
-      if (correctPercentage >= 80) {
-        questionStat.difficultyLevel = 'Easy';
-      } else if (correctPercentage >= 40) {
-        questionStat.difficultyLevel = 'Medium';
+      if (questionStat.totalAnswers > 0) {
+        questionStat.correctPercentage = ((questionStat.correctCount / questionStat.totalAnswers) * 100).toFixed(1);
+        
+        // Set difficulty level
+        const correctPercentage = parseFloat(questionStat.correctPercentage);
+        if (correctPercentage >= 80) {
+          questionStat.difficultyLevel = 'Easy';
+        } else if (correctPercentage >= 40) {
+          questionStat.difficultyLevel = 'Medium';
+        } else {
+          questionStat.difficultyLevel = 'Hard';
+        }
       } else {
-        questionStat.difficultyLevel = 'Hard';
+        questionStat.correctPercentage = "0.0";
+        questionStat.difficultyLevel = 'Unknown';
       }
     });
 
@@ -82,10 +97,10 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
     }
   }, [resultsData]);
 
-  // Get the selected student data
-  const selectedStudent = selectedStudentId 
+  // Get the selected student data - always define this, even if we don't use it
+  const selectedStudent = selectedStudentId && hasValidData
     ? resultsData.find(s => s.studentId === selectedStudentId)
-    : (resultsData.length > 0 ? resultsData[0] : null);
+    : (hasValidData && resultsData.length > 0 ? resultsData[0] : null);
 
   // Handler for updating correct answers
   const handleUpdateCorrectAnswer = (questionNumber, newCorrectAnswer) => {
@@ -100,7 +115,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
   };
   
   // Validate resultsData
-  if (!resultsData || !Array.isArray(resultsData) || resultsData.length === 0) {
+  if (!hasValidData) {
     return <Empty description="No results available. Mark exams to see results here."/>;
   }
   
@@ -243,6 +258,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
                         type="primary"
                         onClick={() => {
                           const printWindow = window.open('', '_blank');
+                          const reportElem = document.getElementById('student-report-container');
                           printWindow.document.write(`
                             <html>
                               <head>
@@ -256,7 +272,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
                                 </style>
                               </head>
                               <body>
-                                <div id="report-content">${document.getElementById('student-report-container')?.innerHTML || 'Report not available'}</div>
+                                <div id="report-content">${reportElem ? reportElem.innerHTML : 'Report not available'}</div>
                                 <button onclick="window.print()">Print Report</button>
                               </body>
                             </html>

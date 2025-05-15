@@ -16,7 +16,7 @@ const Marker = () => {
   const examAnswers = useSelector(selectCorrectAnswerIndices);
   const [teleformData, setTeleformData] = useState("");
   const [markingKey, setMarkingKey] = useState(null);
-  const [resultsData, setResultsData] = useState([]);
+  const [resultsData, setResultsData] = useState(null);
   const [exportFormat, setExportFormat] = useState("json");
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -46,11 +46,15 @@ const Marker = () => {
       const examResults = markExams(examData, teleformData, markingKey);
       console.log("Exam results:", examResults);
       
-      setResultsData(examResults);
-      message.success("Exams marked successfully.");
-      
-      // Automatically advance to the results step
-      setCurrentStep(2);
+      if (examResults && examResults.all && Array.isArray(examResults.all) && examResults.all.length > 0) {
+        setResultsData(examResults);
+        message.success(`Successfully marked ${examResults.all.length} exams.`);
+        
+        // Automatically advance to the results step
+        setCurrentStep(2);
+      } else {
+        message.error("Failed to mark exams: No valid student data found");
+      }
     } catch (error) {
       console.error("Error marking exams:", error);
       message.error("Failed to mark exams: " + error.message);
@@ -100,25 +104,29 @@ const Marker = () => {
     console.log("Current step:", currentStep);
     console.log("Results data:", resultsData);
     
-    // Prepare results data for the Results component if needed
-    const resultsToPass = resultsData.all || [];
-    
     switch (currentStep) {
       case 0:
-        return dataReview({ examData, markingKey} );
+        return dataReview({ examData, markingKey });
       case 1:
-        return teleformReader({teleformData,markingKey,handleTeleformDataChange,handleMarkExams});
+        return teleformReader({teleformData, markingKey, handleTeleformDataChange, handleMarkExams});
       case 2:
-        console.log("Passing to Results component:", resultsToPass);
-        return Results({
-          setExportFormat,
-          exportFormat,
-          resultsData: resultsToPass,
-          handleExportResults,
-          examData,
-          teleformData,
-          markingKey
-        });
+        // Make sure we're passing valid data to the Results component
+        if (!resultsData || !resultsData.all || !Array.isArray(resultsData.all)) {
+          return <Typography.Text>No valid results data available. Please mark exams first.</Typography.Text>;
+        }
+        
+        console.log("Passing to Results component:", resultsData.all);
+        return (
+          <Results
+            setExportFormat={setExportFormat}
+            exportFormat={exportFormat}
+            resultsData={resultsData.all}
+            handleExportResults={handleExportResults}
+            examData={examData}
+            teleformData={teleformData}
+            markingKey={markingKey}
+          />
+        );
       default:
         return null;
     }
@@ -134,7 +142,6 @@ const Marker = () => {
 
   return (
     <>
-
       <Typography.Title>MCQ Auto-Marker</Typography.Title>
       <Divider />
       

@@ -22,19 +22,34 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
   // Get teleform options
   const teleformOptions = examData?.teleformOptions || ['A', 'B', 'C', 'D', 'E'];
   
+  // Helper function to convert bitmask to options
+  const bitmaskToOptionLetters = (bitmask) => {
+    if (!bitmask || bitmask === 0) return 'None';
+    
+    const options = [];
+    if (bitmask & 1) options.push(teleformOptions[0]);
+    if (bitmask & 2) options.push(teleformOptions[1]);
+    if (bitmask & 4) options.push(teleformOptions[2]);
+    if (bitmask & 8) options.push(teleformOptions[3]);
+    if (bitmask & 16) options.push(teleformOptions[4]);
+    
+    return options.join(', ');
+  };
+  
   // Generate histogram data for the selected question
   const generateHistogramData = (questionNumber) => {
     if (!questionNumber || !questionStats[questionNumber]) return [];
     
     const stats = questionStats[questionNumber];
     const answerFreq = stats.answerFrequency || {};
+    const correctAnswerNum = parseInt(stats.correctAnswer || '0', 10);
     
     return [
-      { option: teleformOptions[0], value: answerFreq['01'] || 0, isCorrect: (stats.correctAnswer === '01') },
-      { option: teleformOptions[1], value: answerFreq['02'] || 0, isCorrect: (stats.correctAnswer === '02') },
-      { option: teleformOptions[2], value: answerFreq['04'] || 0, isCorrect: (stats.correctAnswer === '04') },
-      { option: teleformOptions[3], value: answerFreq['08'] || 0, isCorrect: (stats.correctAnswer === '08') },
-      { option: teleformOptions[4], value: answerFreq['16'] || 0, isCorrect: (stats.correctAnswer === '16') },
+      { option: teleformOptions[0], value: answerFreq['01'] || 0, isCorrect: Boolean(correctAnswerNum & 1) },
+      { option: teleformOptions[1], value: answerFreq['02'] || 0, isCorrect: Boolean(correctAnswerNum & 2) },
+      { option: teleformOptions[2], value: answerFreq['04'] || 0, isCorrect: Boolean(correctAnswerNum & 4) },
+      { option: teleformOptions[3], value: answerFreq['08'] || 0, isCorrect: Boolean(correctAnswerNum & 8) },
+      { option: teleformOptions[4], value: answerFreq['16'] || 0, isCorrect: Boolean(correctAnswerNum & 16) },
     ];
   };
   
@@ -158,16 +173,9 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
   // Convert question stats to data for the table
   const tableData = questionNumbers.map(qNum => {
     const stats = questionStats[qNum] || {};
-    let correctAnswerLetter = 'None';
     
-    if (stats.correctAnswer) {
-      try {
-        const correctAnswerNum = parseInt(stats.correctAnswer, 10);
-        correctAnswerLetter = correctAnswerNum > 0 ? teleformOptions[Math.log2(correctAnswerNum)] : 'None';
-      } catch (e) {
-        console.error("Error parsing correct answer:", e);
-      }
-    }
+    // Use our helper function to convert bitmask to options
+    const correctAnswerLetter = bitmaskToOptionLetters(parseInt(stats.correctAnswer || '0', 10));
     
     return {
       key: qNum,
@@ -251,9 +259,8 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
                   ))}
                 </Radio.Group>
               ) : (
-                stats.correctAnswer ? 
-                  teleformOptions[Math.log2(parseInt(stats.correctAnswer, 10))] || 'None' : 
-                  'None'
+                // Use our helper function to convert bitmask to options
+                bitmaskToOptionLetters(parseInt(stats.correctAnswer || '0', 10))
               )
             }
           </Typography.Text>
