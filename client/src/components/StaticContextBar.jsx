@@ -168,8 +168,20 @@ const StaticContextBar = ({
     if (["demo", "exemplar"].includes(type)) {
       if (!window.confirm("Are you sure you want to export this? It may be incomplete.")) return;
     }
+<<<<<<< Updated upstream
 
     exportExamToPdf(exam);
+=======
+    // For now, call exportExamToPdf. In future, branch by type.
+    if (exam) {
+      // Stub branching for future formats
+      if (type === 'demo' || type === 'randomised' || type === 'exemplar' || type === 'marking') {
+        exportExamToPdf(exam, type);
+      } else {
+        console.log('Unknown export type:', type);
+      }
+    }
+>>>>>>> Stashed changes
   };
 
   // Hover intent delay for bar expansion
@@ -185,6 +197,9 @@ const StaticContextBar = ({
       }
     }, 150);
   };
+
+  // Expanded context bar should show if hovered or dropdowns are open
+  const shouldShowContextBar = isHovered || fileDropdownOpen || exportDropdownOpen;
 
   const openEditDetailsModal = () => {
     if (!exam) return;
@@ -467,8 +482,8 @@ const StaticContextBar = ({
           </div>
         </div>
 
-        {/* Context Bar Expanded (shown on hover) */}
-        <div className={`context-bar-expanded ${isHovered ? 'show' : ''}`}>
+        {/* Context Bar Expanded (shown on hover or dropdown open) */}
+        <div className={`context-bar-expanded ${shouldShowContextBar ? 'show' : ''}`}>
           <div style={{ padding: '24px 0px' }}>
             {exam ? (
               <>
