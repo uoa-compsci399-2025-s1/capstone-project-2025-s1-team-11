@@ -18,9 +18,8 @@ We've implemented LaTeX file support by creating a new DTO module that handles i
    - `transformLatexToDto.js` - Converts the parsed structure to the application's DTO format
 
 4. **Testing & Examples**
-   - `testParser.js` - Node.js script for testing the parser
-   - `browserTest.js` - Browser-compatible testing functions
-   - Example LaTeX file and expected output JSON
+   - Example LaTeX files in the `examples` directory
+   - Direct integration within the main application
 
 5. **Documentation**
    - README.md with usage instructions and limitations
@@ -62,10 +61,9 @@ We've implemented LaTeX file support by creating a new DTO module that handles i
    - Created `examples/exam_2025SS.tex` as reference input
    - Created `examples/output.json` as expected output
 
-2. **Testing Tools**
-   - `testParser.js` - Server-side testing
-   - `browserTest.js` - Client-side testing
-   - Manual import through the UI for integration testing
+2. **Testing Methodology**
+   - Direct import through the UI for integration testing
+   - Manual verification with sample LaTeX files
 
 ## Limitations and Future Improvements
 

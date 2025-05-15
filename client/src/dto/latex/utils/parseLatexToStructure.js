@@ -8,7 +8,7 @@ export function parseLatexToStructure(content) {
   const { documentClass, preamble, body } = extractDocumentStructure(content);
   
   // Parse the document body
-  const parsedBody = parseBody(body);
+  const parsedBody = parseBody(body, content);
   
   // Return structured data
   return {
@@ -51,11 +51,12 @@ function extractDocumentStructure(content) {
 /**
  * Parse the document body to extract exam components
  * @param {string} body - The LaTeX document body
+ * @param {string} content - The raw LaTeX file content
  * @returns {Object} - The parsed body content including metadata, questions, and sections
  */
-function parseBody(body) {
+function parseBody(body, content) {
   // Extract document metadata
-  const metadata = extractMetadata(body);
+  const metadata = extractMetadata(body, content);
   
   // Parse questions
   const questions = parseQuestions(body);
@@ -69,9 +70,10 @@ function parseBody(body) {
 /**
  * Extract document metadata such as title, course code, etc.
  * @param {string} body - The LaTeX document body
+ * @param {string} content - The raw LaTeX file content
  * @returns {Object} - Extracted metadata
  */
-function extractMetadata(body) {
+function extractMetadata(body, content) {
   // Find the content before the questions start
   const questionsStartIndex = body.indexOf('\\begin{questions}');
   const headerContent = questionsStartIndex !== -1 ? 
@@ -159,9 +161,32 @@ function extractMetadata(body) {
     examTitle = 'Exam';
   }
   
-  // Extract course code - look for any course code pattern, not just COMPSCI
-  const courseCodeMatch = headerContent.match(/([A-Z]+)\s+(\d+)/);
-  const courseCode = courseCodeMatch ? courseCodeMatch[0].trim() : '';
+  // Extract course code - first check the header which is more reliable
+  let courseCode = '';
+  
+  // First check for header definitions like \firstpageheader{}{}{COMPSCI 120}
+  // We need to look in the whole document content, not just the body
+  const preambleMatch = content.match(/\\(?:firstpage|running)header\s*\{\s*\}\s*\{\s*\}\s*\{\s*([^}]+)\s*\}/);
+  if (preambleMatch && preambleMatch[1] && preambleMatch[1].match(/([A-Z]+)\s+(\d+)/)) {
+    courseCode = preambleMatch[1].trim();
+    console.log("Found course code in document header:", courseCode);
+  } else {
+    // Fall back to looking in the document body
+    const courseCodeMatches = headerContent.match(/([A-Z]+)\s+(\d+)/g);
+    if (courseCodeMatches) {
+      // Filter out semester matches (which could be confused with course codes)
+      const filteredMatches = courseCodeMatches.filter(match => 
+        !match.includes('SEMESTER') && 
+        !match.includes('SUMMER') && 
+        !match.includes('SPRING') && 
+        !match.includes('AUTUMN') && 
+        !match.includes('WINTER') && 
+        !match.includes('FALL')
+      );
+      courseCode = filteredMatches.length > 0 ? filteredMatches[0].trim() : '';
+      console.log("Found course code in document body:", courseCode);
+    }
+  }
   
   // Extract semester and year
   const semesterPattern = /(SUMMER|SPRING|AUTUMN|WINTER|FALL|SEMESTER)\s+(SEMESTER)?\s*(\d{4})/i;
