@@ -1,3 +1,21 @@
+/* Reset styles for editor content */
+.compact-editor-content {
+  /* Reset all inherited styles */
+  all: revert;
+  
+  /* Base styles */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+/* Prevent Ant Design from overriding editor styles */
+.compact-editor-content.ant-typography,
+.compact-editor-content .ant-typography {
+  all: revert;
+}
+
 .compact-editor-container {
   border: 1px solid #d9d9d9;
   border-radius: 6px;
@@ -36,11 +54,51 @@
   overflow-y: auto;
 }
 
+/* Editor content specific styles */
 .compact-editor-content {
   min-height: 60px;
   outline: none;
 }
 
+/* Ensure strong tags render as bold */
+.compact-editor-content strong,
+.compact-editor-content .debug-bold {
+  font-weight: 700 !important;
+}
+
+/* Ensure em tags render as italic */
+.compact-editor-content em {
+  font-style: italic !important;
+}
+
+/* Ensure underline renders properly */
+.compact-editor-content u {
+  text-decoration: underline !important;
+}
+
+/* Font family styles */
+/*
+.compact-editor-content [style*="font-family"] {
+  font-family: inherit !important;
+}
+*/
+
+.compact-editor-content [style*="font-family: 'Times New Roman'"],
+.compact-editor-content [style*='font-family: Times New Roman'] {
+  font-family: 'Times New Roman', Times, serif !important;
+}
+
+.compact-editor-content [style*="font-family: 'Arial'"],
+.compact-editor-content [style*='font-family: Arial'] {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+.compact-editor-content [style*="font-family: 'Courier New'"],
+.compact-editor-content [style*='font-family: Courier New'] {
+  font-family: 'Courier New', Courier, monospace !important;
+}
+
+/* Basic text formatting */
 .compact-editor-content p {
   margin: 0;
   margin-bottom: 0.5em;
@@ -50,16 +108,20 @@
   margin-bottom: 0;
 }
 
-/* Basic text formatting - let Tiptap handle the details */
-.compact-editor-content {
-  font-size: 16px;
-  line-height: 1.5;
+/* Text alignment styles */
+.compact-editor-content [style*="text-align:center"],
+.compact-editor-content [style*="text-align: center"] {
+  text-align: center !important;
 }
 
-/* Indentation for all text */
-.compact-editor-content [style*="padding-left"],
-.compact-editor-content [style*="margin-left"] {
-  display: block;
+.compact-editor-content [style*="text-align:right"],
+.compact-editor-content [style*="text-align: right"] {
+  text-align: right !important;
+}
+
+.compact-editor-content [style*="text-align:left"],
+.compact-editor-content [style*="text-align: left"] {
+  text-align: left !important;
 }
 
 /* Image styles */
@@ -71,27 +133,15 @@
   position: relative;
 }
 
-/* Upload button styling */
-.image-upload-button .ant-upload {
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
+/* List styles */
+.compact-editor-content ul,
+.compact-editor-content ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
 }
 
-/* Text alignment styles */
-.compact-editor-content [style*="text-align:center"],
-.compact-editor-content [style*="text-align: center"] {
-  text-align: center;
-}
-
-.compact-editor-content [style*="text-align:right"],
-.compact-editor-content [style*="text-align: right"] {
-  text-align: right;
-}
-
-.compact-editor-content [style*="text-align:left"],
-.compact-editor-content [style*="text-align: left"] {
-  text-align: left;
+.compact-editor-content li {
+  margin: 0.2em 0;
 }
 
 /* Placeholder styling */
@@ -101,4 +151,11 @@
   color: #aaa;
   pointer-events: none;
   height: 0;
+}
+
+/* Upload button styling */
+.image-upload-button .ant-upload {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
 } 

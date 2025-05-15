@@ -97,28 +97,36 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        paragraph: true,
-        bold: true,
-        italic: true,
-      }),
-      Image.configure({
-        inline: true,
-        allowBase64: true,
-        HTMLAttributes: {
-          class: 'editable-image',
+        bold: {
+          HTMLAttributes: {
+            class: 'debug-bold',
+            style: 'font-weight: 700'
+          },
         },
+        italic: {
+          HTMLAttributes: {
+            style: 'font-style: italic'
+          },
+        },
+        paragraph: true,
+      }),
+      Underline.configure({
+        HTMLAttributes: {
+          style: 'text-decoration: underline'
+        },
+      }),
+      TextStyle.configure({
+        types: ['textStyle'],
+      }),
+      FontFamily.configure({
+        types: ['textStyle'],
       }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
         alignments: ['left', 'center', 'right'],
         defaultAlignment: 'left',
       }),
-      Underline,
       Typography,
-      FontFamily.configure({
-        types: ['textStyle'],
-      }),
-      TextStyle,
       CustomIndentExtension,
     ],
     content,
@@ -128,7 +136,7 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
     editorProps: {
       attributes: {
         class: 'compact-editor-content',
-        placeholder,
+        spellcheck: 'false',
       },
     },
   });
