@@ -49,6 +49,9 @@ const StaticContextBar = ({
   const saveTimeoutRef = useRef(null);
   const [versionCount, setVersionCount] = useState(4);
   const [isHovered, setIsHovered] = useState(false);
+  const [fileDropdownOpen, setFileDropdownOpen] = useState(false);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const contextBarRef = useRef(null);
   const [showEditDetailsModal, setShowEditDetailsModal] = useState(false);
   const [editDetailsData, setEditDetailsData] = useState({
     examTitle: '',
@@ -171,8 +174,15 @@ const StaticContextBar = ({
     }
   };
 
+  // Keep context bar open if hovering over dropdowns
   const handleMouseEnter = () => setIsHovered(true);
-  const handleMouseLeave = () => setIsHovered(false);
+  const handleMouseLeave = () => {
+    setTimeout(() => {
+      if (!fileDropdownOpen && !exportDropdownOpen) {
+        setIsHovered(false);
+      }
+    }, 150);
+  };
 
   const openEditDetailsModal = () => {
     if (!exam) return;
@@ -203,33 +213,7 @@ const StaticContextBar = ({
     setTimeout(() => message.success("Exam details updated."), 0);
   };
 
-  useEffect(() => {
-    const enter = () => setIsHovered(true);
-    const leave = () => setIsHovered(false);
-
-    const file = fileDropdownRef.current;
-    const exp = exportDropdownRef.current;
-
-    if (file) {
-      file.addEventListener("mouseenter", enter);
-      file.addEventListener("mouseleave", leave);
-    }
-    if (exp) {
-      exp.addEventListener("mouseenter", enter);
-      exp.addEventListener("mouseleave", leave);
-    }
-
-    return () => {
-      if (file) {
-        file.removeEventListener("mouseenter", enter);
-        file.removeEventListener("mouseleave", leave);
-      }
-      if (exp) {
-        exp.removeEventListener("mouseenter", enter);
-        exp.removeEventListener("mouseleave", leave);
-      }
-    };
-  }, []);
+  // Removed DOM event listeners for mouseenter/mouseleave on dropdown refs.
 
   // Effect to prepopulate editDetailsData when exam changes
   useEffect(() => {
@@ -276,40 +260,52 @@ const StaticContextBar = ({
     <div className="floating-context-bar">
       <div
         className="context-bar-wrapper"
-        onMouseOver={handleMouseEnter}
-        onMouseOut={handleMouseLeave}
+        ref={contextBarRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         {/* Context Bar Main */}
         <div className="context-bar-main">
           {/* Left side: File menu and status */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div className="context-button">
-              <Dropdown menu={{ items: [
-                {
-                  key: 'new',
-                  label: 'New Exam',
-                  onClick: () => {
-                    setTimeout(() => message.info("Creating new exam..."), 0);
-                    handleCreateNewExam();
-                  }
-                },
-                {
-                  key: 'open',
-                  label: 'Open Exam',
-                  onClick: () => {
-                    setTimeout(() => message.info("Opening exam..."), 0);
-                    handleOpenExam();
-                  }
-                },
-                {
-                  key: 'close',
-                  label: 'Close Exam',
-                  onClick: () => {
-                    setTimeout(() => message.info("Closing exam..."), 0);
-                    handleCloseExam();
-                  }
-                }
-              ]}} trigger={['click']}>
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: 'new',
+                      label: 'New Exam',
+                      onClick: () => {
+                        setTimeout(() => message.info("Creating new exam..."), 0);
+                        handleCreateNewExam();
+                      }
+                    },
+                    {
+                      key: 'open',
+                      label: 'Open Exam',
+                      onClick: () => {
+                        setTimeout(() => message.info("Opening exam..."), 0);
+                        handleOpenExam();
+                      }
+                    },
+                    {
+                      key: 'close',
+                      label: 'Close Exam',
+                      onClick: () => {
+                        setTimeout(() => message.info("Closing exam..."), 0);
+                        handleCloseExam();
+                      }
+                    }
+                  ]
+                }}
+                trigger={['click']}
+                onVisibleChange={(visible) => {
+                  setFileDropdownOpen(visible);
+                  setIsHovered(visible);
+                }}
+                open={fileDropdownOpen}
+                getPopupContainer={() => contextBarRef.current}
+              >
                 <div ref={fileDropdownRef}>
                   <Tooltip title="File Menu">
                     <Button icon={<FileOutlined />} type="text">
@@ -368,44 +364,55 @@ const StaticContextBar = ({
               </Tooltip>
             </div>
             <div className="context-button">
-              <Dropdown menu={{ items: [
-                {
-                  key: 'demo',
-                  label: 'Demo Answer Scripts',
-                  disabled: !canExportDemo,
-                  onClick: () => {
-                    setTimeout(() => message.info("Exporting demo scripts..."), 0);
-                    confirmExport("demo");
-                  }
-                },
-                {
-                  key: 'randomised',
-                  label: 'Randomised Answer Scripts',
-                  disabled: !canExportRandomised,
-                  onClick: () => {
-                    setTimeout(() => message.info("Exporting randomised scripts..."), 0);
-                    confirmExport("randomised");
-                  }
-                },
-                {
-                  key: 'exemplar',
-                  label: 'Exemplar Answer Scripts',
-                  disabled: !canExportExemplar,
-                  onClick: () => {
-                    setTimeout(() => message.info("Exporting exemplar scripts..."), 0);
-                    confirmExport("exemplar");
-                  }
-                },
-                {
-                  key: 'marking',
-                  label: 'Marking Scheme',
-                  disabled: !canExportMarking,
-                  onClick: () => {
-                    setTimeout(() => message.info("Exporting marking scheme..."), 0);
-                    confirmExport("marking");
-                  }
-                }
-              ]}} trigger={['click']}>
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: 'demo',
+                      label: 'Demo Answer Scripts',
+                      disabled: !canExportDemo,
+                      onClick: () => {
+                        setTimeout(() => message.info("Exporting demo scripts..."), 0);
+                        confirmExport("demo");
+                      }
+                    },
+                    {
+                      key: 'randomised',
+                      label: 'Randomised Answer Scripts',
+                      disabled: !canExportRandomised,
+                      onClick: () => {
+                        setTimeout(() => message.info("Exporting randomised scripts..."), 0);
+                        confirmExport("randomised");
+                      }
+                    },
+                    {
+                      key: 'exemplar',
+                      label: 'Exemplar Answer Scripts',
+                      disabled: !canExportExemplar,
+                      onClick: () => {
+                        setTimeout(() => message.info("Exporting exemplar scripts..."), 0);
+                        confirmExport("exemplar");
+                      }
+                    },
+                    {
+                      key: 'marking',
+                      label: 'Marking Scheme',
+                      disabled: !canExportMarking,
+                      onClick: () => {
+                        setTimeout(() => message.info("Exporting marking scheme..."), 0);
+                        confirmExport("marking");
+                      }
+                    }
+                  ]
+                }}
+                trigger={['click']}
+                onVisibleChange={(visible) => {
+                  setExportDropdownOpen(visible);
+                  setIsHovered(visible);
+                }}
+                open={exportDropdownOpen}
+                getPopupContainer={() => contextBarRef.current}
+              >
                 <div ref={exportDropdownRef}>
                   <Tooltip title="Export Options">
                     <Button icon={<ExportOutlined />} type="text">
