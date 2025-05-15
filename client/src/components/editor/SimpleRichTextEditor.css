@@ -1,0 +1,47 @@
+.simple-editor {
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.simple-editor-toolbar {
+  padding: 8px;
+  border-bottom: 1px solid #d9d9d9;
+  background: #fafafa;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.simple-editor .ProseMirror {
+  padding: 16px;
+  min-height: 100px;
+  outline: none;
+}
+
+/* Core text formatting */
+.simple-editor .ProseMirror strong {
+  font-weight: 700 !important;
+}
+
+.simple-editor .ProseMirror [style*="font-weight"] {
+  font-weight: 700 !important;
+}
+
+.simple-editor .ProseMirror em {
+  font-style: italic;
+}
+
+.simple-editor .ProseMirror u {
+  text-decoration: underline;
+}
+
+/* Paragraph spacing */
+.simple-editor .ProseMirror p {
+  margin: 0;
+  margin-bottom: 0.5em;
+}
+
+.simple-editor .ProseMirror p:last-child {
+  margin-bottom: 0;
+} 

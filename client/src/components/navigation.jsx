@@ -69,6 +69,11 @@ export function Navigation({isDarkMode, setIsDarkMode}) {
               <Button type={isActive ? "primary" : "text"} style={isActive ? primaryButtonStyles : textButtonStyles}>Dev Console</Button>
             )}
           </NavLink>
+          <NavLink to="/editor-demo" end>
+            {({ isActive }) => (
+              <Button type={isActive ? "primary" : "text"} style={isActive ? primaryButtonStyles : textButtonStyles}>Editor Demo</Button>
+            )}
+          </NavLink>
         </Space>
         <Space style={{ margin: 0 }}>
           <NavLink to="/about" end>

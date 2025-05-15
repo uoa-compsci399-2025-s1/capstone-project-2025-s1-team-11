@@ -8,6 +8,9 @@ import Randomiser from "./pages/randomiser.jsx";
 import About from "./pages/about.jsx";
 import Documentation from "./pages/documentation.jsx";
 import ExamConsolePage from './pages/examConsole';
+//import EditorDemo from './components/editor/EditorDemo';
+import SimpleRichTextEditor from './components/editor/SimpleRichTextEditor';
+//import CompactRichTextEditor from './components/editor/CompactRichTextEditor';
 
 export default function AppRoutes({ isDarkMode, toggleTheme }) {
     return (
@@ -20,6 +23,7 @@ export default function AppRoutes({ isDarkMode, toggleTheme }) {
                 <Route path="/about" element={<About />} />
                 <Route path="/documentation" element={<Documentation />} />
                 <Route path="/console" element={<ExamConsolePage />} />
+                <Route path="/editor-demo" element={<SimpleRichTextEditor />} />
             </Route>
         </Routes>
     );
