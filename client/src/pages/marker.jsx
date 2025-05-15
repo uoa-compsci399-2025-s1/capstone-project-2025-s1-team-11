@@ -58,7 +58,7 @@ const Marker = () => {
   };
 
   const handleExportResults = () => {
-    if (!resultsData || resultsData.length === 0) {
+    if (!resultsData || !resultsData.all || resultsData.all.length === 0) {
       message.error("No results available to export.");
       return;
     }
@@ -66,12 +66,12 @@ const Marker = () => {
     let content, filename, type;
     
     if (exportFormat === "json") {
-      content = JSON.stringify(resultsData, null, 2);
+      content = JSON.stringify(resultsData.all, null, 2);
       filename = `${examData.courseCode || 'exam'}_results.json`;
       type = "application/json";
     } else {
       // Text format (similar to legacy output)
-      content = resultsData.map(res => generateResultOutput(res, examData)).join('\n\n');
+      content = resultsData.all.map(res => generateResultOutput(res, examData)).join('\n\n');
       filename = `${examData.courseCode || 'exam'}_results.txt`;
       type = "text/plain";
     }
@@ -97,16 +97,23 @@ const Marker = () => {
 
   // Render content based on the current step
   const renderContent = () => {
+    console.log("Current step:", currentStep);
+    console.log("Results data:", resultsData);
+    
+    // Prepare results data for the Results component if needed
+    const resultsToPass = resultsData.all || [];
+    
     switch (currentStep) {
       case 0:
         return dataReview({ examData, markingKey} );
       case 1:
         return teleformReader({teleformData,markingKey,handleTeleformDataChange,handleMarkExams});
       case 2:
+        console.log("Passing to Results component:", resultsToPass);
         return Results({
           setExportFormat,
           exportFormat,
-          resultsData: resultsData.all || [],
+          resultsData: resultsToPass,
           handleExportResults,
           examData,
           teleformData,

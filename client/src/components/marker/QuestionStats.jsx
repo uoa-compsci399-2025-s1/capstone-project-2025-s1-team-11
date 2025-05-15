@@ -12,8 +12,8 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
   const [newCorrectAnswer, setNewCorrectAnswer] = useState({});
 
   // If no results or no question stats, show nothing
-  if (!results || !results.questionStats) {
-    return null;
+  if (!results || !results.questionStats || Object.keys(results.questionStats).length === 0) {
+    return <Typography.Text>No question statistics available.</Typography.Text>;
   }
 
   const questionStats = results.questionStats;
@@ -27,7 +27,7 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
     if (!questionNumber || !questionStats[questionNumber]) return [];
     
     const stats = questionStats[questionNumber];
-    const answerFreq = stats.answerFrequency;
+    const answerFreq = stats.answerFrequency || {};
     
     return [
       { option: teleformOptions[0], value: answerFreq['01'] || 0, isCorrect: (stats.correctAnswer === '01') },
@@ -112,13 +112,18 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
       dataIndex: 'correctPercentage',
       key: 'correctPercentage',
       width: 120,
-      render: (text) => <Progress percent={parseFloat(text)} size="small" />,
+      render: (text) => <Progress percent={parseFloat(text || 0)} size="small" />,
     },
     {
       title: 'Answer Distribution',
       key: 'distribution',
       render: (_, record) => {
         const histData = generateHistogramData(record.questionNumber);
+        
+        if (histData.length === 0 || histData.every(item => item.value === 0)) {
+          return <Typography.Text type="secondary">No data</Typography.Text>;
+        }
+        
         const max = Math.max(...histData.map(d => d.value));
         
         return (
@@ -128,7 +133,7 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
                 <div 
                   style={{ 
                     height: '100%', 
-                    width: `${(item.value / max) * 100}%`, 
+                    width: `${max > 0 ? (item.value / max) * 100 : 0}%`, 
                     backgroundColor: item.isCorrect ? '#52c41a' : '#f5f5f5',
                     marginRight: 2,
                     color: item.isCorrect ? 'white' : 'black',
@@ -152,20 +157,29 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
   
   // Convert question stats to data for the table
   const tableData = questionNumbers.map(qNum => {
-    const stats = questionStats[qNum];
+    const stats = questionStats[qNum] || {};
+    let correctAnswerLetter = 'None';
+    
+    if (stats.correctAnswer) {
+      try {
+        const correctAnswerNum = parseInt(stats.correctAnswer, 10);
+        correctAnswerLetter = correctAnswerNum > 0 ? teleformOptions[Math.log2(correctAnswerNum)] : 'None';
+      } catch (e) {
+        console.error("Error parsing correct answer:", e);
+      }
+    }
+    
     return {
       key: qNum,
       questionNumber: qNum,
-      correctAnswer: stats.correctAnswer,
-      correctAnswerLetter: stats.correctAnswer ? 
-        teleformOptions[Math.log2(parseInt(stats.correctAnswer))] : 
-        'None',
-      difficultyLevel: stats.difficultyLevel,
-      correctPercentage: stats.correctPercentage,
-      totalAnswers: stats.totalAnswers,
-      correctCount: stats.correctCount,
-      incorrectCount: stats.incorrectCount,
-      answerFrequency: stats.answerFrequency,
+      correctAnswer: stats.correctAnswer || '00',
+      correctAnswerLetter,
+      difficultyLevel: stats.difficultyLevel || 'Unknown',
+      correctPercentage: stats.correctPercentage || '0',
+      totalAnswers: stats.totalAnswers || 0,
+      correctCount: stats.correctCount || 0,
+      incorrectCount: stats.incorrectCount || 0,
+      answerFrequency: stats.answerFrequency || {},
     };
   });
   
@@ -187,7 +201,7 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
               onClick={() => {
                 setEditMode(true);
                 // Initialize with current correct answer
-                const currentBitmask = parseInt(stats.correctAnswer, 10);
+                const currentBitmask = parseInt(stats.correctAnswer || '0', 10);
                 setNewCorrectAnswer({
                   ...newCorrectAnswer,
                   [selectedQuestion]: currentBitmask
@@ -209,7 +223,7 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
       }>
         <div style={{ marginBottom: 20 }}>
           <Typography.Title level={5}>
-            Difficulty: {getDifficultyTag(stats.difficultyLevel)}
+            Difficulty: {getDifficultyTag(stats.difficultyLevel || 'Unknown')}
           </Typography.Title>
           <Typography.Text>
             Correct Answer: {
@@ -237,14 +251,16 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
                   ))}
                 </Radio.Group>
               ) : (
-                stats.correctAnswer ? teleformOptions[Math.log2(parseInt(stats.correctAnswer))] : 'None'
+                stats.correctAnswer ? 
+                  teleformOptions[Math.log2(parseInt(stats.correctAnswer, 10))] || 'None' : 
+                  'None'
               )
             }
           </Typography.Text>
           <Typography.Text style={{ display: 'block', marginTop: 10 }}>
-            Correct: {stats.correctCount} ({stats.correctPercentage}%) 
+            Correct: {stats.correctCount || 0} ({stats.correctPercentage || '0.0'}%) 
             &nbsp;|&nbsp; 
-            Incorrect: {stats.incorrectCount} ({(100 - parseFloat(stats.correctPercentage)).toFixed(1)}%)
+            Incorrect: {stats.incorrectCount || 0} ({(100 - parseFloat(stats.correctPercentage || '0')).toFixed(1)}%)
           </Typography.Text>
         </div>
         
@@ -257,8 +273,8 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
                   <Typography.Text strong>{item.option}</Typography.Text>
                 </div>
                 <Progress 
-                  percent={(item.value / stats.totalAnswers) * 100} 
-                  format={() => `${item.value} (${((item.value / stats.totalAnswers) * 100).toFixed(1)}%)`}
+                  percent={(item.value / (stats.totalAnswers || 1)) * 100} 
+                  format={() => `${item.value} (${((item.value / (stats.totalAnswers || 1)) * 100).toFixed(1)}%)`}
                   strokeColor={item.isCorrect ? '#52c41a' : undefined}
                 />
               </div>

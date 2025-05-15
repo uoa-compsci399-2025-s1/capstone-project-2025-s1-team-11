@@ -8,8 +8,8 @@ const { Title, Text } = Typography;
  * Component to display a student's exam report with class statistics comparison
  */
 const StudentReport = ({ student, questionStats, examData }) => {
-  if (!student || !questionStats) {
-    return <Text>No data available</Text>;
+  if (!student || !student.questions) {
+    return <Text>No data available for this student.</Text>;
   }
 
   const totalCorrect = student.questions.filter(q => q.isCorrect).length;
@@ -24,11 +24,12 @@ const StudentReport = ({ student, questionStats, examData }) => {
   
   // Prepare question data for comparison chart
   const questionComparisonData = student.questions.map(q => {
-    const qStats = questionStats[q.questionNumber];
+    const qNum = q.questionNumber;
+    const qStats = questionStats && questionStats[qNum] ? questionStats[qNum] : null;
     return {
-      question: `Q${q.questionNumber}`,
+      question: `Q${qNum}`,
       student: q.isCorrect ? 100 : 0,
-      class: parseFloat(qStats?.correctPercentage || '0'),
+      class: qStats ? parseFloat(qStats.correctPercentage || '0') : 0,
       studentColor: q.isCorrect ? '#52c41a' : '#f5222d',
     };
   });
@@ -64,34 +65,35 @@ const StudentReport = ({ student, questionStats, examData }) => {
       title: 'Class Correct %',
       dataIndex: 'classPercentage',
       key: 'classPercentage',
-      render: (text) => <Progress percent={parseFloat(text)} size="small" />,
+      render: (text) => <Progress percent={parseFloat(text || '0')} size="small" />,
     },
   ];
   
   // Prepare data for the questions table
   const tableData = student.questions.map(q => {
-    const qStats = questionStats[q.questionNumber];
+    const qNum = q.questionNumber;
+    const qStats = questionStats && questionStats[qNum] ? questionStats[qNum] : null;
     return {
-      key: q.questionNumber,
-      number: q.questionNumber,
-      studentAnswer: q.studentAnswerLetter,
-      correctAnswer: q.correctAnswerLetter,
-      isCorrect: q.isCorrect,
-      classPercentage: qStats?.correctPercentage || '0',
+      key: qNum,
+      number: qNum,
+      studentAnswer: q.studentAnswerLetter || 'None',
+      correctAnswer: q.correctAnswerLetter || 'None',
+      isCorrect: q.isCorrect || false,
+      classPercentage: qStats ? qStats.correctPercentage || '0' : '0',
     };
   });
   
   return (
-    <Card title={`Exam Results for ${student.firstName} ${student.lastName}`} style={{ marginBottom: 20 }}>
+    <Card title={`Exam Results for ${student.firstName || ''} ${student.lastName || ''}`} style={{ marginBottom: 20 }}>
       <div style={{ textAlign: 'center', marginBottom: 20 }}>
-        <Title level={4}>{examData.title || 'Untitled Exam'}</Title>
-        <Text strong>{examData.courseCode || ''}</Text>
+        <Title level={4}>{examData?.title || 'Untitled Exam'}</Title>
+        <Text strong>{examData?.courseCode || ''}</Text>
       </div>
       
       <Card type="inner" title="Score Summary">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <Title level={4}>{student.totalMarks} / {student.maxMarks} ({studentScore.toFixed(1)}%)</Title>
+            <Title level={4}>{student.totalMarks || 0} / {student.maxMarks || 0} ({studentScore.toFixed(1)}%)</Title>
             <Text>Correct Answers: {totalCorrect} / {totalQuestions}</Text>
           </div>
           
