@@ -19,7 +19,7 @@
 .compact-editor-container {
   border: 1px solid #d9d9d9;
   border-radius: 6px;
-  overflow: hidden;
+  overflow: visible;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   margin-bottom: 12px;
 }
@@ -127,10 +127,10 @@
 /* Image styles */
 .compact-editor-content img {
   max-width: 100%;
+  width: var(--image-scale-percent, 100%);
   height: auto;
+  display: block;
   margin: 4px 0;
-  cursor: pointer;
-  position: relative;
 }
 
 /* List styles */

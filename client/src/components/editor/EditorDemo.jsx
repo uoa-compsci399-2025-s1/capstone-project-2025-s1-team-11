@@ -1,10 +1,31 @@
-import React, { useState } from 'react';
-import { Card, Divider, Typography, Space, Row, Col, Button } from 'antd';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { Card, Divider, Typography, Space, Row, Col, Button, Slider } from 'antd';
 import CompactRichTextEditor from './CompactRichTextEditor';
 import SimplifiedContent from './SimplifiedContent';
 import './EditorDemo.css';
 
 const { Title, Text } = Typography;
+
+const DEBOUNCE_DELAY = 300; // milliseconds
+
+const updateImageStylesInHtml = (html, scale) => {
+  if (!html) return '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  
+  doc.querySelectorAll('img').forEach(img => {
+    img.style.width = `${scale}%`;
+    img.style.height = 'auto';
+    // Remove explicit width/height attributes if they exist to avoid conflicts
+    img.removeAttribute('width');
+    img.removeAttribute('height');
+  });
+  
+  // For Tiptap, it's often better to return the direct content of what was parsed if it was a fragment.
+  // If the original HTML is a full document, doc.documentElement.outerHTML might be needed.
+  // If it's a fragment that Tiptap provides, doc.body.innerHTML is usually correct.
+  return doc.body.innerHTML; 
+};
 
 const EditorDemo = () => {
   const [sectionTitle, setSectionTitle] = useState('<p>Section <strong>Title</strong></p>');
@@ -14,22 +35,40 @@ const EditorDemo = () => {
   const [answerC, setAnswerC] = useState('<p>Berlin</p>');
   const [answerD, setAnswerD] = useState('<p>Madrid</p>');
   const [formattingDemo, setFormattingDemo] = useState(`
-    <h2 style="text-align: center;">Formatting Features Demo</h2>
-    <p style="text-align: left; font-family: serif;">This paragraph uses <strong>Times New Roman</strong> font and is aligned left.</p>
-    <p style="text-align: center; font-family: sans-serif;">This paragraph uses <strong>Arial</strong> font and is <em>centered</em>.</p>
-    <p style="text-align: right; font-family: monospace;">This paragraph uses <strong>Courier New</strong> font and is aligned right.</p>
-    <ul>
-      <li>First bullet point</li>
-      <li>Second bullet point
-        <ul>
-          <li>Nested bullet point (indented)</li>
-        </ul>
-      </li>
-    </ul>
-    <p>Here's how a line break looks like.<br>This is on a new line but the same paragraph.</p>
-    <p>Below is an image that can be resized:</p>
-    <p><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzFiOTBmZiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+UmVzaXphYmxlIEltYWdlPC90ZXh0Pjwvc3ZnPg==" width="200"/></p>
+    <p style="text-align: left; font-family: serif;">This paragraph uses <strong>Times New Roman</strong> font and is aligned left.</p> 
   `);
+  const [imageScale, _setImageScale] = useState(100); 
+
+  const formattingDemoDebounceTimerRef = useRef(null);
+
+  const handleFormattingDemoChange = useCallback((newContent) => {
+    if (formattingDemoDebounceTimerRef.current) {
+      clearTimeout(formattingDemoDebounceTimerRef.current);
+    }
+    formattingDemoDebounceTimerRef.current = setTimeout(() => {
+      // When editor content changes, we might want to re-apply the current scale
+      // or assume images inserted already have a scale or will be scaled by slider.
+      // For now, just set content. If images are inserted without style, slider will fix them.
+      setFormattingDemo(newContent);
+    }, DEBOUNCE_DELAY);
+  }, []); 
+
+  const handleImageScaleChange = useCallback((newScale) => {
+    _setImageScale(newScale);
+    setFormattingDemo(currentHtml => {
+      const newHtml = updateImageStylesInHtml(currentHtml, newScale);
+      console.log("Updated HTML for preview (after scale change DOM):", newHtml); 
+      return newHtml;
+    });
+  }, []); 
+
+  useEffect(() => {
+    return () => {
+      if (formattingDemoDebounceTimerRef.current) {
+        clearTimeout(formattingDemoDebounceTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="editor-demo-container">
@@ -48,8 +87,10 @@ const EditorDemo = () => {
               <Text type="secondary">This demo includes all the new features: bold (fixed), underline, text alignment, indentation, soft returns, font selection, and image resizing.</Text>
               <CompactRichTextEditor 
                 content={formattingDemo} 
-                onChange={setFormattingDemo}
+                onChange={handleFormattingDemoChange}
                 placeholder="Try the new features here..."
+                imageScale={imageScale} 
+                onImageScaleChange={handleImageScaleChange}
               />
             </div>
             <div className="demo-field">
@@ -71,7 +112,7 @@ const EditorDemo = () => {
               <Title level={5}>Edit (Rich Text)</Title>
               <CompactRichTextEditor 
                 content={sectionTitle} 
-                onChange={setSectionTitle}
+                onChange={setSectionTitle} // Note: Image scaling slider won't affect this editor yet
                 placeholder="Enter section title..."
               />
             </div>
@@ -90,7 +131,7 @@ const EditorDemo = () => {
               <Title level={5}>Edit (Rich Text)</Title>
               <CompactRichTextEditor 
                 content={questionContent} 
-                onChange={setQuestionContent}
+                onChange={setQuestionContent} // Note: Image scaling slider won't affect this editor yet
                 placeholder="Enter question..."
               />
             </div>
@@ -108,7 +149,7 @@ const EditorDemo = () => {
             <div className="demo-field">
               <CompactRichTextEditor 
                 content={answerA} 
-                onChange={setAnswerA}
+                onChange={setAnswerA} // Note: Image scaling slider won't affect this editor yet
                 placeholder="Enter answer A..."
               />
             </div>
@@ -124,7 +165,7 @@ const EditorDemo = () => {
             <div className="demo-field">
               <CompactRichTextEditor 
                 content={answerB} 
-                onChange={setAnswerB}
+                onChange={setAnswerB} // Note: Image scaling slider won't affect this editor yet
                 placeholder="Enter answer B..."
               />
             </div>
@@ -140,7 +181,7 @@ const EditorDemo = () => {
             <div className="demo-field">
               <CompactRichTextEditor 
                 content={answerC} 
-                onChange={setAnswerC}
+                onChange={setAnswerC} // Note: Image scaling slider won't affect this editor yet
                 placeholder="Enter answer C..."
               />
             </div>
@@ -156,7 +197,7 @@ const EditorDemo = () => {
             <div className="demo-field">
               <CompactRichTextEditor 
                 content={answerD} 
-                onChange={setAnswerD}
+                onChange={setAnswerD} // Note: Image scaling slider won't affect this editor yet
                 placeholder="Enter answer D..."
               />
             </div>
