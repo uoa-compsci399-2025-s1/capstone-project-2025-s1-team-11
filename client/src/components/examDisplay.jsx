@@ -520,6 +520,45 @@ const ExamDisplay = () => {
         >
           Add Questions from XML
         </Button>
+        <Button
+          type="primary"
+          style={{ backgroundColor: '#13c2c2' }}
+          onClick={async () => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".tex";
+            input.onchange = async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              try {
+                const module = await import('../services/examImportService');
+                const examDTO = await module.default.processLatexExam(file);
+
+                let index = 0;
+                for (const item of examDTO.examBody || []) {
+                  if (item.type === "section") {
+                    const { questions, ...sectionWithoutQuestions } = item;
+                    dispatch(addSection(sectionWithoutQuestions));
+                    for (const question of questions || []) {
+                      dispatch(addQuestion({ examBodyIndex: index, questionData: question }));
+                    }
+                  } else {
+                    dispatch(addQuestion({ examBodyIndex: null, questionData: item }));
+                  }
+                  index++;
+                }
+
+                message.success("Questions imported from LaTeX");
+              } catch (error) {
+                console.error("LaTeX import failed:", error);
+                message.error("Failed to import LaTeX");
+              }
+            };
+            input.click();
+          }}
+        >
+          Add Questions from LaTeX
+        </Button>
       </div>
   
       <Modal
