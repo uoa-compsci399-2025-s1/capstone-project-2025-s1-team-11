@@ -1,3 +1,4 @@
+// src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme} from "antd";
@@ -222,10 +223,6 @@ const Randomiser = () => {
 
               if (!mapping) return null;
 
-              // got rid of the empty or undefined answers
-              const validAnswers = (question.answers || [])
-                .filter(answer => answer && answer.contentText && answer.contentText.trim() !== '');
-
               const mappingDetails = mapping.map((pos, idx) =>
                 `${String.fromCharCode(65 + idx)} → ${String.fromCharCode(65 + pos)}`
               ).join(", ");
@@ -243,18 +240,16 @@ const Randomiser = () => {
                       {question.contentText || question.questionText}
                     </Text>
                   )}
-                  {showAnswers && validAnswers.length > 0 && mapping && (
+                  {showAnswers && question.answers?.length > 0 && mapping && (
                     <div style={{ marginBottom: 8 }}>
                       <ul style={{ paddingLeft: "1.5em", marginBottom: 0 }}>
-                        {mapping
-                          .filter((_, originalIndex) => originalIndex < validAnswers.length)
-                          .map((shuffledIndex, originalIndex) => (
-                            <li key={originalIndex}>
-                              <Text>
-                                {String.fromCharCode(65 + originalIndex)}. {validAnswers[shuffledIndex]?.contentText}
-                              </Text>
-                            </li>
-                          ))}
+                        {mapping.map((shuffledIndex, originalIndex) => (
+                          <li key={originalIndex}>
+                            <Text>
+                              {String.fromCharCode(65 + originalIndex)}. {question.answers?.[shuffledIndex]?.contentText || "[Missing Answer]"}
+                            </Text>
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   )}

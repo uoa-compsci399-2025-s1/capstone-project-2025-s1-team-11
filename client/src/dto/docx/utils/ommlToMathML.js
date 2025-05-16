@@ -156,7 +156,7 @@ const processRun = (run) => {
         const rPr = run['m:rPr'];
 
         // Check if this is an operator
-        if (/^[\+\-\*\/\=\<\>\(\)\[\]\{\}]$/.test(text)) {
+        if (/^[+\-*/=<>()[\]{}]$/.test(text)) {
             return `<mo>${text}</mo>`;
         }
 
