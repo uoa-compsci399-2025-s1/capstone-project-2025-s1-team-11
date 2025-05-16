@@ -66,7 +66,7 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
         {isPlainPage ? (
           children
         ) : (
-          <div style={{ maxWidth: '1550px', margin: '0 auto' }}>
+          <div style={{ maxWidth: '1650px', margin: '0 auto' }}>
             <Breadcrumb
               style={breadcrumbStyle}
               items={[
