@@ -254,10 +254,9 @@ const ExamDisplay = () => {
           message.success("Reordered");
         }}
       >
-        {/* Render Table with Data */}
         <Table
           rowClassName="highlighted-table-row"
-          rowKey="key" // Using key property for uniqueness
+          rowKey="key" 
           columns={[
             {
               title: "Actions",

@@ -15,7 +15,6 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
     );
   }
 
-  // Generate statistics
   const stats = {
     totalSections: 0,
     totalQuestions: 0,

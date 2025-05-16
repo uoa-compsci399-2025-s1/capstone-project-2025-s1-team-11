@@ -87,9 +87,8 @@ button:focus-visible {
   100% { transform: translateX(-50%) scale(1); }
 }
 
-/* Styles for the Exam Builder Sidebar */
+/* Sidebar */
 
-/* Main sidebar styling */
 .exam-sidebar {
   position: sticky;
   top: 20px;
@@ -98,7 +97,6 @@ button:focus-visible {
   transition: all 0.3s;
 }
 
-/* Enhanced scrollbar for the sidebar */
 .exam-sidebar::-webkit-scrollbar {
   width: 6px;
 }
@@ -117,7 +115,6 @@ button:focus-visible {
   background: #bfbfbf;
 }
 
-/* Highlighted items in sidebar and table */
 .highlighted-item {
   background-color: #e6f7ff !important;
   border-left: 3px solid #1890ff;
@@ -132,12 +129,10 @@ button:focus-visible {
   background-color: #bae7ff !important;
 }
 
-/* Section and question item hover effects */
 .exam-sidebar .ant-list-item:hover {
   background-color: #f5f5f5;
 }
 
-/* Responsive adjustments */
 @media (max-width: 1200px) {
   .exam-sidebar {
     height: auto;
@@ -146,12 +141,10 @@ button:focus-visible {
   }
 }
 
-/* Badge styling */
 .exam-sidebar .ant-badge {
   font-size: 12px;
 }
 
-/* Hover effect for navigation buttons */
 .exam-sidebar .ant-btn:hover {
   color: #1890ff;
   background-color: rgba(24, 144, 255, 0.1);

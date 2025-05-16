@@ -8,7 +8,7 @@ const { Header, Content, Footer } = Layout;
 
 const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   const location = useLocation();
-  const isPlainPage = ["/", "/about"].includes(location.pathname); // Borderless pages
+  const isPlainPage = ["/", "/about"].includes(location.pathname); 
 
   const {
     token: { borderRadiusLG },

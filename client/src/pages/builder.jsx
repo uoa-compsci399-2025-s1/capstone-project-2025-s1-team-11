@@ -21,8 +21,7 @@ const Builder = () => {
     // Function to handle sidebar navigation
     const handleNavigateToItem = (itemId, itemType) => {
         setCurrentItemId(itemId);
-        // Could also add logic here to scroll to the item in the table
-        // or highlight it in some way
+
     };
 
     // Function to toggle sidebar visibility
@@ -118,12 +117,35 @@ const Builder = () => {
 
     return (
         <>
-            <h1>Builder</h1>
+            <h1> Builder</h1>
             <MCQBuilderProgressWrapper>
                 {(currentStep) => renderStageContent(currentStep)}
             </MCQBuilderProgressWrapper>
         </>
-    );
-};
+/*
+        //Check Changes
+import { useDispatch, useSelector } from 'react-redux';
+import { createNewExam } from "../store/exam/examSlice.js";
+import { selectExamData } from "../store/exam/selectors.js";
+import { Button } from "antd";
 
-export default Builder;
+const Builder = () => {
+    const exam = useSelector(selectExamData); // Get examData from redux
+    const dispatch = useDispatch();
+  
+    return (
+      <div>
+        <h1>MCQ Builder</h1>
+        {exam ? (
+          <ExamDisplay />
+        ) : (
+          <><p>No exam loaded.</p><p><Button onClick={() => dispatch(createNewExam({examTitle: 'New Exam'}))} type="primary" style={{ marginBottom: 16 }}>
+              New Exam
+            </Button></p></>
+        )}
+        <ExamFileManager />
+      </div>
+          */
+    );
+  };
+  export default Builder;
