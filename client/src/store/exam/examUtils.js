@@ -4,7 +4,6 @@ const DEFAULT_COMPONENT_PROPS = {
   type: 'content',
   contentFormatted: '',
   format: 'HTML',
-  contentText: '', //This is the text only content for table display
 }
 
 // Create a new exam
@@ -58,13 +57,11 @@ export const createQuestion = ({
   questionNumber = null, 
   marks = null, 
   answers = [],
-  contentText = '',
   // shuffle map is created and managed by reducers
   ...overrides
 } = {}) => ({
   ...createExamComponent({
       type: 'question',
-      contentText,
       ...overrides,
   }),
   questionNumber,
@@ -77,12 +74,10 @@ export const createAnswer = ({
   fixedPosition = null, // null means "not fixed"
   //feedback = '', if other than "incorrect" desired
   //note = '', e.g. "trick", "common mistake"
-  contentText = '',
   ...overrides
 } = {}) => ({
   ...createExamComponent({
     type: 'answer',
-    contentText,
     ...overrides,
   }),
   correct,

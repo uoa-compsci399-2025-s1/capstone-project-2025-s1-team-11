@@ -66,16 +66,6 @@ const examSlice = createSlice({
       if (!state.examData) { return; }
       const newSection = createSection(action.payload);
       newSection.id = generateId();
-
-      // fill simplified contentText from contentFormatted
-      newSection.contentText = htmlToText(newSection.contentFormatted || "");
-      for (const question of newSection.questions || []) {
-        question.contentText = htmlToText(question.contentFormatted || "");
-        for (const answer of question.answers || []) {
-          answer.contentText = htmlToText(answer.contentFormatted || "");
-        }
-      }
-
       state.examData.examBody.push(newSection);
       renumberSections(state.examData.examBody);
     },
@@ -84,22 +74,17 @@ const examSlice = createSlice({
       if (!state.examData) { return; }
       const { examBodyIndex, questionData } = action.payload;
 
-      questionData.contentText = htmlToText(questionData.contentFormatted || "");
-
       const examData = state.examData;
-    
       const examBody = examData.examBody;
       const versionCount = examData.versions.length;
       const optionCount = examData.teleformOptions.length;
 
       const rawAnswers = questionData.answers || [];
       let answers = rawAnswers.map((ans, idx) => {
-        const contentText = htmlToText(ans.contentFormatted || "");
         return createAnswer({ 
-          contentFormatted: ans.contentFormatted, 
-          contentText: contentText,
+          contentFormatted: ans.contentFormatted,
           correct: idx === 0,
-          fixedPosition: ans.fixedPosition? ans.fixedPosition : null
+          fixedPosition: ans.fixedPosition ? ans.fixedPosition : null
         });
       });
 
@@ -110,21 +95,19 @@ const examSlice = createSlice({
         ...questionData,
         answers: normalisedAnswers,
       });
-      
-    
+
       // Create default (non-shuffled) answerShuffleMaps
       newQuestion.answerShuffleMaps = Array.from({ length: versionCount }, () =>
         [...Array(optionCount).keys()]
       );
-    
+
       // Add question to examBody or a section
       if (examBodyIndex != null && examBody[examBodyIndex]?.type === 'section') {
         examBody[examBodyIndex].questions.push(newQuestion);
       } else {
-        
         examBody.push(newQuestion);
       }
-    
+
       // Update numbering
       renumberQuestions(examBody);
     },
@@ -416,12 +399,6 @@ export const importDTOToState = (examDTO) => async (dispatch) => {
     throw error;
   }
 };
-
-function htmlToText(html) {
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = html;
-  return tempDiv.textContent || tempDiv.innerText || "";
-}
 
 // Export actions
 export const { 

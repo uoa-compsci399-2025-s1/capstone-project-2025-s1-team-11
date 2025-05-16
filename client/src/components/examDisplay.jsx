@@ -27,6 +27,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
+import { htmlToText } from '../utils/textUtils';
 
 const { TextArea } = Input;
 
@@ -114,8 +115,8 @@ const ExamDisplay = () => {
             ...q,
             type: "question",
             section: entry.sectionTitle,
-            questionText: q.questionText || q.contentText,
-            options: q.options || (q.answers || []).map(a => a.contentText),
+            questionText: htmlToText(q.contentFormatted),
+            options: q.options || (q.answers || []).map(a => htmlToText(a.contentFormatted)),
             correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
           });
         });
@@ -124,8 +125,8 @@ const ExamDisplay = () => {
         items.push({
           ...entry,
           type: "question",
-          questionText: entry.questionText || entry.contentText,
-          options: entry.options || (entry.answers || []).map(a => a.contentText),
+          questionText: htmlToText(entry.contentFormatted),
+          options: entry.options || (entry.answers || []).map(a => htmlToText(a.contentFormatted)),
           correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
         });
       
