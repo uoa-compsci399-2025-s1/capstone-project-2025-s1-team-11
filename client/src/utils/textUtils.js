@@ -1,5 +1,3 @@
-import React, { useMemo } from 'react';
-
 /**
  * Converts HTML content to plain text
  * @param {string} html HTML content to convert
@@ -75,14 +73,4 @@ export const htmlToText = (html) => {
   return text
     .replace(/\n\n\n+/g, '\n\n') // Replace 3+ consecutive newlines with 2
     .trim();
-};
-
-/**
- * Component that renders simplified plain text from HTML content
- */
-const SimplifiedContent = ({ html }) => {
-  const plainText = useMemo(() => htmlToText(html), [html]);
-  return plainText;
-};
-
-export default SimplifiedContent; 
+}; 
