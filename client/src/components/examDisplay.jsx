@@ -40,6 +40,8 @@ const ExamDisplay = () => {
   const [activeItemId, setActiveItemId] = useState(null);
   const dispatch = useDispatch();
   // Move useSensor hooks to top level of the component to ensure consistent hook order
+  // Pagination page size state
+  const [pageSize, setPageSize] = useState(10);
   const pointerSensor = useSensor(PointerSensor);
   const keyboardSensor = useSensor(KeyboardSensor);
   const sensors = useSensors(pointerSensor, keyboardSensor);
@@ -414,7 +416,12 @@ const ExamDisplay = () => {
               marks: item.marks,
             };
           })}
-          pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'] }}
+          pagination={{
+            pageSize,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
+            onChange: (page, pageSize) => setPageSize(pageSize),
+          }}
           scroll={{ x: "max-content" }}
         />
       </DndContext>
@@ -435,6 +442,84 @@ const ExamDisplay = () => {
           dispatch(addSection({ title: "Untitled Section", subtext: "Instructions..." }));
           message.success("Section added");
         }}>Add Section</Button>
+        <Button
+          type="primary"
+          style={{ backgroundColor: '#722ed1' }}
+          onClick={async () => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".docx";
+            input.onchange = async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              try {
+                const module = await import('../services/examImportService');
+                const examDTO = await module.default.processDocxExam(file);
+
+                let index = 0;
+                for (const item of examDTO.examBody || []) {
+                  if (item.type === "section") {
+                    const { questions, ...sectionWithoutQuestions } = item;
+                    dispatch(addSection(sectionWithoutQuestions));
+                    for (const question of questions || []) {
+                      dispatch(addQuestion({ examBodyIndex: index, questionData: question }));
+                    }
+                  } else {
+                    dispatch(addQuestion({ examBodyIndex: null, questionData: item }));
+                  }
+                  index++;
+                }
+
+                message.success("Questions imported from DOCX");
+              } catch (error) {
+                console.error("DOCX import failed:", error);
+                message.error("Failed to import DOCX");
+              }
+            };
+            input.click();
+          }}
+        >
+          Add Questions from DOCX
+        </Button>
+        <Button
+          type="primary"
+          style={{ backgroundColor: '#389e0d' }}
+          onClick={async () => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".xml";
+            input.onchange = async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              try {
+                const module = await import('../services/examImportService');
+                const examDTO = await module.default.processMoodleExam(file);
+
+                let index = 0;
+                for (const item of examDTO.examBody || []) {
+                  if (item.type === "section") {
+                    const { questions, ...sectionWithoutQuestions } = item;
+                    dispatch(addSection(sectionWithoutQuestions));
+                    for (const question of questions || []) {
+                      dispatch(addQuestion({ examBodyIndex: index, questionData: question }));
+                    }
+                  } else {
+                    dispatch(addQuestion({ examBodyIndex: null, questionData: item }));
+                  }
+                  index++;
+                }
+
+                message.success("Questions imported from XML");
+              } catch (error) {
+                console.error("XML import failed:", error);
+                message.error("Failed to import XML");
+              }
+            };
+            input.click();
+          }}
+        >
+          Add Questions from XML
+        </Button>
       </div>
   
       <Modal
