@@ -7,7 +7,7 @@ const { Title } = Typography;
 const EditorDemo = () => {
   return (
     <div className="editor-demo-container">
-      <Title level={2}>Content Editor Demo</Title>
+      <Title level={2}>Content Editor Demo: Uses whatever's at examBody[0]</Title>
       
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <Card title="Section Editor" className="demo-card">
