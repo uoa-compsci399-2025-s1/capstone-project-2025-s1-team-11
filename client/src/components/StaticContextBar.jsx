@@ -530,20 +530,6 @@ const StaticContextBar = ({
                     <strong>Total Marks:</strong> {typeof totalMarks === "number" ? totalMarks : "N/A"}
                   </div>
                 </div>
-                <Divider orientation="left" style={{ marginTop: 24, marginBottom: 16 }}>Metadata Quick View</Divider>
-                <div>
-                  {exam?.metadata && typeof exam.metadata === "object" && Object.keys(exam.metadata).length > 0 ? (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "32px" }}>
-                      {Object.entries(exam.metadata).map(([key, value]) => (
-                        <div key={key}>
-                          <strong>{key}:</strong> {typeof value === "object" ? JSON.stringify(value) : String(value)}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <span>No metadata available.</span>
-                  )}
-                </div>
               </>
             ) : (
               <Alert
