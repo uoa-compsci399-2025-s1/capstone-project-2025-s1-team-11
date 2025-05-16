@@ -37,6 +37,9 @@ export const processCoverPageFile = async (file) => {
         console.log("📄 Cover page blocks:", coverPageBlocks);
         console.log("📎 Appendix blocks:", appendixBlocks);
 
+        // Debug the structure of cover page blocks
+        debugBlockStructure(coverPageBlocks);
+
         // Convert blocks to formatted HTML
         const coverPageContent = coverPageBlocks.length > 0
             ? processBlocksToHTML(coverPageBlocks, relationships, imageData)
@@ -66,18 +69,35 @@ export const processCoverPageFile = async (file) => {
 };
 
 const separateCoverPageAndAppendix = (blocks) => {
+    // In the parsed XML, paragraphs are the direct elements, not wrapped in 'w:p'
+    const rawBlocks = [];
+
+    // Check if blocks array contains wrapped or unwrapped paragraphs
+    blocks.forEach(block => {
+        if (block['w:p']) {
+            // If wrapped, unwrap it
+            rawBlocks.push(block['w:p']);
+        } else {
+            // Already unwrapped
+            rawBlocks.push(block);
+        }
+    });
+
     const coverPageBlocks = [];
     const appendixBlocks = [];
     let foundFirstPageBreak = false;
 
-    for (let i = 0; i < blocks.length; i++) {
-        const block = blocks[i];
+    for (let i = 0; i < rawBlocks.length; i++) {
+        const block = rawBlocks[i];
         if (!foundFirstPageBreak && hasPageBreak(block)) {
             foundFirstPageBreak = true;
             continue;
         }
-        if (!foundFirstPageBreak) coverPageBlocks.push(block);
-        else appendixBlocks.push(block);
+        if (!foundFirstPageBreak) {
+            coverPageBlocks.push(block);
+        } else {
+            appendixBlocks.push(block);
+        }
     }
 
     return { coverPageBlocks, appendixBlocks };
@@ -127,41 +147,106 @@ const extractRuns = (node) => {
 };
 
 const processBlocksToHTML = (blocks, relationships, imageData) => {
-    console.log("🧩 Processing blocks to HTML:", blocks);
+    console.log("🧩 Processing blocks to HTML:", blocks.length, "blocks");
     if (!blocks || blocks.length === 0) return '';
     const htmlParts = [];
 
-    for (const block of blocks) {
-        if (block['w:p']) {
-            const runs = extractRuns(block['w:p']);
-            console.log("📦 Extracted runs:", runs);  // ← Add this line
-            const content = buildContentFormatted(runs, { relationships, imageData });
-            if (content.trim()) htmlParts.push(`<p>${content}</p>`);
-        } else if (block['w:tbl']) {
+    for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        console.log(`Block ${i}:`, Object.keys(block));
+
+        // Check if this is a paragraph block (has 'w:p' wrapper) or direct paragraph content
+        const isParagraphWrapper = block['w:p'] !== undefined;
+        const isTableWrapper = block['w:tbl'] !== undefined;
+        const isDirectParagraph = block['w:pPr'] !== undefined || block['w:r'] !== undefined;
+
+        if (isParagraphWrapper || isDirectParagraph) {
+            // Get the paragraph content - either from w:p wrapper or directly
+            const paragraph = isParagraphWrapper ? block['w:p'] : block;
+            let content = '';
+
+            // Check if paragraph has runs
+            if (paragraph['w:r']) {
+                const runs = Array.isArray(paragraph['w:r']) ? paragraph['w:r'] : [paragraph['w:r']];
+                console.log(`Paragraph ${i} has ${runs.length} runs`);
+                content = buildContentFormatted(runs, { relationships, imageData });
+                console.log(`Built content for paragraph ${i}:`, content.slice(0, 100));
+            }
+            // Check if paragraph has direct text
+            else if (paragraph['w:t']) {
+                console.log(`Paragraph ${i} has direct text`);
+                content = paragraph['w:t'];
+            }
+            else {
+                console.log(`Paragraph ${i} has no runs or direct text`);
+                // Some paragraphs might be empty or contain only formatting
+            }
+
+            if (content && content.trim()) {
+                htmlParts.push(`<p>${content}</p>`);
+            }
+        } else if (isTableWrapper) {
+            console.log(`Block ${i} is a table`);
+            const table = block['w:tbl'];
             htmlParts.push('<table border="1" style="border-collapse: collapse; width: 100%;">');
-            const rows = Array.isArray(block['w:tbl']['w:tr']) ? block['w:tbl']['w:tr'] : [block['w:tbl']['w:tr']];
-            for (const row of rows) {
+
+            const rows = table['w:tr'];
+            if (!rows) {
+                console.log("No rows found in table");
+                htmlParts.push('</table>');
+                continue;
+            }
+
+            const rowArray = Array.isArray(rows) ? rows : [rows];
+            console.log(`Table has ${rowArray.length} rows`);
+
+            for (const row of rowArray) {
                 htmlParts.push('<tr>');
-                const cells = Array.isArray(row['w:tc']) ? row['w:tc'] : [row['w:tc']];
-                for (const cell of cells) {
+                const cells = row['w:tc'];
+
+                if (!cells) {
+                    htmlParts.push('</tr>');
+                    continue;
+                }
+
+                const cellArray = Array.isArray(cells) ? cells : [cells];
+
+                for (const cell of cellArray) {
                     htmlParts.push('<td>');
-                    const paragraphs = Array.isArray(cell['w:p']) ? cell['w:p'] : [cell['w:p']];
-                    for (const p of paragraphs) {
-                        const runs = extractRuns(p);
-                        const content = buildContentFormatted(runs, { relationships, imageData });
-                        if (content.trim()) htmlParts.push(content);
+                    let cellContent = '';
+
+                    // Try to extract text from cell
+                    const paragraphs = cell['w:p'];
+                    if (paragraphs) {
+                        const paraArray = Array.isArray(paragraphs) ? paragraphs : [paragraphs];
+
+                        for (const p of paraArray) {
+                            if (p['w:r']) {
+                                const runs = Array.isArray(p['w:r']) ? p['w:r'] : [p['w:r']];
+                                const content = buildContentFormatted(runs, { relationships, imageData });
+                                if (content.trim()) cellContent += content + ' ';
+                            } else if (p['w:t']) {
+                                cellContent += p['w:t'] + ' ';
+                            }
+                        }
                     }
+
+                    htmlParts.push(cellContent.trim());
                     htmlParts.push('</td>');
                 }
                 htmlParts.push('</tr>');
             }
             htmlParts.push('</table>');
+        } else {
+            console.log(`Block ${i} is unknown type:`, Object.keys(block).slice(0, 5));
         }
     }
 
-    return htmlParts.join('\n');
+    const result = htmlParts.join('\n');
+    console.log("🏁 Final HTML length:", result.length);
+    console.log("🏁 First 500 chars:", result.slice(0, 500));
+    return result;
 };
-
 
 const extractMetadata = (content) => {
     const metadata = {
@@ -174,9 +259,14 @@ const extractMetadata = (content) => {
         timeAllowed: ''
     };
 
+    if (!content) {
+        console.log("No content to extract metadata from");
+        return metadata;
+    }
+
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, 'text/html');
-    const text = doc.body.textContent;
+    const text = doc.body.textContent || '';
 
     const courseMatch = text.match(/([A-Z]+)\s+(\d+):\s+([^\n]+)/);
     if (courseMatch) {
@@ -200,6 +290,14 @@ const extractMetadata = (content) => {
     if (timeMatch) metadata.timeAllowed = timeMatch[1].trim();
 
     return metadata;
+};
+
+// Debug function to print block structure
+const debugBlockStructure = (blocks) => {
+    console.log("🔍 Debugging block structure:");
+    for (let i = 0; i < Math.min(3, blocks.length); i++) {
+        console.log(`Block ${i} full structure:`, JSON.stringify(blocks[i], null, 2));
+    }
 };
 
 /**

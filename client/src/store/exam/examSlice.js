@@ -62,6 +62,12 @@ const examSlice = createSlice({
       state.examData = null;
     },
 
+    clearExamBody: (state) => {
+      if (state.examData) {
+        state.examData.examBody = [];
+      }
+    },
+
     addSection: (state, action) => {
       if (!state.examData) { return; }
       const newSection = createSection(action.payload);
@@ -354,19 +360,37 @@ const examSlice = createSlice({
 
 
 // Thunk for importing an exam properly
-export const importDTOToState = (examDTO) => async (dispatch) => {
+export const importDTOToState = (examDTO) => async (dispatch, getState) => {
   try {
     dispatch(importExamStart());
 
-    dispatch(clearExam());
+    // Get current state
+    const currentState = getState().exam;
 
-    dispatch(createNewExam({
-      examTitle: examDTO.examTitle,
-      courseCode: examDTO.courseCode,
-      courseName: examDTO.courseName,
-      semester: examDTO.semester,
-      year: examDTO.year,
-    }));
+    // If no exam exists, create one
+    if (!currentState.examData) {
+      dispatch(createNewExam({}));
+    } else {
+      // Otherwise just clear the exam body
+      dispatch(clearExamBody());
+    }
+
+    // Update exam fields if they exist in the import
+    if (examDTO.examTitle) {
+      dispatch(updateExamField({ field: 'examTitle', value: examDTO.examTitle }));
+    }
+    if (examDTO.courseCode) {
+      dispatch(updateExamField({ field: 'courseCode', value: examDTO.courseCode }));
+    }
+    if (examDTO.courseName) {
+      dispatch(updateExamField({ field: 'courseName', value: examDTO.courseName }));
+    }
+    if (examDTO.semester) {
+      dispatch(updateExamField({ field: 'semester', value: examDTO.semester }));
+    }
+    if (examDTO.year) {
+      dispatch(updateExamField({ field: 'year', value: examDTO.year }));
+    }
 
     // Set versions and teleform options if needed
     if (examDTO.versions) {
@@ -384,20 +408,17 @@ export const importDTOToState = (examDTO) => async (dispatch) => {
         if (item.type === 'section') {
           const { questions, ...sectionWithoutQuestions } = item;
           await dispatch(addSection(sectionWithoutQuestions));
-          
-          //const sectionIndex = result.payload;
-          //const sectionIndex = state.examData.examBody.length - 1;
 
           for (const question of item.questions || []) {
-            await dispatch(addQuestion({ 
-              examBodyIndex: examBodyIndexCounter, 
-              questionData: question 
+            await dispatch(addQuestion({
+              examBodyIndex: examBodyIndexCounter,
+              questionData: question
             }));
           }
         } else {
-          await dispatch(addQuestion({ 
-            examBodyIndex: null, 
-            questionData: item 
+          await dispatch(addQuestion({
+            examBodyIndex: null,
+            questionData: item
           }));
         }
         examBodyIndexCounter++;
@@ -408,7 +429,7 @@ export const importDTOToState = (examDTO) => async (dispatch) => {
       }
     }
 
-    dispatch(importExamSuccess()); // You could even repurpose this to mean "done loading"
+    dispatch(importExamSuccess());
 
     return;
   } catch (error) {
@@ -427,6 +448,7 @@ function htmlToText(html) {
 export const { 
   createNewExam, 
   clearExam,
+  clearExamBody,
   addSection, 
   addQuestion, 
   setCoverPage, // supplied as document, add from file system via UI

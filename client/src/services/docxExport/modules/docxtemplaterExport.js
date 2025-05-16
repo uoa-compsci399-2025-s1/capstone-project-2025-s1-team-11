@@ -533,6 +533,34 @@ async function postProcessTextFormatting(docxBlob) {
 }
 
 /**
+ * Insert page breaks into the document
+ * @param {Blob} docxBlob - The generated DOCX file
+ * @returns {Promise<Blob>} - The processed DOCX with page breaks
+ */
+async function insertPageBreaks(docxBlob) {
+    try {
+        const arrayBuffer = await docxBlob.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+
+        let docXml = await zip.file('word/document.xml').async('string');
+
+        // Replace page break markers with actual Word XML
+        const pageBreakXml = '<w:p><w:pPr><w:pageBreakBefore/></w:pPr></w:p>';
+        docXml = docXml.replace(/{PAGEBREAK}/g, pageBreakXml);
+
+        zip.file('word/document.xml', docXml);
+
+        return await zip.generateAsync({
+            type: 'blob',
+            mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        });
+    } catch (error) {
+        console.error('Error inserting page breaks:', error);
+        return docxBlob; // Return original if error
+    }
+}
+
+/**
  * Exports exam data to a DOCX file using Docxtemplater
  * @param {Object} examData - The exam data from Redux store
  * @param {ArrayBuffer} templateContent - The template file content as ArrayBuffer
@@ -565,27 +593,19 @@ export async function exportExamWithDocxtemplater(examData, templateContent, ver
         // Process the formatted data to handle images
         const processedData = processTemplateData(formattedData);
 
-        // Create and configure Docxtemplater
-        let doc;
+        // Create and configure Docxtemplater - Updated for v4 API
+        const doc = new Docxtemplater(zip, {
+            modules: [imageModule],
+            paragraphLoop: true,
+            linebreaks: true,
+            delimiters: {
+                start: '{',
+                end: '}'
+            }
+        });
 
-        // Try the newer API first
-        try {
-            doc = new Docxtemplater(zip)
-                .attachModule(imageModule)
-                .compile()
-                .setData(processedData);
-        } catch (apiError) {
-            console.log("New API failed, trying older approach:", apiError.message);
-
-            // Fallback to older API
-            doc = new Docxtemplater(zip, {
-                modules: [imageModule],
-                paragraphLoop: true,
-                linebreaks: true
-            });
-
-            doc.setData(processedData);
-        }
+        // Set the data
+        doc.setData(processedData);
 
         // Render the document
         doc.render();
@@ -601,7 +621,10 @@ export async function exportExamWithDocxtemplater(examData, templateContent, ver
         const processedWithImages = await postProcessDocxImages(generatedDocx, processedData);
 
         // Post-process to add text formatting
-        const finalDocx = await postProcessTextFormatting(processedWithImages);
+        const processedWithFormatting = await postProcessTextFormatting(processedWithImages);
+
+        // Add page breaks
+        const finalDocx = await insertPageBreaks(processedWithFormatting);
 
         return finalDocx;
     } catch (error) {

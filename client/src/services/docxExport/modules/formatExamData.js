@@ -1,6 +1,7 @@
 ﻿// src/services/docxExport/modules/formatExamData.js
 
 import { parseHtmlContent } from './contentProcessors/htmlParser';
+import { parseCoverPageForExport, parseAppendixForExport } from './contentProcessors/genericContentParser';
 
 /**
  * Formats exam data from Redux store format to Docxtemplater template format
@@ -13,6 +14,28 @@ export function formatExamDataForTemplate(examData, version = 1) {
         return {};
     }
 
+    // Default template data to prevent undefined errors
+    const defaultTemplateData = {
+        examTitle: '',
+        courseCode: '',
+        courseName: '',
+        department: '',
+        timeAllowed: '',
+        instructions: '',
+        semester: '',
+        year: '',
+        campus: '',
+        hasAdditionalCoverContent: false,
+        additionalCoverContent: [],
+        hasAppendix: false,
+        appendixElements: [],
+        examBody: [],
+        hasExamBody: false,
+        totalQuestions: 0,
+        totalMarks: 0,
+        pageBreak: '{PAGEBREAK}'
+    };
+
     // Use the selected version or default to the first version
     const versionToUse = version || examData.versions?.[0] || 1;
 
@@ -21,67 +44,147 @@ export function formatExamDataForTemplate(examData, version = 1) {
         examTitle: examData.examTitle || 'Exam',
         courseCode: examData.courseCode || '',
         courseName: examData.courseName || '',
-        semester: examData.semester || '',
-        year: examData.year || '',
-        version: versionToUse,
         // Include additional metadata if available
-        campus: examData.metadata?.campus || '',
-        timeAllowed: examData.metadata?.timeAllowed || '',
         department: examData.metadata?.department || '',
+        timeAllowed: examData.metadata?.timeAllowed || '',
         instructions: examData.metadata?.instructions || '',
     };
+
+    // Parse cover page
+    let coverPageData = {};
+    if (examData.coverPage?.contentFormatted) {
+        coverPageData = parseCoverPageForExport(examData.coverPage.contentFormatted);
+    }
+
+    // Transform cover page elements to match template expectations
+    const transformedCoverContent = (coverPageData.additionalContent || []).map(element => {
+        const transformed = {};
+
+        // Set type flags based on element type
+        switch (element.type) {
+            case 'text':
+                transformed.type_text = true;
+                transformed.content = element.content;
+                break;
+            case 'table':
+                transformed.type_table = true;
+                transformed.html = element.html;
+                break;
+            case 'image':
+                transformed.type_image = true;
+                transformed.src = element.src;
+                transformed.alt = element.alt;
+                break;
+            case 'list':
+                transformed.type_list = true;
+                transformed.items = element.items;
+                break;
+            default:
+                transformed.type_text = true;
+                transformed.content = element.content || '';
+        }
+
+        return transformed;
+    });
+
+    // Parse appendix
+    let appendixData = {};
+    if (examData.appendix?.contentFormatted) {
+        const parsed = parseAppendixForExport(examData.appendix.contentFormatted);
+
+        // Transform appendix elements to match template expectations
+        const transformedAppendixElements = (parsed.elements || []).map(element => {
+            const transformed = {};
+
+            switch (element.type) {
+                case 'text':
+                    transformed.type_text = true;
+                    transformed.content = element.content;
+                    break;
+                case 'table':
+                    transformed.type_table = true;
+                    transformed.html = element.html;
+                    break;
+                case 'image':
+                    transformed.type_image = true;
+                    transformed.src = element.src;
+                    transformed.alt = element.alt;
+                    break;
+                default:
+                    transformed.type_text = true;
+                    transformed.content = element.content || '';
+            }
+
+            return transformed;
+        });
+
+        appendixData = {
+            hasAppendix: transformedAppendixElements.length > 0,
+            appendixElements: transformedAppendixElements
+        };
+    }
 
     // Process examBody in original order
     const formattedExamBody = [];
 
     // Process each exam body item preserving order
-    examData.examBody.forEach((item, index) => {
-        if (item.type === 'section') {
-            // Process section with its associated questions
-            const sectionQuestions = formatQuestionsWithVersion(
-                item.questions || [],
-                versionToUse,
-                examData.versions
-            );
+    if (examData.examBody) {
+        examData.examBody.forEach((item, index) => {
+            if (item.type === 'section') {
+                // Process section with its associated questions
+                const sectionQuestions = formatQuestionsWithVersion(
+                    item.questions || [],
+                    versionToUse,
+                    examData.versions
+                );
 
-            // Process section content
-            const sectionContent = processContent(item.contentFormatted || item.contentText || '');
+                // Process section content
+                const sectionContent = processContent(item.contentFormatted || item.contentText || '');
 
-            const section = {
-                isSection: true,
-                isQuestion: false,
-                sectionTitle: item.sectionTitle || `Section ${item.sectionNumber || (index + 1)}`,
-                sectionNumber: item.sectionNumber || (index + 1),
-                sectionContent: sectionContent.text,
-                sectionElements: sectionContent.elements,
-                questions: sectionQuestions,
-                hasQuestions: sectionQuestions.length > 0
-            };
-            formattedExamBody.push(section);
-        } else if (item.type === 'question') {
-            // Process standalone question with version-specific answer ordering
-            const formattedQuestion = formatQuestionWithVersion(item, versionToUse, examData.versions);
-            const questionItem = {
-                isSection: false,
-                isQuestion: true,
-                ...formattedQuestion
-            };
-            formattedExamBody.push(questionItem);
-        }
-    });
+                const section = {
+                    isSection: true,
+                    isQuestion: false,
+                    sectionTitle: item.sectionTitle || `Section ${item.sectionNumber || (index + 1)}`,
+                    sectionNumber: item.sectionNumber || (index + 1),
+                    sectionContent: sectionContent.text,
+                    sectionElements: sectionContent.elements,
+                    questions: sectionQuestions,
+                    hasQuestions: sectionQuestions.length > 0
+                };
+                formattedExamBody.push(section);
+            } else if (item.type === 'question') {
+                // Process standalone question with version-specific answer ordering
+                const formattedQuestion = formatQuestionWithVersion(item, versionToUse, examData.versions);
+                const questionItem = {
+                    isSection: false,
+                    isQuestion: true,
+                    ...formattedQuestion
+                };
+                formattedExamBody.push(questionItem);
+            }
+        });
+    }
 
     // Combine everything for template
     return {
+        ...defaultTemplateData,
         ...basicInfo,
-        hasCoverPage: !!examData.coverPage,
-        coverPageContent: examData.coverPage?.contentText || '',
-        hasAppendix: !!examData.appendix,
-        appendixContent: examData.appendix?.contentText || '',
+        // Cover page data
+        semester: coverPageData.semester || '',
+        year: coverPageData.year || '',
+        campus: coverPageData.campus || '',
+        hasAdditionalCoverContent: transformedCoverContent.length > 0,
+        additionalCoverContent: transformedCoverContent,
+        // Appendix data
+        ...appendixData,
+        // Exam body
         examBody: formattedExamBody,
         hasExamBody: formattedExamBody.length > 0,
         // Add total questions and marks to make it available to the template
         totalQuestions: countTotalQuestions(examData),
-        totalMarks: calculateTotalMarks(examData)
+        totalMarks: calculateTotalMarks(examData),
+        // Page break marker
+        pageBreak: '{PAGEBREAK}'
     };
 }
 
@@ -183,15 +286,17 @@ function formatQuestionWithVersion(question, version, versionList) {
 function countTotalQuestions(examData) {
     let count = 0;
 
-    examData.examBody.forEach(item => {
-        if (item.type === 'section') {
-            // Add questions in this section
-            count += (item.questions || []).length;
-        } else if (item.type === 'question') {
-            // Standalone question
-            count += 1;
-        }
-    });
+    if (examData.examBody) {
+        examData.examBody.forEach(item => {
+            if (item.type === 'section') {
+                // Add questions in this section
+                count += (item.questions || []).length;
+            } else if (item.type === 'question') {
+                // Standalone question
+                count += 1;
+            }
+        });
+    }
 
     return count;
 }
@@ -204,18 +309,19 @@ function countTotalQuestions(examData) {
 function calculateTotalMarks(examData) {
     let totalMarks = 0;
 
-    examData.examBody.forEach(item => {
-        if (item.type === 'section') {
-            // Add marks for each question in the section
-            (item.questions || []).forEach(question => {
-                totalMarks += question.marks || 0;
-            });
-        } else if (item.type === 'question') {
-            // Add marks for standalone question
-            totalMarks += item.marks || 0;
-        }
-    });
+    if (examData.examBody) {
+        examData.examBody.forEach(item => {
+            if (item.type === 'section') {
+                // Add marks for each question in the section
+                (item.questions || []).forEach(question => {
+                    totalMarks += question.marks || 0;
+                });
+            } else if (item.type === 'question') {
+                // Add marks for standalone question
+                totalMarks += item.marks || 0;
+            }
+        });
+    }
 
     return totalMarks;
 }
-

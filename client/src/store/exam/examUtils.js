@@ -20,7 +20,7 @@ export const createExam = (overrides = {}) => ({
   coverPage: null,
   examBody: [],
   appendix: null,
-  metadata: [],
+  metadata: {},
   ...overrides,
 });
 
@@ -33,39 +33,41 @@ export const shuffleAnswers = (exam) => {
   //shuffles answer sequence for all questions and versions of an exam
 }
 
-export const createExamComponent = (overrides = {}) => ({
+export const createExamComponent = (contentFormatted = '', format = 'HTML', overrides = {}) => ({
   ...DEFAULT_COMPONENT_PROPS,
+  contentFormatted,
+  format,
   ...overrides,
   pageBreakAfter: false,
 })
 
 export const createSection = ({
-  sectionTitle = '', 
-  sectionNumber = null, 
-  questions = [],
-  ...overrides
-} = {}) => ({
-  ...createExamComponent({
-      type: 'section',
-      ...overrides
+                                sectionTitle = '',
+                                sectionNumber = null,
+                                questions = [],
+                                ...overrides
+                              } = {}) => ({
+  ...createExamComponent('', 'HTML', {
+    type: 'section',
+    ...overrides
   }),
   sectionTitle,
   sectionNumber,
   questions,
-}); 
+});
 
 export const createQuestion = ({
-  questionNumber = null, 
-  marks = null, 
-  answers = [],
-  contentText = '',
-  // shuffle map is created and managed by reducers
-  ...overrides
-} = {}) => ({
-  ...createExamComponent({
-      type: 'question',
-      contentText,
-      ...overrides,
+                                 questionNumber = null,
+                                 marks = null,
+                                 answers = [],
+                                 contentText = '',
+                                 // shuffle map is created and managed by reducers
+                                 ...overrides
+                               } = {}) => ({
+  ...createExamComponent('', 'HTML', {
+    type: 'question',
+    contentText,
+    ...overrides,
   }),
   questionNumber,
   marks,
@@ -73,14 +75,14 @@ export const createQuestion = ({
 })
 
 export const createAnswer = ({
-  correct = false,
-  fixedPosition = null, // null means "not fixed"
-  //feedback = '', if other than "incorrect" desired
-  //note = '', e.g. "trick", "common mistake"
-  contentText = '',
-  ...overrides
-} = {}) => ({
-  ...createExamComponent({
+                               correct = false,
+                               fixedPosition = null, // null means "not fixed"
+                               //feedback = '', if other than "incorrect" desired
+                               //note = '', e.g. "trick", "common mistake"
+                               contentText = '',
+                               ...overrides
+                             } = {}) => ({
+  ...createExamComponent('', 'HTML', {
     type: 'answer',
     contentText,
     ...overrides,
