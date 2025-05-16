@@ -1,113 +1,86 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Card, Divider, Typography, Space, Row, Col, Button, Slider } from 'antd';
-import CompactRichTextEditor from './CompactRichTextEditor';
-import SimplifiedContent from './SimplifiedContent';
-//import './EditorDemo.css';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Card, Typography } from 'antd';
+import ContentEditor from './ContentEditor';
+import { createNewExam, addSection, addQuestion } from '../../store/exam/examSlice';
+import { selectSectionByIndex, selectQuestionByPath } from '../../store/exam/selectors';
 
-const { Title, Text } = Typography;
-
-const DEBOUNCE_DELAY = 300; // milliseconds
-
-const updateImageStylesInHtml = (html, scale) => {
-  if (!html) return '';
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-  
-  doc.querySelectorAll('img').forEach(img => {
-    img.style.width = `${scale}%`;
-    img.style.height = 'auto';
-    // Remove explicit width/height attributes if they exist to avoid conflicts
-    img.removeAttribute('width');
-    img.removeAttribute('height');
-  });
-  
-  return doc.body.innerHTML; 
-};
+const { Title } = Typography;
 
 const EditorDemo = () => {
-  const [formattingDemo, setFormattingDemo] = useState(`
-    <p style="text-align: left; font-family: 'Times New Roman', serif;">This paragraph uses Times New Roman font and is aligned left.</p> 
-    <p style="text-align: center; font-family: 'Courier New', serif;">This paragraph uses Courier New font and is aligned center.</p> 
-    <p style="text-align: right; font-family: 'Arial', serif;">This paragraph uses Arial font and is aligned right.</p> 
-    <p style="text-align: left; font-family: 'Times New Roman', serif;"><strong>Bold</strong>, <em>italic</em>, <u>underlined</u>, <strong>
-    <em>bold italic</em></strong>, <strong><u>bold underlined</u></strong>, <em><u>italic underlined</u></em>, <strong><em><u>bold italic underlined</u></em></strong>.</p> 
-  `);
-  const [imageScale, _setImageScale] = useState(100); 
+  const dispatch = useDispatch();
+  
+  // Select the data from Redux to check if it exists
+  const section = useSelector(state => selectSectionByIndex(state, 0));
+  const question = useSelector(state => selectQuestionByPath(state, 0, 0));
 
-  const formattingDemoDebounceTimerRef = useRef(null);
-
-  const handleFormattingDemoChange = useCallback((newContent) => {
-    if (formattingDemoDebounceTimerRef.current) {
-      clearTimeout(formattingDemoDebounceTimerRef.current);
-    }
-    formattingDemoDebounceTimerRef.current = setTimeout(() => {
-      // When editor content changes, we might want to re-apply the current scale
-      // or assume images inserted already have a scale or will be scaled by slider.
-      // For now, just set content. If images are inserted without style, slider will fix them.
-      setFormattingDemo(newContent);
-    }, DEBOUNCE_DELAY);
-  }, []); 
-
-  const handleImageScaleChange = useCallback((newScale) => {
-    _setImageScale(newScale);
-    setFormattingDemo(currentHtml => {
-      const newHtml = updateImageStylesInHtml(currentHtml, newScale);
-      console.log("Updated HTML for preview (after scale change DOM):", newHtml); 
-      return newHtml;
-    });
-  }, []); 
-
+  // Initialize demo exam data when component mounts and only if data doesn't exist
   useEffect(() => {
-    return () => {
-      if (formattingDemoDebounceTimerRef.current) {
-        clearTimeout(formattingDemoDebounceTimerRef.current);
-      }
-    };
-  }, []);
+    if (!section) {
+      // Create a new exam
+      dispatch(createNewExam({
+        examTitle: 'Demo Exam',
+        courseCode: 'DEMO101',
+      }));
+
+      // Add a section
+      dispatch(addSection({
+        sectionTitle: 'Demo Section',
+        contentFormatted: '<p>This is a demo section with instructions.</p>'
+      }));
+
+      // Add a question to the section
+      dispatch(addQuestion({
+        examBodyIndex: 0,
+        questionData: {
+          contentFormatted: '<p>What is the capital of France?</p>',
+          answers: [
+            { contentFormatted: '<p>Paris</p>', correct: true },
+            { contentFormatted: '<p>London</p>', correct: false },
+            { contentFormatted: '<p>Berlin</p>', correct: false },
+          ]
+        }
+      }));
+    }
+  }, [dispatch, section]);
 
   return (
     <div className="editor-demo-container">
-      <Title level={2}>Rich Text Editor Demo</Title>
-      <Divider />
-      <Row gutter={[16, 16]}>
-        <Col span={24}>
-          <Card title="New Features Demo" className="demo-card">
-            <div className="demo-field">
-              <CompactRichTextEditor 
-                content={formattingDemo} 
-                onChange={handleFormattingDemoChange}
-                placeholder="Try the new features here..."
-                imageScale={imageScale} 
-                onImageScaleChange={handleImageScaleChange}
-              />
-            </div>
-            <div className="demo-field">
-              <Title level={5}>Preview (Rich HTML)</Title>
-              <div className="html-preview" dangerouslySetInnerHTML={{ __html: formattingDemo }} />
-            </div>
-            <div className="demo-field">
-              <Title level={5}>Preview (Simplified Text)</Title>
-              <div className="text-preview">
-                <SimplifiedContent html={formattingDemo} />
-              </div>
-            </div>
-          </Card>
-        </Col>
-      </Row>
+      <Title level={2}>Content Editor Demo</Title>
       
-      <Divider />
-      
-      <div className="demo-notes">
-        <Title level={4}>Implementation Notes</Title>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <Card title="Section Editor" className="demo-card">
+          <ContentEditor 
+            type="section"
+            examBodyIndex={0}
+          />
+        </Card>
+
+        <Card title="Question Editor" className="demo-card">
+          <ContentEditor 
+            type="question"
+            examBodyIndex={0}
+            questionIndex={0}
+          />
+        </Card>
+
+        <Card title="Answer Editor" className="demo-card">
+          <ContentEditor 
+            type="answer"
+            examBodyIndex={0}
+            questionIndex={0}
+            answerIndex={0}
+          />
+        </Card>
+      </div>
+
+      <div className="demo-notes" style={{ marginTop: '24px' }}>
+        <Title level={4}>Editor Features</Title>
         <ul>
-          <li>The editor supports text formatting: <strong>bold</strong>, <em>italic</em>, <u>underline</u></li>
-          <li>Text alignment: left, center, right</li>
-          <li>Lists with indentation support</li>
-          <li>Font selection: Times New Roman, Courier New, Arial</li>
-          <li>Soft return/line breaks within paragraphs</li>
-          <li>Images can be uploaded and resized (drag the handle in the bottom-right)</li>
-          <li>All content is stored as HTML in a single source of truth</li>
-          <li>Simplified text view is generated on-demand from the HTML</li>
+          <li>Each editor demonstrates editing different parts of an exam</li>
+          <li>Changes are stored in Redux state</li>
+          <li>Rich text formatting is preserved</li>
+          <li>Live preview shows formatted content</li>
         </ul>
       </div>
     </div>

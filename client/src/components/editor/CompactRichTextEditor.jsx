@@ -201,9 +201,12 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
       Resizable.configure({
         types: ['image'],
         handlerStyle: {
-          width: '6px',
-          height: '6px',
-          background: '#1677ff'
+          width: '8px',
+          height: '8px',
+          background: '#1677ff',
+          border: '1px solid white',
+          borderRadius: '50%',
+          boxShadow: '0 0 2px rgba(0,0,0,0.3)',
         },
         layerStyle: {
           border: '1px solid #1677ff'
@@ -268,6 +271,25 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
       }
     },
   });
+
+  // Add style element to hide unwanted handles
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      [data-drag-handle="top-left"],
+      [data-drag-handle="top-right"],
+      [data-drag-handle="bottom-left"] {
+        display: none !important;
+      }
+      [data-drag-handle="bottom-right"] {
+        cursor: se-resize !important;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   useEffect(() => {
     if (editor) {
