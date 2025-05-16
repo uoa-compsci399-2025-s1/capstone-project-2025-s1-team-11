@@ -168,10 +168,6 @@ const StaticContextBar = ({
     if (["demo", "exemplar"].includes(type)) {
       if (!window.confirm("Are you sure you want to export this? It may be incomplete.")) return;
     }
-<<<<<<< Updated upstream
-
-    exportExamToPdf(exam);
-=======
     // For now, call exportExamToPdf. In future, branch by type.
     if (exam) {
       // Stub branching for future formats
@@ -181,7 +177,6 @@ const StaticContextBar = ({
         console.log('Unknown export type:', type);
       }
     }
->>>>>>> Stashed changes
   };
 
   // Hover intent delay for bar expansion
