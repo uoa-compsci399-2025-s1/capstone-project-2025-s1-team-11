@@ -7,7 +7,7 @@ import Typography from '@tiptap/extension-typography';
 import FontFamily from '@tiptap/extension-font-family';
 import TextStyle from '@tiptap/extension-text-style';
 import Image from '@tiptap/extension-image';
-import Resizable from 'tiptap-extension-resizable';
+import { Plugin } from 'prosemirror-state';
 import { Extension } from '@tiptap/core';
 import { Button, Tooltip, message, Select, Upload, Slider, Card } from 'antd';
 import {
@@ -16,7 +16,7 @@ import {
   MenuUnfoldOutlined, MenuFoldOutlined, EnterOutlined,
   PictureOutlined
 } from '@ant-design/icons';
-import ImageResize from 'tiptap-extension-resize-image';
+import CustomResizableExtension from './extensions/CustomResizableExtension';
 //import './CompactRichTextEditor.css';
 
 const { Option } = Select;
@@ -95,35 +95,6 @@ const CustomIndentExtension = Extension.create({
   },
 });
 
-const CustomImageResize = ImageResize.extend({
-  addNodeView() {
-    return ({ node, getPos, editor }) => {
-      const img = document.createElement('img');
-      img.src = node.attrs.src;
-      img.style.width = node.attrs.width || 'auto';
-      img.style.height = node.attrs.height || 'auto';
-      img.draggable = true;
-      
-      // Handle drag and drop
-      img.addEventListener('dragstart', (e) => {
-        e.stopPropagation();
-      });
-      
-      return {
-        dom: img,
-        contentDOM: null,
-        update: (node) => {
-          if (node.type.name !== 'image') return false;
-          img.src = node.attrs.src;
-          img.style.width = node.attrs.width || 'auto';
-          img.style.height = node.attrs.height || 'auto';
-          return true;
-        },
-      };
-    };
-  },
-});
-
 const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content...' }) => {
   const editor = useEditor({
     extensions: [
@@ -198,31 +169,7 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
           style: 'display: inline; vertical-align: baseline;'
         }
       }),
-      Resizable.configure({
-        types: ['image'],
-        handlerStyle: {
-          width: '8px',
-          height: '8px',
-          background: '#1677ff',
-          border: '1px solid white',
-          borderRadius: '50%',
-          boxShadow: '0 0 2px rgba(0,0,0,0.3)',
-        },
-        layerStyle: {
-          border: '1px solid #1677ff'
-        },
-        onResize: ({ editor }) => {
-          console.log('Resize event triggered');
-          console.log('Content before transaction:', editor.getHTML());
-          
-          // Force a transaction to trigger content update
-          editor.commands.focus();
-          const transaction = editor.state.tr.setMeta('preventUpdate', false);
-          editor.view.dispatch(transaction);
-          
-          console.log('Content after transaction:', editor.getHTML());
-        }
-      }),
+      CustomResizableExtension,
     ],
     content,
     onUpdate: ({ editor }) => {
