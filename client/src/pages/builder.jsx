@@ -17,16 +17,12 @@ const Builder = () => {
     return (
       <div style={{ padding: 24 }}>
         <Typography.Title level={2}>Builder</Typography.Title>
-        <Collapse defaultActiveKey={['1']} accordion>
-          <Collapse.Panel header="Cover Page" key="1">
-            <Typography.Paragraph type="secondary">
-              Cover page content goes here.
-            </Typography.Paragraph>
-          </Collapse.Panel>
-          <Collapse.Panel header="Questions" key="2">
-            <ExamDisplay exam={exam} />
-          </Collapse.Panel>
-        </Collapse>
+        <Typography.Title level={3}>Cover Page</Typography.Title>
+        <Button type="default" style={{ marginBottom: 24 }}>
+          Upload Cover Page
+        </Button>
+        <Typography.Title level={3}>Questions</Typography.Title>
+        <ExamDisplay exam={exam} />
       </div>
     );
   };
