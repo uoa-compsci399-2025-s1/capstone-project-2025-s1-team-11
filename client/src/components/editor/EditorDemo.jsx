@@ -1,49 +1,10 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
 import { Card, Typography } from 'antd';
 import ContentEditor from './ContentEditor';
-import { createNewExam, addSection, addQuestion } from '../../store/exam/examSlice';
-import { selectSectionByIndex, selectQuestionByPath } from '../../store/exam/selectors';
 
 const { Title } = Typography;
 
 const EditorDemo = () => {
-  const dispatch = useDispatch();
-  
-  // Select the data from Redux to check if it exists
-  const section = useSelector(state => selectSectionByIndex(state, 0));
-  const question = useSelector(state => selectQuestionByPath(state, 0, 0));
-
-  // Initialize demo exam data when component mounts and only if data doesn't exist
-  useEffect(() => {
-    if (!section) {
-      // Create a new exam
-      dispatch(createNewExam({
-        examTitle: 'Demo Exam',
-        courseCode: 'DEMO101',
-      }));
-
-      // Add a section
-      dispatch(addSection({
-        sectionTitle: 'Demo Section',
-        contentFormatted: '<p>This is a demo section with instructions.</p>'
-      }));
-
-      // Add a question to the section
-      dispatch(addQuestion({
-        examBodyIndex: 0,
-        questionData: {
-          contentFormatted: '<p>What is the capital of France?</p>',
-          answers: [
-            { contentFormatted: '<p>Paris</p>', correct: true },
-            { contentFormatted: '<p>London</p>', correct: false },
-            { contentFormatted: '<p>Berlin</p>', correct: false },
-          ]
-        }
-      }));
-    }
-  }, [dispatch, section]);
-
   return (
     <div className="editor-demo-container">
       <Title level={2}>Content Editor Demo</Title>
