@@ -1,21 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
 import Typography from '@tiptap/extension-typography';
 import FontFamily from '@tiptap/extension-font-family';
 import TextStyle from '@tiptap/extension-text-style';
+import Image from '@tiptap/extension-image';
+import Resizable from 'tiptap-extension-resizable';
 import { Extension } from '@tiptap/core';
-import { Button, Tooltip, message, Select, Upload, Slider } from 'antd';
+import { Button, Tooltip, message, Select, Upload, Slider, Card } from 'antd';
 import {
   BoldOutlined, ItalicOutlined, UnderlineOutlined,
   AlignLeftOutlined, AlignCenterOutlined, AlignRightOutlined,
   MenuUnfoldOutlined, MenuFoldOutlined, EnterOutlined,
   PictureOutlined
 } from '@ant-design/icons';
-import './CompactRichTextEditor.css';
+import ImageResize from 'tiptap-extension-resize-image';
+//import './CompactRichTextEditor.css';
 
 const { Option } = Select;
 
@@ -93,7 +95,36 @@ const CustomIndentExtension = Extension.create({
   },
 });
 
-const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content...', imageScale, onImageScaleChange }) => {
+const CustomImageResize = ImageResize.extend({
+  addNodeView() {
+    return ({ node, getPos, editor }) => {
+      const img = document.createElement('img');
+      img.src = node.attrs.src;
+      img.style.width = node.attrs.width || 'auto';
+      img.style.height = node.attrs.height || 'auto';
+      img.draggable = true;
+      
+      // Handle drag and drop
+      img.addEventListener('dragstart', (e) => {
+        e.stopPropagation();
+      });
+      
+      return {
+        dom: img,
+        contentDOM: null,
+        update: (node) => {
+          if (node.type.name !== 'image') return false;
+          img.src = node.attrs.src;
+          img.style.width = node.attrs.width || 'auto';
+          img.style.height = node.attrs.height || 'auto';
+          return true;
+        },
+      };
+    };
+  },
+});
+
+const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content...' }) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -108,7 +139,39 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
             style: 'font-style: italic'
           },
         },
-        paragraph: true,
+        paragraph: {
+          HTMLAttributes: {
+            preserveWhitespace: true,
+            preserveStyle: true
+          },
+          parseHTML() {
+            return [
+              { 
+                tag: 'p',
+                getAttrs: (node) => ({
+                  style: node.getAttribute('style'),
+                  class: node.getAttribute('class'),
+                  ...node.style
+                })
+              }
+            ]
+          },
+          renderHTML({ node, HTMLAttributes }) {
+            return ['p', { ...HTMLAttributes, style: node.attrs.style }, 0]
+          }
+        },
+        hardBreak: {
+          HTMLAttributes: {
+            preserveStyle: true
+          },
+          parseHTML() {
+            return [
+              { tag: 'br' },
+              { tag: 'div', getAttrs: node => node.style.display === 'block' }
+            ]
+          }
+        },
+        image: false
       }),
       Underline.configure({
         HTMLAttributes: {
@@ -116,10 +179,10 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
         },
       }),
       TextStyle.configure({
-        types: ['textStyle'],
+        types: ['textStyle', 'paragraph'],
       }),
       FontFamily.configure({
-        types: ['textStyle'],
+        types: ['textStyle', 'paragraph'],
       }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
@@ -129,54 +192,114 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
       Typography,
       CustomIndentExtension,
       Image.configure({
+        inline: true,
         allowBase64: true,
-        inline: false,
         HTMLAttributes: {
-          // class: 'content-image', // Optional class for general styling
+          style: 'display: inline; vertical-align: baseline;'
+        }
+      }),
+      Resizable.configure({
+        types: ['image'],
+        handlerStyle: {
+          width: '6px',
+          height: '6px',
+          background: '#1677ff'
         },
-        addAttributes() {
-          return {
-            // Ensure Tiptap's default attributes like src, alt, title are kept.
-            // This spread might need to be this.parentAttrs or similar depending on Tiptap version specifics
-            // For Tiptap 2, it usually inherits default attributes automatically.
-            // Let's assume defaults are kept and just add ours.
-            src: { default: null },
-            alt: { default: null },
-            title: { default: null },
-
-            customWidth: {
-              default: '100%', // Default to 100% if no specific width is set
-              parseHTML: element => {
-                let widthToStore = '100%';
-                if (element.style.width && element.style.width.includes('%')) {
-                  widthToStore = element.style.width;
-                } else if (element.getAttribute('width') && element.getAttribute('width').includes('%')) {
-                  widthToStore = element.getAttribute('width');
-                }
-                // Note: We are not parsing pixel widths into percentages here for simplicity.
-                return widthToStore;
-              },
-              renderHTML: attributes => {
-                // This style will be applied to the <img> tag in the editor and in getHTML()
-                return { style: `width: ${attributes.customWidth || '100%'}; height: auto;` };
-              },
-            },
-          };
+        layerStyle: {
+          border: '1px solid #1677ff'
         },
+        onResize: ({ editor }) => {
+          console.log('Resize event triggered');
+          console.log('Content before transaction:', editor.getHTML());
+          
+          // Force a transaction to trigger content update
+          editor.commands.focus();
+          const transaction = editor.state.tr.setMeta('preventUpdate', false);
+          editor.view.dispatch(transaction);
+          
+          console.log('Content after transaction:', editor.getHTML());
+        }
       }),
     ],
     content,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      const html = editor.getHTML();
+      onChange(html);
     },
     editorProps: {
       attributes: {
         class: 'compact-editor-content',
         spellcheck: 'false',
-        style: `--image-scale-percent: ${imageScale}%;`
+        style: 'outline: none !important; padding: 0 !important; margin: 0 !important;'
       },
+      parseOptions: {
+        preserveWhitespace: true
+      },
+      // Override default ProseMirror styles
+      transformPastedHTML(html) {
+        return html.replace(/style="[^"]*"/g, (match) => {
+          // Preserve existing styles but remove any padding/margin
+          return match.replace(/(padding|margin)[^;]*(;|")/g, '');
+        });
+      },
+      handleDrop: (view, event, slice, moved) => {
+        if (moved && event.target.nodeName === 'IMG') {
+          const coordinates = view.posAtCoords({
+            left: event.clientX,
+            top: event.clientY,
+          });
+          if (coordinates) {
+            const transaction = view.state.tr.deleteSelection();
+            const insertPos = coordinates.pos;
+            return transaction.insert(insertPos, slice.content);
+          }
+        }
+        return false;
+      },
+      handleDOMEvents: {
+        mouseup: (view, event) => {
+          // Additional handler for resize completion
+          if (event.target.closest('.resize-handler')) {
+            console.log('Resize mouseup detected');
+            console.log('Current doc content:', view.state.doc.toJSON());
+            onChange(view.state.doc.content.toJSON());
+          }
+        }
+      }
     },
   });
+
+  useEffect(() => {
+    if (editor) {
+      // Create a mutation observer to watch for image size changes
+      const observer = new MutationObserver((mutations) => {
+        let hasImageChange = false;
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && 
+              mutation.attributeName === 'style' && 
+              mutation.target.tagName === 'IMG') {
+            hasImageChange = true;
+          }
+        });
+        
+        if (hasImageChange) {
+          console.log('Image size changed - triggering update');
+          onChange(editor.getHTML());
+        }
+      });
+
+      // Start observing the editor content
+      const editorElement = editor.view.dom;
+      observer.observe(editorElement, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+        attributeFilter: ['style']
+      });
+
+      return () => observer.disconnect();
+    }
+  }, [editor, onChange]);
 
   if (!editor) {
     return null;
@@ -223,151 +346,166 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
 
   return (
     <div className="compact-editor-container">
-      <div className="compact-editor-toolbar">
-        <Tooltip title="Bold">
-          <Button
-            type="text"
-            size="small"
-            icon={<BoldOutlined />}
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            className={editor.isActive('bold') ? 'is-active' : ''}
+      <Card 
+        size="small" 
+        styles={{ 
+          body: { 
+            padding: 0,
+          },
+          border: {
+            borderColor: '#d9d9d9'
+          }
+        }}
+        variant="outlined"
+      >
+        <div style={{ 
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%'
+        }}>
+          <div style={{ padding: '2px', borderBottom: '1px solid #d9d9d9', background: '#fafafa' }}>
+            <Tooltip title="Bold">
+              <Button
+                type="text"
+                size="small"
+                icon={<BoldOutlined />}
+                onClick={() => editor.chain().focus().toggleBold().run()}
+                className={editor.isActive('bold') ? 'is-active' : ''}
+              />
+            </Tooltip>
+
+            <Tooltip title="Italic">
+              <Button
+                type="text"
+                size="small"
+                icon={<ItalicOutlined />}
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+                className={editor.isActive('italic') ? 'is-active' : ''}
+              />
+            </Tooltip>
+
+            <Tooltip title="Underline">
+              <Button
+                type="text"
+                size="small"
+                icon={<UnderlineOutlined />}
+                onClick={() => editor.chain().focus().toggleUnderline().run()}
+                className={editor.isActive('underline') ? 'is-active' : ''}
+              />
+            </Tooltip>
+
+            <Tooltip title="Align Left">
+              <Button
+                type="text"
+                size="small"
+                icon={<AlignLeftOutlined />}
+                onClick={() => editor.chain().focus().setTextAlign('left').run()}
+                className={editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''}
+              />
+            </Tooltip>
+
+            <Tooltip title="Align Center">
+              <Button
+                type="text"
+                size="small"
+                icon={<AlignCenterOutlined />}
+                onClick={() => editor.chain().focus().setTextAlign('center').run()}
+                className={editor.isActive({ textAlign: 'center' }) ? 'is-active' : ''}
+              />
+            </Tooltip>
+
+            <Tooltip title="Align Right">
+              <Button
+                type="text"
+                size="small"
+                icon={<AlignRightOutlined />}
+                onClick={() => editor.chain().focus().setTextAlign('right').run()}
+                className={editor.isActive({ textAlign: 'right' }) ? 'is-active' : ''}
+              />
+            </Tooltip>
+
+            <Tooltip title="Indent">
+              <Button
+                type="text"
+                size="small"
+                icon={<MenuUnfoldOutlined />}
+                onClick={handleIndent}
+              />
+            </Tooltip>
+
+            <Tooltip title="Outdent">
+              <Button
+                type="text"
+                size="small"
+                icon={<MenuFoldOutlined />}
+                onClick={handleOutdent}
+              />
+            </Tooltip>
+
+            <Tooltip title="Paragraph">
+              <Button
+                type="text"
+                size="small"
+                icon={<span style={{ fontWeight: 'bold', fontSize: '1.2em' }}>¶</span>}
+                onClick={handleParagraph}
+              />
+            </Tooltip>
+
+            <Tooltip title="Soft Return (Line Break)">
+              <Button
+                type="text"
+                size="small"
+                icon={<EnterOutlined style={{ transform: 'rotateY(180deg)' }} />}
+                onClick={handleSoftReturn}
+              />
+            </Tooltip>
+
+            <Tooltip title="Font Family">
+              <Select
+                defaultValue="default"
+                style={{ width: 120, marginLeft: 4, marginRight: 4 }}
+                size="small"
+                onChange={handleFontFamily}
+                popupMatchSelectWidth={false}
+                value={editor.isActive('textStyle') ?
+                  (editor.getAttributes('textStyle').fontFamily || 'default') :
+                  'default'}
+              >
+                <Option value="default">Default</Option>
+                <Option value="'Times New Roman', Times, serif" style={{ fontFamily: 'Times New Roman' }}>Times New Roman</Option>
+                <Option value="'Courier New', Courier, monospace" style={{ fontFamily: 'Courier New' }}>Courier New</Option>
+                <Option value="Arial, Helvetica, sans-serif" style={{ fontFamily: 'Arial' }}>Arial</Option>
+              </Select>
+            </Tooltip>
+
+            <Tooltip title="Insert Image">
+              <Upload
+                accept="image/*"
+                showUploadList={false}
+                beforeUpload={handleImageUpload}
+                className="image-upload-button"
+              >
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<PictureOutlined />}
+                />
+              </Upload>
+            </Tooltip>
+
+          </div>
+          <EditorContent 
+            editor={editor} 
+            style={{ 
+              padding: '0 6px',
+              minHeight: '4px',
+              background: '#fff',
+              outline: 'none',
+              position: 'relative'
+            }} 
           />
-        </Tooltip>
-
-        <Tooltip title="Italic">
-          <Button
-            type="text"
-            size="small"
-            icon={<ItalicOutlined />}
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={editor.isActive('italic') ? 'is-active' : ''}
-          />
-        </Tooltip>
-
-        <Tooltip title="Underline">
-          <Button
-            type="text"
-            size="small"
-            icon={<UnderlineOutlined />}
-            onClick={() => editor.chain().focus().toggleUnderline().run()}
-            className={editor.isActive('underline') ? 'is-active' : ''}
-          />
-        </Tooltip>
-
-        <Tooltip title="Align Left">
-          <Button
-            type="text"
-            size="small"
-            icon={<AlignLeftOutlined />}
-            onClick={() => editor.chain().focus().setTextAlign('left').run()}
-            className={editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''}
-          />
-        </Tooltip>
-
-        <Tooltip title="Align Center">
-          <Button
-            type="text"
-            size="small"
-            icon={<AlignCenterOutlined />}
-            onClick={() => editor.chain().focus().setTextAlign('center').run()}
-            className={editor.isActive({ textAlign: 'center' }) ? 'is-active' : ''}
-          />
-        </Tooltip>
-
-        <Tooltip title="Align Right">
-          <Button
-            type="text"
-            size="small"
-            icon={<AlignRightOutlined />}
-            onClick={() => editor.chain().focus().setTextAlign('right').run()}
-            className={editor.isActive({ textAlign: 'right' }) ? 'is-active' : ''}
-          />
-        </Tooltip>
-
-        <Tooltip title="Indent">
-          <Button
-            type="text"
-            size="small"
-            icon={<MenuUnfoldOutlined />}
-            onClick={handleIndent}
-          />
-        </Tooltip>
-
-        <Tooltip title="Outdent">
-          <Button
-            type="text"
-            size="small"
-            icon={<MenuFoldOutlined />}
-            onClick={handleOutdent}
-          />
-        </Tooltip>
-
-        <Tooltip title="Paragraph">
-          <Button
-            type="text"
-            size="small"
-            icon={<span style={{ fontWeight: 'bold', fontSize: '1.2em' }}>¶</span>}
-            onClick={handleParagraph}
-          />
-        </Tooltip>
-
-        <Tooltip title="Soft Return (Line Break)">
-          <Button
-            type="text"
-            size="small"
-            icon={<EnterOutlined style={{ transform: 'rotateY(180deg)' }} />}
-            onClick={handleSoftReturn}
-          />
-        </Tooltip>
-
-        <Tooltip title="Font Family">
-          <Select
-            defaultValue="default"
-            style={{ width: 120, marginLeft: 4, marginRight: 4 }}
-            size="small"
-            onChange={handleFontFamily}
-            popupMatchSelectWidth={false}
-            value={editor.isActive('textStyle') ?
-              (editor.getAttributes('textStyle').fontFamily || 'default') :
-              'default'}
-          >
-            <Option value="default">Default</Option>
-            <Option value="'Times New Roman', Times, serif" style={{ fontFamily: 'Times New Roman' }}>Times New Roman</Option>
-            <Option value="'Courier New', Courier, monospace" style={{ fontFamily: 'Courier New' }}>Courier New</Option>
-            <Option value="Arial, Helvetica, sans-serif" style={{ fontFamily: 'Arial' }}>Arial</Option>
-          </Select>
-        </Tooltip>
-
-        <Tooltip title="Insert Image">
-          <Upload
-            accept="image/*"
-            showUploadList={false}
-            beforeUpload={handleImageUpload}
-            className="image-upload-button"
-          >
-            <Button
-              type="text"
-              size="small"
-              icon={<PictureOutlined />}
-            />
-          </Upload>
-        </Tooltip>
-
-        {onImageScaleChange && (
-          <Tooltip title={`Image Scale: ${imageScale}%`}>
-            <Slider 
-              min={40} 
-              max={100} 
-              value={imageScale} 
-              onChange={onImageScaleChange} 
-              style={{ width: '70px', marginLeft: '8px', marginRight: '4px'}}
-              tipFormatter={value => `${value}%`}
-            />
-          </Tooltip>
-        )}
-
-      </div>
-      <EditorContent editor={editor} className="compact-editor-content-wrapper" />
+        </div>
+      </Card>
     </div>
   );
 };

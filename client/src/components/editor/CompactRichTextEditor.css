@@ -4,7 +4,6 @@
   all: revert;
   
   /* Base styles */
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
   line-height: 1.5;
   color: rgba(0, 0, 0, 0.85);
@@ -127,10 +126,40 @@
 /* Image styles */
 .compact-editor-content img {
   max-width: 100%;
-  width: var(--image-scale-percent, 100%);
   height: auto;
-  display: block;
-  margin: 4px 0;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Override TipTap's default image wrapper styles */
+.compact-editor-content .ProseMirror-selectednode {
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  display: inline-block !important;
+}
+
+.compact-editor-content img::selection,
+.compact-editor-content img::-moz-selection {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Remove any flex container styles that TipTap might add */
+.compact-editor-content div[contenteditable="false"] {
+  display: inline-block !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+/* Ensure cursor can appear between images */
+.compact-editor-content {
+  cursor: text;
+}
+
+.compact-editor-content img {
+  cursor: move;
 }
 
 /* List styles */
@@ -158,4 +187,17 @@
   display: flex !important;
   align-items: center;
   justify-content: center;
+}
+
+.ProseMirror {
+  padding: 8px;
+  outline: none;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+.compact-editor-content:focus {
+  outline: none;
 } 

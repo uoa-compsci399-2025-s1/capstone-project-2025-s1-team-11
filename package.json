@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "tiptap-extension-resizable": "^1.1.1",
+    "tiptap-extension-resize-image": "^1.2.2"
+  }
+}
