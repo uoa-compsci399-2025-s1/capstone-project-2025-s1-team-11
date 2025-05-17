@@ -13,7 +13,7 @@ import { readTeleform } from '../teleformReader';
 
 const baseExam = { ...TestExam };
 baseExam.examBody = baseExam.examBody.filter(e => e.type === 'question').slice(0, 3);
-baseExam.examBody[0].marks = undefined;
+baseExam.examBody.forEach(q => { q.marks = 1; });
 baseExam.teleformOptions = ['a', 'b', 'c', 'd', 'e'];
 
 const testCases = [
@@ -56,7 +56,7 @@ const testCases = [
   },
   {
     name: '10_superset_answer',
-    answerString: '0E', // bitmask 1110, superset of 0110 (6)
+    answerString: '14', // bitmask 1110, superset of 0110 (6)
     markingKey: { '00000001': '06' },
     expectedMarks: 1
   },
