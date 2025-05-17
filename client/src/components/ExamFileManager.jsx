@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { Button, Alert, Space, Typography, Modal, Input, message, Card, Divider, Select } from "antd";
-import { createNewExam } from "../store/exam/examSlice";
+import { createNewExam, clearExam } from "../store/exam/examSlice";
 
 
 const ExamFileManager = () => {

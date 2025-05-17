@@ -49,6 +49,7 @@ const ExamDisplay = () => {
             type: "section", 
             title: entry.title, 
             subtext: entry.subtext,
+            contentFormatted: entry.contentFormatted,
             examBodyIndex, 
             key: sectionKey 
           });
@@ -306,11 +307,11 @@ const ExamDisplay = () => {
               ),
             },
             {
-              title: "ID",
-              dataIndex: "id",
-              key: "id-column",
-              render: (id) => id?.split('-').pop(),
-              width: 70,
+              title: "Question #",
+              dataIndex: "questionNumber",
+              key: "question-number-column",
+              width: 100,
+              render: (text, record) => record.type === "question" ? record.questionNumber : null,
             },
             {
               title: "Type",
@@ -332,7 +333,19 @@ const ExamDisplay = () => {
               width: 300, 
               render: (text, record) => (record.type === "section" ? (
                 <div>
-                  <strong>{record.title?.split('-').slice(2).join('-').trim()}</strong>
+                  {record.contentFormatted && (
+                    <Typography.Paragraph
+                      style={{ margin: 0, maxWidth: 280 }}
+                      ellipsis={{ 
+                        rows: 3,
+                        expandable: true,
+                        symbol: 'more'
+                      }}
+                    >
+                      {record.contentFormatted}
+                    </Typography.Paragraph>
+                  )}
+                  {record.title && <strong>{record.title?.split('-').slice(2).join('-').trim()}</strong>}
                   {record.subtext && <div style={{ fontStyle: "italic", color: "#888" }}>{record.subtext}</div>}
                 </div>
               ) : (
