@@ -482,7 +482,6 @@ const StaticContextBar = ({
           <div style={{ padding: '24px 0px' }}>
             {exam ? (
               <>
-                <Divider orientation="left" style={{ marginBottom: 16 }}>Exam Details</Divider>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "32px", alignItems: "flex-end" }}>
                   <div>
                     <div style={{ marginBottom: 4 }}><strong>Course Code:</strong></div>
@@ -519,15 +518,6 @@ const StaticContextBar = ({
                     >
                       Edit Exam Details
                     </Button>
-                  </div>
-                </div>
-                <Divider orientation="left" style={{ marginTop: 24, marginBottom: 16 }}>Exam Progress</Divider>
-                <div style={{ display: "flex", gap: "32px", marginBottom: 12 }}>
-                  <div>
-                    <strong>Total Questions:</strong> {typeof questionCount === "number" ? questionCount : "N/A"}
-                  </div>
-                  <div>
-                    <strong>Total Marks:</strong> {typeof totalMarks === "number" ? totalMarks : "N/A"}
                   </div>
                 </div>
               </>
