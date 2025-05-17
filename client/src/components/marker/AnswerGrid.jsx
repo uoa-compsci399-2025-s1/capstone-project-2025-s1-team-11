@@ -1,5 +1,6 @@
 import React from "react";
 import { theme } from "antd";
+import { markQuestion } from "../../utilities/marker/examMarker";
 
 const OPTIONS = ['A', 'B', 'C', 'D', 'E'];
 
@@ -14,7 +15,7 @@ function decodeAnswerString(answerString) {
     const binary = decimalValue.toString(2).padStart(5, '0');
 
     for (let j = 0; j < 5; j++) {
-      matrix[j].push(binary[j] === '1');
+      matrix[j].push(binary[4 - j] === '1'); // bit 0 = A, bit 4 = E
     }
   }
 
@@ -26,7 +27,6 @@ const AnswerGrid = ({ answerString = '', answerKeyString = '' }) => {
 
   const selectedMatrix = decodeAnswerString(answerString);
   const correctMatrix = answerKeyString ? decodeAnswerString(answerKeyString) : null;
-
   const maxQuestions = selectedMatrix[0]?.length || correctMatrix?.[0]?.length || 0;
 
   return (
@@ -87,6 +87,47 @@ const AnswerGrid = ({ answerString = '', answerKeyString = '' }) => {
             })}
           </tr>
         ))}
+
+        {/* Correct? row */}
+        {answerString && (
+          <tr key="correctness">
+            <td style={{
+              padding: 4,
+              textAlign: 'center',
+              fontWeight: 'bold',
+              border: `1px solid ${token.colorBorderSecondary}`,
+              background: token.colorFillSecondary
+            }}>
+              Correct?
+            </td>
+            {Array.from({ length: maxQuestions }, (_, colIndex) => {
+              const correctBitmask = correctMatrix
+                ? correctMatrix.reduce((acc, val, i) => val[colIndex] ? acc | (1 << i) : acc, 0)
+                : 0;
+
+              const selectedBitmask = selectedMatrix
+                ? selectedMatrix.reduce((acc, val, i) => val[colIndex] ? acc | (1 << i) : acc, 0)
+                : 0;
+
+              const { isCorrect } = markQuestion(correctBitmask, selectedBitmask);
+
+              return (
+                <td
+                  key={`correct-${colIndex}`}
+                  style={{
+                    padding: 4,
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    border: `1px solid ${token.colorBorderSecondary}`,
+                    backgroundColor: isCorrect ? token.colorSuccess : token.colorError
+                  }}
+                >
+                  {isCorrect ? '✔️' : '❌'}
+                </td>
+              );
+            })}
+          </tr>
+        )}
         </tbody>
       </table>
     </div>
