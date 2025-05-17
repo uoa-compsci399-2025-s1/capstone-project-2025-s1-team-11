@@ -20,7 +20,7 @@ export function generateMarkingKey(correctAnswers) {
     encodedKeys[versionId] = sortedQuestions
       .map(qIndex => {
         const correctIndexes = questionMap[qIndex];
-        const mask = correctIndexes.reduce((acc, i) => acc | (1 << (4 - i)), 0);
+        const mask = correctIndexes.reduce((acc, i) => acc | (1 << i), 0);
         return String(mask).padStart(2, '0');
       })
       .join('');
