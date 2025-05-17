@@ -36,15 +36,23 @@ export function useFileSystem() {
         return updatedHandle;
     };
 
-  // Imports the exam from a file (docx, xml, etc.)
+    // Imports the exam from a file (docx, xml, latex, etc.)
     const importExam = async (file, format) => {
         try {
-        const examDTO = await examImportService.importExamToDTO(file, format);
-        dispatch(importDTOToState(examDTO));
-        //dispatch(createNewExam(examData)); 
-        return true;
+            // Validate the format is supported
+            if (!['docx', 'moodle', 'latex'].includes(format)) {
+                throw new Error(`Unsupported format: ${format}. Supported formats are: docx, moodle, latex.`);
+            }
+            
+            // Process the file using the examImportService to get the DTO
+            const examDTO = await examImportService.importExamToDTO(file, format);
+            
+            // Update the application state with the DTO
+            dispatch(importDTOToState(examDTO));
+            
+            return true;
         } catch (error) {
-        throw new Error("Error importing exam: " + error.message);
+            throw new Error("Error importing exam: " + error.message);
         }
     };
 
