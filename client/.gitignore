@@ -42,6 +42,3 @@ server/.venv/
 .env.test.local
 .env.production.local
 run/
-
-# Testing directory
-src/testing/
