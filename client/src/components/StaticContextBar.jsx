@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Dropdown, Button, Space, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, message as antdMessage } from 'antd';
+import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, message as antdMessage } from 'antd';
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined } from '@ant-design/icons';
 import { updateExamField } from "../store/exam/examSlice";
@@ -11,7 +11,6 @@ import { selectExamData } from '../store/exam/selectors.js';
 import CreateExamModal from './CreateExamModal';
 import EditExamModal from './EditExamModal';
 import { exportExamToPdf } from "../services/exportPdf";
-import { saveExamToFile } from "../services/fileSystemAccess";
 import { selectQuestionCount, selectTotalMarks } from '../store/exam/selectors';
 import '../index.css';
 
@@ -28,7 +27,7 @@ const StaticContextBar = ({
 }) => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
-  const { fileHandle, createExam, openExam, saveExam, importExam } = useFileSystem();
+  const { fileHandle, createExam, openExam, saveExam } = useFileSystem();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newExamData, setNewExamData] = useState({
     examTitle: '',
