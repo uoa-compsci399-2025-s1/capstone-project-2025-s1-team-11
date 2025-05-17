@@ -328,9 +328,9 @@ const ExamDisplay = () => {
               ellipsis: true,
             },
             {
-              title: "Title / Question",
-              dataIndex: "titleOrQuestion",
-              key: "title-question-column",
+              title: "Question / Content",
+              dataIndex: "questionContent",
+              key: "question-content-column",
               width: 300, 
               render: (text, record) => (record.type === "section" ? (
                 <div>
@@ -343,7 +343,7 @@ const ExamDisplay = () => {
                         symbol: 'more'
                       }}
                     >
-                      {record.contentFormatted || record.contentText}
+                      {record.contentText || record.contentFormatted}
                     </Typography.Paragraph>
                   )}
                   {record.sectionTitle && <strong>{record.sectionTitle}</strong>}
