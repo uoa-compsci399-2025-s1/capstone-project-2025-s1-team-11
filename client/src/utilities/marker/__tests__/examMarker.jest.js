@@ -22,22 +22,30 @@ describe('markExams', () => {
   it('marks student answers correctly and calculates summary stats', () => {
     const teleformData = 'mocked scan data string';
 
-    // Simulate a single student submission (bitmask answers)
     readTeleform.mockReturnValue([
       {
         studentId: '999999999',
         firstName: 'Test',
         lastName: 'Student',
         versionId: '00000001',
-        answerString: '1616161616' // This represents 5 answers with bitmask 16 (option E)
+        answerString: '1616161616'
       }
     ]);
 
-    const markingKey = {
-      '00000001': '1616161616' // All correct answers are also bitmask 16 (option E)
+    const exam = {
+      ...TestExam,
+      examBody: TestExam.examBody
+        .filter(q => q.type === 'question')
+        .slice(0, 5)
+        .map(q => ({ ...q, marks: 1 })), // ✅ explicitly set marks
+      teleformOptions: ['A', 'B', 'C', 'D', 'E']
     };
 
-    const results = markExams(TestExam, teleformData, markingKey);
+    const markingKey = {
+      '00000001': '1616161616'
+    };
+
+    const results = markExams(exam, teleformData, markingKey);
 
     expect(results.summary.totalStudents).toBe(1);
     expect(results.summary.averageMark).toBeGreaterThan(0);
