@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Button, Typography, Modal, Input, message, Table } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  addSection,
-  addQuestion,
   removeQuestion,
   removeSection,
   updateQuestion,
@@ -31,7 +29,6 @@ const ExamDisplay = () => {
   });
 
   const [examItems, setExamItems] = useState([]);
-  const [activeItemId, setActiveItemId] = useState(null);
 
   const pointerSensor = useSensor(PointerSensor);
   const keyboardSensor = useSensor(KeyboardSensor);
@@ -242,11 +239,9 @@ const ExamDisplay = () => {
         collisionDetection={closestCenter}
         dropAnimation={{ duration: 250, easing: 'ease' }}
         modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-        onDragStart={({ active }) => setActiveItemId(active.id)}
+        onDragStart={() => {}}
         onDragEnd={({ active, over }) => {
-          setActiveItemId(null);
           if (!over || active.id === over.id) return;
-  
           const updated = arrayMove(
             examItems,
             examItems.findIndex(i => i.id === active.id),

@@ -275,7 +275,7 @@ const Marker = () => {
                           <Progress
                             percent={count / results.length * 100}
                             showInfo={true}
-                            format={percent => `${count} students`}
+                            format={percent => `${Math.round((percent * results.length) / 100)} students`}
                           />
                         </div>
                       );

@@ -164,7 +164,7 @@ const examSlice = createSlice({
         //Object.assign(container.questions[questionsIndex], newData);
         Object.assign(question, newData);
         if (optionsCount !== question.answers.length) {
-          question.answers = normaliseAnswersToLength(question.answers, optionCount);
+          question.answers = normaliseAnswersToLength(question.answers, optionsCount);
         }
       } else if (container.type === 'question') {
         Object.assign(container, newData);
@@ -388,7 +388,7 @@ export const importDTOToState = (examDTO) => async (dispatch) => {
           //const sectionIndex = result.payload;
           //const sectionIndex = state.examData.examBody.length - 1;
 
-          for (const question of item.questions || []) {
+          for (const question of questions || []) {
             await dispatch(addQuestion({ 
               examBodyIndex: examBodyIndexCounter, 
               questionData: question 

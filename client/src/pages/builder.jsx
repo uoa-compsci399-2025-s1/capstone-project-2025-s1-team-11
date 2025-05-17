@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from 'react-redux';
-import { createNewExam } from "../store/exam/examSlice.js";
+import { useSelector } from 'react-redux';
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
@@ -14,14 +13,15 @@ import { exportExamToPdf } from "../services/exportPdf.js";
 const Builder = () => {
     const exam = useSelector(selectExamData);
     const navigate = useNavigate();
-    const dispatch = useDispatch();
     const [currentItemId, setCurrentItemId] = useState(null);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     // Function to handle sidebar navigation
     const handleNavigateToItem = (itemId, itemType) => {
         setCurrentItemId(itemId);
-
+        if (itemType) {
+            // Do something?
+        }
     };
 
     // Function to toggle sidebar visibility

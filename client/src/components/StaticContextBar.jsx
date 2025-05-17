@@ -12,7 +12,6 @@ import { selectExamData } from '../store/exam/selectors.js';
 import CreateExamModal from './CreateExamModal';
 import EditExamModal from './EditExamModal';
 import { exportExamToPdf } from "../services/exportPdf";
-import { saveExamToFile } from "../services/fileSystemAccess";
 import { selectQuestionCount, selectTotalMarks } from '../store/exam/selectors';
 import '../index.css';
 
@@ -20,8 +19,6 @@ const { Text } = Typography;
 
 const StaticContextBar = ({
   examTitle = "Untitled Exam",
-  status = "saved",
-  onExport,
   canExportDemo = false,
   canExportRandomised = false,
   canExportExemplar = false,
@@ -78,10 +75,7 @@ const StaticContextBar = ({
     unsaved: "red",
   };
 
-  const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
-
   // Handlers
-
   const handleOpenExam = async () => {
     const result = await openExam();
     if (result) {

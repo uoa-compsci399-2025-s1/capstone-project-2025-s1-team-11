@@ -8,11 +8,9 @@ import { createNewExam, clearExam } from "../store/exam/examSlice";
 
 const ExamFileManager = () => {
   const dispatch = useDispatch();
-  const [fileHandle, setFileHandle] = useState(null);
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const { openExam, saveExam, importExam } = useFileSystem();
-  const [fileOptionsOpen, setFileOptionsOpen] = useState(true);
   const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
 
   // State for create new exam modal
@@ -67,7 +65,6 @@ const ExamFileManager = () => {
         if (result) {
           message.success("File imported successfully");
           setError("");
-          setFileHandle(null); // since this exam was imported and not loaded from a JSON file
         }
       } catch (err) {
         setError("Error importing exam: " + err.message);
@@ -96,36 +93,6 @@ const ExamFileManager = () => {
   };
 
   const examData = useSelector((state) => state.exam.examData);
-
-  function getFlatQuestionListFromExam(examData) {
-    const items = [];
-    if (!examData) return items;
-    (examData.examBody || []).forEach((entry) => {
-      if (entry.type === "section") {
-        (entry.questions || []).forEach((q) => {
-          items.push({
-            ...q,
-            type: "question",
-            section: entry.sectionTitle,
-            questionText: q.questionText || q.contentText,
-            options: q.options || (q.answers || []).map(a => a.contentText),
-            correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
-          });
-        });
-      } else if (entry.type === "question") {
-        items.push({
-          ...entry,
-          type: "question",
-          questionText: entry.questionText || entry.contentText,
-          options: entry.options || (entry.answers || []).map(a => a.contentText),
-          correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
-        });
-      } else {
-        console.warn(" Unknown item type:", entry);
-      }
-    });
-    return items;
-  }
 
   const handleSaveExam = async () => {
     if (!examData) {
@@ -174,7 +141,6 @@ const ExamFileManager = () => {
           </Button>
           <Button onClick={async () => {
             await handleOpenExam();
-            setFileOptionsOpen(false);
           }}>
             Open Exam (JSON)
           </Button>
@@ -250,7 +216,6 @@ const ExamFileManager = () => {
             }
             
             setShowCreateModal(false);
-            setFileOptionsOpen(false);
             message.success('New exam created and saved successfully');
           } catch (err) {
             setError("Error creating exam: " + err.message);

@@ -470,7 +470,7 @@ function ExamConsole() {
           
           const updateSectionArgs = parseQuotedArgs(trimmedCommand);
           const secIdx = parseInt(updateSectionArgs[1]);
-          const secField = updateSectionArgs[2].toLowerCase();
+          const secField = updateSectionArgs[2];
           const secValue = updateSectionArgs[3];
           
           // Check if valid section
@@ -484,10 +484,11 @@ function ExamConsole() {
           const secUpdateData = {};
           switch (secField) {
             case 'title':
-              secUpdateData.title = secValue;
+            case 'sectionTitle':  
+              secUpdateData.sectionTitle = secValue;
               break;
-            case 'description':
-              secUpdateData.description = secValue;
+            case 'contentText':
+              secUpdateData.contentText = secValue;
               break;
             default:
               addToOutput(`Unknown section field: ${secField}`, 'error');
@@ -828,17 +829,7 @@ function ExamConsole() {
     setCommand('');
   };
   
-  // Handle command input
-  const handleCommandChange = (e) => {
-    setCommand(e.target.value);
-  };
-  
-  // Handle Enter key
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      processCommand();
-    }
-  };
+
   
   // Parse quoted arguments (handles spaces in arguments)
   const parseQuotedArgs = (cmdString) => {
