@@ -65,9 +65,8 @@ const ExamFileManager = () => {
       try {
         const result = await importExam(selectedFile, format);
         if (result) {
-          setShowSuccessAlert(true);
+          message.success("File imported successfully");
           setError("");
-          console.log("File imported and saved successfully");
           setFileHandle(null); // since this exam was imported and not loaded from a JSON file
         }
       } catch (err) {
