@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Divider, Switch, Select } from 'antd';
+import { Modal, Form, Input, Divider } from 'antd';
 
 const EditExamModal = ({
   open,
@@ -8,8 +8,6 @@ const EditExamModal = ({
   editDetailsData,
   setEditDetailsData
 }) => {
-  const [useCustomVersions, setUseCustomVersions] = useState(false);
-  const [versionScheme, setVersionScheme] = useState('letters'); // options: 'letters', 'numbers', 'roman'
   const [versionCount, setVersionCount] = useState(4);
 
   useEffect(() => {
@@ -87,49 +85,22 @@ const EditExamModal = ({
             }
           />
         </Form.Item>
-        <Form.Item label="Use Custom Versions">
-          <Switch checked={useCustomVersions} onChange={setUseCustomVersions} />
+        <Form.Item label="Number of Versions">
+          <Input
+            type="number"
+            min={2}
+            max={10}
+            value={versionCount}
+            onChange={(e) => {
+              const count = parseInt(e.target.value || 4);
+              setVersionCount(count);
+              const generated = Array.from({ length: count }, (_, i) =>
+                String(i + 1).padStart(8, '0')
+              );
+              setEditDetailsData(prev => ({ ...prev, versions: generated.join(', ') }));
+            }}
+          />
         </Form.Item>
-        {useCustomVersions ? (
-          <Form.Item label="Custom Versions (comma-separated)">
-            <Input
-              placeholder="e.g. I, II, III"
-              value={editDetailsData.versions}
-              onChange={(e) =>
-                setEditDetailsData(prev => ({ ...prev, versions: e.target.value }))
-              }
-            />
-          </Form.Item>
-        ) : (
-          <>
-            <Form.Item label="Version Scheme">
-              <Select value={versionScheme} onChange={setVersionScheme}>
-                <Select.Option value="letters">A, B, C...</Select.Option>
-                <Select.Option value="numbers">1, 2, 3...</Select.Option>
-                <Select.Option value="roman">I, II, III...</Select.Option>
-              </Select>
-            </Form.Item>
-            <Form.Item label="Number of Versions">
-              <Input
-                type="number"
-                min={2}
-                max={10}
-                value={versionCount}
-                onChange={(e) => {
-                  const count = parseInt(e.target.value || 4);
-                  setVersionCount(count);
-                  const generated = Array.from({ length: count }, (_, i) => {
-                    if (versionScheme === 'letters') return String.fromCharCode(65 + i);
-                    if (versionScheme === 'numbers') return String(i + 1);
-                    if (versionScheme === 'roman') return ['I','II','III','IV','V','VI','VII','VIII','IX','X'][i];
-                    return '';
-                  });
-                  setEditDetailsData(prev => ({ ...prev, versions: generated.join(', ') }));
-                }}
-              />
-            </Form.Item>
-          </>
-        )}
       </Form>
     </Modal>
   );
