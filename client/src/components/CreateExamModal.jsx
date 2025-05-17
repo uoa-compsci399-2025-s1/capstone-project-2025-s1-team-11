@@ -64,8 +64,8 @@ const CreateExamModal = ({
             value={versionCount}
             onChange={(e) => setVersionCount(e.target.value)}
           >
-            <Radio value={4}>4 Versions (A, B, C, D)</Radio>
-            <Radio value={5}>5 Versions (A, B, C, D, E)</Radio>
+            <Radio value={4}>4 Versions (00000001 - 00000004)</Radio>
+            <Radio value={5}>5 Versions (00000001 - 00000005)</Radio>
           </Radio.Group>
         </Form.Item>
       </Form>
