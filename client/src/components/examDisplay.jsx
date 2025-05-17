@@ -326,6 +326,12 @@ const ExamDisplay = () => {
               key: "section-column",
               width: 120,
               ellipsis: true,
+              render: (text, record) => {
+                if (record.type === "section") {
+                  return record.sectionNumber ? `Section ${record.sectionNumber}` : record.sectionTitle;
+                }
+                return record.section;
+              },
             },
             {
               title: "Question / Content",
