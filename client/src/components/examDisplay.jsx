@@ -1,4 +1,233 @@
 import React, { useState, useEffect } from "react";
+import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
+import { Tooltip } from "antd";
+// Helper to strip common LaTeX math delimiters from strings
+function stripMathDelimiters(str) {
+  if (typeof str !== "string") return str;
+  // Remove $...$, $$...$$, \(...\), \[...\] from both ends
+  let s = str.trim();
+  if ((s.startsWith('$$') && s.endsWith('$$')) ||
+      (s.startsWith('\\[') && s.endsWith('\\]'))) {
+    return s.slice(2, -2).trim();
+  }
+  if ((s.startsWith('$') && s.endsWith('$')) ||
+      (s.startsWith('\\(') && s.endsWith('\\)'))) {
+    return s.slice(1, -1).trim();
+  }
+  return s;
+}
+
+// Helper to split a string into plain text and LaTeX segments (inline math: $...$)
+// Returns an array of { type: 'text'|'math', value }
+// Enhanced to support block-level math ($$...$$) and inline math ($...$)
+// Returns array of { type: 'text'|'math'|'block-math', value }
+function splitTextWithMath(input) {
+  if (typeof input !== "string") return [{ type: "text", value: input }];
+  const result = [];
+  let i = 0;
+  let curr = "";
+  while (i < input.length) {
+    // Block math: $$...$$
+    if (input[i] === "$" && input[i + 1] === "$") {
+      if (curr) {
+        result.push({ type: "text", value: curr });
+        curr = "";
+      }
+      let end = input.indexOf("$$", i + 2);
+      if (end !== -1) {
+        result.push({ type: "block-math", value: input.slice(i + 2, end) });
+        i = end + 2;
+        continue;
+      } else {
+        // unmatched $$
+        curr += "$$";
+        i += 2;
+        continue;
+      }
+    }
+    // Inline math: $...$
+    if (input[i] === "$") {
+      if (curr) {
+        result.push({ type: "text", value: curr });
+        curr = "";
+      }
+      let end = input.indexOf("$", i + 1);
+      // Ignore $$ (already handled above)
+      if (end === i + 1) {
+        // "$$" found, treat as block math, handled above
+        curr += "$";
+        i++;
+        continue;
+      }
+      if (end !== -1) {
+        result.push({ type: "math", value: input.slice(i + 1, end) });
+        i = end + 1;
+        continue;
+      } else {
+        // unmatched $
+        curr += "$";
+        i++;
+        continue;
+      }
+    }
+    curr += input[i];
+    i++;
+  }
+  if (curr) result.push({ type: "text", value: curr });
+  return result;
+}
+
+// Helper to normalize math strings (does not auto-convert a/b to \frac{a}{b})
+// Instead, returns info if a suggestion should be made for using \frac
+function normalizeMathString(str) {
+  if (typeof str !== "string") return str;
+  let s = str.trim();
+  // Do NOT auto-convert a/b to \frac{a}{b}, but we may suggest it in a tooltip
+  return s;
+}
+
+// Helper to render string with mixed text and math, supporting inline and block math.
+// Block math is rendered as display math (centered, block style).
+function renderTextWithMath(input, { inlineMathStyle = {}, blockMathStyle = {} } = {}) {
+  // LaTeX error log for proof-of-concept
+  if (!window.latexErrors) window.latexErrors = [];
+  const segments = splitTextWithMath(input);
+  return segments.map((seg, idx) => {
+    if (seg.type === "math" || seg.type === "block-math") {
+      // Validate math segment
+      let latex = stripMathDelimiters(seg.value);
+      // Suggest using \frac if a/b pattern is detected, but do not auto-convert
+      const shouldSuggestFrac =
+        !latex.includes("\\frac") &&
+        !latex.includes("\\over") &&
+        /[a-zA-Z0-9]\s*\/\s*[a-zA-Z0-9]/.test(latex);
+      latex = normalizeMathString(latex);
+      const valid = isValidLatex(latex);
+      // Compose tooltip for invalid LaTeX
+      const tooltipContent = (
+        <span>
+          <b>Invalid LaTeX</b>
+          <br />
+          <span>
+            Check for: balanced <code>{'{'}</code> <code>{'}'}</code>, <code>$...$</code>, <code>\\(...\\)</code>, <code>\\[...\\]</code>.<br />
+          </span>
+          <span style={{ color: "#888" }}>Tip: Try removing extra $ or braces.</span>
+          {shouldSuggestFrac && (
+            <>
+              <br />
+              <span style={{ color: "#888" }}>
+                Tip: Did you mean <code>\\frac&#123;a&#125;&#123;b&#125;</code> instead of <code>a/b</code>?
+              </span>
+            </>
+          )}
+        </span>
+      );
+      // Inline math
+      if (seg.type === "math") {
+        if (valid) {
+          return (
+            <span className="inline-math" key={idx}>
+              <InlineMath
+                math={latex}
+                aria-label={latex}
+                style={inlineMathStyle}
+              />
+            </span>
+          );
+        } else {
+          window.latexErrors.push({
+            latex,
+            context: input,
+            tip: "Check for mismatched brackets or delimiters. Try using balanced { ... } or ensure $...$ are paired.",
+          });
+          return (
+            <Tooltip key={idx} title={tooltipContent}>
+              <span className="inline-math" style={{ color: "red" }}>
+                {latex} <span style={{ fontSize: 12 }}>(Invalid LaTeX)</span>
+              </span>
+            </Tooltip>
+          );
+        }
+      }
+      // Block math
+      if (seg.type === "block-math") {
+        if (valid) {
+          return (
+            <div
+              className="block-math"
+              key={idx}
+              style={{
+                display: "block",
+                textAlign: "center",
+                margin: "0.7em 0",
+                ...blockMathStyle,
+              }}
+            >
+              <BlockMath
+                math={latex}
+                aria-label={latex}
+                style={blockMathStyle}
+              />
+            </div>
+          );
+        } else {
+          window.latexErrors.push({
+            latex,
+            context: input,
+            tip: "Check for mismatched brackets or delimiters. Try using balanced { ... } or ensure $...$ are paired.",
+          });
+          return (
+            <Tooltip key={idx} title={tooltipContent}>
+              <div
+                className="block-math"
+                style={{
+                  color: "red",
+                  display: "block",
+                  textAlign: "center",
+                  margin: "0.7em 0",
+                  ...blockMathStyle,
+                }}
+              >
+                {latex} <span style={{ fontSize: 12 }}>(Invalid LaTeX)</span>
+              </div>
+            </Tooltip>
+          );
+        }
+      }
+    } else {
+      // Plain text
+      return <span key={idx}>{seg.value}</span>;
+    }
+  });
+}
+
+// Basic LaTeX validation (checks for mismatched brackets/delimiters)
+function isValidLatex(str) {
+  if (typeof str !== "string") return true;
+  // Count brackets
+  let stack = [];
+  const pairs = { '{': '}', '[': ']' };
+  for (let c of str) {
+    if (c === '{' || c === '[') stack.push(c);
+    if (c === '}' || c === ']') {
+      if (!stack.length) return false;
+      let last = stack.pop();
+      if (pairs[last] !== c) return false;
+    }
+  }
+  if (stack.length > 0) return false;
+  // Check $...$ or \(..\) or \[..\] are matched
+  let dollarCount = (str.match(/\$/g) || []).length;
+  if (dollarCount % 2 !== 0) return false;
+  let parenOpen = (str.match(/\\\(/g) || []).length;
+  let parenClose = (str.match(/\\\)/g) || []).length;
+  if (parenOpen !== parenClose) return false;
+  let bracketOpen = (str.match(/\\\[/g) || []).length;
+  let bracketClose = (str.match(/\\\]/g) || []).length;
+  if (bracketOpen !== bracketClose) return false;
+  return true;
+}
 import { Button, Typography, Modal, Input, message, Table } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -31,13 +260,27 @@ import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifi
 const { TextArea } = Input;
 
 
+// Add global CSS for .inline-math (inline style block for now)
+if (typeof window !== "undefined" && !window.__inlineMathStyle) {
+  const style = document.createElement("style");
+  style.innerHTML = `
+    .inline-math {
+      display: inline-block;
+      vertical-align: middle;
+      padding: 0 0.18em;
+      line-height: 1.1;
+    }
+  `;
+  document.head.appendChild(style);
+  window.__inlineMathStyle = true;
+}
+
 const ExamDisplay = () => {
   const exam = useSelector(selectExamData);
   useEffect(() => {
     // Debugging purpose only
   }, [exam]);
   const [examItems, setExamItems] = useState([]);
-  const [activeItemId, setActiveItemId] = useState(null);
   const dispatch = useDispatch();
   // Move useSensor hooks to top level of the component to ensure consistent hook order
   // Pagination page size state
@@ -117,7 +360,7 @@ const ExamDisplay = () => {
             type: "question",
             section: entry.sectionTitle,
             questionText: q.questionText || q.contentText,
-            options: q.options || (q.answers || []).map(a => a.contentText),
+            options: (q.answers || []).map(a => String(a.contentText ?? "")),
             correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
           });
         });
@@ -127,7 +370,7 @@ const ExamDisplay = () => {
           ...entry,
           type: "question",
           questionText: entry.questionText || entry.contentText,
-          options: entry.options || (entry.answers || []).map(a => a.contentText),
+          options: (entry.answers || []).map(a => String(a.contentText ?? "")),
           correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
         });
       
@@ -207,14 +450,11 @@ const ExamDisplay = () => {
       console.warn("No entry found at examBodyIndex:", examBodyIndex);
       return;
     }
-
-    const isSection = questionsIndex === null && entry.type === "section";
-
     setDeleteModalState({
       visible: true,
       examBodyIndex,
       questionsIndex,
-      isSection,
+      isSection: entry.type === "section",
     });
   };
 
@@ -256,9 +496,9 @@ const ExamDisplay = () => {
         collisionDetection={closestCenter}
         dropAnimation={{ duration: 250, easing: 'ease' }}
         modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-        onDragStart={({ active }) => setActiveItemId(active.id)}
+        // The following handlers are now no-ops, since activeItemId state has been removed
+        onDragStart={() => {}}
         onDragEnd={({ active, over }) => {
-          setActiveItemId(null);
           if (!over || active.id === over.id) return;
   
           const updated = arrayMove(
@@ -297,17 +537,27 @@ const ExamDisplay = () => {
               title: "Title / Question",
               dataIndex: "titleOrQuestion",
               key: "titleOrQuestion",
-              render: (text, record) =>
-                record.type === "section" ? (
-                  <div>
-                    <strong>{record.title?.split('-').slice(2).join('-').trim()}</strong>
-                    {record.subtext && (
-                      <div style={{ fontStyle: "italic", color: "#888" }}>{record.subtext}</div>
-                    )}
-                  </div>
-                ) : (
-                  <span>{record.questionText}</span>
-                ),
+              render: (text, record) => {
+                if (record.type === "section") {
+                  // Use renderTextWithMath for mixed math/text in section title
+                  const titleStr = record.title?.split('-').slice(2).join('-').trim() || record.title || "";
+                  return (
+                    <div>
+                      <strong>
+                        {renderTextWithMath(titleStr)}
+                      </strong>
+                      {record.subtext && (
+                        <div style={{ fontStyle: "italic", color: "#888" }}>
+                          {renderTextWithMath(record.subtext)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                } else {
+                  // Question: use renderTextWithMath for questionText
+                  return renderTextWithMath(record.questionText);
+                }
+              }
             },
             {
               title: "Options",
@@ -315,21 +565,54 @@ const ExamDisplay = () => {
               key: "options",
               render: (opts, record) =>
                 record.type === "question" && Array.isArray(opts)
-                  ? opts.map((o, i) => (
-                      <div key={i}>
-                        {String.fromCharCode(97 + i)}) {o}
-                      </div>
-                    ))
+                  ? opts.map((o, i) => {
+                      // Guard: Only render if o is a string
+                      if (typeof o !== "string") {
+                        console.warn("Option is not a string for KaTeX:", o);
+                        return (
+                          <div key={i}>
+                            {String.fromCharCode(97 + i)}){" "}
+                            <span style={{ color: "red" }}>[Invalid Option: not a string]</span>
+                          </div>
+                        );
+                      }
+                      try {
+                        return (
+                          <div key={i}>
+                            {String.fromCharCode(97 + i)}){" "}
+                            {renderTextWithMath(o)}
+                          </div>
+                        );
+                      } catch {
+                        return (
+                          <div key={i}>
+                            {String.fromCharCode(97 + i)}){" "}
+                            <span style={{ color: 'red' }}>{o} (Render error)</span>
+                          </div>
+                        );
+                      }
+                    })
                   : null,
             },
             {
               title: "Correct Answer",
               dataIndex: "correctIndex",
               key: "correctIndex",
-              render: (index, record) =>
-                record.type === "question" && Array.isArray(record.options)
-                  ? record.options[index]
-                  : null,
+              render: (index, record) => {
+                if (record.type === "question" && Array.isArray(record.options)) {
+                  const ans = record.options[index];
+                  if (typeof ans !== "string") {
+                    console.warn("Correct answer is not a string for KaTeX:", ans);
+                    return <span style={{ color: 'red' }}>[Invalid Correct Answer: not a string]</span>;
+                  }
+                  try {
+                    return <>{renderTextWithMath(ans)}</>;
+                  } catch {
+                    return <span style={{ color: 'red' }}>{ans} (Render error)</span>;
+                  }
+                }
+                return null;
+              }
             },
             {
               title: "Marks",
