@@ -19,12 +19,22 @@ const Marker = () => {
   const [resultsData, setResultsData] = useState(null);
   const [exportFormat, setExportFormat] = useState("json");
   const [currentStep, setCurrentStep] = useState(0);
+  // Add state for exam data that can be updated by the Results component
+  const [localExamData, setLocalExamData] = useState(null);
+
+  // Use examData from redux, or localExamData if it exists
+  const currentExamData = localExamData || examData;
 
   useEffect(() => {
     if (examAnswers) {
       setMarkingKey(generateMarkingKey(examAnswers));
     }
   }, [examAnswers]);
+
+  useEffect(() => {
+    // When redux exam data changes, update our local copy
+    setLocalExamData(examData);
+  }, [examData]);
 
   const handleTeleformDataChange = (e) => {
     setTeleformData(e.target.value);
@@ -43,7 +53,7 @@ const Marker = () => {
     try {
       console.log("Marking exams with data:", teleformData);
       
-      const examResults = markExams(examData, teleformData, markingKey);
+      const examResults = markExams(currentExamData, teleformData, markingKey);
       console.log("Exam results:", examResults);
       
       if (examResults && examResults.all && Array.isArray(examResults.all) && examResults.all.length > 0) {
@@ -71,12 +81,12 @@ const Marker = () => {
     
     if (exportFormat === "json") {
       content = JSON.stringify(resultsData.all, null, 2);
-      filename = `${examData.courseCode || 'exam'}_results.json`;
+      filename = `${currentExamData.courseCode || 'exam'}_results.json`;
       type = "application/json";
     } else {
       // Text format (similar to legacy output)
-      content = resultsData.all.map(res => generateResultOutput(res, examData)).join('\n\n');
-      filename = `${examData.courseCode || 'exam'}_results.txt`;
+      content = resultsData.all.map(res => generateResultOutput(res, currentExamData)).join('\n\n');
+      filename = `${currentExamData.courseCode || 'exam'}_results.txt`;
       type = "text/plain";
     }
     
@@ -106,13 +116,25 @@ const Marker = () => {
     
     switch (currentStep) {
       case 0:
-        return dataReview({ examData, markingKey });
+        return dataReview({ examData: currentExamData, markingKey });
       case 1:
         return teleformReader({teleformData, markingKey, handleTeleformDataChange, handleMarkExams});
       case 2:
         // Make sure we're passing valid data to the Results component
         if (!resultsData || !resultsData.all || !Array.isArray(resultsData.all)) {
-          return <Typography.Text>No valid results data available. Please mark exams first.</Typography.Text>;
+          return (
+            <Results
+              setExportFormat={setExportFormat}
+              exportFormat={exportFormat}
+              resultsData={[]}
+              handleExportResults={handleExportResults}
+              examData={currentExamData}
+              teleformData={teleformData}
+              markingKey={markingKey}
+              setResultsData={(data) => setResultsData({ all: data })}
+              setExamData={setLocalExamData}
+            />
+          );
         }
         
         console.log("Passing to Results component:", resultsData.all);
@@ -122,9 +144,11 @@ const Marker = () => {
             exportFormat={exportFormat}
             resultsData={resultsData.all}
             handleExportResults={handleExportResults}
-            examData={examData}
+            examData={currentExamData}
             teleformData={teleformData}
             markingKey={markingKey}
+            setResultsData={(data) => setResultsData({ all: data })}
+            setExamData={setLocalExamData}
           />
         );
       default:

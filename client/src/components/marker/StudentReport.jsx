@@ -83,8 +83,12 @@ const StudentReport = ({ student, questionStats, examData }) => {
     };
   });
   
+  // Get student name safely
+  const firstName = student.firstName || 'Unknown';
+  const lastName = student.lastName || 'Student';
+  
   return (
-    <Card title={`Exam Results for ${student.firstName || ''} ${student.lastName || ''}`} style={{ marginBottom: 20 }}>
+    <Card title={`Exam Results for ${firstName} ${lastName}`} style={{ marginBottom: 20 }}>
       <div style={{ textAlign: 'center', marginBottom: 20 }}>
         <Title level={4}>{examData?.title || 'Untitled Exam'}</Title>
         <Text strong>{examData?.courseCode || ''}</Text>
