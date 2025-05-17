@@ -47,9 +47,10 @@ const ExamDisplay = () => {
           items.push({ 
             id: entry.id, 
             type: "section", 
-            title: entry.title, 
-            subtext: entry.subtext,
+            sectionTitle: entry.sectionTitle,
             contentFormatted: entry.contentFormatted,
+            contentText: entry.contentText,
+            subtext: entry.subtext,
             examBodyIndex, 
             key: sectionKey 
           });
@@ -61,7 +62,7 @@ const ExamDisplay = () => {
             items.push({
               ...q,
               type: "question",
-              section: entry.title,
+              section: entry.sectionTitle,
               questionText: q.questionText || q.contentText,
               options: q.options || (q.answers || []).map(a => a.contentText),
               correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
@@ -333,7 +334,7 @@ const ExamDisplay = () => {
               width: 300, 
               render: (text, record) => (record.type === "section" ? (
                 <div>
-                  {record.contentFormatted && (
+                  {(record.contentFormatted || record.contentText) && (
                     <Typography.Paragraph
                       style={{ margin: 0, maxWidth: 280 }}
                       ellipsis={{ 
@@ -342,10 +343,10 @@ const ExamDisplay = () => {
                         symbol: 'more'
                       }}
                     >
-                      {record.contentFormatted}
+                      {record.contentFormatted || record.contentText}
                     </Typography.Paragraph>
                   )}
-                  {record.title && <strong>{record.title?.split('-').slice(2).join('-').trim()}</strong>}
+                  {record.sectionTitle && <strong>{record.sectionTitle}</strong>}
                   {record.subtext && <div style={{ fontStyle: "italic", color: "#888" }}>{record.subtext}</div>}
                 </div>
               ) : (
@@ -357,7 +358,7 @@ const ExamDisplay = () => {
                     symbol: 'more'
                   }}
                 >
-                  {record.questionText}
+                  {record.questionText || record.contentText}
                 </Typography.Paragraph>
               )),
             },
