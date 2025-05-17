@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Divider, Badge, List, Button, Typography, Collapse } from 'antd';
+import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip } from 'antd';
 import { ProfileOutlined, FileTextOutlined, RightCircleOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -33,7 +33,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
       const sectionMarks = item.questions?.reduce((sum, q) => sum + (q.marks || 1), 0) || 0;
 
       stats.questionsPerSection.push({
-        title: item.title,
+        sectionTitle: item.sectionTitle,
         count: questionCount,
         marks: sectionMarks
       });
@@ -41,7 +41,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
       examStructure.push({
         id: item.id,
         type: 'section',
-        title: item.title,
+        sectionTitle: item.sectionTitle,
         index,
         questions: item.questions?.map((q, qIndex) => ({
           id: q.id,
@@ -76,7 +76,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
       label: (
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <span>
-            <ProfileOutlined /> {section.title ? section.title.split('-').slice(2).join('-').trim() : ''}
+            <ProfileOutlined /> {section.sectionTitle}
           </span>
           <Badge count={section.questions.length} style={{ backgroundColor: '#52c41a' }} />
         </div>
@@ -103,9 +103,11 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
               onClick={() => onNavigateToItem(question.id, 'question')}
               style={{ cursor: 'pointer' }}
             >
-              <Text ellipsis={{ tooltip: question.text }}>
-                Q{qIndex + 1}: {question.text}
-              </Text>
+              <Tooltip title={question.text}>
+                <Text style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  Q{qIndex + 1}: {question.text}
+                </Text>
+              </Tooltip>
               <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
             </List.Item>
           )}
@@ -149,9 +151,11 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
           style={{ cursor: 'pointer', padding: '8px' }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-            <Text ellipsis={{ tooltip: item.text }}>
-              <FileTextOutlined /> {item.text}
-            </Text>
+            <Tooltip title={item.text}>
+              <Text style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <FileTextOutlined /> {item.text}
+              </Text>
+            </Tooltip>
             <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
           </div>
         </List.Item>
@@ -167,9 +171,11 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
           renderItem={(section) => (
             <List.Item>
               <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                <Text ellipsis={{ tooltip: section.title ? section.title.split('-').slice(2).join('-').trim() : '' }}>
-                  {section.title ? section.title.split('-').slice(2).join('-').trim() : ''}
-                </Text>
+                <Tooltip title={section.sectionTitle}>
+                  <Text style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {section.sectionTitle}
+                  </Text>
+                </Tooltip>
                 <div>
                   <Badge count={section.count} style={{ backgroundColor: '#52c41a', marginRight: '8px' }} />
                   <Badge count={`${section.marks}m`} style={{ backgroundColor: '#1890ff' }} />

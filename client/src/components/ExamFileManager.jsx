@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
-import { Button, Alert, Space, Typography, Modal, Input, message, Card, Divider, Select } from "antd";
+import { Button, Alert, Space, Typography, Modal, Input, Card, Divider, Select } from "antd";
+import { App as AntApp } from 'antd';
 import { createNewExam, clearExam } from "../store/exam/examSlice";
-
 
 const ExamFileManager = () => {
   const dispatch = useDispatch();
@@ -12,6 +12,7 @@ const ExamFileManager = () => {
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const { openExam, saveExam, importExam } = useFileSystem();
   const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
+  const { message } = AntApp.useApp();
 
   // State for create new exam modal
   const [showCreateModal, setShowCreateModal] = useState(false);

@@ -37,11 +37,14 @@ const ExamDisplay = () => {
   useEffect(() => {
     if (exam && Array.isArray(exam.examBody)) {
       const items = [];
+
       exam.examBody.forEach((entry, examBodyIndex) => {
         const type = (entry.type || "").toLowerCase();
+        
         if (type === "section") {
+          // Add section
           const sectionKey = entry.id ? `section-${entry.id}` : `section-index-${examBodyIndex}`;
-          items.push({ 
+          const section = { 
             id: entry.id, 
             type: "section", 
             sectionTitle: entry.sectionTitle,
@@ -50,19 +53,21 @@ const ExamDisplay = () => {
             subtext: entry.subtext,
             examBodyIndex, 
             key: sectionKey 
-          });
-          (entry.questions || []).forEach((q, questionsIndex) => {
-            const questionKey = q.id ? 
-              `question-${q.id}-${examBodyIndex}-${questionsIndex}` : 
+          };
+          items.push(section);
+
+          (entry.questions || []).forEach((question, questionsIndex) => {
+            const questionKey = question.id ? 
+              `question-${question.id}-${examBodyIndex}-${questionsIndex}` : 
               `question-index-${examBodyIndex}-${questionsIndex}`;
             
             items.push({
-              ...q,
+              ...question,
               type: "question",
               section: entry.sectionTitle,
-              questionText: q.questionText || q.contentText,
-              options: q.options || (q.answers || []).map(a => a.contentText),
-              correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
+              questionText: question.questionText || question.contentFormatted,
+              options: question.options || (question.answers || []).map(a => a.contentFormatted || a.contentText),
+              correctIndex: question.correctIndex ?? (question.answers || []).findIndex(a => a.correct),
               examBodyIndex, 
               questionsIndex, 
               key: questionKey 
@@ -70,17 +75,17 @@ const ExamDisplay = () => {
           });
         } else if (type === "question") {
           const questionKey = entry.id ? 
-            `standalone-question-${entry.id}-${examBodyIndex}` : 
-            `standalone-question-index-${examBodyIndex}`;
+            `question-${entry.id}-${examBodyIndex}` : 
+            `question-index-${examBodyIndex}`;
             
           items.push({
             ...entry,
             type: "question",
-            questionText: entry.questionText || entry.contentText,
-            options: entry.options || (entry.answers || []).map(a => a.contentText),
+            questionText: entry.questionText || entry.contentFormatted,
+            options: entry.options || (entry.answers || []).map(a => a.contentFormatted || a.contentText),
             correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
-            examBodyIndex, 
-            key: questionKey 
+            examBodyIndex,
+            key: questionKey
           });
         }
       });
