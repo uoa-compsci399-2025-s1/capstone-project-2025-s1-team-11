@@ -123,9 +123,8 @@ function markStudentExam(firstName, lastName, versionId, answerString, markingKe
       q => q?.type === 'question' && q?.questionNumber === (index + 1)
     );
     
-    const maxMarks = examQuestion?.marks ?? 1; // Default to 1 mark if not specified
-    const isCorrect = studentAnswer === correctAnswer;
-    const earnedMarks = isCorrect ? maxMarks : 0;
+    const maxMarks = examQuestion?.marks ?? 0; // Default to 1 mark if not specified
+    const { isCorrect, marks: earnedMarks } = markQuestion(correctAnswer, studentAnswer, maxMarks);
 
     // Find the corresponding option text for both answers
     const findOptionText = (bitmask) => {
@@ -160,4 +159,19 @@ function markStudentExam(firstName, lastName, versionId, answerString, markingKe
  */
 function formatBitmask(bitmask) {
   return bitmask.toString().padStart(2, '0');
+}
+
+/**
+ * Compares a student answer to the correct answer using bitmask logic
+ * @param {number} correctAnswer - e.g., 6
+ * @param {number} studentAnswer - e.g., 4
+ * @param {number} maxMarks - typically 1
+ * @returns {Object} { isCorrect, marks }
+ */
+export function markQuestion(correctAnswer, studentAnswer, maxMarks = 0) {
+  const isCorrect = (studentAnswer & correctAnswer) !== 0;
+  return {
+    isCorrect,
+    marks: isCorrect ? maxMarks : 0
+  };
 }
