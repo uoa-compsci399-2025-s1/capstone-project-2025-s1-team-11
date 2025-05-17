@@ -1,16 +1,12 @@
 import React from "react";
 
-import { useNavigate } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
-import ExamFileManager from "../components/ExamFileManager.jsx";
-import { Typography, Button, Space, Collapse } from "antd";
-import { exportExamToPdf } from "../services/exportPdf.js";
+import { Typography, Button } from "antd";
 
 const Builder = () => {
     const exam = useSelector(selectExamData);
-    const navigate = useNavigate();
 
     return (
       <div style={{ padding: 24 }}>
