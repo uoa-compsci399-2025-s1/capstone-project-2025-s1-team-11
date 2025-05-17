@@ -3,7 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import AppRoutes from './AppRoutes.jsx';
 import './index.css';
 import { Provider } from "react-redux";
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider, theme, App as AntApp } from "antd";
 import { store } from "./store/store";
 import React, { useState } from "react";
 import '@ant-design/v5-patch-for-react-19';
@@ -17,9 +17,11 @@ const Root = () => {
   return (
     <Provider store={store}>
       <ConfigProvider theme={{ algorithm: isDarkMode ? darkAlgorithm : defaultAlgorithm }}>
-        <BrowserRouter>
-          <AppRoutes isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-        </BrowserRouter>
+        <AntApp>
+          <BrowserRouter>
+            <AppRoutes isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+          </BrowserRouter>
+        </AntApp>
       </ConfigProvider>
     </Provider>
   );

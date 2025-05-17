@@ -37,10 +37,11 @@ export async function importExamFile() {
       const [fileHandle] = await window.showOpenFilePicker({
         types: [
             { 
-                description: 'DOCX, Moodle XML Files', 
+                description: 'DOCX, Moodle XML, LaTeX Files', 
                 accept: {
                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-                    'application/xml': ['.xml']
+                    'application/xml': ['.xml'],
+                    'application/x-tex': ['.tex']
                 } 
             }
         ],

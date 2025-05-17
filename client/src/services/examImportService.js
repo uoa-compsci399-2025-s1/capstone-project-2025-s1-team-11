@@ -2,6 +2,7 @@
 
 import { parseDocx } from '../dto/docx/docxParser.js';
 import { MoodleXmlDTO } from '../dto/moodleXML/moodleXmlDTO.js'
+import { parseLatex } from '../dto/latex/latexParser.js';
 //import { normaliseDocxDTO, normaliseMoodleDTO } from './normalisers.js'; // Helper functions for normalization
 //import { convertMoodleXmlToJson } from '../utilities/convertMoodleXmlToJson.js';
 import { convertMoodleXmlDTOToJsonWithSections } from '../utilities/convertMoodleXmlToJsonWithSections.js';
@@ -23,6 +24,7 @@ export class ExamImportService {
     this.importFormats = {
       'docx': this.processDocxExam.bind(this),
       'moodle': this.processMoodleExam.bind(this),
+      'latex': this.processLatexExam.bind(this)
     };
   }
 
@@ -52,6 +54,14 @@ export class ExamImportService {
     return moodleDTO;
   }
 
+  async processLatexExam(file) {
+    // Read the file content first
+    const latexContent = await this.readFileContent(file);
+    
+    // Parse LaTeX content and return DTO
+    const latexDTO = parseLatex(latexContent);
+    return latexDTO;
+  }
 
   readFileContent(file) {
     return new Promise((resolve, reject) => {
