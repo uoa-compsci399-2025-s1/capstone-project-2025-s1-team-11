@@ -1,0 +1,252 @@
+\documentclass[addpoints,12pt]{exam}
+
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{enumitem}
+\usepackage{algorithm2e}
+
+\printanswers
+
+\pointpoints{mark}{marks}
+
+% for boxing the correct answer
+\ifprintanswers
+\newcommand{\mycorrectchoice}[1]{\CorrectChoice \fbox{#1}}
+\else
+\newcommand{\mycorrectchoice}[1]{\CorrectChoice #1}
+\fi
+
+% explanation
+\newcommand{\Exp}[1]{\textcolor{blue}{\underline{\emph{Explanation}:} #1}}
+% marking criteria
+\newcommand{\MC}[1]{\textcolor{red}{\underline{\emph{Marking Criteria}:} #1}}
+
+\firstpageheader{}{}{COMPSCI 230}
+\runningheader{}{}{COMPSCI 230}
+
+\firstpagefooter{}{Page \thepage\ of \numpages}{}
+\runningfooter{}{Page \thepage\ of \numpages}{}
+
+\begin{document}
+
+\begin{center}
+  \vspace*{1cm}
+  
+  \textbf{\fontsize{20}{8}\selectfont MIDTERM EXAMINATION}
+  
+  \vspace{0.4cm}
+  
+  \noindent\rule{0.6\linewidth}{0.4pt}
+  
+  \vspace{0.5cm}
+  
+  \textbf{\fontsize{12}{8}\selectfont SPRING SEMESTER 2024}
+  
+  \vspace{0.2cm}
+  
+  \textbf{\fontsize{12}{8}\selectfont Campus: West}
+  
+  \noindent\rule{0.6\linewidth}{0.4pt}
+      
+  \vspace{0.8cm}
+  
+  \textbf{\fontsize{12}{8}\selectfont DEPARTMENT OF COMPUTER SCIENCE}
+  
+  \vspace{0.8cm}
+  
+  \textbf{\fontsize{12}{8}\selectfont Data Structures and Algorithms}
+  
+  \vspace{0.8cm}
+  
+  \textbf{\fontsize{12}{8}\selectfont (Time Allowed: 90 minutes)}
+\end{center}
+
+\vspace{0.8cm}
+
+\qquad
+{\fontsize{12}{12}\selectfont
+   \textbf{INSTRUCTIONS:}
+      \begin{itemize}
+      \setlength{\leftskip}{40pt}
+        \item This exam contains \fbox{\numquestions} questions.
+        \item The total number of marks is \fbox{\numpoints}.
+        \item Answer all questions.
+        \item No electronic devices allowed.
+      \end{itemize}
+   \setlength{\leftskip}{0pt}
+}
+
+\vfill
+\begin{center}\gradetable[h][questions]\end{center}
+
+\newpage
+
+\begin{questions}
+\label{first_page}
+
+\question[2] What is the time complexity of the following algorithm?
+
+\begin{verbatim}
+function mystery(n):
+    if n <= 1:
+        return 1
+    return mystery(n/2) + 1
+\end{verbatim}
+
+\begin{choices}
+  \choice $O(n)$
+  \mycorrectchoice{$O(\log n)$}
+  \choice $O(n \log n)$
+  \choice $O(n^2)$
+\end{choices}
+
+\begin{solution}
+  B.
+  
+  \Exp{
+    The function divides n by 2 in each recursive call until n becomes less than or equal to 1.
+    Starting from n, the number of times we can divide by 2 until reaching 1 is $\log_2(n)$.
+    Therefore, the time complexity is $O(\log n)$.
+  }
+  
+  \MC{
+    2 marks for correctly identifying the logarithmic time complexity.
+  }
+\end{solution}
+
+\vspace{20pt}
+
+\question[2] Which of the following data structures would be most efficient for implementing a priority queue?
+
+\begin{choices}
+  \choice Linked List
+  \choice Stack
+  \mycorrectchoice{Heap}
+  \choice Hash Table
+\end{choices}
+
+\begin{solution}
+  C.
+  
+  \Exp{
+    A heap data structure provides $O(\log n)$ time complexity for insertion and extraction of the minimum/maximum element,
+    which are the primary operations in a priority queue. Other data structures like linked lists would require $O(n)$ time
+    for finding the minimum/maximum element or maintaining sorted order.
+  }
+  
+  \MC{
+    2 marks for correctly identifying a heap as the most efficient structure for a priority queue.
+  }
+\end{solution}
+
+\vspace{20pt}
+
+\question[2] What is the worst-case time complexity of quicksort?
+
+\begin{choices}
+  \choice $O(n)$
+  \choice $O(n \log n)$
+  \mycorrectchoice{$O(n^2)$}
+  \choice $O(2^n)$
+\end{choices}
+
+\begin{solution}
+  C.
+  
+  \Exp{
+    Quicksort has a worst-case time complexity of $O(n^2)$ when the pivot selection consistently results
+    in highly unbalanced partitions, such as when the array is already sorted and the pivot is always
+    chosen as the first or last element.
+  }
+  
+  \MC{
+    2 marks for correctly identifying the worst-case time complexity.
+  }
+\end{solution}
+
+\vspace{20pt}
+
+\question Consider the following binary search tree:
+
+\begin{center}
+\begin{verbatim}
+      10
+     /  \
+    5    15
+   / \     \
+  3   7     20
+\end{verbatim}
+\end{center}
+
+\begin{parts}
+  \part[1] What is the height of this tree?
+  \begin{choices}
+    \choice 4
+    \mycorrectchoice{2}
+    \choice 3
+    \choice 5
+  \end{choices}
+  \begin{solution}
+    B.
+    
+    \Exp{
+      The height of a tree is the number of edges in the longest path from the root to a leaf.
+      The longest path in this tree is from 10 to either 3 or 7, which contains 2 edges.
+      Thus, the height is 2.
+    }
+  \end{solution}
+  
+  \part[1] What would be the result of an in-order traversal of this tree?
+  \begin{choices}
+    \choice 10, 5, 3, 7, 15, 20
+    \choice 3, 5, 7, 10, 20, 15
+    \mycorrectchoice{3, 5, 7, 10, 15, 20}
+    \choice 3, 7, 5, 20, 15, 10
+  \end{choices}
+  \begin{solution}
+    C.
+    
+    \Exp{
+      In-order traversal visits nodes in the order: left subtree, root, right subtree.
+      For this tree: 3, 5, 7, 10, 15, 20.
+    }
+  \end{solution}
+\end{parts}
+
+\vspace{20pt}
+
+\question[2] What is the space complexity of the following recursive function?
+
+\begin{verbatim}
+function fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+\end{verbatim}
+
+\begin{choices}
+  \choice $O(1)$
+  \choice $O(\log n)$
+  \choice $O(n)$
+  \mycorrectchoice{$O(2^n)$}
+\end{choices}
+
+\begin{solution}
+  D.
+  
+  \Exp{
+    This recursive implementation of fibonacci creates a binary tree of recursive calls,
+    where each call branches into two more calls. The depth of this recursion tree is approximately n,
+    and the number of calls is approximately $2^n$. Since each call uses a constant amount of stack space,
+    the total space complexity is $O(2^n)$.
+  }
+  
+  \MC{
+    2 marks for identifying the exponential space complexity.
+  }
+\end{solution}
+
+\label{last_page}
+\end{questions}
+
+\end{document} 

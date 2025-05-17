@@ -1,0 +1,530 @@
+\documentclass[addpoints,12pt]{exam}
+
+\usepackage{xcolor}
+\usepackage[lined,linesnumbered,ruled,commentsnumbered]{algorithm2e} % for algorithm
+\usepackage{enumitem}
+\usepackage{amsopn,amsmath,amssymb,amsfonts}%amsmath embellishments
+
+\printanswers
+
+\pointpoints{ mark}{ marks}
+
+%\pointsinrightmargin
+%\bracketedpoints
+%\marginpointname{ \points}
+%\marksnotpoints
+
+
+%% solution text
+%\SolutionEmphasis{\color{blue}}
+
+% for boxing the correct answer
+\ifprintanswers
+\newcommand{\mycorrectchoice}[1]{\CorrectChoice \fbox{#1}}
+\else
+\newcommand{\mycorrectchoice}[1]{\CorrectChoice #1}
+\fi
+
+% explanation
+\newcommand{\Exp}[1]{\textcolor{blue}{\underline{\emph{Explanation}:} #1}}
+% mark
+\newcommand{\MK}[1]{\textcolor{red}{(#1 marks)}}
+% marking criteria
+\newcommand{\MC}[1]{\textcolor{red}{\underline{\emph{Marking Criteria}:} #1}}
+
+\firstpageheader{}{}{COMPSCI 120}
+\runningheader{}{}{COMPSCI 120}
+
+\firstpagefooter{}{Page \thepage\ of \numpages}{}
+\runningfooter{}{Page \thepage\ of \numpages}{}
+
+
+
+
+
+
+\begin{document}
+
+	\begin{center}
+		\vspace*{1cm}
+		
+		\textbf{\fontsize{20}{8}\selectfont THE UNIVERSITY OF AUCKLAND}
+		
+		\vspace{0.4cm}
+		
+		\noindent\rule{0.6\linewidth}{0.4pt}
+		
+		\vspace{0.5cm}
+		
+		\textbf{\fontsize{12}{8}\selectfont  SUMMER SEMESTER 2025}
+		
+		\vspace{0.2cm}
+		
+		\textbf{\fontsize{12}{8}\selectfont  Campus: City}
+		
+		\noindent\rule{0.6\linewidth}{0.4pt}
+				
+		\vspace{0.8cm}
+		
+		\textbf{\fontsize{12}{8}\selectfont COMPUTER SCIENCE}
+		
+		\vspace{0.8cm}
+		
+		\textbf{\fontsize{12}{8}\selectfont  Mathematics for Computer Science}
+		
+		\vspace{0.8cm}
+		
+		\textbf{\fontsize{12}{8}\selectfont  (Time Allowed: TWO hours) }
+	\end{center}
+	
+	\vspace{0.8cm}
+	
+	\qquad
+	{\fontsize{12}{12}\selectfont
+     \textbf{NOTE:}
+        \begin{itemize}%[itemindent=5cm]
+        \setlength{\leftskip}{40pt}
+          \item This test will begin with \fbox{10} minutes of reading time. You may not write anything in this time.
+          \item There are \fbox{\numquestions} questions, on pages \fbox{\pageref{first_page}} to \fbox{\pageref{last_page}}. The total number of marks is \fbox{\numpoints}.  Attempt all of the questions; there is no penalty for incorrect answers, and many problems have partial credit!
+          \item There is more than enough space for an answer to every problem in this booklet.  If you find yourself running out of space, this may be a sign that you are overthinking things!
+          \item Show all working, and place all answers in this booklet.
+            \item Pages \fbox{\pageref{blankpage1}} and \fbox{\pageref{blankpage2}} of this test are left blank, to give you additional paper to work on. They will not be marked.
+          \item No calculators or notes are allowed.
+          \item Best of luck!
+        \end{itemize}
+     \setlength{\leftskip}{0pt}
+
+     \vfill
+     \begin{center}\gradetable[h][questions]\end{center}
+
+\newpage
+	
+	
+\begin{questions}
+
+	\label{first_page}
+	
+    \question[1] Under which of the following circumstance, we have $f$ grows faster than $g$?
+    \vspace{10pt}
+    \begin{choices}
+        \choice $f(n) > g(n)$ for all natural number $n \in \mathbb{N}$.
+        \choice $f(n) = C g(n)$, where $C$ is a constant coefficient, e.g., $C = 3$.
+        \mycorrectchoice{$f(n) = n g(n)$}
+        \choice $f(n) = - |g(n)|$
+    \end{choices}
+    \begin{solution}
+        C.
+
+        \Exp{
+            \begin{align}
+                & \lim_{n \to \infty} \frac{|Cg(n)|}{|g(n)|} = |C| \neq \infty \label{eq1}\\
+                & \lim_{n \to \infty} \frac{|n g(n)|}{|g(n)|} = \lim_{n \to \infty} |n| =  \infty \nonumber \\
+                & \lim_{n \to \infty} \frac{|-|g(n)||}{|g(n)|} = 1 \neq \infty \nonumber
+            \end{align}
+        where $f(n) = Cg(n)$ for nonnegative $C$, $f$ and $g$ is a case of $f(n) > g(n)$, but \eqref{eq1} shows it does not necessarily results in a faster $f$.
+         }
+
+         \MC{Give 1 mark if say waiting for more ciphertext to do frequent analysis.}
+    \end{solution}
+
+     \vspace{20pt}
+
+    \question Suppose that an algorithm takes in a set of size $n$ as an input, and enumerate all subsets of the input set. We know that the running time of this algorithm is $2^n-1$ elementary operations.
+    \vspace{10pt}
+    \begin{parts}
+        \part[1] This is a \fillin algorithm.
+         \vspace{10pt}
+            \begin{choices}
+                \choice constant-runtime
+                \choice logarithmic-runtime
+                \choice polynomial-runtime
+                \mycorrectchoice{exponential-runtime}
+            \end{choices}
+            \begin{solution}
+                D.
+            \end{solution}
+
+        \vspace{10pt}
+
+        \part[1] If the input set size is doubled to $2n$, what is running time?
+         \vspace{10pt}
+            \begin{choices}
+                \mycorrectchoice{$4^n-1$.}
+                \choice $2^n - 2$.
+                \choice $4^n$
+                \choice $2^{n^2}- 1$
+            \end{choices}
+            \begin{solution}
+                A.
+
+                \Exp{ $2n \rightarrow n$, $2^{2n}-1 = 4^n-1$. }
+
+            \end{solution}
+    \end{parts}
+
+    \vspace{20pt}
+    
+    % copied from 2020 V1
+    \question[1] Which of the following statements is true?\\
+
+        \begin{choices}
+        	\choice $\displaystyle \lim_{n\to \infty}\dfrac{n^4+3n+2}{n^5+4n+2}=1$
+        	\choice $\displaystyle \lim_{n\to \infty}\dfrac{n!+n\log_5(n)+10^{100}}{10000^{n}+n^5+1}=0$
+        	\mycorrectchoice{The function $f(n)=\log_2(n) + 2^n$ grows faster than the function $g(n)=n^2$}
+        	\choice The function $f(n)=n^5\log_2(n)+7$ grows faster than the function $g(n)=n^6+1.$
+        \end{choices}
+
+    
+    
+    
+    \vspace{20pt}
+    
+
+    \question Suppose $T$ is a tree that has more than two vertices. Then,
+     \vspace{10pt}
+        \begin{parts}
+            \part[1] there is(are) \fillin subgraph(s) in $T$. %(Recall that a \emph{subgraph} of graph $G$ is a connected graph that is completely contained in $G$.)
+            \vspace{10pt}
+                \begin{choices}
+                    \choice $0$
+                    \choice $2$
+                    \choice infinite number of
+                    \mycorrectchoice{more than one}
+                \end{choices}
+                \begin{solution}
+                    D.
+
+                    \Exp{all nodes are connected in a tree. The whole tree is the only one subgraph}
+                \end{solution}
+
+              \vspace{15pt}
+
+            \part[1] we have \fillin between any two vertices in $T$.
+             \vspace{10pt}
+                \begin{choices}
+                    \mycorrectchoice{only one path that is also a walk}
+                    \choice only one path, which is not a walk,
+                    \choice only one edge
+                    \choice at least two paths
+                \end{choices}
+                \begin{solution}
+                    A.
+
+                    \Exp{A tree is connected, i.e., every two nodes are connected by a path, not a walk as repeated vertices indicates cyclic. But, a tree is acyclic.}
+                \end{solution}
+         \end{parts}
+
+     \vspace{20pt}
+
+    \newpage
+
+
+    \question For $n \in \mathbb{N}$ being a natural number, evaluate the following limits.
+    	 \vspace{10pt}
+    	\begin{parts}
+    		\part[1] $\lim\limits_{n\to\infty} \frac{1}{3+e^{\frac{1}{n}}}$     		
+    		
+    		\vspace{10pt}
+    		 \begin{oneparchoices}
+    			\choice $1$
+    			\choice $\frac{1}{3}$
+    			\mycorrectchoice{$\frac{1}{4}$}
+    			\choice $0$
+    		\end{oneparchoices}
+    		\begin{solution}
+    			C.
+    			
+    			\Exp{$\lim\limits_{n\to\infty} e^{\frac{1}{n}} = e^{0} = 1$. So, $\lim\limits_{n\to\infty} \frac{1}{3+e^{\frac{1}{n}}} = \frac{1}{4}$}
+    		\end{solution}
+    		
+    		 \vspace{15pt}
+    		
+    		\part[1] $\lim\limits_{n\to\infty} \frac{n! + 10}{100^{n}+10^{5}}$
+    		
+    		\vspace{10pt}
+    		\begin{oneparchoices}
+    			\choice $\frac{1}{10^5}$
+    			\choice $10$
+    			\choice $0$
+    			\mycorrectchoice{$\infty$}
+    		\end{oneparchoices}
+    		\begin{solution}
+    			D.
+    			
+    			\Exp{$\text{constant} \ll \text{exponential} \ll \text{factorial}$}
+    		\end{solution}
+    		
+    		\vspace{15pt}
+    		
+    		
+    		\part[1] $\lim\limits_{n\to\infty} \frac{2}{e^{-n}+1}$
+    		
+    		\vspace{10pt}
+    		\begin{oneparchoices}
+    			\choice $1$
+    			\mycorrectchoice{$2$}
+    			\choice $\infty$
+    			\choice $0$    			
+    		\end{oneparchoices}
+    		\begin{solution}
+    			B.
+    			
+    		\Exp{$\lim\limits_{n\to\infty} e^{-n} = 0$. So, $\lim\limits_{n\to\infty} \frac{2}{e^{-n}+1} = 2$}
+    		\end{solution}
+    	\end{parts}
+    	
+    	\vspace{20pt}
+ 
+ % copied from 2020 V1   
+ \question[1]Which of the following statements about graphs is true?
+	\begin{choices}
+		\choice Every graph on $n$ vertices with $n-1$ edges is connected.
+        \mycorrectchoice{If there is a path from $x$ to $y$, then there must also be a walk from $x$ to $y$.}
+		\choice There is a graph on 10 vertices such that 2 vertices have degree 3, 4 vertices have degree 2, 1 vertex has degree 4, and 3 vertices have degree 5.
+		\choice There is a graph on 10 vertices such that exactly 2 vertices have degree 1, 4 vertices have degree 3, and 1 vertex has degree 10.
+	\end{choices}
+
+ \vspace{20pt}
+
+ \question[1] Consider the claim below.
+ 		\begin{center} 			
+ 			\fbox{\textbf{Claim:} For all $x>0$ and $y>0$, $(\frac{\sqrt{x} + \sqrt{y}}{2})^2 \le \frac{x+y}{2}$. }
+ 		\end{center} 		
+ 		%What is the correct way to negate this claim.
+ 		Which of the following assumptions would be the best to use when setting up a contradiction?
+ 		            \vspace{10pt}
+ 		\begin{choices}
+ 			\mycorrectchoice{There exists a pair of $x>0$ and $y>0$ such that $(\frac{\sqrt{x} + \sqrt{y}}{2})^2 > \frac{x+y}{2}$.}
+ 			\choice For all $x>0$ and $y>0$, $(\frac{\sqrt{x} + \sqrt{y}}{2})^2 > \frac{x+y}{2}$.
+ 			\choice There exist a pair of $x>0$ and $y\leq0$ such that $(\frac{\sqrt{x} + \sqrt{y}}{2})^2 \leq \frac{x+y}{2}$.
+ 			\choice There exist a pair of $x\leq0$ and $y\leq0$ such that $(\frac{\sqrt{x} + \sqrt{y}}{2})^2 \leq \frac{x+y}{2}$
+ 		\end{choices}
+ 	
+           \vspace{20pt}
+
+ \question[1]  Suppose you are given the task to prove the claim below
+		 \begin{center} 			
+		 	 \fbox{\textbf{Claim:} $\max \{x+a, 0\} =\max \{x,-a\} + a$ for all real numbers $a$ and $x$. }
+		 \end{center}
+		 Which of the following proof methods is best suited to this task?
+		
+		 \begin{choices}
+		 	\choice Proof by induction.
+		 	\mycorrectchoice{Proof by cases}
+		 	\choice Proof by construction.
+		 	\choice Direct proofs.
+		 \end{choices}
+
+\vspace{20pt}
+
+ \question[1] Which of the following is most suited to being proved by construction?
+        \begin{choices}
+		 	\choice $\sqrt{3}$ is irrational. 
+            \choice The sum of the first $n$ natural numbers is $\frac{n(n-1)}{2}$. 
+		 	\mycorrectchoice{There exists a connected graph where the degree of every vertex is at least $2$.}
+            \choice If $p>2$ is a prime number, then $p+1$ is composite.
+		 \end{choices}
+
+\vspace{20pt}
+
+ \question Suppose that you are proving the statement $P(n)$ below by induction. 
+
+      \begin{center}
+      		\fbox{$P(n)$ = ``$9^n-1$ is divisible by $8$ for all natural number $n \in \mathbb{N}$".}
+      \end{center}
+      
+      \vspace{10pt}
+      
+      \begin{parts}
+          \part[1] What should you prove in the base case?
+
+          \begin{choices}
+            \mycorrectchoice{$9^1-1$ is divisible by $8$.}
+            \choice $9^0-1$ is divisible by $8$.
+            \choice $9^{n}-1$ is divisible by $8$ for all $n \in \mathbb{N}$.
+            \choice $9^{n-1}-1$ is divisible by $8$ for all $n \in \mathbb{N}$.
+          \end{choices}
+          
+          \vspace{10pt}
+          
+          \part[1] What should you do in the induction step?
+          
+          \begin{choices}
+            \choice Prove both $9^{n} - 1$ and $9^{n+1} - 1$ are divisible by $8$.
+            \choice Enumerate $n=2,3,\dotsc$ and prove $9^{n} - 1$ is divisible by $8$.
+            \choice Prove $9^{n} - 1$ is divisible by $8$ by assuming $9^{n+1} - 1$ is divisible by $8$.
+            \mycorrectchoice{Prove $9^{n+1} - 1$ is divisible by $8$ by assuming $9^{n} - 1$ is divisible by $8$. }
+          \end{choices}
+      
+      \end{parts}
+
+ \question Consider the proposition below.
+
+    	\begin{center}
+    		\fbox{\textbf{Proposition:} If $a,b > 0$, then $\frac{ax + by}{a+b} \leq \max \{x,y\}$ for all real valued $x$ and $y$. }
+    	\end{center}
+    
+        \vspace{10pt}
+    
+        \begin{parts}
+          \part[1] Suppose you are proving this proposition by cases. What are all possible cases you need to consider? 
+          
+          \begin{choices}
+            \choice $x > 0$ and $y<0$. 
+            \choice $x \ge a$ and $y<b$. 
+            \mycorrectchoice{$x \geq y$ and $x<y$.}
+            \choice $|x| \ge a$ and $|y|<b$. 
+          \end{choices}
+          
+          \vspace{10pt}
+          
+          \part[1] Suppose you are proving this proposition by contradiction. What should you do in the proof? 
+          
+          \begin{choices}
+            \choice Assume $a,b\leq 0$ and prove that this contradicts $\frac{ax + by}{a+b} \leq \max \{x,y\}$. 
+            \choice Assume there does not exist any $x,y$ such that $\frac{ax + by}{a+b} \leq \max \{x,y\}$ and prove that this contradicts $a,b>0$.
+            \mycorrectchoice{Assume there exist $x,y$ such that $\frac{ax + by}{a+b} > \max \{x,y\}$} \\ \fbox{and prove that this contradicts $a,b>0$.}
+            \choice Assume there exist $a,b \leq 0$ such that $\frac{ax + by}{a+b} \leq \max \{x,y\}$ and prove that this contradicts $x$ and $y$ are real numbers.
+          \end{choices}
+          
+        \end{parts}  
+    	
+
+
+
+\newpage
+
+    \question For any natural number $n \in \mathbb{N}$, the factorial is $n! = 1 \cdot 2 \cdot \dotsc \cdot (n-1) \cdot n$.
+    \vspace{10pt}
+    	\begin{parts}
+    		\part[3] Show that $n!$ can be computed by a recursion.
+    		\begin{solution}
+    				\begin{align}
+    					 n!
+    					 & = 1 \cdot 2 \cdot \dotsc \cdot (n-1) \cdot n \label{eq1}\\
+    					 & =  1! \cdot 2 \cdot \dotsc \cdot (n-1) \cdot  \\
+    					 & = 2! \cdot \dotsc \cdot (n-1) \cdot n\\
+    					 & = ...... \label{eq2}\\
+    					 & = (n-1)! \cdot n \label{eq3}
+    				\end{align}
+    				Therefore, $n!$ can be done by recursion.
+    				
+    				\MC{1.5 mark for showing equation \eqref{eq3}; 1.5 mark for all steps from \eqref{eq1} to \eqref{eq2}.}
+    	    \end{solution}
+    		
+    		\vspace{10pt}
+    		
+    		\part[3] Write a recursive algorithm $\texttt{factorial}(n)$ that computes $n!$ for any input $n$.
+    		\begin{solution}
+    			
+    			\begin{algorithm}[H]
+    				\caption{\texttt{factorial}}
+    				\SetAlgoLined
+    				\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+    				\SetKwFor{For}{for}{do}{endfor}
+    				\SetKwRepeat{Repeat}{repeat}{until}
+    				\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{endif}
+    				\BlankLine
+    				\Input{A natural number $n \in \mathbb{N}$.}
+    				\Output{$n$}
+    				\BlankLine
+    				\lIf{n =1}{output $1$}
+    				\lElse{output $\texttt{factorial}(n-1)$}
+    			\end{algorithm}
+    			
+    			\MC{1.5 mark for line 1; 1.5 mark for line 2.}
+    		\end{solution}
+    		
+    		\part[2] What is the running time of this algorithm? Explain your answer.
+    		\begin{solution}
+    			 $n!$
+    			
+    			\MC{1 mark for correct answer; 1 mark for explanation, e.g., counting the number of multiplications.}
+    		\end{solution}
+    		
+    	\end{parts}	
+
+    \label{last_page}
+ 
+     \newpage
+
+       \topskip0pt
+    \vspace*{\fill}
+    \begin{center}
+    	%\scriptsize
+    	\emph{\textcolor{gray}{This page is intentionally left blank.}} \label{blankpage1}
+    \end{center}
+    \vspace*{\fill}
+    
+    \newpage
+       \topskip0pt
+   \vspace*{\fill}
+    \begin{center}
+    	%\scriptsize
+    	\emph{\textcolor{gray}{This page is intentionally left blank.}} \label{blankpage2}
+    \end{center}
+     \vspace*{\fill}
+
+ %   \question Prove by induction that the statement $P(n)$ below is true for all natural number  $n \in \mathbb{N}$.
+%
+%      \begin{center}
+%      		\fbox{$P(n)$ = ``$9^n-1$ is divisible by $8$ for all natural number $n$".}
+%      \end{center}
+%
+%      \begin{solution}
+%      	
+%      		\textbf{Base Case: } for $n=1$,
+%      		$$ (9^1-1) \% 8 = 8\%8 = 0$$
+%
+%      		\textbf{Inductive Step: } assume $9^n-1$ for some $n$. Then,
+%      		\begin{align*}
+%      			(9^{n+1}-1) \% 8
+%      			&= 	(9 \cdot 9^n-1) \% 8 \\
+%      			&=  (9 \cdot (9^n -1 + 1) -1) \% 8 \\
+%      			&=  (9 \cdot (9^n -1 ) +8) \% 8 \\
+%      			&= 9 \cdot (9^n -1 ) \% 8 + 8\%8\\
+%      			&= 0
+%      		\end{align*}
+%			Q.E.D.
+%      		
+%      		\MC{1 mark for base case; 3 marks for inductive step}
+%      \end{solution}
+%
+%    \question Prove the proposition below by contradiction.
+%
+%    	\begin{center}
+%    		\fbox{\textbf{Proposition:} If $a,b > 0$, then $\frac{ax + by}{a+b} \leq \max \{x,y\}$ for all real valued $x$ and $y$. }
+%    	\end{center}
+%    	Clearly state the assumption when setting up the contradiction.
+%    	
+%    	 \begin{solution}
+%    		
+%    		\textbf{Negation: } Assume that for $a,b>0$, $\exists x, y$ such that $\frac{ax + by}{a+b} > \max \{x,y\}$.
+%    		
+%    		Then,     		
+%    		\begin{align}
+%    			\frac{ax + by}{a+b} &> \max \{x,y\}  \nonumber \\
+%    			& \Longrightarrow ax + by > (a+b) \max\{x, y\}  \nonumber  \\
+%    			& \Longrightarrow  a(x- \max\{x, y\}) + b (y-\max\{x, y\}) > 0 \label{eq4}
+%    		\end{align}
+%    		But, we know that $x- \max\{x, y\} \leq 0$ and $y- \max\{x, y\} \leq 0$. The only way to hold the inequality~\eqref{eq4}  		
+%    		is to have at least $a$ or $b$ negative. This contradicts the fact the $a,b>0$. Therefore, we must have $\frac{ax + by}{a+b} \leq \max \{x,y\}$.
+%    		
+%    		Q.E.D.
+%    		
+%    		\MC{2 marks for negation; 3 marks for proof.}
+%    	\end{solution}
+    	
+		
+    
+
+\end{questions}
+	
+
+	
+%	\vfill
+%	
+%\begin{center}\gradetable[h][questions]\end{center}
+	
+	
+\end{document} 
