@@ -4,6 +4,7 @@ const DEFAULT_COMPONENT_PROPS = {
   type: 'content',
   contentFormatted: '',
   format: 'HTML',
+  contentText: '',
 }
 
 // Create a new exam
@@ -37,6 +38,7 @@ export const createSection = ({
 } = {}) => ({
   ...createExamComponent({
       type: 'section',
+      contentText,
       ...overrides
   }),
   sectionTitle,
@@ -53,6 +55,7 @@ export const createQuestion = ({
 } = {}) => ({
   ...createExamComponent({
       type: 'question',
+      contentText,
       ...overrides,
   }),
   questionNumber,
@@ -69,6 +72,7 @@ export const createAnswer = ({
 } = {}) => ({
   ...createExamComponent({
     type: 'answer',
+    contentText,
     ...overrides,
   }),
   correct,

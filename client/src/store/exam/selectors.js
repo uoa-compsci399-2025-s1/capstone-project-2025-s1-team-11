@@ -162,16 +162,6 @@ export const selectQuestionsAndSectionsForTable = createSelector(
   }
 );
 
-// Update the normaliseQuestionForTable function to handle more fields
-const normaliseQuestionForTable = (question, sectionNumber = null) => ({
-  type: 'question',
-  sectionNumber,
-  questionNumber: question.questionNumber,
-  contentText: question.contentText || '',
-  marks: question.marks || 0,
-  answers: question.answers || [],
-});
-
 export const selectCorrectAnswerIndices = createSelector(
   [selectExamData, selectAllQuestionsFlat],
   (examData, questions) => {
