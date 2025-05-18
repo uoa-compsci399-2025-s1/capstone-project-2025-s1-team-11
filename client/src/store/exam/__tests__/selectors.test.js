@@ -169,13 +169,13 @@ describe('Exam Selectors', () => {
         // Check first question (from section)
         expect(tableQuestions[0].sectionNumber).toBe(1);
         expect(tableQuestions[0].questionNumber).toBe(1);
-        expect(tableQuestions[0].questionText).toBe('Question 1');
+        expect(tableQuestions[0].contentText).toBe('Question 1');
         expect(tableQuestions[0].marks).toBe(2);
         
         // Check standalone question
         expect(tableQuestions[2].sectionNumber).toBeNull();
         expect(tableQuestions[2].questionNumber).toBe(3);
-        expect(tableQuestions[2].questionText).toBe('Question 3');
+        expect(tableQuestions[2].contentText).toBe('Question 3');
         expect(tableQuestions[2].marks).toBe(5);
     });
 

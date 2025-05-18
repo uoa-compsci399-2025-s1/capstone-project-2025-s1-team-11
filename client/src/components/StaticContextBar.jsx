@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Dropdown, Button, Space, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, message as antdMessage } from 'antd';
+import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, message as antdMessage } from 'antd';
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined } from '@ant-design/icons';
 import { updateExamField } from "../store/exam/examSlice";
-import { createNewExam } from "../store/exam/examSlice";
 import { setTeleformOptions } from "../store/exam/examSlice";
 import { setExamVersions } from "../store/exam/examSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,7 +11,6 @@ import { selectExamData } from '../store/exam/selectors.js';
 import CreateExamModal from './CreateExamModal';
 import EditExamModal from './EditExamModal';
 import { exportExamToPdf } from "../services/exportPdf";
-import { saveExamToFile } from "../services/fileSystemAccess";
 import { selectQuestionCount, selectTotalMarks } from '../store/exam/selectors';
 import '../index.css';
 
@@ -29,7 +27,7 @@ const StaticContextBar = ({
 }) => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
-  const { fileHandle, openExam, saveExam } = useFileSystem();
+  const { fileHandle, createExam, openExam, saveExam } = useFileSystem();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newExamData, setNewExamData] = useState({
     examTitle: '',
@@ -144,7 +142,7 @@ const StaticContextBar = ({
           ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
           : []
     };
-    dispatch(createNewExam(exam));
+    createExam(exam);
     // Set teleform options according to answerOptions
     const options = Array.from({ length: parseInt(newExamData.answerOptions) || 4 }, (_, i) =>
       String.fromCharCode(65 + i)
