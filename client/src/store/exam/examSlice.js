@@ -1,5 +1,10 @@
 // examSlice.js
 
+/*
+ * Important: This module does not handle the file loading of exams, this is used to manage the exam state.
+ * Do not use this module to load, close or import an exam. Use the hook.
+ */
+
 import { createSlice } from '@reduxjs/toolkit';
 import { 
   createExam, 
@@ -53,12 +58,12 @@ const examSlice = createSlice({
   name: 'exam',
   initialState,
   reducers: {
-    createNewExam: (state, action) => {
+    initializeExamState: (state, action) => {
       state.examData = createExam(action.payload || {});
       ensureUniqueIds(state.examData);
     },
 
-    clearExam: (state) => {
+    clearExamState: (state) => {
       state.examData = null;
     },
 
@@ -127,7 +132,7 @@ const examSlice = createSlice({
       if (examBodyIndex != null && examBody[examBodyIndex]?.type === 'section') {
         examBody[examBodyIndex].questions.push(newQuestion);
       } else {
-        
+
         examBody.push(newQuestion);
       }
     
@@ -340,7 +345,7 @@ const examSlice = createSlice({
         }
       });
     },
-    
+
     importExamStart: (state) => {
       state.loading = true;
       state.error = null;
@@ -359,84 +364,7 @@ const examSlice = createSlice({
 });
 
 
-// Thunk for importing an exam properly
-export const importDTOToState = (examDTO) => async (dispatch, getState) => {
-  try {
-    dispatch(importExamStart());
 
-    // Get current state
-    const currentState = getState().exam;
-
-    // If no exam exists, create one
-    if (!currentState.examData) {
-      dispatch(createNewExam({}));
-    } else {
-      // Otherwise just clear the exam body
-      dispatch(clearExamBody());
-    }
-
-    // Update exam fields if they exist in the import
-    if (examDTO.examTitle) {
-      dispatch(updateExamField({ field: 'examTitle', value: examDTO.examTitle }));
-    }
-    if (examDTO.courseCode) {
-      dispatch(updateExamField({ field: 'courseCode', value: examDTO.courseCode }));
-    }
-    if (examDTO.courseName) {
-      dispatch(updateExamField({ field: 'courseName', value: examDTO.courseName }));
-    }
-    if (examDTO.semester) {
-      dispatch(updateExamField({ field: 'semester', value: examDTO.semester }));
-    }
-    if (examDTO.year) {
-      dispatch(updateExamField({ field: 'year', value: examDTO.year }));
-    }
-
-    // Set versions and teleform options if needed
-    if (examDTO.versions) {
-      dispatch(setExamVersions(examDTO.versions));
-    }
-    if (examDTO.teleformOptions) {
-      dispatch(setTeleformOptions(examDTO.teleformOptions));
-    }
-
-    let examBodyIndexCounter = 0;
-
-    // Import the examBody (sections and/or questions)
-    for (const item of examDTO.examBody || []) {
-      try {
-        if (item.type === 'section') {
-          const { questions, ...sectionWithoutQuestions } = item;
-          await dispatch(addSection(sectionWithoutQuestions));
-
-          for (const question of item.questions || []) {
-            await dispatch(addQuestion({
-              examBodyIndex: examBodyIndexCounter,
-              questionData: question
-            }));
-          }
-        } else {
-          await dispatch(addQuestion({
-            examBodyIndex: null,
-            questionData: item
-          }));
-        }
-        examBodyIndexCounter++;
-      } catch (error) {
-        console.error(`Error while processing item:`, item);
-        console.error(error);
-        throw error;  // still rethrow to trigger importExamFailure
-      }
-    }
-
-    dispatch(importExamSuccess());
-
-    return;
-  } catch (error) {
-    dispatch(importExamFailure(error.message));
-    throw error;
-  }
-};
 
 function htmlToText(html) {
   const tempDiv = document.createElement("div");
@@ -446,10 +374,10 @@ function htmlToText(html) {
 
 // Export actions
 export const { 
-  createNewExam, 
-  clearExam,
+  initializeExamState,
+  clearExamState,
   clearExamBody,
-  addSection, 
+  addSection,
   addQuestion, 
   setCoverPage, // supplied as document, add from file system via UI
   setAppendix, // supplied as document, add from file system via UI

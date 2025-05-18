@@ -2,6 +2,7 @@
 
 import { buildContentFormatted, detectMathElements } from './utils/buildContentFormatted.js';
 import { createExam } from '../../store/exam/examUtils.js';
+import { convertOmmlToMathML } from './utils/ommlToMathML.js';
 import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
 import { extractPlainText } from './utils/extractPlainText.js';
 
@@ -18,6 +19,10 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
     ...(body['w:sectPr'] ? [body['w:sectPr']] : [])
   ];
 
+  // Diagnostic: Log total blocks to understand the content
+//  console.log(`Total document blocks: ${blocks.length}`);
+
+  //const dto = [];
   const dto = createExam();
 
   let currentSection = null;
@@ -46,9 +51,11 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
           currentSection.questions = [];
         }
         currentSection.questions.push(currentQuestion);
+//        console.log(`Added question "${currentQuestion.contentFormatted}" to section`);
       } else {
         // Add directly to DTO
         dto.examBody.push(currentQuestion);
+//        console.log(`Added standalone question "${currentQuestion.contentFormatted}"`);
       }
 
       currentQuestion = null;
@@ -67,10 +74,12 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
       // Only add section if it has content
       if (currentSection.contentFormatted && currentSection.contentFormatted.trim() !== '') {
         dto.examBody.push(currentSection);
+//        console.log(`Added section with content: ${currentSection.contentFormatted.substring(0, 30)}...`);
       } else {
         // If section has no content, move any nested questions to top level
         if (currentSection.questions && currentSection.questions.length > 0) {
           dto.examBody.push(...currentSection.questions);
+//          console.log(`Moved ${currentSection.questions.length} questions from empty section to top level`);
         }
       }
 
@@ -88,7 +97,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
     // Check if this is a section break
     if (isSectionBreak(block)) {
-      console.log(`Found section break at block ${i}`);
+//      console.log(`Found section break at block ${i}`);
       flushQuestion();
       flushSection();
       afterSectionBreak = true;
@@ -123,9 +132,13 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
     // Handle empty lines
     if (text.trim() === '') {
       emptyLineCounter++;
+
+      // If we have a current question, end it after an empty line (if it has answers)
       if (currentQuestion && emptyLineCounter >= 1 && currentAnswers.length > 0) {
+//        console.log(`Empty line detected, ending question "${currentQuestion.contentFormatted}"`);
         flushQuestion();
       }
+
       continue;
     }
 
@@ -147,13 +160,14 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
         inSection = true;
         sectionContentBlocks = [];
         afterSectionBreak = false;
+//        console.log(`Created new section from accumulated content`);
       }
 
       // Extract marks and create new question
       const marks = extractMarks(text);
 
       // Process the question content with math preservation
-      const questionText = buildContentFormatted(runs, {
+      const contentText = buildContentFormatted(runs, {
         removeMarks: true,
         relationships,
         imageData,
@@ -162,7 +176,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
       currentQuestion = {
         type: 'question',
-        contentFormatted: sanitizeContentFormatted(questionText),
+        contentFormatted: sanitizeContentFormatted(contentText),
         marks: marks,
         answers: []
       };
@@ -175,6 +189,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
     if (afterSectionBreak && !currentQuestion) {
       if (text.trim() !== '') {
         sectionContentBlocks.push(text);
+//        console.log(`Added to section content: ${text.substring(0, 30)}...`);
       }
       continue;
     }
@@ -198,6 +213,8 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
     // If we have non-question, non-section content, treat as standalone section content
     if (text.trim() !== '' && !currentQuestion && !inSection && !afterSectionBreak) {
+//      console.log(`Found standalone content, creating new section`);
+
       currentSection = {
         type: 'section',
         contentFormatted: text,
@@ -210,6 +227,9 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
   // Flush any remaining question or section
   flushQuestion();
   flushSection();
+
+  // Final diagnostic
+//  console.log(`Final DTO has ${dto.examBody.length} top-level items`);
 
   return dto;
 };

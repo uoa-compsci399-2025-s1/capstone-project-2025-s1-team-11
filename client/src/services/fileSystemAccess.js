@@ -1,11 +1,16 @@
 // src/services/fileSystemAccess.js
 
+/*
+ * Important: This module does not handle the importing of exams, this is simply used to retrieve the exam from a file.
+ * Do not use this module to import an exam. Use the hook.
+ */
+
 /**
  * Opens a file picker and reads an exam from a JSON file.
  * Returns an object with the file handle and the parsed Exam instance.
  */
 
-export async function openExamFile() {
+export async function loadExamFromFile() {
     try {
       const [fileHandle] = await window.showOpenFilePicker({
         types: [
@@ -27,15 +32,16 @@ export async function openExamFile() {
     }
 }
 
-export async function openImportFile() {
+export async function importExamFile() {
     try {
       const [fileHandle] = await window.showOpenFilePicker({
         types: [
             { 
-                description: 'DOCX, Moodle XML Files', 
+                description: 'DOCX, Moodle XML, LaTeX Files', 
                 accept: {
                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-                    'application/xml': ['.xml']
+                    'application/xml': ['.xml'],
+                    'application/x-tex': ['.tex']
                 } 
             }
         ],
@@ -53,7 +59,7 @@ export async function openImportFile() {
 /**
  * Saves the given exam to the file represented by fileHandle.
  */
-export async function saveExamToFile(exam, fileHandle = null) {
+export async function saveExamToDisk(exam, fileHandle = null) {
     // If no file handle exists, prompt the user for a save location.
     try {
         if (!fileHandle) {

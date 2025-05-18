@@ -327,7 +327,7 @@ const Randomiser = () => {
                 >
                   {showQuestion && (
                     <Text style={{ display: "block", marginBottom: 8 }}>
-                      {question.contentText || question.questionText}
+                      {question.contentText}
                     </Text>
                   )}
                   {showAnswers && question.answers?.length > 0 && mapping && (

@@ -3,6 +3,7 @@ import { Layout, Breadcrumb, theme } from 'antd';
 import { Navigation } from "./navigation.jsx";
 import { Link, useLocation } from 'react-router';
 import logo from "../../public/AssesslyLogoSmall.png";
+import StaticContextBar from './StaticContextBar';
 
 const { Header, Content, Footer } = Layout;
 
@@ -11,7 +12,7 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   const isPlainPage = ["/", "/about"].includes(location.pathname); // Borderless pages
 
   const {
-    token: { borderRadiusLG },
+    token: { borderRadiusLG, colorBgContainer },
   } = theme.useToken();
 
   const layoutStyle = {
@@ -56,35 +57,41 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   };
 
   return (
-    <Layout style={layoutStyle}>
-      <Header style={headerStyle}>
-        <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} />
-        <Navigation isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}/>
-      </Header>
+    <Layout style={{ minHeight: '100vh', minWidth: '100vw', display: 'flex', flexDirection: 'column' }}>
+      <Layout style={layoutStyle}>
+        <Header style={headerStyle}>
+          <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} />
+          <Navigation isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}/>
+        </Header>
 
-      <Content style={contentStyle}>
-        {isPlainPage ? (
-          children
-        ) : (
-          <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
-            <Breadcrumb style={breadcrumbStyle}>
-              <Breadcrumb.Item>
-                <Link to="/">Home</Link>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <Link to="/builder">MCQ Builder</Link>
-              </Breadcrumb.Item>
-            </Breadcrumb>
-            <div style={contentContainerStyle}>
-              {children}
-            </div>
+          {["/builder", "/randomiser", "/marker"].includes(location.pathname) && (
+          <div style={{ position: "sticky", top: 0, zIndex: 1000 }}>
+            <StaticContextBar />
           </div>
         )}
-      </Content>
+        <Content style={{ paddingBottom: isPlainPage ? 0 : '48px', flex: 1, position: 'relative', zIndex: 1 }}>
+          {isPlainPage ? (
+            children
+          ) : (
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+              <div
+                style={{
+                  background: colorBgContainer,
+                  borderRadius: borderRadiusLG,
+                  minHeight: '800px',
+                  padding: '32px'
+                }}
+              >
+                {children}
+              </div>
+            </div>
+          )}
+        </Content>
 
-      <Footer style={footerStyle}>
-        University of Auckland | {new Date().getFullYear()} | Created by Team 11 (Cache Converters)
-      </Footer>
+        <Footer style={footerStyle}>
+          University of Auckland | {new Date().getFullYear()} | Created by Team 11 (Cache Converters)
+        </Footer>
+      </Layout>
     </Layout>
   );
 };
