@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { selectExamData } from "../store/exam/selectors.js";
-import ExamDisplay from "../components/examDisplay.jsx";
+import ExamDisplay from "../components/shared/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 import ExamSidebar from "../components/ExamSidebar.jsx";
 import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";

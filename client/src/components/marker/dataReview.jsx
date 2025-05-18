@@ -1,6 +1,6 @@
 import {Alert, Button, Card, Empty, Radio, Space, Typography} from "antd";
 import React from "react";
-import {ExamDisplay} from "../shared/examDisplay.jsx";
+import ExamDisplay from "../shared/examDisplay.jsx";
 import AnswerKeyPreview from "./AnswerKeyPreview.jsx";
 
 export const dataReview = ({ examData, markingKey} ) => {
@@ -9,7 +9,9 @@ export const dataReview = ({ examData, markingKey} ) => {
       <Typography.Title level={3}>Review Exam</Typography.Title>
       {examData ? (
         <div>
-          <ExamDisplay exam={examData} />
+          <div style={{ marginBottom: 24 }}>
+            <ExamDisplay />
+          </div>
           <AnswerKeyPreview versionMap={markingKey} />
           {/*
           <Card>
