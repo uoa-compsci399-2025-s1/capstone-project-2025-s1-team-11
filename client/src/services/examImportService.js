@@ -102,12 +102,10 @@ export const importDTOToState = (examDTO) => async (dispatch) => {
     for (const item of examDTO.examBody || []) {
       try {
         if (item.type === 'section') {
-          const { questions, ...sectionWithoutQuestions } = item;
+          const sectionWithoutQuestions = { ...item };
+          delete sectionWithoutQuestions.questions;
           await dispatch(addSection(sectionWithoutQuestions));
           
-          //const sectionIndex = result.payload;
-          //const sectionIndex = state.examData.examBody.length - 1;
-
           for (const question of item.questions || []) {
             await dispatch(addQuestion({ 
               examBodyIndex: examBodyIndexCounter, 
