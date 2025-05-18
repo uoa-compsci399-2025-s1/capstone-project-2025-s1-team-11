@@ -309,7 +309,7 @@ const StaticContextBar = ({
                   ]
                 }}
                 trigger={['click']}
-                onVisibleChange={(visible) => {
+                onOpenChange={(visible) => {
                   setFileDropdownOpen(visible);
                   setIsHovered(visible);
                 }}
@@ -439,7 +439,7 @@ const StaticContextBar = ({
                   ]
                 }}
                 trigger={['click']}
-                onVisibleChange={(visible) => {
+                onOpenChange={(visible) => {
                   setExportDropdownOpen(visible);
                   setIsHovered(visible);
                 }}
