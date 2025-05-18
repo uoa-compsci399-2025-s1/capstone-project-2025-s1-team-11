@@ -8,7 +8,6 @@ const ExamFileManager = () => {
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const { openExam, createExam, saveExam, closeExam, importExam } = useFileSystem();
   const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
-  const { message } = AntApp.useApp();
 
   // State for create new exam modal
   const [showCreateModal, setShowCreateModal] = useState(false);
