@@ -262,13 +262,17 @@ const Randomiser = () => {
                       {showAnswers && question.answers?.length > 0 && mapping && (
                         <div style={{ marginBottom: 8 }}>
                           <ul style={{ paddingLeft: "1.5em", marginBottom: 0 }}>
-                            {mapping.map((shuffledIndex, originalIndex) => (
-                              <li key={originalIndex}>
-                                <Text>
-                                  {String.fromCharCode(65 + originalIndex)}. {question.answers?.[shuffledIndex]?.contentText || "[Missing Answer]"}
-                                </Text>
-                              </li>
-                            ))}
+                            {mapping.map((shuffledIndex, originalIndex) => {
+                              const answer = question.answers?.[shuffledIndex];
+                              if (!answer?.contentText) return null;
+                              return (
+                                <li key={originalIndex}>
+                                  <Text>
+                                    {String.fromCharCode(65 + originalIndex)}. {answer.contentText}
+                                  </Text>
+                                </li>
+                              );
+                            })}
                           </ul>
                         </div>
                       )}
