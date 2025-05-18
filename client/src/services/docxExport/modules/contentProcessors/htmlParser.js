@@ -15,6 +15,9 @@ export function parseHtmlContent(htmlString) {
         };
     }
 
+    // Pre-process LaTeX math expressions in the HTML
+    htmlString = preprocessLatexMath(htmlString);
+
     // Create a DOM parser
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
@@ -29,6 +32,25 @@ export function parseHtmlContent(htmlString) {
     processNode(body, result);
 
     return result;
+}
+
+/**
+ * Preprocess LaTeX math expressions in HTML
+ * @param {string} htmlString - HTML string to preprocess
+ * @returns {string} HTML with LaTeX math tagged for processing
+ */
+function preprocessLatexMath(htmlString) {
+    // Replace display math expressions $$ ... $$ with custom element
+    htmlString = htmlString.replace(/\$\$(.*?)\$\$/gs, (match, content) => {
+        return `<math-display data-latex="${encodeURIComponent(content)}"></math-display>`;
+    });
+
+    // Replace inline math expressions $ ... $ with custom element
+    htmlString = htmlString.replace(/\$(.*?)\$/g, (match, content) => {
+        return `<math-inline data-latex="${encodeURIComponent(content)}"></math-inline>`;
+    });
+
+    return htmlString;
 }
 
 /**
@@ -131,6 +153,18 @@ function processNode(node, result) {
                 });
                 break;
 
+            case 'math-inline':
+                // Inline LaTeX math
+                const inlineLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
+                result.text += `§MATH_INLINE§${inlineLatex}§/MATH_INLINE§`;
+                break;
+
+            case 'math-display':
+                // Display LaTeX math
+                const displayLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
+                result.text += `§MATH_DISPLAY§${displayLatex}§/MATH_DISPLAY§`;
+                break;
+
             default:
                 // Process children for any other tags
                 for (const child of node.childNodes) {
@@ -158,4 +192,16 @@ export function extractTextFromHtml(htmlString) {
 export function containsImages(htmlString) {
     const parsed = parseHtmlContent(htmlString);
     return parsed.elements.some(el => el.type === 'image');
+}
+
+/**
+ * Check if HTML content contains math expressions
+ * @param {string} htmlString - HTML string to check
+ * @returns {boolean} True if contains math expressions
+ */
+export function containsMath(htmlString) {
+    if (!htmlString) return false;
+    return /\$\$(.*?)\$\$/gs.test(htmlString) || 
+           /\$(.*?)\$/g.test(htmlString) ||
+           /<math/.test(htmlString);
 }

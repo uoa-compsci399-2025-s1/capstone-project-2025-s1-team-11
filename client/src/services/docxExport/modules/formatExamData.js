@@ -1,7 +1,7 @@
 ﻿// src/services/docxExport/modules/formatExamData.js
 
 import { parseHtmlContent } from './contentProcessors/htmlParser';
-import { parseCoverPageForExport, parseAppendixForExport } from './contentProcessors/genericContentParser';
+import { formatCoverPageForTemplate, parseAppendixForExport } from './contentProcessors/coverPageParser.js';
 
 /**
  * Formats exam data from Redux store format to Docxtemplater template format
@@ -53,7 +53,19 @@ export function formatExamDataForTemplate(examData, version = 1) {
     // Parse cover page
     let coverPageData = {};
     if (examData.coverPage?.contentFormatted) {
-        coverPageData = parseCoverPageForExport(examData.coverPage.contentFormatted);
+        coverPageData = formatCoverPageForTemplate({
+            courseSubject: basicInfo.courseCode.split(' ')[0] || '',
+            courseNumber: basicInfo.courseCode.split(' ')[1] || '',
+            courseCode: basicInfo.courseCode,
+            subjectName: basicInfo.courseName,
+            examTitle: basicInfo.examTitle,
+            timeAllowed: examData.metadata?.timeAllowed || '',
+            semester: examData.semester || '',
+            year: examData.year || '',
+            campus: examData.metadata?.campus || '',
+            notes: examData.metadata?.notes || '',
+            contentFormatted: examData.coverPage.contentFormatted
+        });
     }
 
     // Transform cover page elements to match template expectations
@@ -173,6 +185,7 @@ export function formatExamDataForTemplate(examData, version = 1) {
         semester: coverPageData.semester || '',
         year: coverPageData.year || '',
         campus: coverPageData.campus || '',
+        notes: examData.metadata?.notes || '',
         hasAdditionalCoverContent: transformedCoverContent.length > 0,
         additionalCoverContent: transformedCoverContent,
         // Appendix data

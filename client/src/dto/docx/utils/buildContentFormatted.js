@@ -1,6 +1,50 @@
 ﻿// client/docxDTO/utils/buildContentFormatted.js
 
 import { extractPlainText } from './extractPlainText.js';
+import { convertOmmlToLatex } from './ommlToLatex.js';
+
+/**
+ * Detect math elements in a paragraph
+ * @param {Object} para - Paragraph object
+ * @returns {Array} - Array of math elements
+ */
+export const detectMathElements = (para) => {
+    const mathElements = [];
+
+    if (!para) return mathElements;
+
+    // Check for math at the paragraph level
+    if (para['m:oMath']) {
+        if (Array.isArray(para['m:oMath'])) {
+            mathElements.push(...para['m:oMath']);
+        } else {
+            mathElements.push(para['m:oMath']);
+        }
+    }
+
+    // Check for math in oMathPara
+    if (para['m:oMathPara']) {
+        if (Array.isArray(para['m:oMathPara'])) {
+            para['m:oMathPara'].forEach(mathPara => {
+                if (mathPara['m:oMath']) {
+                    if (Array.isArray(mathPara['m:oMath'])) {
+                        mathElements.push(...mathPara['m:oMath']);
+                    } else {
+                        mathElements.push(mathPara['m:oMath']);
+                    }
+                }
+            });
+        } else if (para['m:oMathPara']['m:oMath']) {
+            if (Array.isArray(para['m:oMathPara']['m:oMath'])) {
+                mathElements.push(...para['m:oMathPara']['m:oMath']);
+            } else {
+                mathElements.push(para['m:oMathPara']['m:oMath']);
+            }
+        }
+    }
+
+    return mathElements;
+};
 
 /**
  * Build HTML formatted content from Word document runs, processing math elements as needed
@@ -9,29 +53,103 @@ import { extractPlainText } from './extractPlainText.js';
  * @param {boolean} options.removeMarks - Whether to remove marks pattern
  * @param {Object} options.relationships - Document relationships
  * @param {Object} options.imageData - Image data mapping
- * @param {boolean} options.preserveMath - Whether to preserve math elements as placeholders
+ * @param {boolean} options.preserveMath - Whether to preserve math elements as LaTeX
  * @returns {string} Formatted content string
  */
-export const buildContentFormatted = (runs, options = {}) => {
-    const { removeMarks = false, relationships = {}, imageData = {}, preserveMath = false } = options;
+export const buildContentFormatted = (runs, options = {}, parentPara = null) => {
+    const {
+        removeMarks = false,
+        relationships = {},
+        imageData = {},
+        preserveMath = true // Changed default to true
+    } = options;
 
-    // Extract text content, handling math elements
-    let content = '';
-    let mathCounter = 0;
-
-    if (preserveMath) {
-        // When preserving math, we need to process runs differently
-        content = extractPlainTextWithMathPlaceholders(runs, { relationships, imageData }, mathCounter);
-    } else {
-        content = extractPlainText(runs, { relationships, imageData });
-    }
+    // First, get the plain text content
+    let content = extractPlainText(runs, { relationships, imageData });
 
     // Remove marks pattern if requested
     if (removeMarks) {
         content = content.replace(/^\[\d+(?:\.\d+)?\s*marks?\]\s*/i, '');
     }
 
-    // Process multiple br tags to preserve spacing - preserve all <br> tags
+    // Check if parent paragraph has math
+    if (parentPara && preserveMath) {
+        // Get math elements
+        const mathElements = detectMathElements(parentPara);
+
+        if (mathElements.length > 0) {
+            console.log(`Found ${mathElements.length} math element(s)`);
+
+            // Find appropriate places to insert each math element
+            // This is a common pattern in Word documents with Boolean algebra expressions:
+            // i. [Formula 1]
+            // ii. [Formula 2]
+            // etc.
+
+            // Split content by line breaks
+            const lines = content.split(/<br>/);
+
+            // Try to match each math element with a numbered line (i., ii., etc.)
+            for (let i = 0; i < mathElements.length && i < lines.length; i++) {
+                const line = lines[i];
+                // If line looks like "i.", "ii.", etc.
+                if (/^(i{1,4}|iv|v|vi{1,3})\.\s*$/.test(line.trim())) {
+                    try {
+                        const latex = convertOmmlToLatex(mathElements[i]);
+                        if (latex) {
+                            lines[i] = line.trim() + ` $${latex}$`;
+                        }
+                    } catch (error) {
+                        console.error(`Error converting math element ${i}:`, error);
+                    }
+                }
+                // Special case for lines with just a roman numeral followed by a dot
+                else if (line.includes('i.') || line.includes('ii.') ||
+                    line.includes('iii.') || line.includes('iv.')) {
+                    // If we find a potential pattern anywhere in the line
+                    const match = line.match(/(i{1,4}|iv|v|vi{1,3})\./);
+                    if (match) {
+                        try {
+                            const latex = convertOmmlToLatex(mathElements[i]);
+                            if (latex) {
+                                // Insert after the match
+                                const pos = line.indexOf(match[0]) + match[0].length;
+                                lines[i] = line.substring(0, pos) +
+                                    ` $${latex}$` +
+                                    line.substring(pos);
+                            }
+                        } catch (error) {
+                            console.error(`Error converting math element ${i}:`, error);
+                        }
+                    }
+                }
+            }
+
+            // If there are unmatched math elements, append them at appropriate places
+            if (mathElements.length > lines.length) {
+                for (let i = lines.length; i < mathElements.length; i++) {
+                    try {
+                        const latex = convertOmmlToLatex(mathElements[i]);
+                        if (latex) {
+                            // Append to the last line or create a new line
+                            if (i < lines.length) {
+                                lines[i] += ` $${latex}$`;
+                            } else {
+                                lines.push(`$${latex}$`);
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`Error converting math element ${i}:`, error);
+                    }
+                }
+            }
+
+            // Reassemble content
+            content = lines.join('<br>');
+        }
+    }
+
+    // Process multiple br tags to preserve spacing
     content = content.replace(/<br>/g, '<br>');
 
     return content;
@@ -41,14 +159,24 @@ export const buildContentFormatted = (runs, options = {}) => {
  * Extract plain text with math placeholders for later processing
  * @param {Array} runs - Array of Word document run elements
  * @param {Object} options - Processing options
- * @param {number} mathCounter - Counter for math placeholders
- * @returns {string} Text content with math placeholders
+ * @returns {Object} Object containing text with placeholders and math elements
  */
-const extractPlainTextWithMathPlaceholders = (runs, options = {}, mathCounter) => {
-    if (!Array.isArray(runs)) return '';
+const extractPlainTextWithMathPlaceholders = (runs, options = {}) => {
+    if (!Array.isArray(runs)) return { textWithPlaceholders: '', mathElems: [] };
 
     const { relationships = {}, imageData = {} } = options;
+    const mathElements = [];
+    let mathCounter = 0;
 
+    // First, scan for math elements and collect them
+    runs.forEach(run => {
+        if (run && (run['m:oMath'] || run['m:oMathPara'])) {
+            // Store the math element for later processing
+            mathElements.push(run['m:oMath'] || run['m:oMathPara']);
+        }
+    });
+
+    // Now process text content with placeholders for math
     let result = '';
     let lastRunEndedWithSpace = false;
     let lastRunWasLineBreak = false;
@@ -204,5 +332,8 @@ const extractPlainTextWithMathPlaceholders = (runs, options = {}, mathCounter) =
     result = result.replace(/(\b[A-F0-9]+)(\d{1,2})\.(?=\s|<br>|$)/g, '$1<sub>$2</sub>.');
     result = result.replace(/(\w+)\s+<(sub|sup)>(\w+)<\/(sub|sup)>/g, '$1<$2>$3</$4>');
 
-    return result.trim();
+    return {
+        textWithPlaceholders: result.trim(),
+        mathElems: mathElements
+    };
 };

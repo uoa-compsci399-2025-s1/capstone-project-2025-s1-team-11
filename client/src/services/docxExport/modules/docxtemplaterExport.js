@@ -458,59 +458,173 @@ async function postProcessTextFormatting(docxBlob) {
         // Get the main document
         let docXml = await zip.file('word/document.xml').async('string');
 
-        // Simple approach: replace formatting markers within text runs
+        // Debug logging
+        console.log("Document contains §CODE§:", docXml.includes('§CODE§'));
+        if (docXml.includes('§CODE§')) {
+            const codeIndex = docXml.indexOf('§CODE§');
+            console.log("XML around code tag:", docXml.substring(codeIndex - 100, codeIndex + 200));
+        }
+
+// First, identify code blocks but PRESERVE nested tags
+        let processedXml = docXml;
+
+// Find all code blocks with nested tags
+        const codeBlockRegex = /§CODE§(.*?)§\/CODE§/gs;
+        let match;
+
+        while ((match = codeBlockRegex.exec(docXml)) !== null) {
+            const codeContent = match[1];
+
+            // Instead of stripping nested tags, mark them for special handling
+            const preservedContent = codeContent
+                .replace(/§BOLD§(.*?)§\/BOLD§/gs, '§CODE_BOLD§$1§/CODE_BOLD§')
+                .replace(/§ITALIC§(.*?)§\/ITALIC§/gs, '§CODE_ITALIC§$1§/CODE_ITALIC§')
+                .replace(/§UNDERLINE§(.*?)§\/UNDERLINE§/gs, '§CODE_UNDERLINE§$1§/CODE_UNDERLINE§');
+
+            // Replace the original code block with preserved content
+            processedXml = processedXml.replace(
+                match[0],
+                `§CODE§${preservedContent}§/CODE§`
+            );
+        }
+
+        // Update the XML with the pre-processed code blocks
+        docXml = processedXml;
+
+        // Now apply all the formatting replacements
         const replacements = [
             {
-                pattern: /§BOLD§([^§]*)§\/BOLD§/g,
+                pattern: /§BOLD§([\s\S]*?)§\/BOLD§/g,
                 replacement: (match, text) => {
                     return `</w:t></w:r><w:r><w:rPr><w:b/></w:rPr><w:t xml:space="preserve">${text}</w:t></w:r><w:r><w:t xml:space="preserve">`;
                 }
             },
             {
-                pattern: /§ITALIC§([^§]*)§\/ITALIC§/g,
+                pattern: /§ITALIC§([\s\S]*?)§\/ITALIC§/g,
                 replacement: (match, text) => {
                     return `</w:t></w:r><w:r><w:rPr><w:i/></w:rPr><w:t xml:space="preserve">${text}</w:t></w:r><w:r><w:t xml:space="preserve">`;
                 }
             },
             {
-                pattern: /§UNDERLINE§([^§]*)§\/UNDERLINE§/g,
+                pattern: /§UNDERLINE§([\s\S]*?)§\/UNDERLINE§/g,
                 replacement: (match, text) => {
                     return `</w:t></w:r><w:r><w:rPr><w:u w:val="single"/></w:rPr><w:t xml:space="preserve">${text}</w:t></w:r><w:r><w:t xml:space="preserve">`;
                 }
             },
             {
-                pattern: /§CODE§([^§]*)§\/CODE§/g,
+                pattern: /§CODE§([\s\S]*?)§\/CODE§/g,
                 replacement: (match, text) => {
-                    return `</w:t></w:r><w:r><w:rPr><w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr><w:t xml:space="preserve">${text}</w:t></w:r><w:r><w:t xml:space="preserve">`;
+                    // Base code formatting
+                    let result = `</w:t></w:r><w:r><w:rPr>
+                      <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                      <w:sz w:val="22"/>
+                      <w:szCs w:val="22"/>
+                    </w:rPr><w:t xml:space="preserve">`;
+
+                    // Process text to handle nested formatting while preserving code font
+                    let processedText = text
+                        // Replace special code formatting markers
+                        .replace(/§CODE_BOLD§([\s\S]*?)§\/CODE_BOLD§/g,
+                            (m, boldText) => `</w:t></w:r><w:r><w:rPr>
+                          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                          <w:sz w:val="22"/>
+                          <w:szCs w:val="22"/>
+                          <w:b/>
+                        </w:rPr><w:t xml:space="preserve">${boldText}</w:t></w:r><w:r><w:rPr>
+                          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                          <w:sz w:val="22"/>
+                          <w:szCs w:val="22"/>
+                        </w:rPr><w:t xml:space="preserve">`)
+                                        .replace(/§CODE_ITALIC§([\s\S]*?)§\/CODE_ITALIC§/g,
+                                            (m, italicText) => `</w:t></w:r><w:r><w:rPr>
+                          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                          <w:sz w:val="22"/>
+                          <w:szCs w:val="22"/>
+                          <w:i/>
+                        </w:rPr><w:t xml:space="preserve">${italicText}</w:t></w:r><w:r><w:rPr>
+                          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                          <w:sz w:val="22"/>
+                          <w:szCs w:val="22"/>
+                        </w:rPr><w:t xml:space="preserve">`)
+                                        .replace(/§CODE_UNDERLINE§([\s\S]*?)§\/CODE_UNDERLINE§/g,
+                                            (m, underlineText) => `</w:t></w:r><w:r><w:rPr>
+                          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                          <w:sz w:val="22"/>
+                          <w:szCs w:val="22"/>
+                          <w:u w:val="single"/>
+                        </w:rPr><w:t xml:space="preserve">${underlineText}</w:t></w:r><w:r><w:rPr>
+                          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                          <w:sz w:val="22"/>
+                          <w:szCs w:val="22"/>
+                        </w:rPr><w:t xml:space="preserve">`);
+
+                    // Handle arrow characters specifically
+                    processedText = processedText
+                        .replace(/←/g, '&#x2190;')  // Left arrow
+                        .replace(/→/g, '&#x2192;'); // Right arrow
+
+                    return result + processedText + `</w:t></w:r><w:r><w:t xml:space="preserve">`;
                 }
             },
             {
-                pattern: /§SUBSCRIPT§([^§]*)§\/SUBSCRIPT§/g,
+                pattern: /§SUBSCRIPT§([\s\S]*?)§\/SUBSCRIPT§/g,
                 replacement: (match, text) => {
                     return `</w:t></w:r><w:r><w:rPr><w:vertAlign w:val="subscript"/></w:rPr><w:t xml:space="preserve">${text}</w:t></w:r><w:r><w:t xml:space="preserve">`;
                 }
             },
             {
-                pattern: /§SUPERSCRIPT§([^§]*)§\/SUPERSCRIPT§/g,
+                pattern: /§SUPERSCRIPT§([\s\S]*?)§\/SUPERSCRIPT§/g,
                 replacement: (match, text) => {
                     return `</w:t></w:r><w:r><w:rPr><w:vertAlign w:val="superscript"/></w:rPr><w:t xml:space="preserve">${text}</w:t></w:r><w:r><w:t xml:space="preserve">`;
+                }
+            },
+            {
+                pattern: /§MATH_INLINE§([\s\S]*?)§\/MATH_INLINE§/g,
+                replacement: (match, text) => {
+                    // Convert inline LaTeX math to OMML
+                    return `</w:t></w:r>
+                      <m:oMathPara>
+                        <m:oMath>
+                          ${convertLatexToOmml(text)}
+                        </m:oMath>
+                      </m:oMathPara>
+                    <w:r><w:t xml:space="preserve">`;
+                }
+            },
+            {
+                pattern: /§MATH_DISPLAY§([\s\S]*?)§\/MATH_DISPLAY§/g,
+                replacement: (match, text) => {
+                    // Convert display LaTeX math to OMML with display style
+                    return `</w:t></w:r>
+                      <m:oMathPara>
+                        <m:oMathParaPr>
+                          <m:jc m:val="center"/>
+                        </m:oMathParaPr>
+                        <m:oMath>
+                          ${convertLatexToOmml(text, true)}
+                        </m:oMath>
+                      </m:oMathPara>
+                    <w:r><w:t xml:space="preserve">`;
                 }
             }
         ];
 
         // Apply replacements
         replacements.forEach(({ pattern, replacement }) => {
-            // Replace within text nodes
             docXml = docXml.replace(/<w:t([^>]*)>([^<]*)<\/w:t>/g, (match, attributes, content) => {
                 if (pattern.test(content)) {
                     const newContent = content.replace(pattern, replacement);
-                    // If the original had xml:space="preserve", keep it; otherwise add it
                     const preserveSpace = attributes.includes('xml:space="preserve"') ? attributes : attributes + ' xml:space="preserve"';
                     return `<w:t${preserveSpace}>${newContent}</w:t>`;
                 }
                 return match;
             });
         });
+
+        // Ensure that OMML namespace is declared in the document
+        if (docXml.includes('<m:oMath>') && !docXml.includes('xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"')) {
+            docXml = docXml.replace('<w:document ', '<w:document xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" ');
+        }
 
         // Clean up any empty text runs that might have been created
         docXml = docXml.replace(/<w:r><w:t[^>]*><\/w:t><\/w:r>/g, '');
@@ -530,6 +644,178 @@ async function postProcessTextFormatting(docxBlob) {
         console.error('Error post-processing text formatting:', error);
         return docxBlob; // Return original if error
     }
+}
+
+/**
+ * Convert LaTeX math to OMML (Office Math Markup Language)
+ * This is a simplified conversion for common math expressions
+ * @param {string} latex - LaTeX math expression
+ * @param {boolean} isDisplay - Whether this is display math
+ * @returns {string} OMML markup
+ */
+function convertLatexToOmml(latex, isDisplay = false) {
+    // Basic implementation - this would need to be expanded for complex equations
+    let omml = '';
+
+    // Handle common LaTeX commands and symbols
+    const latinSymbols = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 
+                         'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 
+                         'pi', 'rho', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega'];
+    
+    // Handle fractions
+    if (latex.includes('\\frac')) {
+        // Extract numerator and denominator
+        const fracRegex = /\\frac\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/g;
+        latex = latex.replace(fracRegex, (match, num, denom) => {
+            return `<m:f>
+                      <m:fPr>
+                        <m:type m:val="bar"/>
+                      </m:fPr>
+                      <m:num>
+                        <m:r>
+                          <m:t>${convertSimpleLatexToText(num)}</m:t>
+                        </m:r>
+                      </m:num>
+                      <m:den>
+                        <m:r>
+                          <m:t>${convertSimpleLatexToText(denom)}</m:t>
+                        </m:r>
+                      </m:den>
+                    </m:f>`;
+        });
+    }
+    
+    // Handle superscripts
+    if (latex.includes('^')) {
+        const supRegex = /([^_\^{}]+|\{[^{}]*\})\^(\{[^{}]*\}|[^_\^{}])/g;
+        latex = latex.replace(supRegex, (match, base, sup) => {
+            // Remove braces if present
+            base = base.replace(/^\{|\}$/g, '');
+            sup = sup.replace(/^\{|\}$/g, '');
+            
+            return `<m:sSup>
+                      <m:e>
+                        <m:r>
+                          <m:t>${convertSimpleLatexToText(base)}</m:t>
+                        </m:r>
+                      </m:e>
+                      <m:sup>
+                        <m:r>
+                          <m:t>${convertSimpleLatexToText(sup)}</m:t>
+                        </m:r>
+                      </m:sup>
+                    </m:sSup>`;
+        });
+    }
+    
+    // Handle subscripts
+    if (latex.includes('_')) {
+        const subRegex = /([^_\^{}]+|\{[^{}]*\})_(\{[^{}]*\}|[^_\^{}])/g;
+        latex = latex.replace(subRegex, (match, base, sub) => {
+            // Remove braces if present
+            base = base.replace(/^\{|\}$/g, '');
+            sub = sub.replace(/^\{|\}$/g, '');
+            
+            return `<m:sSub>
+                      <m:e>
+                        <m:r>
+                          <m:t>${convertSimpleLatexToText(base)}</m:t>
+                        </m:r>
+                      </m:e>
+                      <m:sub>
+                        <m:r>
+                          <m:t>${convertSimpleLatexToText(sub)}</m:t>
+                        </m:r>
+                      </m:sub>
+                    </m:sSub>`;
+        });
+    }
+    
+    // If no special formatting was applied, wrap in simple runs
+    if (!latex.includes('<m:')) {
+        omml = `<m:r><m:t>${convertSimpleLatexToText(latex)}</m:t></m:r>`;
+    } else {
+        omml = latex; // The conversion was already done by the replacements
+    }
+    
+    return omml;
+}
+
+/**
+ * Convert simple LaTeX text to plain text for OMML
+ * @param {string} latex - Simple LaTeX text
+ * @returns {string} Plain text with symbols converted
+ */
+function convertSimpleLatexToText(latex) {
+    // Replace common LaTeX commands with their Unicode equivalents
+    const replacements = {
+        '\\alpha': 'α',
+        '\\beta': 'β',
+        '\\gamma': 'γ',
+        '\\delta': 'δ',
+        '\\epsilon': 'ε',
+        '\\varepsilon': 'ε',
+        '\\zeta': 'ζ',
+        '\\eta': 'η',
+        '\\theta': 'θ',
+        '\\iota': 'ι',
+        '\\kappa': 'κ',
+        '\\lambda': 'λ',
+        '\\mu': 'μ',
+        '\\nu': 'ν',
+        '\\xi': 'ξ',
+        '\\pi': 'π',
+        '\\rho': 'ρ',
+        '\\sigma': 'σ',
+        '\\tau': 'τ',
+        '\\upsilon': 'υ',
+        '\\phi': 'φ',
+        '\\chi': 'χ',
+        '\\psi': 'ψ',
+        '\\omega': 'ω',
+        '\\Gamma': 'Γ',
+        '\\Delta': 'Δ',
+        '\\Theta': 'Θ',
+        '\\Lambda': 'Λ',
+        '\\Xi': 'Ξ',
+        '\\Pi': 'Π',
+        '\\Sigma': 'Σ',
+        '\\Phi': 'Φ',
+        '\\Psi': 'Ψ',
+        '\\Omega': 'Ω',
+        '\\times': '×',
+        '\\div': '÷',
+        '\\pm': '±',
+        '\\mp': '∓',
+        '\\leq': '≤',
+        '\\geq': '≥',
+        '\\neq': '≠',
+        '\\approx': '≈',
+        '\\infty': '∞',
+        '\\partial': '∂',
+        '\\nabla': '∇',
+        '\\sum': '∑',
+        '\\prod': '∏',
+        '\\int': '∫',
+        '\\rightarrow': '→',
+        '\\leftarrow': '←',
+        '\\Rightarrow': '⇒',
+        '\\Leftarrow': '⇐',
+        '\\forall': '∀',
+        '\\exists': '∃',
+        '\\in': '∈',
+        '\\subset': '⊂',
+        '\\cup': '∪',
+        '\\cap': '∩',
+        '\\emptyset': '∅'
+    };
+    
+    let result = latex;
+    for (const [cmd, symbol] of Object.entries(replacements)) {
+        result = result.replace(new RegExp(cmd.replace(/\\/g, '\\\\'), 'g'), symbol);
+    }
+    
+    return result;
 }
 
 /**

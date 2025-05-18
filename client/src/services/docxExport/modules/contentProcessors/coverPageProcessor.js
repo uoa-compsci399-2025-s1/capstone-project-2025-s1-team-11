@@ -1,8 +1,15 @@
-﻿// client/src/dto/docx/coverPageProcessor.js
+﻿// client/src/services/docxExport/modules/contentProcessors/coverPageProcessor.js
 
-import { extractDocumentXml } from './utils/extractDocumentXml.js';
-import { parseXmlToJson } from './utils/parseXmlToJson.js';
-import { buildContentFormatted } from './utils/buildContentFormatted.js';
+/**
+ * Cover Page Processor
+ * Processes DOCX file to extract cover page content and metadata
+ */
+
+import { extractDocumentXml } from '../../../../dto/docx/utils/extractDocumentXml.js';
+import { parseXmlToJson } from '../../../../dto/docx/utils/parseXmlToJson.js';
+import { buildContentFormatted } from '../../../../dto/docx/utils/buildContentFormatted.js';
+import { extractContentControls } from '../../../../dto/docx/utils/extractContentControls.js';
+import { parseCoverPage, formatCoverPageForTemplate, parseAppendixForExport } from './coverPageParser.js';
 
 /**
  * Process a DOCX cover page file and extract metadata, cover page content, and appendix
@@ -17,6 +24,10 @@ export const processCoverPageFile = async (file) => {
         // Parse XML to JSON
         const parsedXml = parseXmlToJson(documentXml);
 
+        // Extract content controls from the document
+        const contentControls = extractContentControls(parsedXml);
+        console.log("🎛️ Extracted content controls:", contentControls);
+
         // Process the document
         const body = parsedXml['w:document']?.['w:body'];
         if (!body) {
@@ -29,16 +40,8 @@ export const processCoverPageFile = async (file) => {
             ...(Array.isArray(body['w:tbl']) ? body['w:tbl'] : (body['w:tbl'] ? [body['w:tbl']] : [])),
         ];
 
-        console.log("🧱 Raw blocks extracted:", blocks);
-
         // Separate cover page and appendix
         const { coverPageBlocks, appendixBlocks } = separateCoverPageAndAppendix(blocks);
-
-        console.log("📄 Cover page blocks:", coverPageBlocks);
-        console.log("📎 Appendix blocks:", appendixBlocks);
-
-        // Debug the structure of cover page blocks
-        debugBlockStructure(coverPageBlocks);
 
         // Convert blocks to formatted HTML
         const coverPageContent = coverPageBlocks.length > 0
@@ -49,13 +52,21 @@ export const processCoverPageFile = async (file) => {
             ? processBlocksToHTML(appendixBlocks, relationships, imageData)
             : null;
 
-        console.log("📄 Extracted coverPageContent:", coverPageContent);
-        console.log("📎 Extracted appendixContent:", appendixContent);
+        // Extract metadata from cover page content, passing content controls for more accurate extraction
+        const parsedData = parseCoverPage(coverPageContent, contentControls);
 
-        // Extract metadata from cover page content
-        const metadata = extractMetadata(coverPageContent || '');
+        const metadata = {
+            examTitle: parsedData.examTitle || '',
+            courseCode: parsedData.courseCode || '',
+            courseName: parsedData.subjectName || '',
+            semester: parsedData.semester || '',
+            year: parsedData.year || '',
+            campus: parsedData.campus || '',
+            timeAllowed: parsedData.timeAllowed || ''
+        };
 
-        console.log("🧠 Extracted metadata:", metadata);
+        console.log("🧠 Full parsed data:", parsedData);
+        console.log("🧠 Mapped metadata:", metadata);
 
         return {
             metadata,
@@ -114,46 +125,12 @@ const hasPageBreak = (block) => {
     return false;
 };
 
-const extractRuns = (node) => {
-    if (!node || typeof node !== 'object') return [];
-
-    const runs = [];
-
-    // Direct w:r node(s)
-    if (node['w:r']) {
-        const directRuns = Array.isArray(node['w:r']) ? node['w:r'] : [node['w:r']];
-        runs.push(...directRuns);
-    }
-
-    // Explore children, ignoring formatting-only tags
-    const ignoredKeys = new Set([
-        'w:pPr', 'w:tblPr', 'w:tblGrid', 'w:trPr', 'w:tcPr', '_attr'
-    ]);
-
-    for (const key of Object.keys(node)) {
-        if (!ignoredKeys.has(key) && typeof node[key] === 'object') {
-            const child = node[key];
-            if (Array.isArray(child)) {
-                for (const item of child) {
-                    runs.push(...extractRuns(item));
-                }
-            } else {
-                runs.push(...extractRuns(child));
-            }
-        }
-    }
-
-    return runs;
-};
-
 const processBlocksToHTML = (blocks, relationships, imageData) => {
-    console.log("🧩 Processing blocks to HTML:", blocks.length, "blocks");
     if (!blocks || blocks.length === 0) return '';
     const htmlParts = [];
 
     for (let i = 0; i < blocks.length; i++) {
         const block = blocks[i];
-        console.log(`Block ${i}:`, Object.keys(block));
 
         // Check if this is a paragraph block (has 'w:p' wrapper) or direct paragraph content
         const isParagraphWrapper = block['w:p'] !== undefined;
@@ -168,37 +145,27 @@ const processBlocksToHTML = (blocks, relationships, imageData) => {
             // Check if paragraph has runs
             if (paragraph['w:r']) {
                 const runs = Array.isArray(paragraph['w:r']) ? paragraph['w:r'] : [paragraph['w:r']];
-                console.log(`Paragraph ${i} has ${runs.length} runs`);
                 content = buildContentFormatted(runs, { relationships, imageData });
-                console.log(`Built content for paragraph ${i}:`, content.slice(0, 100));
             }
             // Check if paragraph has direct text
             else if (paragraph['w:t']) {
-                console.log(`Paragraph ${i} has direct text`);
                 content = paragraph['w:t'];
-            }
-            else {
-                console.log(`Paragraph ${i} has no runs or direct text`);
-                // Some paragraphs might be empty or contain only formatting
             }
 
             if (content && content.trim()) {
                 htmlParts.push(`<p>${content}</p>`);
             }
         } else if (isTableWrapper) {
-            console.log(`Block ${i} is a table`);
             const table = block['w:tbl'];
             htmlParts.push('<table border="1" style="border-collapse: collapse; width: 100%;">');
 
             const rows = table['w:tr'];
             if (!rows) {
-                console.log("No rows found in table");
                 htmlParts.push('</table>');
                 continue;
             }
 
             const rowArray = Array.isArray(rows) ? rows : [rows];
-            console.log(`Table has ${rowArray.length} rows`);
 
             for (const row of rowArray) {
                 htmlParts.push('<tr>');
@@ -237,59 +204,11 @@ const processBlocksToHTML = (blocks, relationships, imageData) => {
                 htmlParts.push('</tr>');
             }
             htmlParts.push('</table>');
-        } else {
-            console.log(`Block ${i} is unknown type:`, Object.keys(block).slice(0, 5));
         }
     }
 
     const result = htmlParts.join('\n');
-    console.log("🏁 Final HTML length:", result.length);
-    console.log("🏁 First 500 chars:", result.slice(0, 500));
     return result;
-};
-
-const extractMetadata = (content) => {
-    const metadata = {
-        examTitle: '',
-        courseCode: '',
-        courseName: '',
-        semester: '',
-        year: '',
-        campus: '',
-        timeAllowed: ''
-    };
-
-    if (!content) {
-        console.log("No content to extract metadata from");
-        return metadata;
-    }
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(content, 'text/html');
-    const text = doc.body.textContent || '';
-
-    const courseMatch = text.match(/([A-Z]+)\s+(\d+):\s+([^\n]+)/);
-    if (courseMatch) {
-        metadata.courseCode = `${courseMatch[1]} ${courseMatch[2]}`.trim();
-        metadata.courseName = courseMatch[3].trim();
-    }
-
-    const titleMatch = text.match(/(Mid-Semester Test|Final Examination|Test|Examination)/i);
-    if (titleMatch) metadata.examTitle = titleMatch[1].trim();
-
-    const semesterMatch = text.match(/Semester\s+(\d+),\s+(\d{4})/i);
-    if (semesterMatch) {
-        metadata.semester = `Semester ${semesterMatch[1]}`.trim();
-        metadata.year = semesterMatch[2].trim();
-    }
-
-    const campusMatch = text.match(/Campus:\s+([^*\n]+)/i);
-    if (campusMatch) metadata.campus = campusMatch[1].trim();
-
-    const timeMatch = text.match(/Time\s+Allowed:\s+([^)]+)/i);
-    if (timeMatch) metadata.timeAllowed = timeMatch[1].trim();
-
-    return metadata;
 };
 
 // Debug function to print block structure
@@ -310,49 +229,50 @@ export const processCoverPageForRedux = async (file, dispatch) => {
         const { metadata, coverPageContent, appendixContent } = await processCoverPageFile(file);
 
         console.log("📄 Extracted metadata:", metadata);
-        console.log("📄 Extracted coverPageContent:", coverPageContent);
-        console.log("📄 Extracted appendixContent:", appendixContent);
+        console.log("📤 Metadata to dispatch:", JSON.stringify(metadata, null, 2));
+        // Parse the content again to get notes section
+        const parsedData = parseCoverPage(coverPageContent);
 
         // Update exam metadata with extracted information
         if (metadata) {
             if (metadata.examTitle) {
+                console.log("📤 About to dispatch - examTitle:", metadata.examTitle);
                 dispatch({
                     type: 'exam/updateExamField',
                     payload: { field: 'examTitle', value: metadata.examTitle }
                 });
-                console.log("✅ Dispatched examTitle");
             }
 
             if (metadata.courseCode) {
+                console.log("📤 About to dispatch - courseCode:", metadata.courseCode);
                 dispatch({
                     type: 'exam/updateExamField',
                     payload: { field: 'courseCode', value: metadata.courseCode }
                 });
-                console.log("✅ Dispatched courseCode");
             }
 
             if (metadata.courseName) {
+                console.log("📤 About to dispatch - courseName:", metadata.courseName);
                 dispatch({
                     type: 'exam/updateExamField',
                     payload: { field: 'courseName', value: metadata.courseName }
                 });
-                console.log("✅ Dispatched courseName");
             }
 
             if (metadata.semester) {
+                console.log("📤 About to dispatch - semester:", metadata.semester);
                 dispatch({
                     type: 'exam/updateExamField',
                     payload: { field: 'semester', value: metadata.semester }
                 });
-                console.log("✅ Dispatched semester");
             }
 
             if (metadata.year) {
+                console.log("📤 About to dispatch - year:", metadata.year);
                 dispatch({
                     type: 'exam/updateExamField',
                     payload: { field: 'year', value: metadata.year }
                 });
-                console.log("✅ Dispatched year");
             }
 
             const additionalMetadata = {
@@ -360,18 +280,25 @@ export const processCoverPageForRedux = async (file, dispatch) => {
                 timeAllowed: metadata.timeAllowed || ''
             };
 
+            if (parsedData.notes) {
+                dispatch({
+                    type: 'exam/updateExamMetadata',
+                    payload: {
+                        notes: parsedData.notes
+                    }
+                });
+            }
+
             if (Object.values(additionalMetadata).some(value => value)) {
                 dispatch({
                     type: 'exam/updateExamMetadata',
                     payload: additionalMetadata
                 });
-                console.log("✅ Dispatched additional metadata");
             }
         }
 
         // Dispatch the cover page content
         if (coverPageContent) {
-            console.log("📄 Dispatching setCoverPage with contentFormatted:", coverPageContent);
             dispatch({
                 type: 'exam/setCoverPage',
                 payload: {
@@ -391,12 +318,11 @@ export const processCoverPageForRedux = async (file, dispatch) => {
                     format: 'HTML'
                 }
             });
-            console.log("📄 Dispatched appendixContent");
         }
 
         return { success: true };
     } catch (error) {
-        console.error('❌ Error processing cover page for Redux:', error);
+        console.error('❌ Error processing cover page file:', error);
         return { success: false, error: error.message };
     }
 };

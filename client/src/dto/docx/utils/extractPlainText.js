@@ -85,12 +85,10 @@ export const extractPlainText = (runs, options = {}) => {
         const height = imgData.height ? ` height="${Math.round(imgData.height)}"` : '';
         const alt = imgData.filename || 'Image';
         result += `<img alt="${alt}" src="${imgData.dataUrl}"${width}${height}>`;
-        console.log(`Inserted actual image: ${alt} with embed ID: ${embedId}`);
       } else {
         // Fallback to placeholder if we can't find the image data
         const alt = "Image";
         result += `<img alt="${alt}" src="[Image Placeholder]">`;
-        //console.warn(`Could not find image data for drawing. Embed ID: ${embedId}`);
       }
 
       lastRunWasLineBreak = false; // Reset the flag
@@ -101,8 +99,6 @@ export const extractPlainText = (runs, options = {}) => {
     // Extract text content - IMPROVED to handle more cases
     let textContent = '';
     const t = r['w:t'];
-    // Debug log 1: Check raw text extraction
-    console.log(`Run ${i}: Raw t value:`, JSON.stringify(t), 'Type:', typeof t);
 
     if (typeof t === 'string') {
       textContent = t;
@@ -115,7 +111,6 @@ export const extractPlainText = (runs, options = {}) => {
       } else if (Object.keys(t).length === 0) {
         textContent = ''; // Empty object - treat as empty text
       } else {
-        console.log('Complex text object:', t);
         textContent = ''; // Avoid undefined text
       }
     } else {
@@ -125,19 +120,15 @@ export const extractPlainText = (runs, options = {}) => {
         const fallbackKeys = Object.keys(r).filter(k => typeof r[k] === 'string' && k.startsWith('w:'));
         if (fallbackKeys.length > 0) {
           textContent = fallbackKeys.map(k => r[k].trim()).filter(s => s).join(' ');
-          console.warn('⚠️ Using fallback text extraction:', textContent);
         } else {
           // If all else fails, skip this run
-          console.warn('⚠️ Could not extract text from run:', r);
           continue;
         }
       } catch (error) {
-        console.warn('⚠️ Error in fallback text extraction:', error);
         continue;
       }
     }
-    // Debug log 2: After text extraction
-    console.log(`Run ${i}: Extracted textContent:`, JSON.stringify(textContent));
+
     // Skip empty text content
     if (textContent === undefined || textContent === null) {
       continue;
@@ -147,24 +138,6 @@ export const extractPlainText = (runs, options = {}) => {
     const punctuationStart = /^[.,:;!?)]/.test(textContent);
     const currentIsSingleWordChar = textContent.length === 1 && /\w/.test(textContent);
 
-    // Don't add space if:
-    // 1. Last run was a line break
-    // 2. This is punctuation
-    // 3. The previous text ended with a space
-    // 4. This text starts with a space
-    // 5. Result already ends with space or br
-    // Debug log 3: Spacing decision details
-    console.log(`Run ${i}: Spacing check:`, {
-      text: JSON.stringify(textContent),
-      lastRunWasLineBreak,
-      lastRunEndedWithSpace,
-      startsWithSpace: textContent.startsWith(' '),
-      punctuationStart,
-      willAddSpace: !lastRunWasLineBreak && !lastRunEndedWithSpace && result.length > 0 &&
-          !result.endsWith(' ') && !result.endsWith('<br>') &&
-          !textContent.startsWith(' ') && !punctuationStart
-    });
-    console.log(`Run ${i}: Before adding text - result ends with:`, JSON.stringify(result.slice(-10)));
     if (!lastRunWasLineBreak && !lastRunEndedWithSpace && result.length > 0 &&
         !result.endsWith(' ') && !result.endsWith('<br>') &&
         !textContent.startsWith(' ') && !punctuationStart) {
@@ -188,9 +161,9 @@ export const extractPlainText = (runs, options = {}) => {
     if (isItalic) textContent = `<em>${textContent}</em>`;
     if (isUnderline) textContent = `<u>${textContent}</u>`;
     if (isMonospace) textContent = `<code>${textContent}</code>`;
-    console.log(`Run ${i}: Adding text:`, JSON.stringify(textContent));
+
     result += textContent;
-    console.log(`Run ${i}: After adding text - result:`, JSON.stringify(result));
+
     lastRunEndedWithSpace = textContent.endsWith(' ');
     lastRunWasLineBreak = false; // Reset the flag for non-linebreak runs
     lastRunWasSingleChar = currentIsSingleWordChar; // Track if this run was a single character

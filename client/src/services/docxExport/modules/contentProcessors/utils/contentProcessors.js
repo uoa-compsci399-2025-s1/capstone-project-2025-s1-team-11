@@ -1,73 +1,16 @@
-﻿// src/services/docxExport/modules/contentProcessors/genericContentParser.js
+﻿// src/services/docxExport/modules/contentProcessors/utils/contentProcessors.js
 
 /**
- * Parse cover page HTML content for export
- * @param {string} htmlContent - HTML string from Redux store
- * @returns {Object} Structured data with basic fields and additional elements
+ * Content Processors utility
+ * Contains utility functions for processing HTML content elements
  */
-export function parseCoverPageForExport(htmlContent) {
-    if (!htmlContent) {
-        return {
-            semester: '',
-            year: '',
-            campus: '',
-            additionalContent: []
-        };
-    }
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlContent, 'text/html');
-    const fullText = doc.body.textContent || '';
-
-    const result = {
-        semester: '',
-        year: '',
-        campus: '',
-        additionalContent: []
-    };
-
-    // Extract basic fields
-    const semesterMatch = fullText.match(/Semester\s+(\d+),\s+(\d{4})/i);
-    if (semesterMatch) {
-        result.semester = `Semester ${semesterMatch[1]}`;
-        result.year = semesterMatch[2];
-    }
-
-    const campusMatch = fullText.match(/Campus:\s*([^\n]+)/i);
-    if (campusMatch) {
-        result.campus = campusMatch[1].trim();
-    }
-
-    // Extract all elements in order
-    result.additionalContent = extractElements(doc.body);
-
-    return result;
-}
-
-/**
- * Parse appendix HTML content
- * @param {string} htmlContent - HTML string
- * @returns {Object} Structured appendix content
- */
-export function parseAppendixForExport(htmlContent) {
-    if (!htmlContent) {
-        return { elements: [] };
-    }
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlContent, 'text/html');
-
-    return {
-        elements: extractElements(doc.body)
-    };
-}
 
 /**
  * Extract all elements from container in order
  * @param {Element} container - Container element
  * @returns {Array} Array of elements
  */
-function extractElements(container) {
+export function extractElements(container) {
     const elements = [];
 
     // First, get all direct text nodes

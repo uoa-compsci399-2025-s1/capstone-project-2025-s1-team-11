@@ -1,14 +1,49 @@
-﻿export function sanitizeContentFormatted(html) {
+﻿// client/docxDTO/utils/sanitizeContentFormatted.js
+
+export function sanitizeContentFormatted(html) {
     if (!html || typeof html !== 'string') return html;
 
     let sanitized = html;
 
+    sanitized = preserveLatexMath(sanitized);
     sanitized = fixSubpoints(sanitized);
-    sanitized = replaceMathPlaceholders(sanitized);
     sanitized = replaceCodeBlocks(sanitized);
-    sanitized = normalizeWhitespace(sanitized);
+    // sanitized = normalizeWhitespace(sanitized);
 
     return sanitized;
+}
+
+// Preserve LaTeX math expressions (wrapped in $ or $$)
+function preserveLatexMath(html) {
+    // First, temporarily protect any LaTeX expressions from other processing
+    const mathExpressions = [];
+
+    // Replace display math ($$...$$) with placeholders
+    html = html.replace(/\$\$(.*?)\$\$/gs, (match, p1) => {
+        const placeholder = `__MATH_DISPLAY_${mathExpressions.length}__`;
+        mathExpressions.push({ type: 'display', content: p1 });
+        return placeholder;
+    });
+
+    // Replace inline math ($...$) with placeholders
+    html = html.replace(/\$(.*?)\$/g, (match, p1) => {
+        const placeholder = `__MATH_INLINE_${mathExpressions.length}__`;
+        mathExpressions.push({ type: 'inline', content: p1 });
+        return placeholder;
+    });
+
+    // Let other processing happen here
+
+    // After other processing is done, restore the LaTeX expressions
+    mathExpressions.forEach((expr, index) => {
+        if (expr.type === 'display') {
+            html = html.replace(`__MATH_DISPLAY_${index}__`, `$$${expr.content}$$`);
+        } else {
+            html = html.replace(`__MATH_INLINE_${index}__`, `$${expr.content}$`);
+        }
+    });
+
+    return html;
 }
 
 // Convert lines like "= 60" into "ii. 60" if preceded by an "i." line
@@ -20,6 +55,12 @@ function fixSubpoints(html) {
 
     for (let line of lines) {
         const trimmed = line.trim();
+
+        // Skip if this is a math placeholder line
+        if (trimmed.includes('__MATH_') || /\$.*\$/.test(trimmed)) {
+            fixedLines.push(trimmed);
+            continue;
+        }
 
         // Detect existing roman numeral labels
         if (/^(i{1,3}|iv|v|vi{0,3})\.\s*/i.test(trimmed)) {
@@ -47,11 +88,6 @@ function fixSubpoints(html) {
     return fixedLines.join('<br>');
 }
 
-// Replace math placeholders like {{math_0}} with a tag or fallback
-function replaceMathPlaceholders(html) {
-    return html.replace(/{{math_\d+}}/g, '<span class="math-placeholder">[math]</span>');
-}
-
 // Replace §CODE§...§/CODE§ with <pre><code>...</code></pre>
 function replaceCodeBlocks(html) {
     return html.replace(/§CODE§(.*?)§\/CODE§/gs, (_, code) => {
@@ -60,10 +96,35 @@ function replaceCodeBlocks(html) {
     });
 }
 
-// Optional: trim extra spaces
-function normalizeWhitespace(html) {
-    return html.replace(/\s{2,}/g, ' ');
-}
+// Optional: trim extra spaces while preserving math
+// function normalizeWhitespace(html) {
+//     // Replace multiple spaces with a single space, but be careful with math expressions
+//     const parts = [];
+//     let lastIndex = 0;
+//     let inMath = false;
+//
+//     // Find all math expressions and split the string around them
+//     const regex = /(\$\$.*?\$\$|\$.*?\$)/gs;
+//     let match;
+//
+//     while (match = regex.exec(html)) {
+//         // Get the text before this math expression and normalize its whitespace
+//         const beforeMath = html.substring(lastIndex, match.index).replace(/\s{2,}/g, ' ');
+//         parts.push(beforeMath);
+//
+//         // Add the math expression unchanged
+//         parts.push(match[0]);
+//
+//         lastIndex = match.index + match[0].length;
+//     }
+//
+//     // Add any remaining text after the last math expression
+//     if (lastIndex < html.length) {
+//         parts.push(html.substring(lastIndex).replace(/\s{2,}/g, ' '));
+//     }
+//
+//     return parts.join('');
+// }
 
 // Escape HTML to prevent broken tags in <code>
 function escapeHtml(str) {

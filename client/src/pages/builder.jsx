@@ -6,7 +6,7 @@ import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 import MCQBuilderProgressWrapper from "../components/MCQBuilderProgressWrapper.jsx";
 import { Typography, Button, Space, Select, Upload, message } from "antd";
-import { processCoverPageForRedux } from "../dto/docx/coverPageProcessor.js";
+import { processCoverPageForRedux } from "../services/docxExport/modules/contentProcessors/coverPageProcessor.js";
 import examExportService from "../services/examExportService";
 
 const Builder = () => {

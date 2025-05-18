@@ -1,7 +1,6 @@
 // client/docxDTO/transformXmlToDto.js
 
-import { buildContentFormatted } from './utils/buildContentFormatted.js';
-import { convertOmmlToMathML } from './utils/ommlToMathML.js';
+import { buildContentFormatted, detectMathElements } from './utils/buildContentFormatted.js';
 import { createExam } from '../../store/exam/examUtils.js';
 import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
 import { extractPlainText } from './utils/extractPlainText.js';
@@ -98,120 +97,25 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
     // Extract the paragraph content
     const para = block['w:p'] ?? block;
-    console.log(`Processing block ${i}, has math:`, !!para['m:oMath']);
 
-    // Check if this paragraph contains math (OMML)
-    let containsMath = false;
-    let mathElements = [];
+    // Check if this paragraph contains math elements
+    const mathElements = detectMathElements(para);
+    const containsMath = mathElements.length > 0;
 
-    // Check for math at the paragraph level (sibling to runs)
-    if (para['m:oMath']) {
-      containsMath = true;
-      if (Array.isArray(para['m:oMath'])) {
-        mathElements.push(...para['m:oMath']);
-      } else {
-        mathElements.push(para['m:oMath']);
-      }
-    }
-
-    // Get all child elements of the paragraph in order
-    const childElements = [];
-    if (para && typeof para === 'object') {
-      for (const key in para) {
-        if (key === 'w:r' || key === 'm:oMath' || key === 'w:br') {
-          if (Array.isArray(para[key])) {
-            para[key].forEach((item, index) => {
-              childElements.push({ type: key, content: item, originalIndex: index });
-            });
-          } else {
-            childElements.push({ type: key, content: para[key], originalIndex: 0 });
-          }
-        }
-      }
-    }
-
-    // Build content with proper ordering
-    let text = '';
-    let mathCounter = 0;
-
-
+    console.log(`Processing block ${i}, has math:`, containsMath);
     if (containsMath) {
-      console.log(`Starting math processing for block ${i}`);
-      console.log(`Number of math elements: ${mathElements.length}`);
-      console.log(`Para structure:`, Object.keys(para));
-
-      // Process all elements (runs and math) in their original order
-      let text = '';
-      let mathCounter = 0;
-
-      // Get runs
-      const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
-      const mathElems = Array.isArray(para['m:oMath']) ? para['m:oMath'] : (para['m:oMath'] ? [para['m:oMath']] : []);
-
-      // Use extractPlainText to handle the runs properly
-      text = extractPlainText(runs, { relationships, imageData });
-
-      // Now insert math placeholders at the appropriate positions
-      // Based on the content, we need to insert after each label
-      const lines = text.split('<br>');
-      let result = '';
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-
-        if (i > 0) {
-          result += '<br>';
-        }
-
-        result += line;
-
-        // Check if this line ends with a label that should have math
-        if (line.endsWith('i.') && mathCounter < mathElems.length) {
-          result += `[MATH_${mathCounter++}]`;
-        } else if (line.endsWith('ii.') && mathCounter < mathElems.length) {
-          result += `[MATH_${mathCounter++}]`;
-        } else if (line.endsWith('iii.') && mathCounter < mathElems.length) {
-          result += `[MATH_${mathCounter++}]`;
-        } else if (line.endsWith('iv.') && mathCounter < mathElems.length) {
-          result += `[MATH_${mathCounter++}]`;
-        }
-      }
-
-      text = result;
-
-      console.log(`Text with properly positioned math: "${text}"`);
-
-      // Check if this is a question
-      if (isNewQuestion(text)) {
-        console.log(`Found math question: ${text.substring(0, 50)}...`);
-        const marks = extractMarks(text);
-
-        // Remove marks pattern
-        let questionText = text.replace(/^\[\d+(?:\.\d+)?\s*marks?\]\s*/i, '');
-
-        // Replace math placeholders with actual MathML
-        mathElems.forEach((mathElement, index) => {
-          const mathML = convertOmmlToMathML(mathElement);
-          const placeholder = `[MATH_${index}]`;
-          questionText = questionText.replace(placeholder, mathML);
-        });
-
-        currentQuestion = {
-          type: 'question',
-          contentFormatted: sanitizeContentFormatted(questionText),
-          marks: marks,
-          answers: []
-        };
-
-        console.log(`Created math question`);
-        continue;
-      }
-
-    } else {
-      // No math, process normally using existing logic
-      const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
-      text = buildContentFormatted(runs, { relationships, imageData });
+      console.log(`Math elements found:`, mathElements.length);
     }
+
+    // Get all runs
+    const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
+
+    // Build content with math handling, passing the parent paragraph for direct math access
+    let text = buildContentFormatted(runs, {
+      relationships,
+      imageData,
+      preserveMath: true
+    }, para);
 
     console.log(`Block ${i}: type=${block['w:p'] ? 'paragraph' : 'other'}, text="${text}"`,
         text.trim() === '' ? '(EMPTY)' : '');
@@ -228,8 +132,8 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
     // Reset empty line counter for non-empty text
     emptyLineCounter = 0;
 
-    // Check if this is a new question (without math, as math questions are handled above)
-    if (!containsMath && isNewQuestion(text)) {
+    // Check if this is a new question
+    if (isNewQuestion(text)) {
       console.log(`Found question marker: ${text.substring(0, 30)}...`);
       flushQuestion();
 
@@ -247,12 +151,14 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
       // Extract marks and create new question
       const marks = extractMarks(text);
-      const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
+
+      // Process the question content with math preservation
       const questionText = buildContentFormatted(runs, {
         removeMarks: true,
         relationships,
-        imageData
-      });
+        imageData,
+        preserveMath: true
+      }, para);
 
       currentQuestion = {
         type: 'question',
@@ -260,6 +166,8 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
         marks: marks,
         answers: []
       };
+
+      console.log(`Created question with content: ${currentQuestion.contentFormatted.substring(0, 100)}...`);
       continue;
     }
 
@@ -273,10 +181,18 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
     // Handle question answers
     if (currentQuestion) {
+      const answerText = buildContentFormatted(runs, {
+        relationships,
+        imageData,
+        preserveMath: true
+      }, para);
+
       currentAnswers.push({
         type: 'answer',
-        contentFormatted: sanitizeContentFormatted(text)
+        contentFormatted: sanitizeContentFormatted(answerText)
       });
+
+      console.log(`Added answer with content: ${answerText.substring(0, 50)}...`);
       continue;
     }
 
