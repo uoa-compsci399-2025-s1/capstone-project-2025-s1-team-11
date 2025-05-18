@@ -2,7 +2,7 @@ import React from 'react';
 import { Layout, Breadcrumb, theme } from 'antd';
 import { Navigation } from "./navigation.jsx";
 import { Link, useLocation } from 'react-router';
-import logo from "../../public/AssesslyLogoSmall.png";
+import logo from '../assets/AssesslyLogoSmall.png';
 import StaticContextBar from './StaticContextBar';
 
 const { Header, Content, Footer } = Layout;
@@ -61,7 +61,7 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
       <Layout style={layoutStyle}>
         <Header style={headerStyle}>
           <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} />
-          <Navigation isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}/>
+          <Navigation isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
         </Header>
 
           {["/builder", "/randomiser", "/marker"].includes(location.pathname) && (
