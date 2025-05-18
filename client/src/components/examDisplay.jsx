@@ -18,6 +18,7 @@ import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
+import { htmlToText } from '../utils/textUtils';
 
 const { TextArea } = Input;
 
@@ -72,7 +73,57 @@ const ExamDisplay = () => {
     }
   };
 
-  // Edit item handler
+  // useEffect(() => {
+  //   if (exam && !Array.isArray(exam?.examBody)) {
+  //     console.warn(" examBody is not an array or missing:", exam?.examBody);
+  //     return;
+  //   }
+  //   if (!exam) {
+  //     // Do nothing if exam is simply not ready yet
+  //     return;
+  //   }
+    
+  //   const items = [];
+
+  //   exam.examBody.forEach((entry) => {
+  //     const type = (entry.type || "").toLowerCase();
+
+  //     if (type === "section") {
+  //       items.push({
+  //         id: entry.id,
+  //         type: "section",
+  //         title: entry.title,
+  //         subtext: entry.subtext,
+  //       });
+
+  //       (entry.questions || []).forEach((q) => {
+  //         items.push({
+  //           ...q,
+  //           type: "question",
+  //           section: entry.sectionTitle,
+  //           questionText: htmlToText(q.contentFormatted),
+  //           options: q.options || (q.answers || []).map(a => htmlToText(a.contentFormatted)),
+  //           correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
+  //         });
+  //       });
+        
+  //     } else if (type === "question") {
+  //       items.push({
+  //         ...entry,
+  //         type: "question",
+  //         questionText: htmlToText(entry.contentFormatted),
+  //         options: entry.options || (entry.answers || []).map(a => htmlToText(a.contentFormatted)),
+  //         correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
+  //       });
+      
+  //     } else {
+  //       console.warn(" Unknown item type:", entry);
+  //     }
+  //   });
+
+  //   setExamItems(items);
+  // }, [exam]);
+
   const handleEdit = (item) => {
     setModalState({
       visible: true,

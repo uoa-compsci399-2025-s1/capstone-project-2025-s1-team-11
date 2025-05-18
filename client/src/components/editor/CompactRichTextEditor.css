@@ -1,0 +1,203 @@
+/* Reset styles for editor content */
+.compact-editor-content {
+  /* Reset all inherited styles */
+  all: revert;
+  
+  /* Base styles */
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+/* Prevent Ant Design from overriding editor styles */
+.compact-editor-content.ant-typography,
+.compact-editor-content .ant-typography {
+  all: revert;
+}
+
+.compact-editor-container {
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  overflow: visible;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  margin-bottom: 12px;
+}
+
+.compact-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 4px;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #fafafa;
+}
+
+.compact-editor-toolbar button {
+  height: 28px;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px;
+  padding: 0;
+}
+
+.compact-editor-toolbar button.is-active {
+  color: #1890ff;
+  background-color: #e6f7ff;
+}
+
+.compact-editor-content-wrapper {
+  padding: 8px 12px;
+  min-height: 80px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Editor content specific styles */
+.compact-editor-content {
+  min-height: 60px;
+  outline: none;
+}
+
+/* Ensure strong tags render as bold */
+.compact-editor-content strong,
+.compact-editor-content .debug-bold {
+  font-weight: 700 !important;
+}
+
+/* Ensure em tags render as italic */
+.compact-editor-content em {
+  font-style: italic !important;
+}
+
+/* Ensure underline renders properly */
+.compact-editor-content u {
+  text-decoration: underline !important;
+}
+
+/* Font family styles */
+/*
+.compact-editor-content [style*="font-family"] {
+  font-family: inherit !important;
+}
+*/
+
+.compact-editor-content [style*="font-family: 'Times New Roman'"],
+.compact-editor-content [style*='font-family: Times New Roman'] {
+  font-family: 'Times New Roman', Times, serif !important;
+}
+
+.compact-editor-content [style*="font-family: 'Arial'"],
+.compact-editor-content [style*='font-family: Arial'] {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+.compact-editor-content [style*="font-family: 'Courier New'"],
+.compact-editor-content [style*='font-family: Courier New'] {
+  font-family: 'Courier New', Courier, monospace !important;
+}
+
+/* Basic text formatting */
+.compact-editor-content p {
+  margin: 0;
+  margin-bottom: 0.5em;
+}
+
+.compact-editor-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Text alignment styles */
+.compact-editor-content [style*="text-align:center"],
+.compact-editor-content [style*="text-align: center"] {
+  text-align: center !important;
+}
+
+.compact-editor-content [style*="text-align:right"],
+.compact-editor-content [style*="text-align: right"] {
+  text-align: right !important;
+}
+
+.compact-editor-content [style*="text-align:left"],
+.compact-editor-content [style*="text-align: left"] {
+  text-align: left !important;
+}
+
+/* Image styles */
+.compact-editor-content img {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Override TipTap's default image wrapper styles */
+.compact-editor-content .ProseMirror-selectednode {
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  display: inline-block !important;
+}
+
+.compact-editor-content img::selection,
+.compact-editor-content img::-moz-selection {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Remove any flex container styles that TipTap might add */
+.compact-editor-content div[contenteditable="false"] {
+  display: inline-block !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+/* Ensure cursor can appear between images */
+.compact-editor-content {
+  cursor: text;
+}
+
+.compact-editor-content img {
+  cursor: move;
+}
+
+/* List styles */
+.compact-editor-content ul,
+.compact-editor-content ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.compact-editor-content li {
+  margin: 0.2em 0;
+}
+
+/* Placeholder styling */
+.compact-editor-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #aaa;
+  pointer-events: none;
+  height: 0;
+}
+
+/* Upload button styling */
+.image-upload-button .ant-upload {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.ProseMirror {
+  padding: 8px;
+  outline: none;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+.compact-editor-content:focus {
+  outline: none;
+} 
