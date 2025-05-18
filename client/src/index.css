@@ -87,8 +87,164 @@ button:focus-visible {
   100% { transform: translateX(-50%) scale(1); }
 }
 
-/* Sidebar */
+/* Static Context Bar */
+.context-bar-wrapper {
+  position: sticky;
+  top: 0;
+  margin: 16px auto;
+  background: var(--header-bg);
+  color: var(--text-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 12px 24px;
+  transition: all 0.25s ease;
+  z-index: 1000;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 70px;
+  overflow: hidden;
+}
 
+.context-bar-wrapper.intent-delay {
+  transition-delay: 0.15s;
+}
+
+.context-bar-pin-toggle {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 2;
+}
+
+.context-bar-wrapper:hover {
+  max-height: 420px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  border-color: #d0d0d0;
+}
+
+.context-bar-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 20px;
+  row-gap: 12px;
+  flex-wrap: wrap;
+  padding: 4px 0;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.context-button .ant-btn {
+  color: var(--text-color) !important;
+  background-color: var(--button-bg);
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.context-button .ant-btn:hover {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .context-button .ant-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.context-button-label {
+  display: none;
+  margin-left: 8px;
+  font-weight: 500;
+  color: var(--text-color);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.context-bar-wrapper:hover .context-button-label {
+  display: inline;
+  opacity: 1;
+}
+
+.context-bar-expanded {
+  transform: translateY(-12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s ease, opacity 0.25s ease 50ms;
+}
+
+.context-bar-expanded.show {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.version-tags .ant-tag {
+  margin-right: 6px;
+  margin-bottom: 4px;
+}
+
+.context-warning {
+  font-size: 12px;
+  color: #ff4d4f;
+  font-weight: 500;
+}
+
+/* ant design alert to work for dark mode */
+[data-theme="dark"] .ant-alert {
+  background-color: #2a2a2a !important;
+  border-color: #ff7875 !important;
+}
+
+[data-theme="dark"] .ant-alert-message,
+[data-theme="dark"] .ant-alert-description {
+  color: rgba(255, 255, 255, 0.87) !important;
+}
+
+[data-theme="dark"] .ant-alert-icon {
+  color: #ff7875 !important;
+}
+
+/* Hide Ant Design's edit icon by default, show only when context bar is hovered */
+.ant-typography-edit {
+  display: none;
+}
+
+.context-bar-wrapper:hover .ant-typography-edit {
+  display: inline-block;
+}
+
+.context-bar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.metadata-preview {
+  padding: 8px 12px;
+  background-color: var(--content-bg);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  margin-top: 8px;
+}
+
+.context-bar-expanded .section-block {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  font-size: 14px;
+}
+
+.context-bar-wrapper .ant-btn,
+.context-bar-wrapper .ant-switch {
+  vertical-align: middle;
+}
+
+/* Sidebar */
 .exam-sidebar {
   position: sticky;
   top: 20px;
