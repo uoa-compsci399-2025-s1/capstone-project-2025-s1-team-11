@@ -4,7 +4,7 @@ const DEFAULT_COMPONENT_PROPS = {
   type: 'content',
   contentFormatted: '',
   format: 'HTML',
-  contentText: '',
+  contentText: '', //This is the text only content for table display
 }
 
 // Create a new exam
@@ -34,14 +34,10 @@ export const createSection = ({
   sectionTitle = '', 
   sectionNumber = null, 
   questions = [],
-  contentText = '',
-  contentFormatted = '',
   ...overrides
 } = {}) => ({
   ...createExamComponent({
       type: 'section',
-      contentText,
-      contentFormatted,
       ...overrides
   }),
   sectionTitle,
@@ -70,9 +66,9 @@ export const createQuestion = ({
 export const createAnswer = ({
   correct = false,
   fixedPosition = null, // null means "not fixed"
-  contentText = '',
   //feedback = '', if other than "incorrect" desired
   //note = '', e.g. "trick", "common mistake"
+  contentText = '',
   ...overrides
 } = {}) => ({
   ...createExamComponent({

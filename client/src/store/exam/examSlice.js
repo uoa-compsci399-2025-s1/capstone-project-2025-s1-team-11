@@ -22,8 +22,6 @@ import {
   normaliseAnswersPerTeleformOptions,
 } from './examHelpers';
 
-import { htmlToText } from '../../utilities/textUtils';
-
 const initialState = {
   examData: null,
   isLoading: false,
@@ -73,7 +71,7 @@ const examSlice = createSlice({
       if (!state.examData) { return; }
       const newSection = createSection(action.payload);
       newSection.id = generateId();
-      
+
       // fill simplified contentText from contentFormatted
       newSection.contentText = htmlToText(newSection.contentFormatted || "");
       for (const question of newSection.questions || []) {
@@ -82,6 +80,7 @@ const examSlice = createSlice({
           answer.contentText = htmlToText(answer.contentFormatted || "");
         }
       }
+
       state.examData.examBody.push(newSection);
       renumberSections(state.examData.examBody);
     },
@@ -116,20 +115,21 @@ const examSlice = createSlice({
         ...questionData,
         answers: normalisedAnswers,
       });
-
+      
+    
       // Create default (non-shuffled) answerShuffleMaps
       newQuestion.answerShuffleMaps = Array.from({ length: versionCount }, () =>
         [...Array(optionCount).keys()]
       );
-
+    
       // Add question to examBody or a section
       if (examBodyIndex != null && examBody[examBodyIndex]?.type === 'section') {
         examBody[examBodyIndex].questions.push(newQuestion);
       } else {
-        
+
         examBody.push(newQuestion);
       }
-
+    
       // Update numbering
       renumberQuestions(examBody);
     },
@@ -359,6 +359,12 @@ const examSlice = createSlice({
 
 
 
+
+function htmlToText(html) {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent || tempDiv.innerText || "";
+}
 
 // Export actions
 export const { 

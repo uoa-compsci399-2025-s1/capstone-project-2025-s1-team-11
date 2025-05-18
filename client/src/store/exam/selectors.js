@@ -1,6 +1,5 @@
 // selectors.js
 import { createSelector } from "@reduxjs/toolkit";
-import { htmlToText } from '../../utilities/textUtils';
 
 // Root selector
 export const selectExamState = (state) => state.exam;
@@ -41,6 +40,7 @@ export const selectQuestionByNumber = (state, questionNumber) => {
 
   for (const item of state.exam.examData.examBody) {
     if (item.type === 'question' && item.questionNumber === questionNumber) {
+
       return item;
     }
 
@@ -77,20 +77,6 @@ export const selectQuestionCount = createSelector(
   (questions) => questions.length
 );
 
-// Normaliser to suit UI table display
-const normaliseQuestionForTable = (question, sectionNumber = null) => ({
-  sectionNumber,
-  questionNumber: question.questionNumber,
-  contentText: question.contentText || htmlToText(question.contentFormatted || ''),
-  marks: question.marks || 0,
-  answers: (question.answers || []).map(answer => ({
-    ...answer,
-    contentText: answer.contentText || htmlToText(answer.contentFormatted || '')
-  })),
-  correctAnswers: question.correctAnswers || [],
-  lockedPositions: question.lockedPositions || { a: false, b: false, c: false, d: false, e: false },
-});
-
 export const selectQuestionsForTable = createSelector(
   [selectExamBody],
   (examBody) => {
@@ -102,8 +88,8 @@ export const selectQuestionsForTable = createSelector(
       if (item.type === 'question') {
         result.push(normaliseQuestionForTable(item, null));
       } else if (item.type === 'section') {
-        item.questions?.forEach((q) => {
-          result.push(normaliseQuestionForTable(q, item.sectionNumber));
+        item.questions?.forEach((q, i) => {
+          result.push(normaliseQuestionForTable(q, item.sectionNumber, i));
         });
       }
     });
@@ -156,6 +142,16 @@ export const selectQuestionsAndSectionsForTable = createSelector(
     return result;
   }
 );
+
+// Update the normaliseQuestionForTable function to handle more fields
+const normaliseQuestionForTable = (question, sectionNumber = null) => ({
+  type: 'question',
+  sectionNumber,
+  questionNumber: question.questionNumber,
+  contentText: question.contentText || '',
+  marks: question.marks || 0,
+  answers: question.answers || [],
+});
 
 export const selectCorrectAnswerIndices = createSelector(
   [selectExamData, selectAllQuestionsFlat],
