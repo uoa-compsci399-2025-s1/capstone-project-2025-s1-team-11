@@ -1,16 +1,12 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
-import { Button, Alert, Space, Typography, Modal, Input, Card, Divider, Select } from "antd";
-import { App as AntApp } from 'antd';
-import { createNewExam, clearExam } from "../store/exam/examSlice";
+import { Button, Alert, Space, Typography, Modal, Input, message, Card, Select } from "antd";
 
 const ExamFileManager = () => {
-  const dispatch = useDispatch();
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const { openExam, saveExam, importExam } = useFileSystem();
+  const { openExam, createExam, saveExam, closeExam, importExam } = useFileSystem();
   const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
   const { message } = AntApp.useApp();
 
@@ -43,34 +39,14 @@ const ExamFileManager = () => {
     }
   };
 
-
   const handleImportExam = async (event) => {
     const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
-      let format = '';
+    if (!selectedFile) return;
 
-      if (fileExtension === 'xml') {
-        format = 'moodle'; // Assuming XML is Moodle format
-      } else if (fileExtension === 'docx') {
-        format = 'docx';
-      } else if (fileExtension === 'tex') {
-        format = 'latex';
-      } else {
-        setError("Unsupported file format");
-        return;
-      }
-
-      try {
-        const result = await importExam(selectedFile, format);
-        if (result) {
-          message.success("File imported successfully");
-          setError("");
-        }
-      } catch (err) {
-        setError("Error importing exam: " + err.message);
-        console.error("Import error:", err);
-      }
+    const success = await importExam(selectedFile, selectedFormat);
+    if (success) {
+      setShowSuccessAlert(true);
+      setError("");
     }
   };
 
@@ -94,13 +70,39 @@ const ExamFileManager = () => {
   };
 
   const examData = useSelector((state) => state.exam.examData);
+  /*
+  function getFlatQuestionListFromExam(examData) {
+    const items = [];
+    if (!examData) return items;
+    (examData.examBody || []).forEach((entry) => {
+      if (entry.type === "section") {
+        (entry.questions || []).forEach((q) => {
+          items.push({
+            ...q,
+            type: "question",
+            section: entry.sectionTitle,
+            questionText: q.questionText || q.contentText,
+            options: q.options || (q.answers || []).map(a => a.contentText),
+            correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
+          });
+        });
+      } else if (entry.type === "question") {
+        items.push({
+          ...entry,
+          type: "question",
+          questionText: entry.questionText || entry.contentText,
+          options: entry.options || (entry.answers || []).map(a => a.contentText),
+          correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
+        });
+      } else {
+        console.warn(" Unknown item type:", entry);
+      }
+    });
+    return items;
+  }
+   */
 
   const handleSaveExam = async () => {
-    if (!examData) {
-      setError("Cannot save: Missing exam data.");
-      return;
-    }
-
     try {
       const result = await saveExam();
       if (result) {
@@ -114,108 +116,96 @@ const ExamFileManager = () => {
   };
 
   return (
-    <div style={{ padding: "24px", background: "#fff" }}>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {showSuccessAlert && (
-        <Alert
-          message="Success"
-          description="File saved successfully!"
-          type="success"
-          showIcon
-          closable
-          onClose={() => setShowSuccessAlert(false)}
-        />
-      )}
-      {examData && (
-        <Space style={{ marginTop: "16px", justifyContent: "space-between", width: "100%", display: "flex" }}>
-          <span /> {/* Placeholder for left alignment */}
-          <Button type="primary" onClick={handleSaveExam}>
-            Save Exam
-          </Button>
-        </Space>
-      )}
-      <Card style={{ marginTop: 24 }}>
-        <Space wrap style={{ width: "100%", justifyContent: "space-between" }}>
-        <Space wrap>
-          <Button type="primary" onClick={() => setShowCreateModal(true)}>
-            Create New Exam
-          </Button>
-          <Button onClick={async () => {
-            await handleOpenExam();
-          }}>
-            Open Exam (JSON)
-          </Button>
-          <Button>
-          <label style={{ cursor: "pointer", marginBottom: 0 }}>
-              Import Exam
-              <input
-                type="file"
-                accept={getAcceptExtension()} // Dynamically set based on selected format
-                onChange={handleImportExam}
-                style={{ display: "none" }}
-              />
-            </label>
-            {/* <input
-              type="file"
-              accept=".xml"
-              onChange={async (e) => {
-                await handleImportExam(e);
-                setFileOptionsOpen(false);
-              }}
-              style={{
-                position: "absolute",
-                inset: 0,
-                opacity: 0,
-                cursor: "pointer",
-              }}
-            /> */}
-          </Button>
-          <Select defaultValue="all" onChange={handleFormatChange} style={{ marginRight: 0 }}>
-            <Select.Option value="all">All Files</Select.Option>
-            <Select.Option value="moodle">Moodle XML</Select.Option>
-            <Select.Option value="docx">DOCX</Select.Option>
-            <Select.Option value="latex">LaTeX</Select.Option>
-          </Select>
-        </Space>
-          <Button danger onClick={() => setIsClearModalVisible(true)} type="primary">
-            Clear Exam
-          </Button>
-        </Space>
-      </Card>
-      <Modal
-        open={showCreateModal}
-        title="Create New Exam"
-        onCancel={() => setShowCreateModal(false)}
-        width={600}
-        okText="Create Exam"
-        onOk={async () => {
-          const exam = {
-            examTitle: newExamData.examTitle,
-            courseCode: newExamData.courseCode,
-            courseName: newExamData.courseName,
-            semester: newExamData.semester,
-            year: newExamData.year,
-            versions: newExamData.versions.split(',').map(v => v.trim()),
-            teleformOptions: newExamData.teleformOptions.split(',').map(opt => opt.trim()),
-            coverPage: null,
-            examBody: [],
-            appendix: null,
-            metadata: newExamData.metadataKey && newExamData.metadataValue
-              ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
-              : []
-          };
+    <Card>
+      <Typography.Title level={3}>File Manager</Typography.Title>
+      <Alert message="These options will be moving to the static context menu..." type="info" showIcon/>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        {showSuccessAlert && (
+          <Alert
+            message="Success"
+            description="File saved successfully!"
+            type="success"
+            showIcon
+            closable
+            onClose={() => setShowSuccessAlert(false)}
+          />
+        )}
+        {examData && (
+          <Space style={{ marginTop: "16px", justifyContent: "space-between", width: "100%", display: "flex" }}>
+            <span /> {/* Placeholder for left alignment */}
+            <Button type="primary" onClick={handleSaveExam}>
+              Save Exam
+            </Button>
+          </Space>
+        )}
+
+          <Space wrap style={{ width: "100%", justifyContent: "space-between" }}>
+          <Space wrap>
+            <Button type="primary" onClick={() => setShowCreateModal(true)}>
+              Create New Exam
+            </Button>
+            <Button onClick={async () => {
+              await handleOpenExam();
+            }}>
+              Open Exam (JSON)
+            </Button>
+            <Button>
+            <label style={{ cursor: "pointer", marginBottom: 0 }}>
+                Import Exam
+                <input
+                  type="file"
+                  accept={getAcceptExtension()} // Dynamically set based on selected format
+                  onChange={handleImportExam}
+                  style={{ display: "none" }}
+                />
+              </label>
+            </Button>
+            <Select defaultValue="all" onChange={handleFormatChange} style={{ marginRight: 0 }}>
+              <Select.Option value="all">All Files</Select.Option>
+              <Select.Option value="moodle">Moodle XML</Select.Option>
+              <Select.Option value="docx">DOCX</Select.Option>
+              <Select.Option value="latex">LaTeX</Select.Option>
+            </Select>
+          </Space>
+            <Button danger onClick={() => setIsClearModalVisible(true)} type="primary">
+              Clear Exam
+            </Button>
+          </Space>
+
+        <Modal
+          open={showCreateModal}
+          title="Create New Exam"
+          onCancel={() => setShowCreateModal(false)}
+          width={600}
+          okText="Create Exam"
+          onOk={async () => {
+            const exam = {
+              examTitle: newExamData.examTitle,
+              courseCode: newExamData.courseCode,
+              courseName: newExamData.courseName,
+              semester: newExamData.semester,
+              year: newExamData.year,
+              versions: newExamData.versions.split(',').map(v => v.trim()),
+              teleformOptions: newExamData.teleformOptions.split(',').map(opt => opt.trim()),
+              coverPage: null,
+              examBody: [],
+              appendix: null,
+              metadata: newExamData.metadataKey && newExamData.metadataValue
+                ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
+                : []
+            };
 
           try {
             // First dispatch to create the exam in Redux
-            dispatch(createNewExam(exam));
-            
+            await createExam(exam);
+
             // Then try to save it to a file
             const result = await saveExam();
             if (result) {
               setShowSuccessAlert(true);
               setError("");
             }
-            
+
             setShowCreateModal(false);
             message.success('New exam created and saved successfully');
           } catch (err) {
@@ -291,7 +281,7 @@ const ExamFileManager = () => {
         open={isClearModalVisible}
         title="Are you sure you want to clear the exam?"
         onOk={() => {
-          dispatch(clearExam());
+          closeExam();
           setIsClearModalVisible(false);
           message.success("Exam cleared");
         }}
@@ -301,7 +291,7 @@ const ExamFileManager = () => {
       >
         <p>This action cannot be undone.</p>
       </Modal>
-    </div>
+    </Card>
   );
 };
 

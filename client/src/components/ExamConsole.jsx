@@ -2,8 +2,8 @@
 import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
-  createNewExam, 
-  clearExam,
+  initializeExamState,
+  clearExamState,
   addSection,
   addQuestion,
   removeCoverPage,
@@ -180,7 +180,7 @@ function ExamConsole() {
             break;
           }
           
-          dispatch(createNewExam({
+          dispatch(initializeExamState({
             examTitle: examArgs[1],
             courseCode: examArgs[2],
             courseName: examArgs[3],
@@ -190,12 +190,12 @@ function ExamConsole() {
           
           addToOutput('Exam created successfully!', 'success');
           break;
-        }          
+        }
         case 'clear-exam': {
-          dispatch(clearExam());
+          dispatch(clearExamState());
           addToOutput('Exam cleared successfully!', 'success');
           break;
-        }          
+        }
         case 'add-section': {
           // Format: add-section "Section Title" "Content Text"
           if (!examState.examData) {
