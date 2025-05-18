@@ -1,6 +1,6 @@
 //examDisplay.jsx
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback, Suspense, lazy } from "react";
 import { Button, Typography, Modal, Input, message, Table } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -27,6 +27,133 @@ import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifi
 
 const { TextArea } = Input;
 
+// Memoized Question Editor Component
+const QuestionEditor = React.memo(({ content, onChange }) => {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <CompactRichTextEditor
+        key="question-editor"
+        content={content}
+        onChange={onChange}
+        placeholder="Question Text"
+      />
+    </div>
+  );
+});
+
+// Memoized Answer Editor Component
+const AnswerEditor = React.memo(({ answer, index, onChange }) => {
+  const handleChange = useCallback((html) => {
+    onChange(html, index);
+  }, [onChange, index]);
+
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <CompactRichTextEditor
+        key={`answer-editor-${index}`}
+        content={answer.contentFormatted}
+        onChange={handleChange}
+        placeholder={`Answer ${String(1 + index)}`}
+      />
+    </div>
+  );
+});
+
+// Lazy loaded answer editors container
+const AnswerEditorsContainer = React.memo(({ answers, onAnswerChange }) => {
+  return (
+    <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 8 }}>
+      {answers.map((answer, index) => (
+        <AnswerEditor
+          key={`${answer.id || index}`}
+          answer={answer}
+          index={index}
+          onChange={onAnswerChange}
+        />
+      ))}
+    </div>
+  );
+});
+
+// New component for the modal editor
+const ExamItemEditor = React.memo(({ modalState, onSave, onCancel }) => {
+  const [itemState, setItemState] = useState(modalState.item);
+
+  const handleQuestionContentChange = useCallback((html) => {
+    setItemState(prev => ({
+      ...prev,
+      contentFormatted: html
+    }));
+  }, []);
+
+  const handleAnswerContentChange = useCallback((html, index) => {
+    setItemState(prev => {
+      const updatedAnswers = [...prev.answers];
+      updatedAnswers[index] = {
+        ...updatedAnswers[index],
+        contentFormatted: html
+      };
+      return {
+        ...prev,
+        answers: updatedAnswers
+      };
+    });
+  }, []);
+
+  const handleSectionTitleChange = useCallback((e) => {
+    setItemState(prev => ({
+      ...prev,
+      sectionTitle: e.target.value
+    }));
+  }, []);
+
+  // Pass the current state up to parent when modal confirms
+  React.useEffect(() => {
+    // Update the parent's reference to the current state
+    onSave(itemState);
+  }, [itemState, onSave]);
+
+  if (modalState.type === "section") {
+    return (
+      <>
+        <Input
+          value={itemState?.sectionTitle}
+          onChange={handleSectionTitleChange}
+          placeholder="Section Title"
+          style={{ marginBottom: 8 }}
+        />
+        <div style={{ marginBottom: 16 }}>
+          <CompactRichTextEditor
+            key="section-editor"
+            content={itemState?.contentFormatted}
+            onChange={handleQuestionContentChange}
+            placeholder="Instructions or Subtext"
+          />
+        </div>
+      </>
+    );
+  }
+
+  if (modalState.type === "question") {
+    return (
+      <>
+        <QuestionEditor
+          content={itemState?.contentFormatted}
+          onChange={handleQuestionContentChange}
+        />
+        <Suspense fallback={<div>Loading answer editors...</div>}>
+          <AnswerEditorsContainer
+            answers={itemState?.answers || []}
+            onAnswerChange={handleAnswerContentChange}
+          />
+        </Suspense>
+      </>
+    );
+  }
+
+  return null;
+});
+
 const ExamDisplay = () => {
   const exam = useSelector(selectExamData);
   const examMetadata = useSelector(selectExamMetadata);
@@ -39,8 +166,11 @@ const ExamDisplay = () => {
     item: null,
     examBodyIndex: null,
     questionsIndex: null,
-    isDelete: false, 
+    isDelete: false,
   });
+
+  // Track the current editor state
+  const [currentEditorState, setCurrentEditorState] = useState(null);
 
   const pointerSensor = useSensor(PointerSensor);
   const keyboardSensor = useSensor(KeyboardSensor);
@@ -94,13 +224,6 @@ const ExamDisplay = () => {
 
   // Edit item handler
   const handleEdit = (item) => {
-    console.log('Edit clicked for item:', {
-      id: item.id,
-      type: item.type,
-      examBodyIndex: item.examBodyIndex,
-      questionsIndex: item.questionsIndex
-    });
-
     // Get the actual item from the exam data
     let actualItem;
     if (item.type === 'section') {
@@ -115,12 +238,9 @@ const ExamDisplay = () => {
     }
 
     if (!actualItem) {
-      console.error('Failed to find item to edit:', item);
       message.error('Failed to find item to edit');
       return;
     }
-
-    console.log('Actual item being edited:', actualItem);
 
     setModalState({
       visible: true,
@@ -134,14 +254,17 @@ const ExamDisplay = () => {
 
   // Save edited item
   const handleSaveEdit = () => {
-    const { type, item, examBodyIndex, questionsIndex } = modalState;
+    const { type, examBodyIndex, questionsIndex } = modalState;
+    
+    // Use the currentEditorState which has been kept in sync with the editor
+    if (!currentEditorState) return;
 
     if (type === "section") {
       dispatch(updateSection({
         examBodyIndex,
         newData: {
-          sectionTitle: item.sectionTitle,
-          contentFormatted: item.contentFormatted
+          sectionTitle: currentEditorState.sectionTitle,
+          contentFormatted: currentEditorState.contentFormatted
         }
       }));
     } else if (type === "question") {
@@ -149,10 +272,11 @@ const ExamDisplay = () => {
         location: {
           examBodyIndex,
           questionsIndex,
-          questionId: item.id
+          questionId: currentEditorState.id
         },
         newData: {
-          contentFormatted: item.contentFormatted
+          contentFormatted: currentEditorState.contentFormatted,
+          answers: currentEditorState.answers
         }
       }));
     }
@@ -193,18 +317,163 @@ const ExamDisplay = () => {
     setModalState({ visible: false, type: '', item: null, isDelete: false });
   };
 
+  // Memoize the columns configuration with exam as a dependency
+  const columns = useMemo(() => [
+    {
+      title: "Actions",
+      key: "actions-column",
+      fixed: 'left',
+      width: 140,
+      render: (_, record) => {
+        if (!exam?.examBody) return null;
+        
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Button size="small" onClick={() => handleEdit(record)}>
+                Edit
+              </Button>
+              <div>
+                <Button
+                  size="small"
+                  onClick={() => handleMove(-1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
+                  disabled={
+                    (record.questionsIndex !== undefined && record.questionsIndex === 0) || 
+                    (record.questionsIndex === undefined && record.examBodyIndex === 0)
+                  }
+                  style={{ marginRight: 4 }}
+                >
+                  ↑
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
+                  disabled={
+                    !exam.examBody?.[record.examBodyIndex] ||
+                    (record.questionsIndex !== undefined && 
+                     record.questionsIndex === (exam.examBody[record.examBodyIndex]?.questions?.length - 1)) || 
+                    (record.questionsIndex === undefined && record.examBodyIndex === (exam.examBody.length - 1))
+                  }
+                >
+                  ↓
+                </Button>
+              </div>
+            </div>
+            <Button
+              size="small"
+              danger
+              onClick={() => confirmDeleteItem(record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
+              style={{ width: '100%' }}
+            >
+              Delete
+            </Button>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Question #",
+      dataIndex: "questionNumber",
+      key: "question-number-column",
+      width: 100,
+    },
+    {
+      title: "Type",
+      dataIndex: "type",
+      key: "type-column",
+      width: 100,
+      render: (type) => type === 'section' ? 'Section' : 'Question'
+    },
+    {
+      title: "Section ID",
+      key: "section-column",
+      width: 120,
+      ellipsis: true,
+      render: (_, record) => {
+        if (record.type === "section") {
+          return <strong>{record.sectionTitle || record.sectionNumber}</strong>;
+        }
+        return record.sectionNumber;
+      },
+    },
+    {
+      title: "Question / Content",
+      key: "content-column",
+      width: 300,
+      render: (_, record) => {
+        if (!record?.contentFormatted) return null;
+        
+        if (record.type === "section") {
+          return (
+            <div key={`section-content-${record.id}`}>
+              <Typography.Paragraph
+                style={{ margin: 0, maxWidth: 280 }}
+                ellipsis={{ 
+                  rows: 3,
+                  expandable: true,
+                  symbol: 'more'
+                }}
+              >
+                {htmlToText(record.contentFormatted)}
+              </Typography.Paragraph>
+            </div>
+          );
+        }
+        return (
+          <Typography.Paragraph
+            key={`question-content-${record.id}`}
+            style={{ margin: 0, maxWidth: 280 }}
+            ellipsis={{ 
+              rows: 3,
+              expandable: true,
+              symbol: 'more'
+            }}
+          >
+            {htmlToText(record.contentFormatted)}
+          </Typography.Paragraph>
+        );
+      },
+    },
+    {
+      title: "Answers",
+      key: "answers-column",
+      width: 250,
+      render: (_, record) => {
+        if (record.type !== "question" || !Array.isArray(record.answers)) return null;
+        
+        return (
+          <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+            {record.answers.map((answer, i) => (
+              <Typography.Paragraph 
+                key={`${record.id}-answer-${i}`} 
+                ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
+                style={{ 
+                  margin: '2px 0',
+                  color: answer.correct ? '#52c41a' : 'inherit'
+                }}
+              >
+                {String(1 + i)}) {htmlToText(answer.contentFormatted)}
+              </Typography.Paragraph>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
+      title: "Marks",
+      dataIndex: "marks",
+      key: "marks-column",
+      width: 80,
+      render: (marks, record) => record.type === "question" ? marks : null,
+    },
+  ], [exam]); // Add exam as a dependency since we use it in the columns
+
+  // Memoize the table data
+  const memoizedTableData = useMemo(() => tableData || [], [tableData]);
+
   if (!exam || !Array.isArray(exam.examBody)) {
     return <div>Please open an exam or create a new file.</div>;
   }
-
-  // Debug table data
-  console.log('Table data:', tableData.map(item => ({
-    id: item.id,
-    type: item.type,
-    examBodyIndex: item.examBodyIndex,
-    questionsIndex: item.questionsIndex,
-    contentPreview: (item.contentFormatted || item.contentText || '').substring(0, 50)
-  })));
 
   return (
     <div>
@@ -255,153 +524,14 @@ const ExamDisplay = () => {
       >
         <Table
           rowKey="id" 
-          rowClassName={(record) => `highlighted-table-row ${record.type === 'section' ? 'section-row' : 'question-row'}`}
-          columns={[
-            {
-              title: "Actions",
-              key: "actions-column",
-              fixed: 'left',
-              width: 140,
-              render: (_, record) => (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Button size="small" onClick={() => handleEdit(record)}>
-                      Edit
-                    </Button>
-                    <div>
-                      <Button
-                        size="small"
-                        onClick={() => handleMove(-1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
-                        disabled={
-                          (record.questionsIndex !== undefined && record.questionsIndex === 0) || 
-                          (record.questionsIndex === undefined && record.examBodyIndex === 0)
-                        }
-                        style={{ marginRight: 4 }}
-                      >
-                        ↑
-                      </Button>
-                      <Button
-                        size="small"
-                        onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
-                        disabled={
-                          !exam.examBody?.[record.examBodyIndex] ||
-                          (record.questionsIndex !== undefined && 
-                           record.questionsIndex === (exam.examBody[record.examBodyIndex]?.questions?.length - 1)) || 
-                          (record.questionsIndex === undefined && record.examBodyIndex === (exam.examBody.length - 1))
-                        }
-                      >
-                        ↓
-                      </Button>
-                    </div>
-                  </div>
-                  <Button
-                    size="small"
-                    danger
-                    onClick={() => confirmDeleteItem(record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
-                    style={{ width: '100%' }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              ),
-            },
-            {
-              title: "Question #",
-              dataIndex: "questionNumber",
-              key: "question-number-column",
-              width: 100,
-            },
-            {
-              title: "Type",
-              dataIndex: "type",
-              key: "type-column",
-              width: 100,
-              render: (type) => type === 'section' ? 'Section' : 'Question'
-            },
-            {
-              title: "Section ID",
-              key: "section-column",
-              width: 120,
-              ellipsis: true,
-              render: (_, record) => {
-                if (record.type === "section") {
-                  return <strong>{record.sectionTitle || record.sectionNumber}</strong> //`Section ${record.sectionNumber}`}</strong>;
-                }
-                return record.sectionNumber //? `Section ${record.sectionNumber}` : null;
-              },
-            },
-            {
-              title: "Question / Content",
-              key: "content-column",
-              width: 300,
-              render: (_, record) => {
-                if (record.type === "section") {
-                  return (
-                    <div key={`section-content-${record.id}`}>
-                      <Typography.Paragraph
-                        style={{ margin: 0, maxWidth: 280 }}
-                        ellipsis={{ 
-                          rows: 3,
-                          expandable: true,
-                          symbol: 'more'
-                        }}
-                      >
-                        {htmlToText(record.contentFormatted)}
-                      </Typography.Paragraph>
-                    </div>
-                  );
-                }
-                return (
-                  <Typography.Paragraph
-                    key={`question-content-${record.id}`}
-                    style={{ margin: 0, maxWidth: 280 }}
-                    ellipsis={{ 
-                      rows: 3,
-                      expandable: true,
-                      symbol: 'more'
-                    }}
-                  >
-                    {htmlToText(record.contentFormatted)}
-                  </Typography.Paragraph>
-                );
-              },
-            },
-            {
-              title: "Answers",
-              key: "answers-column",
-              width: 250,
-              render: (_, record) => record.type === "question" && Array.isArray(record.answers) && record.answers.length > 0 ? (
-                <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                  {record.answers.map((answer, i) => (
-                    <Typography.Paragraph 
-                      key={`${record.id}-answer-${i}`} 
-                      ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
-                      style={{ 
-                        margin: '2px 0',
-                        color: answer.correct ? '#52c41a' : 'inherit'
-                      }}
-                    >
-                      {String(1 + i)}) {htmlToText(answer.contentFormatted)}
-                    </Typography.Paragraph>
-                  ))}
-                </div>
-              ) : null,
-            },
-            {
-              title: "Marks",
-              dataIndex: "marks",
-              key: "marks-column",
-              width: 80,
-              render: (marks, record) => record.type === "question" ? marks : null,
-            },
-          ]}
-          dataSource={tableData}
+          columns={columns}
+          dataSource={memoizedTableData}
           pagination={{ pageSize: 10 }}
           scroll={{ x: "max-content" }}
         />
       </DndContext>
 
-      {/* Modal for Edit Section or Question */}
+      {/* Modal with extracted editor component */}
       <Modal
         open={modalState.visible}
         title={modalState.isDelete ? 'Confirm Delete' : `Edit ${modalState.type}`}
@@ -412,60 +542,12 @@ const ExamDisplay = () => {
       >
         {modalState.isDelete ? (
           <p>Are you sure you want to delete this item?</p>
-        ) : modalState.type === "section" ? (
-          <>
-            <Input
-              value={modalState.item?.sectionTitle}
-              onChange={(e) => setModalState(prev => ({
-                ...prev,
-                item: { ...prev.item, sectionTitle: e.target.value }
-              }))}
-              placeholder="Section Title"
-              style={{ marginBottom: 8 }}
-            />
-            <div style={{ marginBottom: 16 }}>
-              <CompactRichTextEditor
-                content={modalState.item?.contentFormatted}
-                onChange={(html) => setModalState(prev => ({
-                  ...prev,
-                  item: { ...prev.item, contentFormatted: html }
-                }))}
-                placeholder="Instructions or Subtext"
-              />
-            </div>
-          </>
-        ) : modalState.type === "question" && (
-          <>
-            <div style={{ marginBottom: 16 }}>
-              <CompactRichTextEditor
-                content={modalState.item?.contentFormatted}
-                onChange={(html) => setModalState(prev => ({
-                  ...prev,
-                  item: { ...prev.item, contentFormatted: html }
-                }))}
-                placeholder="Question Text"
-              />
-            </div>
-            {modalState.item?.answers?.map((answer, index) => (
-              <div key={`modal-answer-${index}`} style={{ marginBottom: 8 }}>
-                <CompactRichTextEditor
-                  content={answer.contentFormatted}
-                  onChange={(html) => {
-                    const updatedAnswers = [...modalState.item.answers];
-                    updatedAnswers[index] = {
-                      ...updatedAnswers[index],
-                      contentFormatted: html
-                    };
-                    setModalState(prev => ({
-                      ...prev,
-                      item: { ...prev.item, answers: updatedAnswers }
-                    }));
-                  }}
-                  placeholder={`Answer ${String(1 + index)}`}
-                />
-              </div>
-            ))}
-          </>
+        ) : (
+          <ExamItemEditor
+            modalState={modalState}
+            onSave={setCurrentEditorState}
+            onCancel={resetModalState}
+          />
         )}
       </Modal>
     </div>
