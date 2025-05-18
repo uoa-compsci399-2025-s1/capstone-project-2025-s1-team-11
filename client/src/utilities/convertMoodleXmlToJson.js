@@ -3,14 +3,14 @@ export function convertMoodleXmlToJson(moodleXmlDTO) {
     const examBody = moodleXmlDTO.questions.map((question) => {
         // Extract marks from question text if present
         let marks = 1;
-        const marksMatch = question.questionText.match(/\[(\d+)\s*marks?\]/i);
+        const marksMatch = question.contentText.match(/\[(\d+)\s*marks?\]/i);
         if (marksMatch) {
             marks = parseInt(marksMatch[1]);
         }
 
         return {
             type: 'question',
-            contentFormatted: question.questionText,
+            contentFormatted: question.contentText,
             format: 'HTML',
             pageBreakAfter: false,
             //questionNumber: index,

@@ -61,6 +61,24 @@ const testCases = [
     expectedMarks: 1
   },
   {
+    name: '11_subsets',
+    answerString: '010208', // 10 subset examples, 1 non subset 
+    markingKey: { '00000001': '030331' },
+    expectedMarks: 3
+  },
+  {
+    name: '12_not_subsets',
+    answerString: '0101', // (for answer 01, key 30: 0001 not in 1110)
+    markingKey: { '00000001': '0630' },
+    expectedMarks: 0
+  }, 
+  {
+    name: '13_gap in answers',
+    answerString: '16  16', // unanswered question will be a two space gap
+    markingKey: { '00000001': '161616' },
+    expectedMarks: 2
+  },
+  {
     name: '11_missing_teleformOptions',
     answerString: '16',
     markingKey: { '00000001': '16' },

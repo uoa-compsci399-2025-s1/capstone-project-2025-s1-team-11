@@ -46,7 +46,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
         questions: item.questions?.map((q, qIndex) => ({
           id: q.id,
           type: 'question',
-          text: q.questionText || q.contentText,
+          text: q.contentText,
           marks: q.marks || 1,
           sectionIndex: index,
           questionIndex: qIndex
@@ -61,7 +61,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
       examStructure.push({
         id: item.id,
         type: 'question',
-        text: item.questionText || item.contentText,
+        text: item.contentText,
         marks: item.marks || 1,
         index
       });

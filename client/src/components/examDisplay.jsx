@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button, Typography, Modal, Input, message, Table } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -9,7 +9,11 @@ import {
   moveQuestion,
   moveSection,
 } from "../store/exam/examSlice";
-import { selectExamData } from "../store/exam/selectors";
+import { 
+  selectExamData, 
+  selectQuestionsAndSectionsForTable,
+  selectExamMetadata 
+} from "../store/exam/selectors";
 import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -19,6 +23,8 @@ const { TextArea } = Input;
 
 const ExamDisplay = () => {
   const exam = useSelector(selectExamData);
+  const examMetadata = useSelector(selectExamMetadata);
+  const tableData = useSelector(selectQuestionsAndSectionsForTable);
   const dispatch = useDispatch();
 
   const [modalState, setModalState] = useState({
@@ -28,70 +34,9 @@ const ExamDisplay = () => {
     isDelete: false, 
   });
 
-  const [examItems, setExamItems] = useState([]);
-
   const pointerSensor = useSensor(PointerSensor);
   const keyboardSensor = useSensor(KeyboardSensor);
   const sensors = useSensors(pointerSensor, keyboardSensor);
-
-  useEffect(() => {
-    if (exam && Array.isArray(exam.examBody)) {
-      const items = [];
-
-      exam.examBody.forEach((entry, examBodyIndex) => {
-        const type = (entry.type || "").toLowerCase();
-        
-        if (type === "section") {
-          // Add section
-          const sectionKey = entry.id ? `section-${entry.id}` : `section-index-${examBodyIndex}`;
-          const section = { 
-            id: entry.id, 
-            type: "section", 
-            sectionTitle: entry.sectionTitle,
-            contentFormatted: entry.contentFormatted,
-            contentText: entry.contentText,
-            subtext: entry.subtext,
-            examBodyIndex, 
-            key: sectionKey 
-          };
-          items.push(section);
-
-          (entry.questions || []).forEach((question, questionsIndex) => {
-            const questionKey = question.id ? 
-              `question-${question.id}-${examBodyIndex}-${questionsIndex}` : 
-              `question-index-${examBodyIndex}-${questionsIndex}`;
-            
-            items.push({
-              ...question,
-              type: "question",
-              section: entry.sectionTitle,
-              questionText: question.questionText || question.contentFormatted,
-              options: question.options || (question.answers || []).map(a => a.contentFormatted || a.contentText),
-              correctIndex: question.correctIndex ?? (question.answers || []).findIndex(a => a.correct),
-              examBodyIndex, 
-              questionsIndex, 
-              key: questionKey 
-            });
-          });
-        } else if (type === "question") {
-          const questionKey = entry.id ? 
-            `question-${entry.id}-${examBodyIndex}` : 
-            `question-index-${examBodyIndex}`;
-            
-          items.push({
-            ...entry,
-            type: "question",
-            questionText: entry.questionText || entry.contentFormatted,
-            options: entry.options || (entry.answers || []).map(a => a.contentFormatted || a.contentText),
-            correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
-            examBodyIndex,
-            key: questionKey
-          });
-        }
-      });
-      setExamItems(items);
-    }
-  }, [exam]);
 
   const handleMove = (direction, examBodyIndex, questionsIndex = null) => {
     if (examBodyIndex === undefined) return;
@@ -149,8 +94,8 @@ const ExamDisplay = () => {
         examBodyIndex,
         newData: {
           sectionTitle: item.sectionTitle,
-          subtext: item.subtext,
-        },
+          contentText: item.contentText,
+        }
       }));
     } else if (type === "question") {
       for (let i = 0; i < exam.examBody.length; i++) {
@@ -180,9 +125,7 @@ const ExamDisplay = () => {
           questionId: item.id
         },
         newData: {
-          questionText: item.questionText,
-          options: item.options,
-          correctIndex: item.correctIndex
+          contentText: item.contentText
         }
       }));
     }
@@ -247,15 +190,12 @@ const ExamDisplay = () => {
         onDragStart={() => {}}
         onDragEnd={({ active, over }) => {
           if (!over || active.id === over.id) return;
-          const activeItem = examItems.find(i => i.id === active.id);
-          const overItem = examItems.find(i => i.id === over.id);
+          
+          const activeItem = tableData.find(i => i.id === active.id);
+          const overItem = tableData.find(i => i.id === over.id);
+          
           if (!activeItem || !overItem) return;
-          const updated = arrayMove(
-            examItems,
-            examItems.findIndex(i => i.id === active.id),
-            examItems.findIndex(i => i.id === over.id)
-          );
-          setExamItems(updated);
+          
           if (activeItem.type === "section") {
             dispatch(moveSection({
               sourceIndex: activeItem.examBodyIndex,
@@ -278,8 +218,8 @@ const ExamDisplay = () => {
         }}
       >
         <Table
-          rowClassName="highlighted-table-row"
-          rowKey="key" 
+          rowKey="id" 
+          rowClassName={(record) => `highlighted-table-row ${record.type === 'section' ? 'section-row' : 'question-row'}`}
           columns={[
             {
               title: "Actions",
@@ -334,107 +274,92 @@ const ExamDisplay = () => {
               dataIndex: "questionNumber",
               key: "question-number-column",
               width: 100,
-              render: (text, record) => record.type === "question" ? record.questionNumber : null,
             },
             {
               title: "Type",
               dataIndex: "type",
               key: "type-column",
               width: 100,
+              render: (type) => type === 'section' ? 'Section' : 'Question'
             },
             {
-              title: "Section",
-              dataIndex: "section",
+              title: "Section ID",
               key: "section-column",
               width: 120,
               ellipsis: true,
-              render: (text, record) => {
+              render: (_, record) => {
                 if (record.type === "section") {
-                  return record.sectionNumber ? `Section ${record.sectionNumber}` : record.sectionTitle;
+                  return <strong>{record.sectionTitle || record.sectionNumber}</strong> //`Section ${record.sectionNumber}`}</strong>;
                 }
-                return record.section;
+                return record.sectionNumber //? `Section ${record.sectionNumber}` : null;
               },
             },
             {
               title: "Question / Content",
-              dataIndex: "questionContent",
-              key: "question-content-column",
-              width: 300, 
-              render: (text, record) => (record.type === "section" ? (
-                <div>
-                  {(record.contentFormatted || record.contentText) && (
-                    <Typography.Paragraph
-                      style={{ margin: 0, maxWidth: 280 }}
-                      ellipsis={{ 
-                        rows: 3,
-                        expandable: true,
-                        symbol: 'more'
-                      }}
-                    >
-                      {record.contentText || record.contentFormatted}
-                    </Typography.Paragraph>
-                  )}
-                  {record.sectionTitle && <strong>{record.sectionTitle}</strong>}
-                  {record.subtext && <div style={{ fontStyle: "italic", color: "#888" }}>{record.subtext}</div>}
-                </div>
-              ) : (
-                <Typography.Paragraph
-                  style={{ margin: 0, maxWidth: 280 }}
-                  ellipsis={{ 
-                    rows: 3,
-                    expandable: true,
-                    symbol: 'more'
-                  }}
-                >
-                  {record.questionText || record.contentText}
-                </Typography.Paragraph>
-              )),
+              key: "content-column",
+              width: 300,
+              render: (_, record) => {
+                if (record.type === "section") {
+                  return (
+                    <div key={`section-content-${record.id}`}>
+                      <Typography.Paragraph
+                        style={{ margin: 0, maxWidth: 280 }}
+                        ellipsis={{ 
+                          rows: 3,
+                          expandable: true,
+                          symbol: 'more'
+                        }}
+                      >
+                        {record.contentText}
+                      </Typography.Paragraph>
+                    </div>
+                  );
+                }
+                return (
+                  <Typography.Paragraph
+                    key={`question-content-${record.id}`}
+                    style={{ margin: 0, maxWidth: 280 }}
+                    ellipsis={{ 
+                      rows: 3,
+                      expandable: true,
+                      symbol: 'more'
+                    }}
+                  >
+                    {record.contentText}
+                  </Typography.Paragraph>
+                );
+              },
             },
             {
-              title: "Options",
-              dataIndex: "options",
-              key: "options-column",
+              title: "Answers",
+              key: "answers-column",
               width: 250,
-              render: (opts, record) => record.type === "question" && Array.isArray(opts) ? (
+              render: (_, record) => record.type === "question" && Array.isArray(record.answers) && record.answers.length > 0 ? (
                 <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                  {opts.filter(opt => opt && opt.trim() !== '').map((o, i) => (
+                  {record.answers.map((answer, i) => (
                     <Typography.Paragraph 
-                      key={`${record.key}-option-${i}`} 
+                      key={`${record.id}-answer-${i}`} 
                       ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
-                      style={{ margin: '2px 0' }}
+                      style={{ 
+                        margin: '2px 0',
+                        color: answer.correct ? '#52c41a' : 'inherit'
+                      }}
                     >
-                      {String.fromCharCode(97 + i)}) {o}
+                      {String(1 + i)}) {answer.contentText}
                     </Typography.Paragraph>
                   ))}
                 </div>
               ) : null,
             },
             {
-              title: "Correct Answer",
-              dataIndex: "correctIndex",
-              key: "correct-answer-column",
-              width: 150,
-              render: (index, record) => {
-                const validOptions = (record.options || []).filter(opt => opt && opt.trim() !== '');
-                return record.type === "question" && validOptions.length > 0 ? (
-                  <Typography.Paragraph 
-                    ellipsis={{ rows: 2, expandable: true, symbol: '...' }} 
-                    style={{ margin: 0 }}
-                  >
-                    {validOptions[index]}
-                  </Typography.Paragraph>
-                ) : null;
-              },  
-            },
-            {
               title: "Marks",
               dataIndex: "marks",
               key: "marks-column",
               width: 80,
-              render: (_, record) => record.type === "question" ? record.marks ?? 1 : null,
+              render: (marks, record) => record.type === "question" ? marks : null,
             },
           ]}
-          dataSource={examItems}
+          dataSource={tableData}
           pagination={{ pageSize: 10 }}
           scroll={{ x: "max-content" }}
         />
@@ -457,46 +382,30 @@ const ExamDisplay = () => {
                 ...prev,
                 item: { ...prev.item, sectionTitle: e.target.value }
               }))}
-              placeholder="Section Title"
+              placeholder="Section ID"
               style={{ marginBottom: 8 }}
             />
             <TextArea
-              value={modalState.item?.subtext}
+              value={modalState.item?.contentText}
               onChange={(e) => setModalState(prev => ({
                 ...prev,
-                item: { ...prev.item, subtext: e.target.value }
+                item: { ...prev.item, contentText: e.target.value }
               }))}
-              placeholder="Instructions or Subtext"
+              placeholder="Instructions or Content"
               autoSize
             />
           </>
         ) : modalState.type === "question" && (
           <>
             <Input
-              value={modalState.item?.questionText}
+              value={modalState.item?.contentText}
               onChange={(e) => setModalState(prev => ({
                 ...prev,
-                item: { ...prev.item, questionText: e.target.value }
+                item: { ...prev.item, contentText: e.target.value }
               }))}
               placeholder="Question Text"
               style={{ marginBottom: 8 }}
             />
-            {modalState.item?.options?.filter(opt => opt && opt.trim() !== '').map((opt, index) => (
-              <Input
-                key={`modal-option-${index}`}
-                value={opt}
-                onChange={(e) => {
-                  const updatedOptions = [...modalState.item.options];
-                  updatedOptions[index] = e.target.value;
-                  setModalState(prev => ({
-                    ...prev,
-                    item: { ...prev.item, options: updatedOptions }
-                  }));
-                }}
-                placeholder={`Option ${String.fromCharCode(97 + index)}`}
-                style={{ marginBottom: 8 }}
-              />
-            ))}
           </>
         )}
       </Modal>

@@ -169,16 +169,16 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
       // Extract marks and create new question
       const marks = extractMarks(text);
-      const questionText = buildContentFormatted(runs, { removeMarks: true, relationships, imageData });
+      const contentText = buildContentFormatted(runs, { removeMarks: true, relationships, imageData });
 
       currentQuestion = {
         type: 'question',
-        contentFormatted: questionText,
+        contentFormatted: contentText,
         marks: marks,
         answers: []
       };
 
-//      console.log(`Created new question: "${questionText}" with ${marks} marks`);
+//      console.log(`Created new question: "${contentText}" with ${marks} marks`);
       continue;
     }
 
