@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Table, Typography, Progress, Tabs, Radio, Tag, Tooltip, InputNumber, Button, Space } from 'antd';
-import { BarChartOutlined, PieChartOutlined, EditOutlined, CheckOutlined } from '@ant-design/icons';
+import { Card, Table, Typography, Progress, Radio, Tag, Tooltip, token } from 'antd';
+import { BarChartOutlined, PieChartOutlined } from '@ant-design/icons';
 
 /**
  * Component to display detailed statistics for each question

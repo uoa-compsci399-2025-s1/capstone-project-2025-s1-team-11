@@ -8,24 +8,10 @@ import { addQuestion, addSection } from "../store/exam/examSlice.js";
 const ExamContentManager = () => {
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const { createExam, saveExam, closeExam, importExam } = useFileSystem();
+  const { importExam } = useFileSystem();
   const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
 
   const dispatch = useDispatch();
-
-  // State for create new exam modal
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newExamData, setNewExamData] = useState({
-    examTitle: '',
-    courseCode: '',
-    courseName: '',
-    semester: '',
-    year: new Date().getFullYear(),
-    versions: '1,2,3,4',
-    teleformOptions: 'a,b,c,d,e',
-    metadataKey: '',
-    metadataValue: ''
-  });
 
   const [isClearModalVisible, setIsClearModalVisible] = useState(false);
 
@@ -89,6 +75,8 @@ const ExamContentManager = () => {
             <Button onClick={() => dispatch(addSection({ sectionTitle: '', contentFormatted: '' }))}>
               Add Section
             </Button>
+          </Space>
+          <Space wrap>
             <Button>
             <label style={{ cursor: "pointer", marginBottom: 0 }}>
                 Import Exam
@@ -106,117 +94,12 @@ const ExamContentManager = () => {
               <Select.Option value="docx">DOCX</Select.Option>
               <Select.Option value="latex">LaTeX</Select.Option>
             </Select>
-          </Space>
             <Button danger onClick={() => setIsClearModalVisible(true)} type="primary">
               Clear Exam Content
             </Button>
           </Space>
+          </Space>
 
-        <Modal
-          open={showCreateModal}
-          title="Create New Exam"
-          onCancel={() => setShowCreateModal(false)}
-          width={600}
-          okText="Create Exam"
-          onOk={async () => {
-            const exam = {
-              examTitle: newExamData.examTitle,
-              courseCode: newExamData.courseCode,
-              courseName: newExamData.courseName,
-              semester: newExamData.semester,
-              year: newExamData.year,
-              versions: newExamData.versions.split(',').map(v => v.trim()),
-              teleformOptions: newExamData.teleformOptions.split(',').map(opt => opt.trim()),
-              coverPage: null,
-              examBody: [],
-              appendix: null,
-              metadata: newExamData.metadataKey && newExamData.metadataValue
-                ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
-                : []
-            };
-
-          try {
-            // First dispatch to create the exam in Redux
-            await createExam(exam);
-
-            // Then try to save it to a file
-            const result = await saveExam();
-            if (result) {
-              setShowSuccessAlert(true);
-              setError("");
-            }
-
-            setShowCreateModal(false);
-            message.success('New exam created and saved successfully');
-          } catch (err) {
-            setError("Error creating exam: " + err.message);
-          }
-        }}
-      >
-        <Typography.Title level={5}>Exam Details</Typography.Title>
-        <Typography.Text strong>
-          Exam Title <span style={{ color: 'red' }}>*</span>
-        </Typography.Text>
-        <Input
-          value={newExamData.examTitle}
-          onChange={e => setNewExamData({ ...newExamData, examTitle: e.target.value })}
-          placeholder="Principals of Programming"
-          style={{ marginBottom: 16 }}
-        />
-        <Typography.Text strong>
-          Course Code <span style={{ color: 'red' }}>*</span>
-        </Typography.Text>
-        <Input
-          value={newExamData.courseCode}
-          onChange={e => setNewExamData({ ...newExamData, courseCode: e.target.value })}
-          placeholder="101"
-          style={{ marginBottom: 16 }}
-        />
-        <Typography.Text strong>
-          Course Name <span style={{ color: 'red' }}>*</span>
-        </Typography.Text>
-        <Input
-          value={newExamData.courseName}
-          onChange={e => setNewExamData({ ...newExamData, courseName: e.target.value })}
-          placeholder="Computer Science"
-          style={{ marginBottom: 16 }}
-        />
-        <Typography.Text strong>
-          Semester <span style={{ color: 'red' }}>*</span>
-        </Typography.Text>
-        <Input
-          value={newExamData.semester}
-          onChange={e => setNewExamData({ ...newExamData, semester: e.target.value })}
-          placeholder="Two"
-          style={{ marginBottom: 16 }}
-        />
-        <Typography.Text strong>
-          Year <span style={{ color: 'red' }}>*</span>
-        </Typography.Text>
-        <Input
-          onChange={e => setNewExamData({ ...newExamData, year: e.target.value })}
-          placeholder="2010"
-          style={{ marginBottom: 16 }}
-        />
-        <Typography.Text strong>
-          Versions <span style={{ color: 'red' }}>*</span>
-        </Typography.Text>
-        <Input
-          value={newExamData.versions}
-          onChange={e => setNewExamData({ ...newExamData, versions: e.target.value })}
-          placeholder="Versions (comma-separated)"
-          style={{ marginBottom: 16 }}
-        />
-        <Typography.Text strong>
-          Teleform Options <span style={{ color: 'red' }}>*</span>
-        </Typography.Text>
-        <Input
-          value={newExamData.teleformOptions}
-          onChange={e => setNewExamData({ ...newExamData, teleformOptions: e.target.value })}
-          placeholder="Teleform Options (comma-separated)"
-          style={{ marginBottom: 16 }}
-        />
-      </Modal>
       <Modal
         open={isClearModalVisible}
         title="Are you sure you want to clear the exam?"

@@ -6,7 +6,7 @@ import { regenerateShuffleMaps } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/mapDisplay";
 import ExamSidebar from "../components/ExamSidebar";
-import EmptyExam from "../components/shared/emptyExam.jsx";
+import { EmptyExam } from "../components/shared/emptyExam.jsx";
 
 const { Title, Text } = Typography;
 

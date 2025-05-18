@@ -9,10 +9,10 @@ import { generateResultOutput } from "../utilities/marker/outputFormatter.js";
 import DataReview from "../components/marker/dataReview.jsx";
 import {Results} from "../components/marker/results.jsx"
 import {teleformReader} from "../components/marker/teleformReader.jsx";
-import {selectCorrectAnswerIndices} from "../store/exam/selectors.js";
+import {selectCorrectAnswerIndices, selectExamData} from "../store/exam/selectors.js";
 
 const Marker = () => {
-  const examData = useSelector((state) => state.exam.examData);
+  const examData = useSelector(selectExamData);
   const examAnswers = useSelector(selectCorrectAnswerIndices);
   const [teleformData, setTeleformData] = useState("");
   const [markingKey, setMarkingKey] = useState(null);
@@ -121,7 +121,7 @@ const Marker = () => {
     
     switch (currentStep) {
       case 0:
-        return DataReview({ examData: currentExamData, markingKey });
+        return <DataReview examData={currentExamData} markingKey={markingKey} />;
       case 1:
         return teleformReader({teleformData, markingKey, handleTeleformDataChange});
       case 2:

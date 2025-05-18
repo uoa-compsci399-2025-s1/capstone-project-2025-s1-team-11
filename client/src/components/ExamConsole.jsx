@@ -196,7 +196,7 @@ function ExamConsole() {
           }));
         break;
 
-      case 'parameter':
+      case 'parameter': {
         const metadata = context.action && (
           ACTION_METADATA[context.action] || 
           SELECTOR_METADATA[context.action]
@@ -225,6 +225,9 @@ function ExamConsole() {
             }
           }
         }
+        break;
+      }
+      default:
         break;
     }
 
@@ -336,6 +339,41 @@ function ExamConsole() {
     }
   };
   
+  // Add runSelector function before processCommand
+  const runSelector = (selectorName, ...args) => {
+    try {
+      const selector = {
+        examState: selectExamState,
+        examData: selectExamData,
+        metadata: selectExamMetadata,
+        examBody: selectExamBody,
+        status: selectExamStatus,
+        error: selectExamError,
+        'section': selectSectionByIndex,
+        'question-path': selectQuestionByPath,
+        'question-number': selectQuestionByNumber,
+        'all-questions': selectAllQuestionsFlat,
+        'table-questions': selectQuestionsForTable,
+        'total-marks': selectTotalMarks
+      }[selectorName];
+
+      if (!selector) {
+        addToOutput(`Unknown selector: ${selectorName}`, 'error');
+        return;
+      }
+
+      const state = { exam: examState };
+      const result = args.length > 0 ? selector(state, ...args.map(arg => {
+        const num = Number(arg);
+        return isNaN(num) ? arg : num;
+      })) : selector(state);
+      
+      displayJSON(result);
+    } catch (err) {
+      addToOutput(`Error running selector: ${err.message}`, 'error');
+    }
+  };
+  
   // Process commands
   const processCommand = () => {
     const trimmedCommand = command.trim();
@@ -418,31 +456,8 @@ function ExamConsole() {
           });
         }
 
-        // Get selector from imported selectors
-        const selector = {
-          selectExamState,
-          selectExamData,
-          selectExamMetadata,
-          selectExamBody,
-          selectExamStatus,
-          selectExamError,
-          selectSectionByIndex,
-          selectQuestionByPath,
-          selectQuestionByNumber,
-          selectAllQuestionsFlat,
-          selectQuestionsForTable,
-          selectTotalMarks
-        }[selectorName];
-
-        if (!selector) {
-          addToOutput(`Unknown selector: ${selectorName}`, 'error');
-          return;
-        }
-
-        // Run selector with current state and any arguments
-        const state = { exam: examState };
-        const result = selectorArgs.length > 0 ? selector(state, ...selectorArgs) : selector(state);
-        displayJSON(result);
+        // Run selector
+        runSelector(selectorName, ...selectorArgs);
       } catch (err) {
         addToOutput(`Error running selector: ${err.message}`, 'error');
       }
@@ -1231,7 +1246,8 @@ function ExamConsole() {
           }}
           ref={inputRef}
         />
-        {suggestions.length > 0 && (
+        {
+        suggestions.length > 0 && (
           <div style={{
             position: 'absolute',
             top: '100%',
@@ -1293,5 +1309,6 @@ const getTypeColor = (type) => {
     default: return '#ddd';
   }
 };
+
 
 export default ExamConsole;

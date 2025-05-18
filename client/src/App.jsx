@@ -20,9 +20,9 @@ const App = () => {
   });
 
   // Toggle theme function
-  const toggleTheme = () => {
-    setIsDarkMode(prevMode => !prevMode);
-  };
+  // const toggleTheme = () => {
+  //   setIsDarkMode(prevMode => !prevMode);
+  // };
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');

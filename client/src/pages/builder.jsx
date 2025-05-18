@@ -1,20 +1,17 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setCoverPage } from "../store/exam/examSlice";
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamContentManager.jsx";
 import ExamSidebar from "../components/ExamSidebar.jsx";
-import EmptyExam from "../components/shared/emptyExam.jsx";
-import { Typography, Button, Space, Row, Col, Tooltip, Collapse, Divider, message, Modal, Empty } from "antd";
+import { EmptyExam } from "../components/shared/emptyExam.jsx";
+import { Typography, Button, Row, Col, Tooltip, Collapse, Divider} from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-import { ExamExportService } from "../services/examExportService";
 //import { exportExamToPdf } from "../services/exportPdf.js";
 
 const Builder = () => {
     const exam = useSelector(selectExamData);
-    const navigate = useNavigate();
     const [currentItemId, setCurrentItemId] = useState(null);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const coverPage = useSelector((state) => state.exam.coverPage);
@@ -45,74 +42,7 @@ const Builder = () => {
         }
     };
 
-    const handleExportDocx = async () => {
-        try {
-            if (!exam) {
-                message.error("No exam data available for export");
-                return;
-            }
 
-            if (!coverPage) {
-                message.error("No cover page available. Please upload a cover page first.");
-                return;
-            }
-
-            // Check if exam is ready for export
-            const { warnings } = ExamExportService.checkExamVersionsReady(exam);
-
-            // Show warnings if present
-            if (warnings && warnings.length > 0) {
-                const warningText = warnings.join("\n");
-
-                Modal.confirm({
-                    title: 'Warning: Issues with Export',
-                    content: (
-                        <div>
-                            <p>{warningText}</p>
-                            <p>Do you want to proceed with the export anyway?</p>
-                        </div>
-                    ),
-                    okText: 'Proceed',
-                    cancelText: 'Cancel',
-                    onOk: async () => {
-                        // Continue with export
-                        message.info("Exporting DOCX versions...");
-                        const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
-
-                        if (result.success) {
-                            message.success("All exam versions exported successfully");
-
-                            // Show any warnings that came back
-                            if (result.warnings && result.warnings.length > 0) {
-                                message.warning(result.warnings.join("\n"));
-                            }
-                        } else {
-                            message.error(`Export failed: ${result.error}`);
-                        }
-                    }
-                });
-                return; // Exit early, the Modal callback will handle continuation
-            }
-
-// Only execute this code if there are no warnings
-            message.info("Exporting DOCX versions...");
-            const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
-
-            if (result.success) {
-                message.success("All exam versions exported successfully");
-
-                // Show any warnings that came back
-                if (result.warnings && result.warnings.length > 0) {
-                    message.warning(result.warnings.join("\n"));
-                }
-            } else {
-                message.error(`Export failed: ${result.error}`);
-            }
-        } catch (error) {
-            message.error(`Export error: ${error.message}`);
-            console.error(error);
-        }
-    };
 
     const coverPageItems = [
         {
@@ -175,14 +105,14 @@ const Builder = () => {
                     {/* MCQ Exam Questions Section */}
                     <div style={{ marginTop: '24px' }}>
                         <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
-                        
+                        {exam?
                         <ExamDisplay
                             exam={exam}
                             currentItemId={currentItemId}
                             setCurrentItemId={setCurrentItemId}
                         />
-                        
-                        {<ExamFileManager />}
+                        : <EmptyExam />}
+                        <ExamFileManager />
                     </div>
 
                     <Divider />
