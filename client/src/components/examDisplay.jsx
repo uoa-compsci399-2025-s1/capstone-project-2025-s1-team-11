@@ -148,7 +148,7 @@ const ExamDisplay = () => {
       dispatch(updateSection({
         examBodyIndex,
         newData: {
-          title: item.title,
+          sectionTitle: item.sectionTitle,
           subtext: item.subtext,
         },
       }));
@@ -247,12 +247,33 @@ const ExamDisplay = () => {
         onDragStart={() => {}}
         onDragEnd={({ active, over }) => {
           if (!over || active.id === over.id) return;
+          const activeItem = examItems.find(i => i.id === active.id);
+          const overItem = examItems.find(i => i.id === over.id);
+          if (!activeItem || !overItem) return;
           const updated = arrayMove(
             examItems,
             examItems.findIndex(i => i.id === active.id),
             examItems.findIndex(i => i.id === over.id)
           );
           setExamItems(updated);
+          if (activeItem.type === "section") {
+            dispatch(moveSection({
+              sourceIndex: activeItem.examBodyIndex,
+              destIndex: overItem.examBodyIndex
+            }));
+          } else {
+            dispatch(moveQuestion({
+              source: { 
+                examBodyIndex: activeItem.examBodyIndex,
+                questionsIndex: activeItem.questionsIndex
+              },
+              destination: { 
+                examBodyIndex: overItem.examBodyIndex,
+                questionsIndex: overItem.questionsIndex
+              }
+            }));
+          }
+          
           message.success("Reordered");
         }}
       >
@@ -287,6 +308,7 @@ const ExamDisplay = () => {
                         size="small"
                         onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
                         disabled={
+                          !exam.examBody?.[record.examBodyIndex] ||
                           (record.questionsIndex !== undefined && 
                            record.questionsIndex === (exam.examBody[record.examBodyIndex]?.questions?.length - 1)) || 
                           (record.questionsIndex === undefined && record.examBodyIndex === (exam.examBody.length - 1))
@@ -430,10 +452,10 @@ const ExamDisplay = () => {
         ) : modalState.type === "section" ? (
           <>
             <Input
-              value={modalState.item?.title}
+              value={modalState.item?.sectionTitle}
               onChange={(e) => setModalState(prev => ({
                 ...prev,
-                item: { ...prev.item, title: e.target.value }
+                item: { ...prev.item, sectionTitle: e.target.value }
               }))}
               placeholder="Section Title"
               style={{ marginBottom: 8 }}
