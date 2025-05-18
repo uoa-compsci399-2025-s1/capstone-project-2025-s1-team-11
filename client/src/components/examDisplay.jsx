@@ -18,7 +18,7 @@ import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
-import { htmlToText } from '../utils/textUtils';
+import { htmlToText } from '../utilities/textUtils';
 
 const { TextArea } = Input;
 

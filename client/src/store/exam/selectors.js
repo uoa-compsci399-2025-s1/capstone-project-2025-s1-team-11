@@ -1,6 +1,6 @@
 // selectors.js
 import { createSelector } from "@reduxjs/toolkit";
-import { htmlToText } from '../../utils/textUtils';
+import { htmlToText } from '../../utilities/textUtils';
 
 // Root selector
 export const selectExamState = (state) => state.exam;
@@ -77,20 +77,15 @@ export const selectQuestionCount = createSelector(
   (questions) => questions.length
 );
 
-// Helper function to get plain text content for UI display
-const getPlainTextContent = (contentFormatted) => {
-  return htmlToText(contentFormatted || '');
-};
-
 // Normaliser to suit UI table display
 const normaliseQuestionForTable = (question, sectionNumber = null) => ({
   sectionNumber,
   questionNumber: question.questionNumber,
-  questionText: getPlainTextContent(question.contentFormatted),
+  contentText: question.contentText || htmlToText(question.contentFormatted || ''),
   marks: question.marks || 0,
   answers: (question.answers || []).map(answer => ({
     ...answer,
-    contentText: getPlainTextContent(answer.contentFormatted)
+    contentText: answer.contentText || htmlToText(answer.contentFormatted || '')
   })),
   correctAnswers: question.correctAnswers || [],
   lockedPositions: question.lockedPositions || { a: false, b: false, c: false, d: false, e: false },

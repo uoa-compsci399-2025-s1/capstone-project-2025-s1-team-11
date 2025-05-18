@@ -22,6 +22,8 @@ import {
   normaliseAnswersPerTeleformOptions,
 } from './examHelpers';
 
+import { htmlToText } from '../../utilities/textUtils';
+
 const initialState = {
   examData: null,
   isLoading: false,
@@ -71,6 +73,15 @@ const examSlice = createSlice({
       if (!state.examData) { return; }
       const newSection = createSection(action.payload);
       newSection.id = generateId();
+      
+      // fill simplified contentText from contentFormatted
+      newSection.contentText = htmlToText(newSection.contentFormatted || "");
+      for (const question of newSection.questions || []) {
+        question.contentText = htmlToText(question.contentFormatted || "");
+        for (const answer of question.answers || []) {
+          answer.contentText = htmlToText(answer.contentFormatted || "");
+        }
+      }
       state.examData.examBody.push(newSection);
       renumberSections(state.examData.examBody);
     },
@@ -79,17 +90,22 @@ const examSlice = createSlice({
       if (!state.examData) { return; }
       const { examBodyIndex, questionData } = action.payload;
 
+      questionData.contentText = htmlToText(questionData.contentFormatted || "");
+
       const examData = state.examData;
+    
       const examBody = examData.examBody;
       const versionCount = examData.versions.length;
       const optionCount = examData.teleformOptions.length;
 
       const rawAnswers = questionData.answers || [];
       let answers = rawAnswers.map((ans, idx) => {
+        const contentText = htmlToText(ans.contentFormatted || "");
         return createAnswer({ 
-          contentFormatted: ans.contentFormatted,
+          contentFormatted: ans.contentFormatted, 
+          contentText: contentText,
           correct: idx === 0,
-          fixedPosition: ans.fixedPosition ? ans.fixedPosition : null
+          fixedPosition: ans.fixedPosition? ans.fixedPosition : null
         });
       });
 

@@ -34,11 +34,14 @@ export const createSection = ({
   sectionTitle = '', 
   sectionNumber = null, 
   questions = [],
+  contentText = '',
+  contentFormatted = '',
   ...overrides
 } = {}) => ({
   ...createExamComponent({
       type: 'section',
       contentText,
+      contentFormatted,
       ...overrides
   }),
   sectionTitle,
@@ -50,6 +53,7 @@ export const createQuestion = ({
   questionNumber = null, 
   marks = 1, 
   answers = [],
+  contentText = '',
   // shuffle map is created and managed by reducers
   ...overrides
 } = {}) => ({
@@ -66,6 +70,7 @@ export const createQuestion = ({
 export const createAnswer = ({
   correct = false,
   fixedPosition = null, // null means "not fixed"
+  contentText = '',
   //feedback = '', if other than "incorrect" desired
   //note = '', e.g. "trick", "common mistake"
   ...overrides
