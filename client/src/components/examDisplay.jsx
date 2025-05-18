@@ -79,7 +79,7 @@ const ExamDisplay = () => {
     setModalState({
       visible: true,
       type: item.type,
-      item: { ...item },
+      item: JSON.parse(JSON.stringify(item)), // Deep copy to preserve all properties exactly
       isDelete: false,
     });
   };
@@ -384,16 +384,16 @@ const ExamDisplay = () => {
                 ...prev,
                 item: { ...prev.item, sectionTitle: e.target.value }
               }))}
-              placeholder="Section ID"
+              placeholder="Section Title"
               style={{ marginBottom: 8 }}
             />
             <TextArea
-              value={modalState.item?.contentText}
+              value={modalState.item?.subtext}
               onChange={(e) => setModalState(prev => ({
                 ...prev,
-                item: { ...prev.item, contentText: e.target.value }
+                item: { ...prev.item, subtext: e.target.value }
               }))}
-              placeholder="Instructions or Content"
+              placeholder="Instructions or Subtext"
               autoSize
             />
           </>
@@ -408,6 +408,26 @@ const ExamDisplay = () => {
               placeholder="Question Text"
               style={{ marginBottom: 8 }}
             />
+            {modalState.item?.answers?.filter(ans => ans && ans.contentText?.trim() !== '').map((answer, index) => (
+              <Input
+                key={`modal-answer-${index}`}
+                value={answer.contentText}
+                onChange={(e) => {
+                  const updatedAnswers = [...modalState.item.answers];
+                  updatedAnswers[index] = {
+                    ...updatedAnswers[index],
+                    contentText: e.target.value,
+                    contentFormatted: e.target.value // Since this is a simple input, we use the same value for both
+                  };
+                  setModalState(prev => ({
+                    ...prev,
+                    item: { ...prev.item, answers: updatedAnswers }
+                  }));
+                }}
+                placeholder={`Answer ${String(1 + index)}`}
+                style={{ marginBottom: 8 }}
+              />
+            ))}
           </>
         )}
       </Modal>
