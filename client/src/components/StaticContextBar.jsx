@@ -12,16 +12,12 @@ import { selectExamData } from '../store/exam/selectors.js';
 import CreateExamModal from './CreateExamModal';
 import EditExamModal from './EditExamModal';
 import { exportExamToPdf } from "../services/exportPdf";
-import { saveExamToFile } from "../services/fileSystemAccess";
-import { selectQuestionCount, selectTotalMarks } from '../store/exam/selectors';
 import '../index.css';
 
 const { Text } = Typography;
 
 const StaticContextBar = ({
   examTitle = "Untitled Exam",
-  status = "saved",
-  onExport,
   canExportDemo = false,
   canExportRandomised = false,
   canExportExemplar = false,
@@ -64,8 +60,6 @@ const StaticContextBar = ({
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
 
   // Exam progress
-  const questionCount = useSelector(selectQuestionCount);
-  const totalMarks = useSelector(selectTotalMarks);
 
   const { message } = AntApp.useApp();
 
@@ -77,9 +71,6 @@ const StaticContextBar = ({
     saving: "gold",
     unsaved: "red",
   };
-
-  const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
-
   // Handlers
 
   const handleOpenExam = async () => {
