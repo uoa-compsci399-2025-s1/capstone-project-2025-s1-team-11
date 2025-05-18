@@ -126,7 +126,7 @@ const StaticContextBar = ({
       courseName: newExamData.courseName || "",
       semester: newExamData.semester || "",
       year: newExamData.year || "",
-      versions: versionCount === 4 ? ['A', 'B', 'C', 'D'] : ['A', 'B', 'C', 'D', 'E'],
+      versions: newExamData.versions?.split(',').map(v => v.trim()).filter(Boolean) || [],
       teleformOptions: newExamData.teleformOptions || "",
       examBody: [],
       appendix: {},
@@ -490,14 +490,14 @@ const StaticContextBar = ({
                     <div style={{ marginBottom: 4 }}><strong>Year:</strong></div>
                     <div>{exam?.year || "N/A"}</div>
                   </div>
-                  <div>
-                    <div style={{ marginBottom: 4 }}><strong>Versions:</strong></div>
-                    <div className="version-tags">
-                      {(exam?.versions || []).length > 0
-                        ? exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)
-                        : "N/A"}
+                  {exam?.versions && exam.versions.length > 0 && (
+                    <div>
+                      <div style={{ marginBottom: 4 }}><strong>Versions:</strong></div>
+                      <div className="version-tags">
+                        {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <div>
                     <Button
                       type="primary"

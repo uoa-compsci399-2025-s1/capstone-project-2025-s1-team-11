@@ -1,7 +1,7 @@
 //used in the static context menu
 
-import React from 'react';
-import { Modal, Input, Form, Divider, Radio } from 'antd';
+import React, { useState } from 'react';
+import { Modal, Input, Form, Divider, Radio, Checkbox } from 'antd';
 
 const CreateExamModal = ({
   open,
@@ -12,11 +12,16 @@ const CreateExamModal = ({
   versionCount,
   setVersionCount
 }) => {
+  const [customVersionsEnabled, setCustomVersionsEnabled] = useState(false);
+
   return (
     <Modal
       title="Create New Exam"
       open={open}
-      onOk={onOk}
+      onOk={() => {
+        console.log("Creating exam with data:", newExamData);
+        onOk();
+      }}
       onCancel={onCancel}
       okText="Create"
     >
@@ -59,15 +64,32 @@ const CreateExamModal = ({
             onChange={(e) => setNewExamData({ ...newExamData, year: e.target.value })}
           />
         </Form.Item>
-        <Form.Item label="Number of Versions">
-          <Radio.Group
-            value={versionCount}
-            onChange={(e) => setVersionCount(e.target.value)}
+        <Form.Item>
+          <Checkbox
+            checked={customVersionsEnabled}
+            onChange={(e) => setCustomVersionsEnabled(e.target.checked)}
           >
-            <Radio value={4}>4 Versions (00000001 - 00000004)</Radio>
-            <Radio value={5}>5 Versions (00000001 - 00000005)</Radio>
-          </Radio.Group>
+            Enable Custom Versions
+          </Checkbox>
         </Form.Item>
+        {customVersionsEnabled && (
+          <Form.Item label="Number of Versions">
+            <Radio.Group
+              value={versionCount}
+              onChange={(e) => {
+                const count = e.target.value;
+                setVersionCount(count);
+                const generated = Array.from({ length: count }, (_, i) =>
+                  String(i + 1).padStart(8, '0')
+                );
+                setNewExamData(prev => ({ ...prev, versions: generated.join(', ') }));
+              }}
+            >
+              <Radio value={4}>4 Versions (00000001 - 00000004)</Radio>
+              <Radio value={5}>5 Versions (00000001 - 00000005)</Radio>
+            </Radio.Group>
+          </Form.Item>
+        )}
       </Form>
     </Modal>
   );
