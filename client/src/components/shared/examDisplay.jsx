@@ -24,7 +24,7 @@ export const ExamDisplay = ({ exam }) => {
             ...q,
             type: "question",
             section: entry.title,
-            questionText: q.questionText || q.contentText,
+            contentText: q.contentText,
             options: q.options || (q.answers || []).map((a) => a.contentText),
             correctIndex: q.correctIndex ?? (q.answers || []).findIndex((a) => a.correct),
           });
@@ -33,7 +33,7 @@ export const ExamDisplay = ({ exam }) => {
         items.push({
           ...entry,
           type: "question",
-          questionText: entry.questionText || entry.contentText,
+          contentText: entry.contentText,
           options: entry.options || (entry.answers || []).map((a) => a.contentText),
           correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex((a) => a.correct),
         });
@@ -77,7 +77,7 @@ export const ExamDisplay = ({ exam }) => {
                   {record.subtext && <div style={{ fontStyle: "italic", color: "#888" }}>{record.subtext}</div>}
                 </div>
               ) : (
-                <span>{record.questionText}</span>
+                <span>{record.contentText}</span>
               ),
           },
           {
@@ -106,7 +106,7 @@ export const ExamDisplay = ({ exam }) => {
         dataSource={examItems.map((item, index) => ({
           key: `${item.type}-${item.id}-${index}`,
           ...item,
-          titleOrQuestion: item.type === "section" ? item.title : item.questionText,
+          titleOrQuestion: item.type === "section" ? item.title : item.contentText,
         }))}
         pagination={{ pageSize: 10 }}
         scroll={{ x: "max-content" }}

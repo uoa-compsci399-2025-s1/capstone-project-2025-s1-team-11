@@ -69,37 +69,6 @@ const ExamFileManager = () => {
   };
 
   const examData = useSelector((state) => state.exam.examData);
-  /*
-  function getFlatQuestionListFromExam(examData) {
-    const items = [];
-    if (!examData) return items;
-    (examData.examBody || []).forEach((entry) => {
-      if (entry.type === "section") {
-        (entry.questions || []).forEach((q) => {
-          items.push({
-            ...q,
-            type: "question",
-            section: entry.sectionTitle,
-            questionText: q.questionText || q.contentText,
-            options: q.options || (q.answers || []).map(a => a.contentText),
-            correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
-          });
-        });
-      } else if (entry.type === "question") {
-        items.push({
-          ...entry,
-          type: "question",
-          questionText: entry.questionText || entry.contentText,
-          options: entry.options || (entry.answers || []).map(a => a.contentText),
-          correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
-        });
-      } else {
-        console.warn(" Unknown item type:", entry);
-      }
-    });
-    return items;
-  }
-   */
 
   const handleSaveExam = async () => {
     try {
