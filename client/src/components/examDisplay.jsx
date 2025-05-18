@@ -14,8 +14,12 @@ import {
 import { 
   selectExamData, 
   selectQuestionsAndSectionsForTable,
-  selectExamMetadata 
+  selectExamMetadata,
+  selectQuestionByPath,
+  selectSectionByIndex
 } from "../store/exam/selectors";
+import { htmlToText } from "../utilities/textUtils";
+import CompactRichTextEditor from "./editor/CompactRichTextEditor";
 import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -33,6 +37,8 @@ const ExamDisplay = () => {
     visible: false,
     type: "", 
     item: null,
+    examBodyIndex: null,
+    questionsIndex: null,
     isDelete: false, 
   });
 
@@ -74,52 +80,71 @@ const ExamDisplay = () => {
     }
   };
 
+  // Reset modal state helper
+  const resetModalState = () => {
+    setModalState({
+      visible: false,
+      type: "", 
+      item: null,
+      examBodyIndex: null,
+      questionsIndex: null,
+      isDelete: false,
+    });
+  };
+
   // Edit item handler
   const handleEdit = (item) => {
+    console.log('Edit clicked for item:', {
+      id: item.id,
+      type: item.type,
+      examBodyIndex: item.examBodyIndex,
+      questionsIndex: item.questionsIndex
+    });
+
+    // Get the actual item from the exam data
+    let actualItem;
+    if (item.type === 'section') {
+      actualItem = exam.examBody[item.examBodyIndex];
+    } else if (item.type === 'question') {
+      const section = exam.examBody[item.examBodyIndex];
+      if (section?.type === 'section') {
+        actualItem = section.questions[item.questionsIndex];
+      } else {
+        actualItem = section;
+      }
+    }
+
+    if (!actualItem) {
+      console.error('Failed to find item to edit:', item);
+      message.error('Failed to find item to edit');
+      return;
+    }
+
+    console.log('Actual item being edited:', actualItem);
+
     setModalState({
       visible: true,
       type: item.type,
-      item: JSON.parse(JSON.stringify(item)), // Deep copy to preserve all properties exactly
+      item: actualItem,
+      examBodyIndex: item.examBodyIndex,
+      questionsIndex: item.questionsIndex,
       isDelete: false,
     });
   };
 
   // Save edited item
   const handleSaveEdit = () => {
-    const { type, item } = modalState;
-    let examBodyIndex = -1;
-    let questionsIndex;
+    const { type, item, examBodyIndex, questionsIndex } = modalState;
 
     if (type === "section") {
-      examBodyIndex = exam.examBody.findIndex((entry) => entry.id === item.id);
       dispatch(updateSection({
         examBodyIndex,
         newData: {
           sectionTitle: item.sectionTitle,
-          contentText: item.contentText,
+          contentFormatted: item.contentFormatted
         }
       }));
     } else if (type === "question") {
-      for (let i = 0; i < exam.examBody.length; i++) {
-        const section = exam.examBody[i];
-        if (section.type === "section") {
-          const qIndex = section.questions?.findIndex((q) => q.id === item.id);
-          if (qIndex >= 0) {
-            examBodyIndex = i;
-            questionsIndex = qIndex;
-            break;
-          }
-        } else if (section.id === item.id) {
-          examBodyIndex = i;
-          break;
-        }
-      }
-
-      if (examBodyIndex === -1) {
-        message.error("Failed to locate the question to update.");
-        return;
-      }
-
       dispatch(updateQuestion({
         location: {
           examBodyIndex,
@@ -127,13 +152,13 @@ const ExamDisplay = () => {
           questionId: item.id
         },
         newData: {
-          contentText: item.contentText
+          contentFormatted: item.contentFormatted
         }
       }));
     }
 
     message.success("Saved changes");
-    setModalState({ ...modalState, visible: false });
+    resetModalState();
   };
 
   // Confirm delete item
@@ -171,6 +196,15 @@ const ExamDisplay = () => {
   if (!exam || !Array.isArray(exam.examBody)) {
     return <div>Please open an exam or create a new file.</div>;
   }
+
+  // Debug table data
+  console.log('Table data:', tableData.map(item => ({
+    id: item.id,
+    type: item.type,
+    examBodyIndex: item.examBodyIndex,
+    questionsIndex: item.questionsIndex,
+    contentPreview: (item.contentFormatted || item.contentText || '').substring(0, 50)
+  })));
 
   return (
     <div>
@@ -312,7 +346,7 @@ const ExamDisplay = () => {
                           symbol: 'more'
                         }}
                       >
-                        {record.contentText}
+                        {htmlToText(record.contentFormatted)}
                       </Typography.Paragraph>
                     </div>
                   );
@@ -327,7 +361,7 @@ const ExamDisplay = () => {
                       symbol: 'more'
                     }}
                   >
-                    {record.contentText}
+                    {htmlToText(record.contentFormatted)}
                   </Typography.Paragraph>
                 );
               },
@@ -347,7 +381,7 @@ const ExamDisplay = () => {
                         color: answer.correct ? '#52c41a' : 'inherit'
                       }}
                     >
-                      {String(1 + i)}) {answer.contentText}
+                      {String(1 + i)}) {htmlToText(answer.contentFormatted)}
                     </Typography.Paragraph>
                   ))}
                 </div>
@@ -371,8 +405,10 @@ const ExamDisplay = () => {
       <Modal
         open={modalState.visible}
         title={modalState.isDelete ? 'Confirm Delete' : `Edit ${modalState.type}`}
-        onCancel={() => setModalState({ visible: false })}
+        onCancel={resetModalState}
         onOk={modalState.isDelete ? executeDeleteItem : handleSaveEdit}
+        width={800}
+        destroyOnClose={true}
       >
         {modalState.isDelete ? (
           <p>Are you sure you want to delete this item?</p>
@@ -387,46 +423,47 @@ const ExamDisplay = () => {
               placeholder="Section Title"
               style={{ marginBottom: 8 }}
             />
-            <TextArea
-              value={modalState.item?.subtext}
-              onChange={(e) => setModalState(prev => ({
-                ...prev,
-                item: { ...prev.item, subtext: e.target.value }
-              }))}
-              placeholder="Instructions or Subtext"
-              autoSize
-            />
+            <div style={{ marginBottom: 16 }}>
+              <CompactRichTextEditor
+                content={modalState.item?.contentFormatted}
+                onChange={(html) => setModalState(prev => ({
+                  ...prev,
+                  item: { ...prev.item, contentFormatted: html }
+                }))}
+                placeholder="Instructions or Subtext"
+              />
+            </div>
           </>
         ) : modalState.type === "question" && (
           <>
-            <Input
-              value={modalState.item?.contentText}
-              onChange={(e) => setModalState(prev => ({
-                ...prev,
-                item: { ...prev.item, contentText: e.target.value }
-              }))}
-              placeholder="Question Text"
-              style={{ marginBottom: 8 }}
-            />
-            {modalState.item?.answers?.filter(ans => ans && ans.contentText?.trim() !== '').map((answer, index) => (
-              <Input
-                key={`modal-answer-${index}`}
-                value={answer.contentText}
-                onChange={(e) => {
-                  const updatedAnswers = [...modalState.item.answers];
-                  updatedAnswers[index] = {
-                    ...updatedAnswers[index],
-                    contentText: e.target.value,
-                    contentFormatted: e.target.value // Since this is a simple input, we use the same value for both
-                  };
-                  setModalState(prev => ({
-                    ...prev,
-                    item: { ...prev.item, answers: updatedAnswers }
-                  }));
-                }}
-                placeholder={`Answer ${String(1 + index)}`}
-                style={{ marginBottom: 8 }}
+            <div style={{ marginBottom: 16 }}>
+              <CompactRichTextEditor
+                content={modalState.item?.contentFormatted}
+                onChange={(html) => setModalState(prev => ({
+                  ...prev,
+                  item: { ...prev.item, contentFormatted: html }
+                }))}
+                placeholder="Question Text"
               />
+            </div>
+            {modalState.item?.answers?.map((answer, index) => (
+              <div key={`modal-answer-${index}`} style={{ marginBottom: 8 }}>
+                <CompactRichTextEditor
+                  content={answer.contentFormatted}
+                  onChange={(html) => {
+                    const updatedAnswers = [...modalState.item.answers];
+                    updatedAnswers[index] = {
+                      ...updatedAnswers[index],
+                      contentFormatted: html
+                    };
+                    setModalState(prev => ({
+                      ...prev,
+                      item: { ...prev.item, answers: updatedAnswers }
+                    }));
+                  }}
+                  placeholder={`Answer ${String(1 + index)}`}
+                />
+              </div>
             ))}
           </>
         )}

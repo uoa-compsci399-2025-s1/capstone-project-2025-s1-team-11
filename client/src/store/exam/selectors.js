@@ -114,7 +114,7 @@ export const selectQuestionsAndSectionsForTable = createSelector(
           type: 'section',
           sectionNumber: currentSectionNumber,
           sectionTitle: item.sectionTitle,
-          contentText: item.contentText,
+          contentFormatted: item.contentFormatted,
           examBodyIndex,
         });
 
@@ -148,9 +148,12 @@ const normaliseQuestionForTable = (question, sectionNumber = null) => ({
   type: 'question',
   sectionNumber,
   questionNumber: question.questionNumber,
-  contentText: question.contentText || '',
+  contentFormatted: question.contentFormatted || '',
   marks: question.marks || 0,
-  answers: question.answers || [],
+  answers: (question.answers || []).map(answer => ({
+    ...answer,
+    contentFormatted: answer.contentFormatted || ''
+  })),
 });
 
 export const selectCorrectAnswerIndices = createSelector(
