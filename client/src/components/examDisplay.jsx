@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Typography, Modal, Input, message, Table } from "antd";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import {
   removeQuestion,
   removeSection,
@@ -9,7 +9,7 @@ import {
   moveQuestion,
   moveSection,
 } from "../store/exam/examSlice";
-import { selectExamData } from "../store/exam/selectors";
+import { useFileSystem } from "../hooks/useFileSystem";
 import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -18,8 +18,8 @@ import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifi
 const { TextArea } = Input;
 
 const ExamDisplay = () => {
-  const exam = useSelector(selectExamData);
   const dispatch = useDispatch();
+  const { exam } = useFileSystem();
 
   const [modalState, setModalState] = useState({
     visible: false,
