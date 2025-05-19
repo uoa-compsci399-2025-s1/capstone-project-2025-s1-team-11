@@ -57,11 +57,11 @@ const Marker = () => {
       console.log("Exam results:", examResults);
       
       if (examResults && examResults.all && Array.isArray(examResults.all) && examResults.all.length > 0) {
-        setResultsData(examResults);
+      setResultsData(examResults);
         message.success(`Successfully marked ${examResults.all.length} exams.`);
-        
-        // Automatically advance to the results step
-        setCurrentStep(2);
+      
+      // Automatically advance to the results step
+      setCurrentStep(2);
       } else {
         message.error("Failed to mark exams: No valid student data found");
       }
