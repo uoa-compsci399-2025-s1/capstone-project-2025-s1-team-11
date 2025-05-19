@@ -7,7 +7,7 @@ import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
 import { markExams } from "../utilities/marker/examMarker.js";
 import { generateResultOutput } from "../utilities/marker/outputFormatter.js";
 import {dataReview} from "../components/marker/dataReview.jsx";
-import {Results} from "../components/marker/results.jsx"
+import {Results} from "../components/marker/Results.jsx"
 import {teleformReader} from "../components/marker/teleformReader.jsx";
 import {selectCorrectAnswerIndices} from "../store/exam/selectors.js";
 

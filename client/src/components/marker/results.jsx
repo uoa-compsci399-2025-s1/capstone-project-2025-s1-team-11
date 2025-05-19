@@ -2,9 +2,10 @@ import {Button, Col, Divider, Empty, Progress, Radio, Row, Statistic, Typography
 import React, {useState, useEffect} from "react";
 import QuestionStats from "./QuestionStats.jsx";
 import StudentReport from "./StudentReport.jsx";
-import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js";
+//import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js";
 // import {sampleTestData} from "../../utilities/testing/sampleTestData.js";
 import {generateResultOutput} from "../../utilities/marker/outputFormatter.js";
+import {calculateStatistics} from "../../utilities/statistics/examStatistics.js";
 
 export const Results = ({setExportFormat, exportFormat, resultsData, handleExportResults, examData, teleformData, markingKey, setResultsData, setExamData}) => {
   console.log("Results component received:", resultsData);
@@ -14,6 +15,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [questionStats, setQuestionStats] = useState({});
   const [hasValidData, setHasValidData] = useState(false);
+  const [statistics, setStatistics] = useState(null);
   // const [isLoadingTestData, setIsLoadingTestData] = useState(false);
 
   // When results data changes, calculate the statistics
@@ -26,73 +28,11 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
 
     setHasValidData(true);
 
-    // Calculate question statistics from all students
-    const stats = resultsData.reduce((stats, student) => {
-      if (!student || !student.questions || !Array.isArray(student.questions)) return stats;
-      
-      student.questions.forEach(q => {
-        if (!q || !q.questionNumber) return;
-        
-        const qNum = q.questionNumber;
-        
-        // Initialize question stats if not already done
-        if (!stats[qNum]) {
-          stats[qNum] = {
-            totalAnswers: 0,
-            correctCount: 0,
-            incorrectCount: 0,
-            answerFrequency: {
-              "01": 0, // Option A
-              "02": 0, // Option B
-              "04": 0, // Option C
-              "08": 0, // Option D
-              "16": 0  // Option E
-            },
-            difficultyLevel: '',
-            correctAnswer: q.correctAnswer
-          };
-        }
-        
-        // Increment counters
-        stats[qNum].totalAnswers++;
-        if (q.isCorrect) {
-          stats[qNum].correctCount++;
-        } else {
-          stats[qNum].incorrectCount++;
-        }
-        
-        // Increment answer frequency if student answer is valid
-        if (q.studentAnswer) {
-          // Ensure the answer format is recognized
-          stats[qNum].answerFrequency[q.studentAnswer]++;
-        }
-      });
-      return stats;
-    }, {});
-  
-    // Calculate the percentage for each question
-    Object.keys(stats).forEach(qNum => {
-      const questionStat = stats[qNum];
-      if (questionStat.totalAnswers > 0) {
-        questionStat.correctPercentage = ((questionStat.correctCount / questionStat.totalAnswers) * 100).toFixed(1);
-        
-        // Set difficulty level
-        const correctPercentage = parseFloat(questionStat.correctPercentage);
-        if (correctPercentage >= 80) {
-          questionStat.difficultyLevel = 'Easy';
-        } else if (correctPercentage >= 40) {
-          questionStat.difficultyLevel = 'Medium';
-        } else {
-          questionStat.difficultyLevel = 'Hard';
-        }
-      } else {
-        questionStat.correctPercentage = "0.0";
-        questionStat.difficultyLevel = 'Unknown';
-      }
-    });
+    // Calculate statistics using the examStatistics utility
+    const stats = calculateStatistics(resultsData);
+    setStatistics(stats);
+    setQuestionStats(stats.questionStats);
 
-    setQuestionStats(stats);
-    
     // Set the first student as selected by default if there's data
     if (resultsData.length > 0 && resultsData[0].studentId) {
       setSelectedStudentId(resultsData[0].studentId);
@@ -234,12 +174,12 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
         <Tabs.TabPane tab="Summary" key="summary">
           <Row gutter={16}>
             <Col span={6}>
-              <Statistic title="Total Students" value={resultsData.length} />
+              <Statistic title="Total Students" value={statistics?.summary?.totalStudents || 0} />
             </Col>
             <Col span={6}>
               <Statistic 
                 title="Average Score" 
-                value={resultsData.reduce((acc, student) => acc + (student.totalMarks / student.maxMarks * 100), 0) / resultsData.length} 
+                value={statistics?.summary?.averageMark || 0}
                 suffix="%" 
                 precision={1}
               />
@@ -247,7 +187,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
             <Col span={6}>
               <Statistic 
                 title="Pass Rate" 
-                value={(resultsData.filter(student => (student.totalMarks / student.maxMarks * 100) >= 50).length / resultsData.length * 100)} 
+                value={statistics?.summary?.passRate || 0}
                 suffix="%" 
                 precision={1}
               />
@@ -255,7 +195,18 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
             <Col span={6}>
               <Statistic 
                 title="Highest Score" 
-                value={Math.max(...resultsData.map(student => (student.totalMarks / student.maxMarks * 100)))} 
+                value={statistics?.summary?.highestMark || 0}
+                suffix="%" 
+                precision={1}
+              />
+            </Col>
+          </Row>
+
+          <Row gutter={16} style={{ marginTop: 16 }}>
+            <Col span={6}>
+              <Statistic 
+                title="Lowest Score" 
+                value={statistics?.summary?.lowestMark || 0}
                 suffix="%" 
                 precision={1}
               />

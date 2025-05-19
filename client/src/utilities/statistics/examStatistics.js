@@ -14,18 +14,27 @@ export function calculateStatistics(markedResults) {
       totalStudents: 0,
       averageMark: 0,
       highestMark: 0,
-      lowestMark: Infinity
+      lowestMark: Infinity,
+      passRate: 0
     },
     questionStats: {}
   };
 
   // Process each student's results
   markedResults.forEach(studentResult => {
+    // Calculate percentage score for this student
+    const percentageScore = (studentResult.totalMarks / studentResult.maxMarks) * 100;
+
     // Update summary statistics
     results.summary.totalStudents++;
-    results.summary.averageMark += studentResult.totalMarks;
-    results.summary.highestMark = Math.max(results.summary.highestMark, studentResult.totalMarks);
-    results.summary.lowestMark = Math.min(results.summary.lowestMark, studentResult.totalMarks);
+    results.summary.averageMark += percentageScore;
+    results.summary.highestMark = Math.max(results.summary.highestMark, percentageScore);
+    results.summary.lowestMark = Math.min(results.summary.lowestMark, percentageScore);
+
+    // Count passing students (>=50%)
+    if (percentageScore >= 50) {
+      results.summary.passRate++;
+    }
 
     // Update question statistics
     studentResult.questions.forEach(question => {
@@ -65,6 +74,7 @@ export function calculateStatistics(markedResults) {
   // Finalize average calculation
   if (results.summary.totalStudents > 0) {
     results.summary.averageMark = results.summary.averageMark / results.summary.totalStudents;
+    results.summary.passRate = (results.summary.passRate / results.summary.totalStudents) * 100;
   }
   
   // Handle edge case where no students were processed

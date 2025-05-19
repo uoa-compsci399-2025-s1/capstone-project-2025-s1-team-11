@@ -36,18 +36,9 @@ export function markExams(examData, teleformData, markingKey) {
       results.byStudentId[studentId] = studentResult;
     });
 
-    // Calculate statistics from marked results
-    const statistics = calculateStatistics(results.all);
-    
-    // Combine marking results with statistics
-    const finalResults = {
-      ...results,
-      ...statistics
-    };
-
     // Dispatch results to Redux store
-    store.dispatch(setResults(finalResults));
-    return finalResults;
+    store.dispatch(setResults(results));
+    return results;
   } catch (error) {
     store.dispatch(setError(error.message));
     throw error;
