@@ -1,0 +1,343 @@
+{
+  "type": "exam",
+  "examTitle": "Anglea Test",
+  "courseCode": "CS320",
+  "courseName": "Compputer Science",
+  "semester": "asd",
+  "year": "asdasds",
+  "versions": [
+    "00000001",
+    "00000002",
+    "00000003",
+    "00000004"
+  ],
+  "teleformOptions": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "e"
+  ],
+  "coverPage": null,
+  "examBody": [
+    {
+      "type": "question",
+      "contentFormatted": "New Question",
+      "format": "HTML",
+      "contentText": "New Question",
+      "pageBreakAfter": false,
+      "questionNumber": 1,
+      "marks": 50,
+      "answers": [
+        {
+          "content": "",
+          "contentText": "William",
+          "correct": true,
+          "fixedPosition": null
+        },
+        {
+          "content": "",
+          "contentText": "Michael",
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "content": "",
+          "contentText": "Answer 3",
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "content": "",
+          "contentText": "Answer 4",
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "content": "",
+          "contentText": "Answer 5",
+          "correct": false,
+          "fixedPosition": null
+        }
+      ],
+      "answerShuffleMaps": [
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      ],
+      "id": "id-1746050079081-4"
+    },
+    {
+      "type": "question",
+      "contentFormatted": "New Question",
+      "format": "HTML",
+      "contentText": "New Question",
+      "pageBreakAfter": false,
+      "questionNumber": 2,
+      "marks": 1,
+      "answers": [
+        {
+          "content": "",
+          "contentText": "Answer 1",
+          "correct": true,
+          "fixedPosition": null
+        },
+        {
+          "content": "",
+          "contentText": "Answer 2",
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "content": "",
+          "contentText": "Answer 3",
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "content": "",
+          "contentText": "Answer 4",
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "content": "",
+          "contentText": "Answer 5",
+          "correct": false,
+          "fixedPosition": null
+        }
+      ],
+      "answerShuffleMaps": [
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      ],
+      "id": "id-1746050079081-5"
+    },
+    {
+      "type": "question",
+      "contentFormatted": "",
+      "format": "HTML",
+      "contentText": "New Question",
+      "pageBreakAfter": false,
+      "questionNumber": 3,
+      "marks": 1,
+      "answers": [
+        {
+          "content": "",
+          "contentText": "Answer 1",
+          "correct": true,
+          "fixedPosition": null
+        },
+        {
+          "content": "",
+          "contentText": "Answer 2",
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "content": "",
+          "contentText": "Answer 3",
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "content": "",
+          "contentText": "Answer 4",
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "content": "",
+          "contentText": "Answer 5",
+          "correct": false,
+          "fixedPosition": null
+        }
+      ],
+      "answerShuffleMaps": [
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      ],
+      "id": "id-1746050079081-6"
+    },
+    {
+      "type": "section",
+      "contentFormatted": "",
+      "format": "HTML",
+      "contentText": "",
+      "title": "Untitled Section",
+      "subtext": "Instructions...",
+      "pageBreakAfter": false,
+      "sectionTitle": "",
+      "sectionNumber": 1,
+      "questions": [],
+      "id": "id-1746051336940-1"
+    },
+    {
+      "type": "question",
+      "contentFormatted": "",
+      "format": "HTML",
+      "contentText": "",
+      "id": "id-1746050461529-1",
+      "correctIndex": 1,
+      "pageBreakAfter": false,
+      "questionNumber": 4,
+      "marks": 1,
+      "answers": [
+        {
+          "type": "answer",
+          "contentFormatted": "",
+          "format": "HTML",
+          "contentText": "",
+          "pageBreakAfter": false,
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "",
+          "format": "HTML",
+          "contentText": "",
+          "pageBreakAfter": false,
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "",
+          "format": "HTML",
+          "contentText": "",
+          "pageBreakAfter": false,
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "",
+          "format": "HTML",
+          "contentText": "",
+          "pageBreakAfter": false,
+          "correct": false,
+          "fixedPosition": null
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "",
+          "format": "HTML",
+          "contentText": "",
+          "pageBreakAfter": false,
+          "correct": false,
+          "fixedPosition": null
+        }
+      ],
+      "answerShuffleMaps": [
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      ]
+    }
+  ],
+  "appendix": null,
+  "metadata": []
+}

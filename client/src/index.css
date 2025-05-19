@@ -30,16 +30,8 @@
   --footer-bg: #1f1f1f;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #333;
 * {
   font-family: 'IBM Plex Sans', system-ui, sans-serif !important;
-}
 }
 
 body {
@@ -95,6 +87,7 @@ button:focus-visible {
   100% { transform: translateX(-50%) scale(1); }
 }
 
+/* Static Context Bar */
 .context-bar-wrapper {
   position: sticky;
   top: 0;
@@ -127,7 +120,6 @@ button:focus-visible {
   max-height: 420px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
   border-color: #d0d0d0;
-  /*background: #f7f7f7;*/
 }
 
 .context-bar-main {
@@ -149,11 +141,10 @@ button:focus-visible {
   transition: all 0.3s ease;
   font-weight: 500;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  
 }
 
 .context-button .ant-btn:hover {
-  background: rgba(0, 0, 0, 0.03); /* Light hover tint */
+  background: rgba(0, 0, 0, 0.03);
   border-color: #ccc;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
@@ -223,6 +214,7 @@ button:focus-visible {
 .context-bar-wrapper:hover .ant-typography-edit {
   display: inline-block;
 }
+
 .context-bar-actions {
   display: flex;
   align-items: center;
@@ -250,4 +242,66 @@ button:focus-visible {
 .context-bar-wrapper .ant-btn,
 .context-bar-wrapper .ant-switch {
   vertical-align: middle;
+}
+
+/* Sidebar */
+.exam-sidebar {
+  position: sticky;
+  top: 20px;
+  height: calc(100vh - 180px);
+  overflow-y: auto;
+  transition: all 0.3s;
+}
+
+.exam-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.exam-sidebar::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 10px;
+}
+
+.exam-sidebar::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 10px;
+}
+
+.exam-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+}
+
+.highlighted-item {
+  background-color: #e6f7ff !important;
+  border-left: 3px solid #1890ff;
+  transition: all 0.3s;
+}
+
+.highlighted-table-row {
+  background-color: #e6f7ff;
+}
+
+.highlighted-table-row:hover td {
+  background-color: #bae7ff !important;
+}
+
+.exam-sidebar .ant-list-item:hover {
+  background-color: #f5f5f5;
+}
+
+@media (max-width: 1200px) {
+  .exam-sidebar {
+    height: auto;
+    max-height: 400px;
+    margin-top: 20px;
+  }
+}
+
+.exam-sidebar .ant-badge {
+  font-size: 12px;
+}
+
+.exam-sidebar .ant-btn:hover {
+  color: #1890ff;
+  background-color: rgba(24, 144, 255, 0.1);
 }

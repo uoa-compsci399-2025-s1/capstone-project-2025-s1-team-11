@@ -24,15 +24,6 @@ export const createExam = (overrides = {}) => ({
   ...overrides,
 });
 
-
-export const createMarkingKey = (exam) => {
-  //Takes an exam object and generates a marking key object
-}
-
-export const shuffleAnswers = (exam) => {
-  //shuffles answer sequence for all questions and versions of an exam
-}
-
 export const createExamComponent = (overrides = {}) => ({
   ...DEFAULT_COMPONENT_PROPS,
   ...overrides,
@@ -56,7 +47,7 @@ export const createSection = ({
 
 export const createQuestion = ({
   questionNumber = null, 
-  marks = null, 
+  marks = 1, 
   answers = [],
   contentText = '',
   // shuffle map is created and managed by reducers

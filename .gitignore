@@ -1622,3 +1622,4 @@ server/.venv/bin/activate.csh
 server/.venv/bin/activate
 server/.DS_Store
 node_modules
+/client/src/testing/docx_samples/

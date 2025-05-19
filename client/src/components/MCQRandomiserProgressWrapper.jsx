@@ -45,7 +45,7 @@ const MCQRandomiserProgressWrapper = ({ children, onStageChange }) => {
         onChange={handleChange}
         style={{ marginBottom: '24px' }}
       >
-        {steps.map((step, index) => (
+        {steps.map((step) => (
           <Step key={step.key} title={step.title} icon={step.icon} />
         ))}
       </Steps>

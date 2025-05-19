@@ -9,12 +9,15 @@ export default function MapDisplay({ question, selectedVersion, exam, displaySty
 
   if (!mapping) return null;
 
+  const actualAnswerCount = question?.answers?.filter(answer => answer.contentFormatted?.trim() || answer.contentText?.trim()).length || 0;
+  const effectiveMapping = mapping.slice(0, actualAnswerCount);
+
   return (
     <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
       {displayStyle === "grid" ? (
-        <AnswerMappingGrid mapping={mapping} />
+        <AnswerMappingGrid mapping={effectiveMapping} />
       ) : (
-        <AnswerMappingVisual mapping={mapping} />
+        <AnswerMappingVisual mapping={effectiveMapping} />
       )}
     </div>
   );

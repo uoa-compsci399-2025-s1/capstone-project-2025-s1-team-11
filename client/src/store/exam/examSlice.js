@@ -1,5 +1,10 @@
 // examSlice.js
 
+/*
+ * Important: This module does not handle the file loading of exams, this is used to manage the exam state.
+ * Do not use this module to load, close or import an exam. Use the hook.
+ */
+
 import { createSlice } from '@reduxjs/toolkit';
 import { 
   createExam, 
@@ -53,12 +58,12 @@ const examSlice = createSlice({
   name: 'exam',
   initialState,
   reducers: {
-    createNewExam: (state, action) => {
+    initializeExamState: (state, action) => {
       state.examData = createExam(action.payload || {});
       ensureUniqueIds(state.examData);
     },
 
-    clearExam: (state) => {
+    clearExamState: (state) => {
       state.examData = null;
     },
 
@@ -121,7 +126,7 @@ const examSlice = createSlice({
       if (examBodyIndex != null && examBody[examBodyIndex]?.type === 'section') {
         examBody[examBodyIndex].questions.push(newQuestion);
       } else {
-        
+
         examBody.push(newQuestion);
       }
     
@@ -164,7 +169,7 @@ const examSlice = createSlice({
         //Object.assign(container.questions[questionsIndex], newData);
         Object.assign(question, newData);
         if (optionsCount !== question.answers.length) {
-          question.answers = normaliseAnswersToLength(question.answers, optionCount);
+          question.answers = normaliseAnswersToLength(question.answers, optionsCount);
         }
       } else if (container.type === 'question') {
         Object.assign(container, newData);
@@ -334,7 +339,7 @@ const examSlice = createSlice({
         }
       });
     },
-    
+
     importExamStart: (state) => {
       state.loading = true;
       state.error = null;
@@ -353,69 +358,7 @@ const examSlice = createSlice({
 });
 
 
-// Thunk for importing an exam properly
-export const importDTOToState = (examDTO) => async (dispatch) => {
-  try {
-    dispatch(importExamStart());
 
-    dispatch(clearExam());
-
-    dispatch(createNewExam({
-      examTitle: examDTO.examTitle,
-      courseCode: examDTO.courseCode,
-      courseName: examDTO.courseName,
-      semester: examDTO.semester,
-      year: examDTO.year,
-    }));
-
-    // Set versions and teleform options if needed
-    if (examDTO.versions) {
-      dispatch(setExamVersions(examDTO.versions));
-    }
-    if (examDTO.teleformOptions) {
-      dispatch(setTeleformOptions(examDTO.teleformOptions));
-    }
-
-    let examBodyIndexCounter = 0;
-
-    // Import the examBody (sections and/or questions)
-    for (const item of examDTO.examBody || []) {
-      try {
-        if (item.type === 'section') {
-          const { questions, ...sectionWithoutQuestions } = item;
-          await dispatch(addSection(sectionWithoutQuestions));
-          
-          //const sectionIndex = result.payload;
-          //const sectionIndex = state.examData.examBody.length - 1;
-
-          for (const question of item.questions || []) {
-            await dispatch(addQuestion({ 
-              examBodyIndex: examBodyIndexCounter, 
-              questionData: question 
-            }));
-          }
-        } else {
-          await dispatch(addQuestion({ 
-            examBodyIndex: null, 
-            questionData: item 
-          }));
-        }
-        examBodyIndexCounter++;
-      } catch (error) {
-        console.error(`Error while processing item:`, item);
-        console.error(error);
-        throw error;  // still rethrow to trigger importExamFailure
-      }
-    }
-
-    dispatch(importExamSuccess()); // You could even repurpose this to mean "done loading"
-
-    return;
-  } catch (error) {
-    dispatch(importExamFailure(error.message));
-    throw error;
-  }
-};
 
 function htmlToText(html) {
   const tempDiv = document.createElement("div");
@@ -425,8 +368,8 @@ function htmlToText(html) {
 
 // Export actions
 export const { 
-  createNewExam, 
-  clearExam,
+  initializeExamState,
+  clearExamState,
   addSection, 
   addQuestion, 
   setCoverPage, // supplied as document, add from file system via UI
