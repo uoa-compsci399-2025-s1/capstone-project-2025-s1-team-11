@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Dropdown, Button, Space, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, message as antdMessage } from 'antd';
+import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, message as antdMessage } from 'antd';
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined } from '@ant-design/icons';
 import { updateExamField } from "../store/exam/examSlice";
-import { createNewExam } from "../store/exam/examSlice";
 import { setTeleformOptions } from "../store/exam/examSlice";
 import { setExamVersions } from "../store/exam/examSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -25,7 +24,7 @@ const StaticContextBar = ({
 }) => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
-  const { fileHandle, openExam, saveExam } = useFileSystem();
+  const { fileHandle, createExam, openExam, saveExam } = useFileSystem();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newExamData, setNewExamData] = useState({
     examTitle: '',

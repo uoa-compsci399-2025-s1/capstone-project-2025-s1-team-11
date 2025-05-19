@@ -11,9 +11,9 @@ const EditExamModal = ({
   const [versionCount, setVersionCount] = useState(4);
 
   useEffect(() => {
-    console.log("EditExamModal rendered, open =", open);
+    //console.log("EditExamModal rendered, open =", open);
     if (open) {
-      console.log("did it even workkk???");
+      //console.log("did it even workkk???");
     }
   }, [open]);
 

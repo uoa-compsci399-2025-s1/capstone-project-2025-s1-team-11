@@ -108,7 +108,7 @@ const ExamDisplay = () => {
           id: entry.id,
           type: "section",
           title: entry.title,
-          subtext: entry.subtext,
+          contentText: entry.contentText,
         });
 
         (entry.questions || []).forEach((q) => {
@@ -116,7 +116,7 @@ const ExamDisplay = () => {
             ...q,
             type: "question",
             section: entry.sectionTitle,
-            questionText: q.questionText || q.contentText,
+            contentText: q.contentText,
             options: q.options || (q.answers || []).map(a => a.contentText),
             correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
           });
@@ -126,7 +126,7 @@ const ExamDisplay = () => {
         items.push({
           ...entry,
           type: "question",
-          questionText: entry.questionText || entry.contentText,
+          contentText: entry.contentText,
           options: entry.options || (entry.answers || []).map(a => a.contentText),
           correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
         });
@@ -159,7 +159,7 @@ const ExamDisplay = () => {
         examBodyIndex,
         newData: {
           title: item.title,
-          subtext: item.subtext,
+          contentText: item.contentText,
         }
       }));
     } else if (type === "question") {
@@ -190,7 +190,7 @@ const ExamDisplay = () => {
           questionId: item.id
         },
         newData: {
-          questionText: item.questionText,
+          contentText: item.contentText,
           options: item.options,
           correctIndex: item.correctIndex
         }
@@ -301,12 +301,12 @@ const ExamDisplay = () => {
                 record.type === "section" ? (
                   <div>
                     <strong>{record.title?.split('-').slice(2).join('-').trim()}</strong>
-                    {record.subtext && (
-                      <div style={{ fontStyle: "italic", color: "#888" }}>{record.subtext}</div>
+                    {record.contentText && (
+                      <div style={{ fontStyle: "italic", color: "#888" }}>{record.contentText}</div>
                     )}
                   </div>
                 ) : (
-                  <span>{record.questionText}</span>
+                  <span>{record.contentText}</span>
                 ),
             },
             {
@@ -410,7 +410,7 @@ const ExamDisplay = () => {
             return {
               key: `${item.type}-${item.id}-${index}`,
               ...item,
-              titleOrQuestion: item.type === "section" ? item.title : item.questionText,
+              titleOrQuestion: item.type === "section" ? item.title : item.contentText,
               examBodyIndex,
               questionsIndex,
               marks: item.marks,
@@ -429,17 +429,13 @@ const ExamDisplay = () => {
       <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
         <Button type="dashed" onClick={() => {
           const questionData = {
-            questionText: "New Question",
-            options: ["Option A", "Option B", "Option C", "Option D", "Option E"],
-            correctIndex: 0,
-            lockedPositionsMap: [-1, -1, -1, -1, -1],
-            answerShuffleMap: [],
+            contentText: "New Question",
           };
           dispatch(addQuestion({ questionData }));
           message.success("Question added");
         }}>Add Question</Button>
         <Button type="dashed" onClick={() => {
-          dispatch(addSection({ title: "Untitled Section", subtext: "Instructions..." }));
+          dispatch(addSection({ title: "Untitled Section", contentText: "Instructions..." }));
           message.success("Section added");
         }}>Add Section</Button>
         <Button
@@ -579,10 +575,10 @@ const ExamDisplay = () => {
               style={{ marginBottom: 8 }}
             />
             <TextArea
-              value={editModal.item?.subtext}
+              value={editModal.item?.contentText}
               onChange={(e) => setEditModal((prev) => ({
                 ...prev,
-                item: { ...prev.item, subtext: e.target.value }
+                item: { ...prev.item, contentText: e.target.value }
               }))}
               placeholder="Instructions or Subtext"
               autoSize
@@ -593,11 +589,11 @@ const ExamDisplay = () => {
         {editModal.type === "question" && (
           <>
             <Input
-              value={editModal.item?.questionText}
+              value={editModal.item?.contentText}
               onChange={(e) =>
                 setEditModal((prev) => ({
                   ...prev,
-                  item: { ...prev.item, questionText: e.target.value },
+                  item: { ...prev.item, contentText: e.target.value },
                 }))
               }
               placeholder="Question Text"

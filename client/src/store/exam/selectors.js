@@ -102,7 +102,7 @@ export const selectQuestionsForTable = createSelector(
 const normaliseQuestionForTable = (question, sectionNumber = null) => ({
   sectionNumber,
   questionNumber: question.questionNumber,
-  questionText: question.contentText || '',
+  contentText: question.contentText || '',
   marks: question.marks || 0,
   answers: question.answers || [],
   correctAnswers: question.correctAnswers || [],
