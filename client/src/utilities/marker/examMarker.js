@@ -21,7 +21,9 @@ export function markExams(examData, teleformData, markingKey) {
         averageMark: 0,
         highestMark: 0,
         lowestMark: Infinity
-      }
+      },
+      // Add question statistics
+      questionStats: {}
     };
 
     const studentEntries = readTeleform(teleformData);
@@ -51,6 +53,40 @@ export function markExams(examData, teleformData, markingKey) {
       results.summary.averageMark += studentResult.totalMarks;
       results.summary.highestMark = Math.max(results.summary.highestMark, studentResult.totalMarks);
       results.summary.lowestMark = Math.min(results.summary.lowestMark, studentResult.totalMarks);
+
+      // Update question statistics
+      studentResult.questions.forEach(question => {
+        const qNum = question.questionNumber;
+        
+        // Initialize question stats if not already done
+        if (!results.questionStats[qNum]) {
+          results.questionStats[qNum] = {
+            totalAnswers: 0,
+            correctCount: 0,
+            incorrectCount: 0,
+            answerFrequency: {
+              "01": 0, // Option A
+              "02": 0, // Option B
+              "04": 0, // Option C
+              "08": 0, // Option D
+              "16": 0  // Option E
+            },
+            difficultyLevel: '',
+            correctAnswer: question.correctAnswer
+          };
+        }
+        
+        // Increment counters
+        results.questionStats[qNum].totalAnswers++;
+        if (question.isCorrect) {
+          results.questionStats[qNum].correctCount++;
+        } else {
+          results.questionStats[qNum].incorrectCount++;
+        }
+        
+        // Increment answer frequency
+        results.questionStats[qNum].answerFrequency[question.studentAnswer]++;
+      });
     });
 
     // Finalize average calculation
@@ -62,6 +98,22 @@ export function markExams(examData, teleformData, markingKey) {
     if (results.summary.lowestMark === Infinity) {
       results.summary.lowestMark = 0;
     }
+    
+    // Calculate difficulty levels for each question
+    Object.keys(results.questionStats).forEach(qNum => {
+      const stats = results.questionStats[qNum];
+      const correctPercentage = (stats.correctCount / stats.totalAnswers) * 100;
+      
+      if (correctPercentage >= 80) {
+        stats.difficultyLevel = 'Easy';
+      } else if (correctPercentage >= 40) {
+        stats.difficultyLevel = 'Medium';
+      } else {
+        stats.difficultyLevel = 'Hard';
+      }
+      
+      stats.correctPercentage = correctPercentage.toFixed(1);
+    });
 
     // Dispatch results to Redux store
     store.dispatch(setResults(results));
@@ -123,14 +175,27 @@ function markStudentExam(firstName, lastName, versionId, answerString, markingKe
       q => q?.type === 'question' && q?.questionNumber === (index + 1)
     );
     
-    const maxMarks = examQuestion?.marks ?? 0; // Default to 1 mark if not specified
-    const { isCorrect, marks: earnedMarks } = markQuestion(correctAnswer, studentAnswer, maxMarks);
+    const maxMarks = examQuestion?.marks ?? 1; // Default to 1 mark if not specified
+    
+    // Changed to support multiple correct answers (bitmask)
+    // If correctAnswer is a bitmask (e.g. 6 = option B and C), 
+    // then check if the student selected any of the correct options
+    const isCorrect = (studentAnswer & correctAnswer) === studentAnswer && studentAnswer !== 0;
+    const earnedMarks = isCorrect ? maxMarks : 0;
 
     // Find the corresponding option text for both answers
     const findOptionText = (bitmask) => {
-      // Convert bitmask to index (01->0, 02->1, 04->2, 08->3, 16->4)
-      const index = Math.log2(bitmask);
-      return examData?.teleformOptions?.[index] || 'None';
+      if (bitmask === 0) return 'None';
+      
+      // For multiple answers, build a string of options
+      const options = [];
+      if (bitmask & 1) options.push(examData?.teleformOptions?.[0] || 'A');
+      if (bitmask & 2) options.push(examData?.teleformOptions?.[1] || 'B');
+      if (bitmask & 4) options.push(examData?.teleformOptions?.[2] || 'C');
+      if (bitmask & 8) options.push(examData?.teleformOptions?.[3] || 'D');
+      if (bitmask & 16) options.push(examData?.teleformOptions?.[4] || 'E');
+      
+      return options.join(', ');
     };
 
     studentResult.totalMarks += earnedMarks;
@@ -162,16 +227,22 @@ function formatBitmask(bitmask) {
 }
 
 /**
- * Compares a student answer to the correct answer using bitmask logic
- * @param {number} correctAnswer - e.g., 6
- * @param {number} studentAnswer - e.g., 4
- * @param {number} maxMarks - typically 1
- * @returns {Object} { isCorrect, marks }
+ * Updates the correct answer for a specific question and remark exams
+ * @param {Number} questionNumber - The question number to update
+ * @param {String} newCorrectAnswer - The new correct answer
+ * @param {Object} examData - The exam data
+ * @param {String} teleformData - The teleform scan data
+ * @param {Object} markingKey - The marking key
  */
-export function markQuestion(correctAnswer, studentAnswer, maxMarks = 0) {
-  const isCorrect = (studentAnswer & correctAnswer) !== 0;
-  return {
-    isCorrect,
-    marks: isCorrect ? maxMarks : 0
-  };
+export function updateCorrectAnswerAndRemark(questionNumber, newCorrectAnswer, examData, teleformData, markingKey) {
+  // Update the marking key with the new correct answer
+  const versionId = Object.keys(markingKey)[0]; // Assuming single version for now
+  const keyArray = markingKey[versionId].split('');
+  const answerIndex = (questionNumber - 1) * 2;
+  keyArray[answerIndex] = newCorrectAnswer[0];
+  keyArray[answerIndex + 1] = newCorrectAnswer[1];
+  markingKey[versionId] = keyArray.join('');
+
+  // Remark all exams with the updated key
+  return markExams(examData, teleformData, markingKey);
 }
