@@ -33,12 +33,9 @@ const StaticContextBar = ({
     courseName: '',
     semester: '',
     year: '',
-    versions: '',
-    teleformOptions: '',
-    metadataKey: '',
-    metadataValue: '',
     answerOptions: 4,
   });
+  const [customVersionMode, setCustomVersionMode] = useState('generate');
   const [lastSavedTime, setLastSavedTime] = useState(null);
   // For auto-save debounce and state
   const [saveState, setSaveState] = useState('saved'); // 'saved', 'saving', 'unsaved'
@@ -110,10 +107,7 @@ const StaticContextBar = ({
       courseName: '',
       semester: '',
       year: '',
-      versions: '',
-      teleformOptions: '',
-      metadataKey: '',
-      metadataValue: ''
+      answerOptions: 4
     });
     setVersionCount(4);
   };
@@ -126,8 +120,6 @@ const StaticContextBar = ({
       courseName: newExamData.courseName || "",
       semester: newExamData.semester || "",
       year: newExamData.year || "",
-      versions: newExamData.versions?.split(',').map(v => v.trim()).filter(Boolean) || [],
-      teleformOptions: newExamData.teleformOptions || "",
       examBody: [],
       appendix: {},
       metadata:
@@ -135,12 +127,25 @@ const StaticContextBar = ({
           ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
           : []
     };
+
+    // Parse versions if defined and non-empty
+    if (newExamData.versions?.trim()) {
+      exam.versions = newExamData.versions
+        .split(',')
+        .map(v => v.trim())
+        .filter(Boolean);
+    }
+
+    // Parse teleformOptions if defined and non-empty
+    if (newExamData.teleformOptions?.trim()) {
+      const cleaned = newExamData.teleformOptions.replace(/["']/g, '');
+      exam.teleformOptions = cleaned
+        .split(',')
+        .map(o => o.trim())
+        .filter(Boolean);
+    }
+
     dispatch(createNewExam(exam));
-    // Set teleform options according to answerOptions
-    const options = Array.from({ length: parseInt(newExamData.answerOptions) || 4 }, (_, i) =>
-      String.fromCharCode(65 + i)
-    );
-    dispatch(setTeleformOptions(options));
     setShowCreateModal(false);
     setTimeout(() => message.success("New exam created successfully."), 0);
   };
@@ -532,6 +537,8 @@ const StaticContextBar = ({
           setNewExamData={setNewExamData}
           versionCount={versionCount}
           setVersionCount={setVersionCount}
+          customVersionMode={customVersionMode}
+          setCustomVersionMode={setCustomVersionMode}
         />
         {/* Edit Exam Details Modal */}
         <EditExamModal

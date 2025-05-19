@@ -1,7 +1,7 @@
 //used in the static context menu
 
-import React, { useState } from 'react';
-import { Modal, Input, Form, Divider, Radio, Checkbox } from 'antd';
+import React from 'react';
+import { Modal, Input, Form, Divider } from 'antd';
 
 const CreateExamModal = ({
   open,
@@ -12,7 +12,6 @@ const CreateExamModal = ({
   versionCount,
   setVersionCount
 }) => {
-  const [customVersionsEnabled, setCustomVersionsEnabled] = useState(false);
 
   return (
     <Modal
@@ -64,32 +63,30 @@ const CreateExamModal = ({
             onChange={(e) => setNewExamData({ ...newExamData, year: e.target.value })}
           />
         </Form.Item>
-        <Form.Item>
-          <Checkbox
-            checked={customVersionsEnabled}
-            onChange={(e) => setCustomVersionsEnabled(e.target.checked)}
-          >
-            Enable Custom Versions
-          </Checkbox>
+        <Form.Item label="Versions (comma-separated, optional)">
+          <Input
+            placeholder="e.g., 00000001, 00000002, 00000003"
+            value={newExamData.versions || ''}
+            onChange={(e) =>
+              setNewExamData(prev => ({
+                ...prev,
+                versions: e.target.value
+              }))
+            }
+          />
         </Form.Item>
-        {customVersionsEnabled && (
-          <Form.Item label="Number of Versions">
-            <Radio.Group
-              value={versionCount}
-              onChange={(e) => {
-                const count = e.target.value;
-                setVersionCount(count);
-                const generated = Array.from({ length: count }, (_, i) =>
-                  String(i + 1).padStart(8, '0')
-                );
-                setNewExamData(prev => ({ ...prev, versions: generated.join(', ') }));
-              }}
-            >
-              <Radio value={4}>4 Versions (00000001 - 00000004)</Radio>
-              <Radio value={5}>5 Versions (00000001 - 00000005)</Radio>
-            </Radio.Group>
-          </Form.Item>
-        )}
+        <Form.Item label="Teleform Options (comma-separated, optional)">
+          <Input
+            placeholder="e.g., A, B, C, D, E"
+            value={newExamData.teleformOptions || ''}
+            onChange={(e) =>
+              setNewExamData(prev => ({
+                ...prev,
+                teleformOptions: e.target.value
+              }))
+            }
+          />
+        </Form.Item>
       </Form>
     </Modal>
   );

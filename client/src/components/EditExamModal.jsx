@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Divider, Radio, Checkbox } from 'antd';
+import { Modal, Form, Input, Divider } from 'antd';
 
 const EditExamModal = ({
   open,
@@ -9,7 +9,6 @@ const EditExamModal = ({
   setEditDetailsData
 }) => {
   const [versionCount, setVersionCount] = useState(4);
-  const [customVersionsEnabled, setCustomVersionsEnabled] = useState(false);
 
   useEffect(() => {
     console.log("EditExamModal rendered, open =", open);
@@ -86,32 +85,18 @@ const EditExamModal = ({
             }
           />
         </Form.Item>
-        <Form.Item>
-          <Checkbox
-            checked={customVersionsEnabled}
-            onChange={(e) => setCustomVersionsEnabled(e.target.checked)}
-          >
-            Enable Custom Versions
-          </Checkbox>
+        <Form.Item label="Versions (comma-separated, optional)">
+          <Input
+            placeholder="e.g., 00000001, 00000002, 00000003"
+            value={editDetailsData.versions || ''}
+            onChange={(e) =>
+              setEditDetailsData(prev => ({
+                ...prev,
+                versions: e.target.value
+              }))
+            }
+          />
         </Form.Item>
-        {customVersionsEnabled && (
-          <Form.Item label="Number of Versions">
-            <Radio.Group
-              value={versionCount}
-              onChange={(e) => {
-                const count = e.target.value;
-                setVersionCount(count);
-                const generated = Array.from({ length: count }, (_, i) =>
-                  String(i + 1).padStart(8, '0')
-                );
-                setEditDetailsData(prev => ({ ...prev, versions: generated.join(', ') }));
-              }}
-            >
-              <Radio value={4}>4 Versions (00000001 - 00000004)</Radio>
-              <Radio value={5}>5 Versions (00000001 - 00000005)</Radio>
-            </Radio.Group>
-          </Form.Item>
-        )}
       </Form>
     </Modal>
   );
