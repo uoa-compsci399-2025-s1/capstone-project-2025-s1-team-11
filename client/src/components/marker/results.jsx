@@ -81,8 +81,8 @@ export const results = ({setExportFormat,exportFormat,resultsData,handleExportRe
                     const lower = idx * 20;
                     const upper = lower + 20;
                     const count = resultsData.filter(r => {
-                      const percent = (r.totalMarks / r.maxMarks) * 100;
-                      return percent >= lower && percent < upper;
+                      const scorePercent = (r.totalMarks / r.maxMarks) * 100;
+                      return scorePercent >= lower && scorePercent < upper;
                     }).length;
 
                     return (
@@ -91,7 +91,7 @@ export const results = ({setExportFormat,exportFormat,resultsData,handleExportRe
                         <Progress
                           percent={count / resultsData.length * 100}
                           showInfo={true}
-                          format={percent => `${count} students`}
+                          format={() => `${count} students`}
                         />
                       </div>
                     );

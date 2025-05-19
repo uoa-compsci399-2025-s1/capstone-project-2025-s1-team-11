@@ -8,9 +8,7 @@ const CreateExamModal = ({
   onOk,
   onCancel,
   newExamData,
-  setNewExamData,
-  versionCount,
-  setVersionCount
+  setNewExamData
 }) => {
 
   return (

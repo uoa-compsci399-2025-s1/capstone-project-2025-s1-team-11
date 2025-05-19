@@ -15,7 +15,7 @@ export const teleformReader = ({
   let parsedData = [];
   try {
     parsedData = readTeleform(teleformData);
-  } catch (err) {
+  } catch {
     parsedData = [];
   }
 

@@ -3,7 +3,6 @@ import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spi
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined } from '@ant-design/icons';
 import { updateExamField } from "../store/exam/examSlice";
-import { setTeleformOptions } from "../store/exam/examSlice";
 import { setExamVersions } from "../store/exam/examSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
@@ -144,7 +143,7 @@ const StaticContextBar = ({
         .filter(Boolean);
     }
 
-    dispatch(createNewExam(exam));
+    createExam(exam);
     setShowCreateModal(false);
     setTimeout(() => message.success("New exam created successfully."), 0);
   };

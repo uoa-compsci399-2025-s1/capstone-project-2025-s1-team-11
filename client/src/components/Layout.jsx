@@ -31,29 +31,11 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
     color: isDarkMode ? '#ffffff' : '#000000'
   };
 
-  const contentStyle = { 
-    padding: isPlainPage ? 0 : '32px 48px', 
-    flex: 1 
-  };
-
-  const contentContainerStyle = {
-    background: isDarkMode ? '#1f1f1f' : '#ffffff',
-    borderRadius: borderRadiusLG,
-    minHeight: '800px',
-    padding: '32px',
-    color: isDarkMode ? '#ffffff' : '#000000'
-  };
-
   const footerStyle = {
     textAlign: 'center', 
     padding: '16px 24px',
     backgroundColor: isDarkMode ? '#1f1f1f' : '#ffffff',
     color: isDarkMode ? '#ffffff' : '#000000'
-  };
-
-  const breadcrumbStyle = {
-    marginBottom: '24px',
-    color: isDarkMode ? '#ffffff' : 'inherit'
   };
 
   return (

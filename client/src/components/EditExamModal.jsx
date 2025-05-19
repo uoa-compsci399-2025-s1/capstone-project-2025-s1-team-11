@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Modal, Form, Input, Divider } from 'antd';
 
 const EditExamModal = ({
@@ -8,26 +8,12 @@ const EditExamModal = ({
   editDetailsData,
   setEditDetailsData
 }) => {
-  const [versionCount, setVersionCount] = useState(4);
-
   useEffect(() => {
     //console.log("EditExamModal rendered, open =", open);
     if (open) {
       //console.log("did it even workkk???");
     }
   }, [open]);
-
-  useEffect(() => {
-    if (Array.isArray(editDetailsData.versions)) {
-      setVersionCount(editDetailsData.versions.length);
-    } else if (typeof editDetailsData.versions === 'string') {
-      // Try to parse string to array by splitting on comma
-      const arr = editDetailsData.versions.split(',').map(v => v.trim()).filter(v => v.length > 0);
-      if (arr.length > 0) {
-        setVersionCount(arr.length);
-      }
-    }
-  }, [editDetailsData.versions]);
 
   return (
     <Modal

@@ -37,7 +37,6 @@ const ExamDisplay = () => {
     // Debugging purpose only
   }, [exam]);
   const [examItems, setExamItems] = useState([]);
-  const [activeItemId, setActiveItemId] = useState(null);
   const dispatch = useDispatch();
   // Move useSensor hooks to top level of the component to ensure consistent hook order
   // Pagination page size state
@@ -75,9 +74,7 @@ const ExamDisplay = () => {
       if (!examBody) return;
 
       const currentItem = examBody[examBodyIndex];
-      const isSection = currentItem?.type === 'section';
-
-      if (isSection) {
+      if (currentItem?.type === 'section') {
         dispatch(moveSection({ sourceIndex: examBodyIndex, destIndex: newIndex }));
       } else {
         dispatch(moveQuestion({
@@ -219,7 +216,7 @@ const ExamDisplay = () => {
   };
 
   const executeDeleteItem = () => {
-    const { examBodyIndex, questionsIndex, isSection } = deleteModalState;
+    const { examBodyIndex, questionsIndex } = deleteModalState;
     const entry = exam?.examBody?.[examBodyIndex];
 
     if (questionsIndex !== null && questionsIndex !== undefined) {
@@ -230,7 +227,7 @@ const ExamDisplay = () => {
       dispatch(removeSection(examBodyIndex));
     }
 
-    setDeleteModalState({ visible: false, examBodyIndex: null, questionsIndex: null, isSection: false });
+    setDeleteModalState({ visible: false, examBodyIndex: null, questionsIndex: null });
   };
   
   if (!exam || !Array.isArray(exam.examBody)) {
@@ -256,9 +253,7 @@ const ExamDisplay = () => {
         collisionDetection={closestCenter}
         dropAnimation={{ duration: 250, easing: 'ease' }}
         modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-        onDragStart={({ active }) => setActiveItemId(active.id)}
         onDragEnd={({ active, over }) => {
-          setActiveItemId(null);
           if (!over || active.id === over.id) return;
   
           const updated = arrayMove(
