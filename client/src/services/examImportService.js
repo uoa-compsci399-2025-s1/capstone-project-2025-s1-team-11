@@ -2,7 +2,7 @@
 
 import { parseDocx } from '../dto/docx/docxParser.js';
 import { MoodleXmlDTO } from '../dto/moodleXML/moodleXmlDTO.js'
-import { parseLatex } from '../dto/latex/latexParser.js';
+import { parseLatex, isLikelyLatex } from '../dto/latex/latexParser.js';
 //import { normaliseDocxDTO, normaliseMoodleDTO } from './normalisers.js'; // Helper functions for normalization
 //import { convertMoodleXmlToJson } from '../utilities/convertMoodleXmlToJson.js';
 import { convertMoodleXmlDTOToJsonWithSections } from '../utilities/convertMoodleXmlToJsonWithSections.js';
@@ -55,12 +55,28 @@ export class ExamImportService {
   }
 
   async processLatexExam(file) {
-    // Read the file content first
-    const latexContent = await this.readFileContent(file);
-    
-    // Parse LaTeX content and return DTO
-    const latexDTO = parseLatex(latexContent);
-    return latexDTO;
+    try {
+      // Read the file content first
+      const latexContent = await this.readFileContent(file);
+      
+      // Validate that this looks like a LaTeX file
+      if (!isLikelyLatex(latexContent)) {
+        throw new Error("The provided file does not appear to be a valid LaTeX document");
+      }
+      
+      // Parse LaTeX content and return DTO
+      const latexDTO = parseLatex(latexContent);
+      
+      // Validate the returned DTO has the expected structure
+      if (!latexDTO || !latexDTO.examBody || !Array.isArray(latexDTO.examBody)) {
+        throw new Error("Failed to extract exam structure from LaTeX document");
+      }
+      
+      return latexDTO;
+    } catch (error) {
+      console.error("Error processing LaTeX exam:", error);
+      throw new Error(`LaTeX processing error: ${error.message}`);
+    }
   }
 
   readFileContent(file) {

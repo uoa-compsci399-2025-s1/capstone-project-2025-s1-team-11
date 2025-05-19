@@ -17,7 +17,7 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
 
   const layoutStyle = {
     minHeight: '100vh', 
-    minWidth: '100vw', 
+    minWidth: '100vw',
     flexDirection: 'column',
     backgroundColor: isDarkMode ? '#121212' : '#f0f2f5',
   };
