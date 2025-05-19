@@ -3,7 +3,7 @@
 import { exportExamToText } from './docxExport/modules/textExport';
 import { exportExamToDocxWithDocxtemplater } from './docxExport/modules/docxtemplaterExport';
 import { generateFilename } from './docxExport/modules/docxtemplaterHelper';
-import { mergeDocxFiles } from '../utilities/docxMerger';
+import { mergeDocxFiles } from './docxExport/modules/docxMerger.js';
 
 
 /**

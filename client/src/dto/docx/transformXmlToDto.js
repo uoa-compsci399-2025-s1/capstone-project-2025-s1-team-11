@@ -2,9 +2,9 @@
 
 import { buildContentFormatted, detectMathElements } from './utils/buildContentFormatted.js';
 import { createExam } from '../../store/exam/examUtils.js';
-import { convertOmmlToMathML } from './utils/ommlToMathML.js';
+// import { convertOmmlToMathML } from './utils/ommlToMathML.js';
 import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
-import { extractPlainText } from './utils/extractPlainText.js';
+// import { extractPlainText } from './utils/extractPlainText.js';
 
 export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) => {
   const body = xmlJson['w:document']?.['w:body'];

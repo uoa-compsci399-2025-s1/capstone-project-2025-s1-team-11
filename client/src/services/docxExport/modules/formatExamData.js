@@ -1,7 +1,7 @@
 ﻿// src/services/docxExport/modules/formatExamData.js
 
 import { parseHtmlContent } from './contentProcessors/htmlParser';
-import { formatCoverPageForTemplate, parseAppendixForExport } from './contentProcessors/coverPageParser.js';
+// import { formatCoverPageForTemplate, parseAppendixForExport } from './contentProcessors/coverPageParser.js';
 
 /**
  * Formats exam data from Redux store format to Docxtemplater template format
@@ -50,91 +50,91 @@ export function formatExamDataForTemplate(examData, version = 1) {
         instructions: examData.metadata?.instructions || '',
     };
 
-    // Parse cover page
-    let coverPageData = {};
-    if (examData.coverPage?.contentFormatted) {
-        coverPageData = formatCoverPageForTemplate({
-            courseSubject: basicInfo.courseCode.split(' ')[0] || '',
-            courseNumber: basicInfo.courseCode.split(' ')[1] || '',
-            courseCode: basicInfo.courseCode,
-            subjectName: basicInfo.courseName,
-            examTitle: basicInfo.examTitle,
-            timeAllowed: examData.metadata?.timeAllowed || '',
-            semester: examData.semester || '',
-            year: examData.year || '',
-            campus: examData.metadata?.campus || '',
-            notes: examData.metadata?.notes || '',
-            contentFormatted: examData.coverPage.contentFormatted
-        });
-    }
+    // // Parse cover page
+    // let coverPageData = {};
+    // if (examData.coverPage?.contentFormatted) {
+    //     coverPageData = formatCoverPageForTemplate({
+    //         courseSubject: basicInfo.courseCode.split(' ')[0] || '',
+    //         courseNumber: basicInfo.courseCode.split(' ')[1] || '',
+    //         courseCode: basicInfo.courseCode,
+    //         subjectName: basicInfo.courseName,
+    //         examTitle: basicInfo.examTitle,
+    //         timeAllowed: examData.metadata?.timeAllowed || '',
+    //         semester: examData.semester || '',
+    //         year: examData.year || '',
+    //         campus: examData.metadata?.campus || '',
+    //         notes: examData.metadata?.notes || '',
+    //         contentFormatted: examData.coverPage.contentFormatted
+    //     });
+    // }
 
-    // Transform cover page elements to match template expectations
-    const transformedCoverContent = (coverPageData.additionalContent || []).map(element => {
-        const transformed = {};
-
-        // Set type flags based on element type
-        switch (element.type) {
-            case 'text':
-                transformed.type_text = true;
-                transformed.content = element.content;
-                break;
-            case 'table':
-                transformed.type_table = true;
-                transformed.html = element.html;
-                break;
-            case 'image':
-                transformed.type_image = true;
-                transformed.src = element.src;
-                transformed.alt = element.alt;
-                break;
-            case 'list':
-                transformed.type_list = true;
-                transformed.items = element.items;
-                break;
-            default:
-                transformed.type_text = true;
-                transformed.content = element.content || '';
-        }
-
-        return transformed;
-    });
-
-    // Parse appendix
-    let appendixData = {};
-    if (examData.appendix?.contentFormatted) {
-        const parsed = parseAppendixForExport(examData.appendix.contentFormatted);
-
-        // Transform appendix elements to match template expectations
-        const transformedAppendixElements = (parsed.elements || []).map(element => {
-            const transformed = {};
-
-            switch (element.type) {
-                case 'text':
-                    transformed.type_text = true;
-                    transformed.content = element.content;
-                    break;
-                case 'table':
-                    transformed.type_table = true;
-                    transformed.html = element.html;
-                    break;
-                case 'image':
-                    transformed.type_image = true;
-                    transformed.src = element.src;
-                    transformed.alt = element.alt;
-                    break;
-                default:
-                    transformed.type_text = true;
-                    transformed.content = element.content || '';
-            }
-
-            return transformed;
-        });
-
-        appendixData = {
-            hasAppendix: transformedAppendixElements.length > 0,
-            appendixElements: transformedAppendixElements
-        };
-    }
+    // // Transform cover page elements to match template expectations
+    // const transformedCoverContent = (coverPageData.additionalContent || []).map(element => {
+    //     const transformed = {};
+    //
+    //     // Set type flags based on element type
+    //     switch (element.type) {
+    //         case 'text':
+    //             transformed.type_text = true;
+    //             transformed.content = element.content;
+    //             break;
+    //         case 'table':
+    //             transformed.type_table = true;
+    //             transformed.html = element.html;
+    //             break;
+    //         case 'image':
+    //             transformed.type_image = true;
+    //             transformed.src = element.src;
+    //             transformed.alt = element.alt;
+    //             break;
+    //         case 'list':
+    //             transformed.type_list = true;
+    //             transformed.items = element.items;
+    //             break;
+    //         default:
+    //             transformed.type_text = true;
+    //             transformed.content = element.content || '';
+    //     }
+    //
+    //     return transformed;
+    // });
+    //
+    // // Parse appendix
+    // let appendixData = {};
+    // if (examData.appendix?.contentFormatted) {
+    //     const parsed = parseAppendixForExport(examData.appendix.contentFormatted);
+    //
+    //     // Transform appendix elements to match template expectations
+    //     const transformedAppendixElements = (parsed.elements || []).map(element => {
+    //         const transformed = {};
+    //
+    //         switch (element.type) {
+    //             case 'text':
+    //                 transformed.type_text = true;
+    //                 transformed.content = element.content;
+    //                 break;
+    //             case 'table':
+    //                 transformed.type_table = true;
+    //                 transformed.html = element.html;
+    //                 break;
+    //             case 'image':
+    //                 transformed.type_image = true;
+    //                 transformed.src = element.src;
+    //                 transformed.alt = element.alt;
+    //                 break;
+    //             default:
+    //                 transformed.type_text = true;
+    //                 transformed.content = element.content || '';
+    //         }
+    //
+    //         return transformed;
+    //     });
+    //
+    //     appendixData = {
+    //         hasAppendix: transformedAppendixElements.length > 0,
+    //         appendixElements: transformedAppendixElements
+    //     };
+    // }
 
     // Process examBody in original order
     const formattedExamBody = [];
@@ -181,15 +181,15 @@ export function formatExamDataForTemplate(examData, version = 1) {
     return {
         ...defaultTemplateData,
         ...basicInfo,
-        // Cover page data
-        semester: coverPageData.semester || '',
-        year: coverPageData.year || '',
-        campus: coverPageData.campus || '',
-        notes: examData.metadata?.notes || '',
-        hasAdditionalCoverContent: transformedCoverContent.length > 0,
-        additionalCoverContent: transformedCoverContent,
-        // Appendix data
-        ...appendixData,
+        // // Cover page data
+        // semester: coverPageData.semester || '',
+        // year: coverPageData.year || '',
+        // campus: coverPageData.campus || '',
+        // notes: examData.metadata?.notes || '',
+        // hasAdditionalCoverContent: transformedCoverContent.length > 0,
+        // additionalCoverContent: transformedCoverContent,
+        // // Appendix data
+        // ...appendixData,
         // Exam body
         examBody: formattedExamBody,
         hasExamBody: formattedExamBody.length > 0,
