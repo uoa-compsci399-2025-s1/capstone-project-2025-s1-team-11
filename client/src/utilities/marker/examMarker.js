@@ -227,6 +227,21 @@ function formatBitmask(bitmask) {
 }
 
 /**
+ * Compares a student answer to the correct answer using bitmask logic
+ * @param {number} correctAnswer - e.g., 6
+ * @param {number} studentAnswer - e.g., 4
+ * @param {number} maxMarks - typically 1
+ * @returns {Object} { isCorrect, marks }
+ */
+export function markQuestion(correctAnswer, studentAnswer, maxMarks = 0) {
+  const isCorrect = (studentAnswer & correctAnswer) === studentAnswer && studentAnswer !== 0;
+  return {
+    isCorrect,
+    marks: isCorrect ? maxMarks : 0
+  };
+}
+
+/**
  * Updates the correct answer for a specific question and remark exams
  * @param {Number} questionNumber - The question number to update
  * @param {String} newCorrectAnswer - The new correct answer

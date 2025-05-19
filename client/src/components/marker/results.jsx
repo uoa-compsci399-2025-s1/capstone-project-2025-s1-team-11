@@ -3,7 +3,7 @@ import React, {useState, useEffect} from "react";
 import QuestionStats from "./QuestionStats.jsx";
 import StudentReport from "./StudentReport.jsx";
 import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js";
-import {sampleTestData} from "../../utilities/testing/sampleTestData.js";
+// import {sampleTestData} from "../../utilities/testing/sampleTestData.js";
 import {generateResultOutput} from "../../utilities/marker/outputFormatter.js";
 
 export const Results = ({setExportFormat, exportFormat, resultsData, handleExportResults, examData, teleformData, markingKey, setResultsData, setExamData}) => {
@@ -14,7 +14,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [questionStats, setQuestionStats] = useState({});
   const [hasValidData, setHasValidData] = useState(false);
-  const [isLoadingTestData, setIsLoadingTestData] = useState(false);
+  // const [isLoadingTestData, setIsLoadingTestData] = useState(false);
 
   // When results data changes, calculate the statistics
   useEffect(() => {
@@ -116,7 +116,8 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
     );
   };
 
-  // Handler for loading test data from JSON
+  // Handler for loading test data from JSON - commented out for production
+  /*
   const handleLoadTestData = async () => {
     try {
       setIsLoadingTestData(true);
@@ -192,24 +193,14 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
       setIsLoadingTestData(false);
     }
   };
+  */
   
   // Validate resultsData
   if (!hasValidData) {
     return (
       <>
         <Empty description="No results available. Mark exams to see results here."/>
-        <div style={{ marginTop: 20, textAlign: 'center' }}>
-          <Button 
-            type="primary" 
-            onClick={handleLoadTestData}
-            loading={isLoadingTestData}
-          >
-            Load Test Data with Statistics
-          </Button>
-          <p style={{ marginTop: 8, fontSize: '0.9em', color: '#888' }}>
-            This will load pre-generated test data with realistic student responses and statistics.
-          </p>
-        </div>
+        {/* Test data loading button removed for production */}
       </>
     );
   }
@@ -236,9 +227,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
         <Button type="primary" onClick={handleExportResults} style={{ marginRight: 16 }}>
           Export Results
         </Button>
-        <Button onClick={handleLoadTestData} loading={isLoadingTestData}>
-          Load Test Data
-        </Button>
+        {/* Test data loading button removed for production */}
       </div>
 
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
@@ -275,9 +264,35 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
 
           <Divider />
 
-          <Typography.Title level={4}>Question Performance</Typography.Title>
+          <Typography.Title level={4}>Score Distribution</Typography.Title>
+          {Array.from({ length: 5 }).map((_, idx) => {
+            const lower = idx * 20;
+            const upper = lower + 20;
+            const count = resultsData.filter(student => {
+              const percentScore = (student.totalMarks / student.maxMarks) * 100;
+              return percentScore >= lower && percentScore < upper;
+            }).length;
+
+            return (
+              <div key={idx} style={{ marginBottom: 8 }}>
+                <Typography.Text>{`${lower}% - ${upper}%:`}</Typography.Text>
+                <Progress
+                  percent={count / resultsData.length * 100}
+                  showInfo={true}
+                  format={() => `${count} students`}
+                />
+              </div>
+            );
+          })}
+        </Tabs.TabPane>
+
+        <Tabs.TabPane tab="Question Analysis" key="questionStats">
           <QuestionStats 
-            questionStats={questionStats} 
+            results={{ 
+              all: resultsData,
+              questionStats
+            }}
+            examData={examData}
             onUpdateCorrectAnswer={handleUpdateCorrectAnswer}
           />
         </Tabs.TabPane>
@@ -304,6 +319,30 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
               />
             )}
           </Space>
+        </Tabs.TabPane>
+
+        <Tabs.TabPane tab="Student Results" key="studentResults">
+          <div className="results-preview" style={{ backgroundColor: "#f5f5f5", padding: 16, maxHeight: 600, overflow: "auto" }}>
+            <h4>Preview: {resultsData.length} students</h4>
+            {resultsData.slice(0, 100).map((result, index) => (
+              <div key={index} className="student-result" style={{ marginBottom: 12, padding: 8, border: "1px solid #ddd", borderRadius: 4 }}>
+                <h5>{result.lastName || "Unknown"}, {result.firstName || "Student"} ({result.studentId || "N/A"})</h5>
+                <p>Version: {result.versionNumber || result.versionId || "N/A"}</p>
+                <p>Score: {result.totalMarks !== undefined ? result.totalMarks : "?"}/{result.maxMarks !== undefined ? result.maxMarks : "?"}</p>
+                <details>
+                  <summary>View Details</summary>
+                  <pre>{generateResultOutput(result, examData)}</pre>
+                </details>
+              </div>
+            ))}
+            {resultsData.length > 100 && (
+              <div style={{ textAlign: 'center', padding: 16 }}>
+                <Typography.Text type="secondary">
+                  Showing first 100 of {resultsData.length} students for performance reasons
+                </Typography.Text>
+              </div>
+            )}
+          </div>
         </Tabs.TabPane>
       </Tabs>
     </>
