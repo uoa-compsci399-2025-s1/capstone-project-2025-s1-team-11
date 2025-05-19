@@ -3,16 +3,14 @@ import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spi
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined } from '@ant-design/icons';
 import { updateExamField } from "../store/exam/examSlice";
-import { setTeleformOptions } from "../store/exam/examSlice";
 import { setExamVersions } from "../store/exam/examSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { selectExamData } from '../store/exam/selectors.js';
 import CreateExamModal from './CreateExamModal';
 import EditExamModal from './EditExamModal';
+//import { exportExamToPdf } from "../services/exportPdf";
 import { ExamExportService } from "../services/examExportService";
-// import { exportExamToPdf } from "../services/exportPdf";
-import { selectQuestionCount, selectTotalMarks } from '../store/exam/selectors';
 import '../index.css';
 
 const { Text } = Typography;
@@ -35,12 +33,9 @@ const StaticContextBar = ({
     courseName: '',
     semester: '',
     year: '',
-    versions: '',
-    teleformOptions: '',
-    metadataKey: '',
-    metadataValue: '',
     answerOptions: 4,
   });
+  const [customVersionMode, setCustomVersionMode] = useState('generate');
   const [lastSavedTime, setLastSavedTime] = useState(null);
   // For auto-save debounce and state
   const [saveState, setSaveState] = useState('saved'); // 'saved', 'saving', 'unsaved'
@@ -62,8 +57,6 @@ const StaticContextBar = ({
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
 
   // Exam progress
-  const questionCount = useSelector(selectQuestionCount);
-  const totalMarks = useSelector(selectTotalMarks);
 
   const { message } = AntApp.useApp();
 
@@ -114,10 +107,7 @@ const StaticContextBar = ({
       courseName: '',
       semester: '',
       year: '',
-      versions: '',
-      teleformOptions: '',
-      metadataKey: '',
-      metadataValue: ''
+      answerOptions: 4
     });
     setVersionCount(4);
   };
@@ -130,8 +120,6 @@ const StaticContextBar = ({
       courseName: newExamData.courseName || "",
       semester: newExamData.semester || "",
       year: newExamData.year || "",
-      versions: versionCount === 4 ? ['A', 'B', 'C', 'D'] : ['A', 'B', 'C', 'D', 'E'],
-      teleformOptions: newExamData.teleformOptions || "",
       examBody: [],
       appendix: {},
       metadata:
@@ -139,12 +127,25 @@ const StaticContextBar = ({
           ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
           : []
     };
+
+    // Parse versions if defined and non-empty
+    if (newExamData.versions?.trim()) {
+      exam.versions = newExamData.versions
+        .split(',')
+        .map(v => v.trim())
+        .filter(Boolean);
+    }
+
+    // Parse teleformOptions if defined and non-empty
+    if (newExamData.teleformOptions?.trim()) {
+      const cleaned = newExamData.teleformOptions.replace(/["']/g, '');
+      exam.teleformOptions = cleaned
+        .split(',')
+        .map(o => o.trim())
+        .filter(Boolean);
+    }
+
     createExam(exam);
-    // Set teleform options according to answerOptions
-    const options = Array.from({ length: parseInt(newExamData.answerOptions) || 4 }, (_, i) =>
-      String.fromCharCode(65 + i)
-    );
-    dispatch(setTeleformOptions(options));
     setShowCreateModal(false);
     setTimeout(() => message.success("New exam created successfully."), 0);
   };
@@ -163,11 +164,15 @@ const StaticContextBar = ({
     if (["demo", "exemplar"].includes(type)) {
       if (!window.confirm("Are you sure you want to export this? It may be incomplete.")) return;
     }
-
-    message.info(`Preparing ${type} export...`);
-    console.log(`Export of type '${type}' requested - will be implemented with DOCX export`);
-
-    // TODO: Implement specialized export types using the DOCX export
+    // For now, call exportExamToPdf. In future, branch by type.
+    if (exam) {
+      // Stub branching for future formats
+      if (type === 'demo' || type === 'randomised' || type === 'exemplar' || type === 'marking') {
+        exportExamToPdf(exam, type);
+      } else {
+        console.log('Unknown export type:', type);
+      }
+    }
   };
 
   // Hover intent delay for bar expansion
@@ -497,7 +502,6 @@ const StaticContextBar = ({
           <div style={{ padding: '24px 0px' }}>
             {exam ? (
               <>
-                <Divider orientation="left" style={{ marginBottom: 16 }}>Exam Details</Divider>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "32px", alignItems: "flex-end" }}>
                   <div>
                     <div style={{ marginBottom: 4 }}><strong>Course Code:</strong></div>
@@ -515,14 +519,14 @@ const StaticContextBar = ({
                     <div style={{ marginBottom: 4 }}><strong>Year:</strong></div>
                     <div>{exam?.year || "N/A"}</div>
                   </div>
-                  <div>
-                    <div style={{ marginBottom: 4 }}><strong>Versions:</strong></div>
-                    <div className="version-tags">
-                      {(exam?.versions || []).length > 0
-                        ? exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)
-                        : "N/A"}
+                  {exam?.versions && exam.versions.length > 0 && (
+                    <div>
+                      <div style={{ marginBottom: 4 }}><strong>Versions:</strong></div>
+                      <div className="version-tags">
+                        {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <div>
                     <Button
                       type="primary"
@@ -534,15 +538,6 @@ const StaticContextBar = ({
                     >
                       Edit Exam Details
                     </Button>
-                  </div>
-                </div>
-                <Divider orientation="left" style={{ marginTop: 24, marginBottom: 16 }}>Exam Progress</Divider>
-                <div style={{ display: "flex", gap: "32px", marginBottom: 12 }}>
-                  <div>
-                    <strong>Total Questions:</strong> {typeof questionCount === "number" ? questionCount : "N/A"}
-                  </div>
-                  <div>
-                    <strong>Total Marks:</strong> {typeof totalMarks === "number" ? totalMarks : "N/A"}
                   </div>
                 </div>
               </>
@@ -566,6 +561,8 @@ const StaticContextBar = ({
           setNewExamData={setNewExamData}
           versionCount={versionCount}
           setVersionCount={setVersionCount}
+          customVersionMode={customVersionMode}
+          setCustomVersionMode={setCustomVersionMode}
         />
         {/* Edit Exam Details Modal */}
         <EditExamModal

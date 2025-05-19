@@ -96,7 +96,7 @@ const Builder = () => {
                                         currentItemId={currentItemId}
                                         setCurrentItemId={setCurrentItemId}
                                     />
-                                    <ExamFileManager />
+                                    {exam && <ExamFileManager />}
                                 </div>
                             </Col>
                             {!sidebarCollapsed && (

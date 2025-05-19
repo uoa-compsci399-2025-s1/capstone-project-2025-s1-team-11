@@ -1,22 +1,24 @@
 //used in the static context menu
 
 import React from 'react';
-import { Modal, Input, Form, Divider, Radio } from 'antd';
+import { Modal, Input, Form, Divider } from 'antd';
 
 const CreateExamModal = ({
   open,
   onOk,
   onCancel,
   newExamData,
-  setNewExamData,
-  versionCount,
-  setVersionCount
+  setNewExamData
 }) => {
+
   return (
     <Modal
       title="Create New Exam"
       open={open}
-      onOk={onOk}
+      onOk={() => {
+        console.log("Creating exam with data:", newExamData);
+        onOk();
+      }}
       onCancel={onCancel}
       okText="Create"
     >
@@ -59,14 +61,29 @@ const CreateExamModal = ({
             onChange={(e) => setNewExamData({ ...newExamData, year: e.target.value })}
           />
         </Form.Item>
-        <Form.Item label="Number of Versions">
-          <Radio.Group
-            value={versionCount}
-            onChange={(e) => setVersionCount(e.target.value)}
-          >
-            <Radio value={4}>4 Versions (A, B, C, D)</Radio>
-            <Radio value={5}>5 Versions (A, B, C, D, E)</Radio>
-          </Radio.Group>
+        <Form.Item label="Versions (comma-separated, optional)">
+          <Input
+            placeholder="e.g., 00000001, 00000002, 00000003"
+            value={newExamData.versions || ''}
+            onChange={(e) =>
+              setNewExamData(prev => ({
+                ...prev,
+                versions: e.target.value
+              }))
+            }
+          />
+        </Form.Item>
+        <Form.Item label="Teleform Options (comma-separated, optional)">
+          <Input
+            placeholder="e.g., A, B, C, D, E"
+            value={newExamData.teleformOptions || ''}
+            onChange={(e) =>
+              setNewExamData(prev => ({
+                ...prev,
+                teleformOptions: e.target.value
+              }))
+            }
+          />
         </Form.Item>
       </Form>
     </Modal>

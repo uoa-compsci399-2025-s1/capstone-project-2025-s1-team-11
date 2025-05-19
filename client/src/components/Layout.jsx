@@ -31,19 +31,6 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
     color: isDarkMode ? '#ffffff' : '#000000'
   };
 
-  const contentStyle = { 
-    padding: isPlainPage ? 0 : '32px 48px', 
-    flex: 1 
-  };
-
-  const contentContainerStyle = {
-    background: isDarkMode ? '#1f1f1f' : '#ffffff',
-    borderRadius: borderRadiusLG,
-    minHeight: '800px',
-    padding: '32px',
-    color: isDarkMode ? '#ffffff' : '#000000'
-  };
-
   const footerStyle = {
     textAlign: 'center', 
     padding: '16px 24px',
@@ -51,11 +38,24 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
     color: isDarkMode ? '#ffffff' : '#000000'
   };
 
-  const breadcrumbStyle = {
-    marginBottom: '24px',
-    color: isDarkMode ? '#ffffff' : 'inherit'
+  const contentStyle = {
+    padding: '24px 48px',
+    flex: 1,
+    backgroundColor: isDarkMode ? '#121212' : '#f0f2f5'
   };
 
+  const breadcrumbStyle = {
+    margin: '16px 0',
+    color: isDarkMode ? '#ffffff' : '#000000'
+  };
+
+  const contentContainerStyle = {
+    padding: 24,
+    minHeight: 380,
+    backgroundColor: isDarkMode ? '#1f1f1f' : '#ffffff',
+    borderRadius: borderRadiusLG
+  };
+  
   return (
     <Layout style={layoutStyle}>
       <Header style={headerStyle}>
