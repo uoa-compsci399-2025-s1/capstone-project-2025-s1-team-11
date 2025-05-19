@@ -1,7 +1,7 @@
 export const extractPlainText = (runs, options = {}) => {
   if (!Array.isArray(runs)) return '';
 
-  const { relationships = {}, imageData = {} } = options;
+  const { imageData = {} } = options;
 
   let result = '';
   let lastRunEndedWithSpace = false;
@@ -124,7 +124,7 @@ export const extractPlainText = (runs, options = {}) => {
           // If all else fails, skip this run
           continue;
         }
-      } catch (error) {
+      } catch {
         continue;
       }
     }

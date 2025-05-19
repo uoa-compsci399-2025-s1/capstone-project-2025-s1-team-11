@@ -144,7 +144,7 @@ function preserveWhitespace(obj) {
   }
   
   // Recursively process all object properties
-  for (const [key, value] of Object.entries(obj)) {
+  for (const [, value] of Object.entries(obj)) {        //removed first array element "key"
     if (typeof value === 'object' && value !== null) {
       preserveWhitespace(value);
     }
@@ -293,26 +293,26 @@ export function buildContentTypesXml(contentTypes) {
 /**
  * Generates a new unique media file name by incrementing a number suffix
  */
-function generateUniqueMediaName(originalPath, existingFiles) {
-  const dir = originalPath.substring(0, originalPath.lastIndexOf('/') + 1);
-  const filename = originalPath.substring(originalPath.lastIndexOf('/') + 1);
-  const ext = filename.substring(filename.lastIndexOf('.'));
-  const basename = filename.substring(0, filename.lastIndexOf('.'));
-  
-  // Extract number from basename if it exists (e.g., "image1" -> "image" and "1")
-  const match = basename.match(/^(.*?)(\d*)$/);
-  const prefix = match[1];
-  let counter = match[2] ? parseInt(match[2]) : 0;
-  
-  // Keep incrementing counter until we find a unique name
-  let newPath;
-  do {
-    counter++;
-    newPath = `${dir}${prefix}${counter}${ext}`;
-  } while (existingFiles.has(`word/${newPath}`));
-  
-  return newPath;
-}
+// function generateUniqueMediaName(originalPath, existingFiles) {
+//   const dir = originalPath.substring(0, originalPath.lastIndexOf('/') + 1);
+//   const filename = originalPath.substring(originalPath.lastIndexOf('/') + 1);
+//   const ext = filename.substring(filename.lastIndexOf('.'));
+//   const basename = filename.substring(0, filename.lastIndexOf('.'));
+//
+//   // Extract number from basename if it exists (e.g., "image1" -> "image" and "1")
+//   const match = basename.match(/^(.*?)(\d*)$/);
+//   const prefix = match[1];
+//   let counter = match[2] ? parseInt(match[2]) : 0;
+//
+//   // Keep incrementing counter until we find a unique name
+//   let newPath;
+//   do {
+//     counter++;
+//     newPath = `${dir}${prefix}${counter}${ext}`;
+//   } while (existingFiles.has(`word/${newPath}`));
+//
+//   return newPath;
+// }
 
 /**
  * Processes relationships from both documents and creates mapping for updates
@@ -520,95 +520,95 @@ function updateRelationshipsXml(originalXml, newRelationships) {
 /**
  * Extracts section properties from a document body
  */
-function extractSectionProperties(body) {
-  const sectPr = [];
-  
-  // Find all section properties in the document
-  body.forEach((element, index) => {
-    if ('w:p' in element) {
-      const paragraph = element['w:p'];
-      // Look for section properties in paragraphs
-      paragraph.forEach(pElement => {
-        if ('w:sectPr' in pElement) {
-          sectPr.push({
-            properties: pElement['w:sectPr'],
-            index: index
-          });
-        }
-      });
-    }
-  });
-  
-  return sectPr;
-}
+// function extractSectionProperties(body) {
+//   const sectPr = [];
+//
+//   // Find all section properties in the document
+//   body.forEach((element, index) => {
+//     if ('w:p' in element) {
+//       const paragraph = element['w:p'];
+//       // Look for section properties in paragraphs
+//       paragraph.forEach(pElement => {
+//         if ('w:sectPr' in pElement) {
+//           sectPr.push({
+//             properties: pElement['w:sectPr'],
+//             index: index
+//           });
+//         }
+//       });
+//     }
+//   });
+//
+//   return sectPr;
+// }
 
 /**
  * Updates header references in section properties
  */
-function updateHeaderReferences(sectPr, relIdMap) {
-  if (!Array.isArray(sectPr)) return;
-  
-  sectPr.forEach(element => {
-    if ('w:headerReference' in element) {
-      const headerRef = element['w:headerReference'];
-      if (headerRef[0] && headerRef[0][':@']) {
-        const rId = headerRef[0][':@']['@_r:id'];
-        if (relIdMap.has(rId)) {
-          headerRef[0][':@']['@_r:id'] = relIdMap.get(rId);
-        }
-      }
-    }
-  });
-}
+// function updateHeaderReferences(sectPr, relIdMap) {
+//   if (!Array.isArray(sectPr)) return;
+//
+//   sectPr.forEach(element => {
+//     if ('w:headerReference' in element) {
+//       const headerRef = element['w:headerReference'];
+//       if (headerRef[0] && headerRef[0][':@']) {
+//         const rId = headerRef[0][':@']['@_r:id'];
+//         if (relIdMap.has(rId)) {
+//           headerRef[0][':@']['@_r:id'] = relIdMap.get(rId);
+//         }
+//       }
+//     }
+//   });
+// }
 
 // Helper to find and clone the FIRST w:sectPr in a document body array
-function findAndCloneFirstSectPr(docBodyArray) {
-  for (let i = 0; i < docBodyArray.length; i++) {
-    const blockElement = docBodyArray[i];
-
-    // Case 1: w:sectPr is a direct child of w:body (e.g. last element, but we search from start)
-    if (blockElement && blockElement['w:sectPr'] && Array.isArray(blockElement['w:sectPr'])) {
-      const sectPrCandidate = blockElement;
-      try {
-        return JSON.parse(JSON.stringify(sectPrCandidate));
-      } catch (e) {
-        console.error('Error cloning direct w:sectPr in findAndCloneFirstSectPr:', e);
-        return null;
-      }
-    }
-
-    // Case 2: w:sectPr is within a w:p (paragraph) element
-    if (blockElement && blockElement['w:p'] && Array.isArray(blockElement['w:p'])) {
-      const pChildren = blockElement['w:p'];
-      for (let j = 0; j < pChildren.length; j++) {
-        const pChild = pChildren[j];
-        let sectPrObject = null;
-
-        // Subcase 2a: w:sectPr is directly a child of w:p
-        if (pChild && pChild['w:sectPr'] && Array.isArray(pChild['w:sectPr'])) {
-          sectPrObject = pChild;
-        }
-        // Subcase 2b: w:sectPr is within w:pPr (paragraph properties)
-        else if (pChild && pChild['w:pPr'] && Array.isArray(pChild['w:pPr']) &&
-                 pChild['w:pPr'][0] && typeof pChild['w:pPr'][0] === 'object' &&
-                 pChild['w:pPr'][0]['w:sectPr'] && Array.isArray(pChild['w:pPr'][0]['w:sectPr'])) {
-          sectPrObject = pChild['w:pPr'][0]['w:sectPr'][0];
-        }
-
-        if (sectPrObject) {
-          try {
-            return JSON.parse(JSON.stringify(sectPrObject));
-          } catch (e) {
-            console.error('Error cloning w:sectPr from paragraph:', e);
-            return null;
-          }
-        }
-      }
-    }
-  }
-  console.warn("No w:sectPr found in document");
-  return null;
-}
+// function findAndCloneFirstSectPr(docBodyArray) {
+//   for (let i = 0; i < docBodyArray.length; i++) {
+//     const blockElement = docBodyArray[i];
+//
+//     // Case 1: w:sectPr is a direct child of w:body (e.g. last element, but we search from start)
+//     if (blockElement && blockElement['w:sectPr'] && Array.isArray(blockElement['w:sectPr'])) {
+//       const sectPrCandidate = blockElement;
+//       try {
+//         return JSON.parse(JSON.stringify(sectPrCandidate));
+//       } catch (e) {
+//         console.error('Error cloning direct w:sectPr in findAndCloneFirstSectPr:', e);
+//         return null;
+//       }
+//     }
+//
+//     // Case 2: w:sectPr is within a w:p (paragraph) element
+//     if (blockElement && blockElement['w:p'] && Array.isArray(blockElement['w:p'])) {
+//       const pChildren = blockElement['w:p'];
+//       for (let j = 0; j < pChildren.length; j++) {
+//         const pChild = pChildren[j];
+//         let sectPrObject = null;
+//
+//         // Subcase 2a: w:sectPr is directly a child of w:p
+//         if (pChild && pChild['w:sectPr'] && Array.isArray(pChild['w:sectPr'])) {
+//           sectPrObject = pChild;
+//         }
+//         // Subcase 2b: w:sectPr is within w:pPr (paragraph properties)
+//         else if (pChild && pChild['w:pPr'] && Array.isArray(pChild['w:pPr']) &&
+//                  pChild['w:pPr'][0] && typeof pChild['w:pPr'][0] === 'object' &&
+//                  pChild['w:pPr'][0]['w:sectPr'] && Array.isArray(pChild['w:pPr'][0]['w:sectPr'])) {
+//           sectPrObject = pChild['w:pPr'][0]['w:sectPr'][0];
+//         }
+//
+//         if (sectPrObject) {
+//           try {
+//             return JSON.parse(JSON.stringify(sectPrObject));
+//           } catch (e) {
+//             console.error('Error cloning w:sectPr from paragraph:', e);
+//             return null;
+//           }
+//         }
+//       }
+//     }
+//   }
+//   console.warn("No w:sectPr found in document");
+//   return null;
+// }
 
 function isPageBreakSameAsSectPr(sectPrLoc, pageBreakIndex) {
   if (!sectPrLoc || pageBreakIndex === -1) return false;

@@ -67,13 +67,13 @@ function processNode(node, result) {
         switch (tagName) {
             case 'img':
                 // Process image
-                const imageData = processImage(node);
+                { const imageData = processImage(node);
                 if (imageData) {
                     // Add placeholder in text
                     result.text += `{{image_${result.elements.length}}}`;
                     result.elements.push(imageData);
                 }
-                break;
+                break; }
 
             case 'br':
                 result.text += '\n';
@@ -155,15 +155,15 @@ function processNode(node, result) {
 
             case 'math-inline':
                 // Inline LaTeX math
-                const inlineLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
+                { const inlineLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
                 result.text += `§MATH_INLINE§${inlineLatex}§/MATH_INLINE§`;
-                break;
+                break; }
 
             case 'math-display':
                 // Display LaTeX math
-                const displayLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
+                { const displayLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
                 result.text += `§MATH_DISPLAY§${displayLatex}§/MATH_DISPLAY§`;
-                break;
+                break; }
 
             default:
                 // Process children for any other tags

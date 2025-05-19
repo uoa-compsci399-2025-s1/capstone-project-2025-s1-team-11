@@ -12,7 +12,7 @@
  * @param {Object} options - Options for styling
  * @returns {string} - Simplified text representation
  */
-export function createTextParagraph(text, options = {}) {
+export function createTextParagraph(text) {
     if (!text) return '';
 
     // For MVP we're just returning plain text

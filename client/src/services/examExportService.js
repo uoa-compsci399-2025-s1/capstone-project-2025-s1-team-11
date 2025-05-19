@@ -60,7 +60,7 @@ export class ExamExportService {
      * @param {Object} examData - Exam data for generating filename
      * @param {string} format - File format extension
      */
-    static saveExportedFile(blob, examData, format = 'docx') {
+    static saveExportedFile(blob, examData) {
         try {
             // Generate appropriate filename
             const filename = generateFilename(examData);

@@ -8,8 +8,3 @@ export const store = configureStore({
     examResults: examResultsReducer,
   },
 });
-
-// Make Redux store accessible in browser for debugging
-if (process.env.NODE_ENV === 'development') {
-  window.store = store;
-}

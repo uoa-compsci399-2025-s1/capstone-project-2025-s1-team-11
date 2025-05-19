@@ -13,7 +13,7 @@ function createImageModule() {
     const imageOpts = {
         centered: false,
         fileType: "docx",
-        getImage: function(tagValue, tagName) {
+        getImage: function(tagValue) {
             try {
                 // tagValue is the base64 string
                 // Convert base64 to binary buffer for browser environment
@@ -28,7 +28,7 @@ function createImageModule() {
                 throw error;
             }
         },
-        getSize: function(img, tagValue, tagName) {
+        getSize: function() {
             // Return image dimensions
             // You can customize this based on the tag name
             return [300, 200]; // Default size
@@ -653,14 +653,14 @@ async function postProcessTextFormatting(docxBlob) {
  * @param {boolean} isDisplay - Whether this is display math
  * @returns {string} OMML markup
  */
-function convertLatexToOmml(latex, isDisplay = false) {
+function convertLatexToOmml(latex) {
     // Basic implementation - this would need to be expanded for complex equations
     let omml = '';
 
-    // Handle common LaTeX commands and symbols
-    const latinSymbols = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 
-                         'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 
-                         'pi', 'rho', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega'];
+    // // Handle common LaTeX commands and symbols
+    // const latinSymbols = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta',
+    //                      'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron',
+    //                      'pi', 'rho', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega'];
     
     // Handle fractions
     if (latex.includes('\\frac')) {
@@ -687,7 +687,7 @@ function convertLatexToOmml(latex, isDisplay = false) {
     
     // Handle superscripts
     if (latex.includes('^')) {
-        const supRegex = /([^_\^{}]+|\{[^{}]*\})\^(\{[^{}]*\}|[^_\^{}])/g;
+        const supRegex = /([^_^{}]+|\{[^{}]*\})\^(\{[^{}]*\}|[^_^{}])/g;
         latex = latex.replace(supRegex, (match, base, sup) => {
             // Remove braces if present
             base = base.replace(/^\{|\}$/g, '');
@@ -710,7 +710,7 @@ function convertLatexToOmml(latex, isDisplay = false) {
     
     // Handle subscripts
     if (latex.includes('_')) {
-        const subRegex = /([^_\^{}]+|\{[^{}]*\})_(\{[^{}]*\}|[^_\^{}])/g;
+        const subRegex = /([^_^{}]+|\{[^{}]*\})_(\{[^{}]*\}|[^_^{}])/g;
         latex = latex.replace(subRegex, (match, base, sub) => {
             // Remove braces if present
             base = base.replace(/^\{|\}$/g, '');
