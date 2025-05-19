@@ -14,6 +14,12 @@ import {
     normaliseAnswersPerTeleformOptions
 } from '../examHelpers';
 
+import {
+    createExam,
+    createSection,
+    createQuestion,
+} from '../examUtils';
+
 describe('Exam Helpers', () => {
     describe('removeQuestionHelper', () => {
         test('should remove a question from a section', () => {
@@ -330,5 +336,33 @@ describe('Exam Helpers', () => {
             
             expect(examBody[0].contentText).toBe('Original');
         });
+    });
+
+    test('should create an exam with default values', () => {
+        const exam = createExam();
+        expect(exam).toHaveProperty('type', 'exam');
+        expect(exam).toHaveProperty('examTitle', '');
+        expect(exam).toHaveProperty('examBody', []);
+    });
+
+    test('should create an exam with overridden values', () => {
+        const exam = createExam({
+            examTitle: 'Test Exam',
+            courseCode: 'TEST101'
+        });
+        expect(exam).toHaveProperty('examTitle', 'Test Exam');
+        expect(exam).toHaveProperty('courseCode', 'TEST101');
+    });
+
+    test('should create a section with questions', () => {
+        const section = createSection({
+            sectionTitle: 'Test Section',
+            questions: [
+                createQuestion({ contentText: 'Q1' }),
+                createQuestion({ contentText: 'Q2' })
+            ]
+        });
+        expect(section).toHaveProperty('sectionTitle', 'Test Section');
+        expect(section.questions).toHaveLength(2);
     });
 });
