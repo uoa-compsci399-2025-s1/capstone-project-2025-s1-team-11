@@ -81,8 +81,8 @@ export const results = ({setExportFormat,exportFormat,resultsData,handleExportRe
                     const lower = idx * 20;
                     const upper = lower + 20;
                     const count = resultsData.filter(r => {
-                      const scorePercent = (r.totalMarks / r.maxMarks) * 100;
-                      return scorePercent >= lower && scorePercent < upper;
+                      const percentScore = (r.totalMarks / r.maxMarks) * 100;
+                      return percentScore >= lower && percentScore < upper;
                     }).length;
 
                     return (

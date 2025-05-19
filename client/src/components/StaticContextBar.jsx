@@ -66,8 +66,8 @@ const StaticContextBar = ({
     saving: "gold",
     unsaved: "red",
   };
-  // Handlers
 
+  // Handlers
   const handleOpenExam = async () => {
     const result = await openExam();
     if (result) {

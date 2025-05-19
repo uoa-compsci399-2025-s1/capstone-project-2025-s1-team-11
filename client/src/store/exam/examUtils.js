@@ -24,15 +24,6 @@ export const createExam = (overrides = {}) => ({
   ...overrides,
 });
 
-
-export const createMarkingKey = () => {
-  //Takes an exam object and generates a marking key object
-}
-
-export const shuffleAnswers = () => {
-  //shuffles answer sequence for all questions and versions of an exam
-}
-
 export const createExamComponent = (overrides = {}) => ({
   ...DEFAULT_COMPONENT_PROPS,
   ...overrides,

@@ -2,79 +2,131 @@ import React, { useState, useEffect } from "react";
 import { Button, Typography, Modal, Input, message, Table } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  addSection,
-  addQuestion,
   removeQuestion,
   removeSection,
   updateQuestion,
   updateSection,
   moveQuestion,
-  moveSection // added this
+  moveSection,
 } from "../store/exam/examSlice";
-import {
-  selectExamData 
-} from "../store/exam/selectors"
+import { selectExamData } from "../store/exam/selectors";
 import 'quill/dist/quill.snow.css';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-} from "@dnd-kit/sortable";
+import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 
 const { TextArea } = Input;
 
-
 const ExamDisplay = () => {
   const exam = useSelector(selectExamData);
-  useEffect(() => {
-    // Debugging purpose only
-  }, [exam]);
-  const [examItems, setExamItems] = useState([]);
   const dispatch = useDispatch();
-  // Move useSensor hooks to top level of the component to ensure consistent hook order
-  // Pagination page size state
-  const [pageSize, setPageSize] = useState(10);
+
+  const [modalState, setModalState] = useState({
+    visible: false,
+    type: "", 
+    item: null,
+    isDelete: false, 
+  });
+
+  const [examItems, setExamItems] = useState([]);
+
   const pointerSensor = useSensor(PointerSensor);
   const keyboardSensor = useSensor(KeyboardSensor);
   const sensors = useSensors(pointerSensor, keyboardSensor);
-  const [editModal, setEditModal] = useState({
-    visible: false,
-    type: "", // "section" | "question"
-    item: null,
-  });
 
-  const [deleteModalState, setDeleteModalState] = useState({
-    visible: false,
-    examBodyIndex: null,
-    questionsIndex: null,
-    isSection: false,
-  });
+  useEffect(() => {
+    if (!exam) {
+      setExamItems([]);
+      return;
+    }
 
-  //  move handler function
+    if (!Array.isArray(exam?.examBody)) {
+      console.warn("examBody is not an array or missing:", exam?.examBody);
+      return;
+    }
+
+    const items = [];
+    exam.examBody.forEach((entry, examBodyIndex) => {
+      const type = (entry.type || "").toLowerCase();
+      
+      if (type === "section") {
+        const sectionKey = entry.id ? `section-${entry.id}` : `section-index-${examBodyIndex}`;
+        const section = { 
+          id: entry.id, 
+          type: "section", 
+          sectionTitle: entry.sectionTitle,
+          contentFormatted: entry.contentFormatted,
+          contentText: entry.contentText,
+          subtext: entry.subtext,
+          examBodyIndex,
+          sectionNumber: examBodyIndex + 1,
+          key: sectionKey 
+        };
+        items.push(section);
+
+        (entry.questions || []).forEach((question, questionsIndex) => {
+          const questionKey = question.id ? 
+            `question-${question.id}-${examBodyIndex}-${questionsIndex}` : 
+            `question-index-${examBodyIndex}-${questionsIndex}`;
+          
+          items.push({
+            ...question,
+            type: "question",
+            section: entry.sectionTitle,
+            contentText: question.contentText,
+            options: question.options || (question.answers || []).map(a => a.contentText),
+            correctIndex: question.correctIndex ?? (question.answers || []).findIndex(a => a.correct),
+            examBodyIndex,
+            questionsIndex,
+            questionNumber: questionsIndex + 1,
+            key: questionKey
+          });
+        });
+      } else if (type === "question") {
+        const questionKey = entry.id ? 
+          `question-${entry.id}-${examBodyIndex}` : 
+          `question-index-${examBodyIndex}`;
+          
+        items.push({
+          ...entry,
+          type: "question",
+          contentText: entry.contentText,
+          options: entry.options || (entry.answers || []).map(a => a.contentText),
+          correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
+          examBodyIndex,
+          questionNumber: examBodyIndex + 1,
+          key: questionKey
+        });
+      }
+    });
+
+    setExamItems(items);
+  }, [exam]);
+
   const handleMove = (direction, examBodyIndex, questionsIndex = null) => {
-    const newIndex = (questionsIndex !== null && questionsIndex !== undefined)
-      ? questionsIndex + direction
-      : examBodyIndex + direction;
+    if (examBodyIndex === undefined) return;
 
     if (questionsIndex !== null && questionsIndex !== undefined) {
-      // Moving a question inside a section
+      const newIndex = questionsIndex + direction;
+      
+      const section = exam.examBody[examBodyIndex];
+      if (newIndex < 0 || newIndex >= (section?.questions?.length || 0)) return;
+      
       dispatch(moveQuestion({
         source: { examBodyIndex, questionsIndex },
         destination: { examBodyIndex, questionsIndex: newIndex },
       }));
-    } else {
+    } 
+    else {
+      const newIndex = examBodyIndex + direction;
+      
+      if (newIndex < 0 || newIndex >= exam.examBody.length) return;
+      
       const examBody = exam.examBody;
-      if (!examBody) return;
-
       const currentItem = examBody[examBodyIndex];
-      if (currentItem?.type === 'section') {
+      const isSection = currentItem?.type?.toLowerCase() === 'section';
+      
+      if (isSection) {
         dispatch(moveSection({ sourceIndex: examBodyIndex, destIndex: newIndex }));
       } else {
         dispatch(moveQuestion({
@@ -85,79 +137,29 @@ const ExamDisplay = () => {
     }
   };
 
-  useEffect(() => {
-    if (exam && !Array.isArray(exam?.examBody)) {
-      console.warn(" examBody is not an array or missing:", exam?.examBody);
-      return;
-    }
-    if (!exam) {
-      // Do nothing if exam is simply not ready yet
-      return;
-    }
-    
-    const items = [];
-
-    exam.examBody.forEach((entry) => {
-      const type = (entry.type || "").toLowerCase();
-
-      if (type === "section") {
-        items.push({
-          id: entry.id,
-          type: "section",
-          title: entry.title,
-          contentText: entry.contentText,
-        });
-
-        (entry.questions || []).forEach((q) => {
-          items.push({
-            ...q,
-            type: "question",
-            section: entry.sectionTitle,
-            contentText: q.contentText,
-            options: q.options || (q.answers || []).map(a => a.contentText),
-            correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
-          });
-        });
-        
-      } else if (type === "question") {
-        items.push({
-          ...entry,
-          type: "question",
-          contentText: entry.contentText,
-          options: entry.options || (entry.answers || []).map(a => a.contentText),
-          correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
-        });
-      
-      } else {
-        console.warn(" Unknown item type:", entry);
-      }
-    });
-
-    setExamItems(items);
-  }, [exam]);
-
   const handleEdit = (item) => {
-    setEditModal({
+    setModalState({
       visible: true,
       type: item.type,
-      item: { ...item }, // clone for editing
+      item: { ...item },
+      isDelete: false,
     });
   };
 
+  // Save edited item
   const handleSaveEdit = () => {
-    const { type, item } = editModal;
-  
+    const { type, item } = modalState;
     let examBodyIndex = -1;
     let questionsIndex;
-  
+
     if (type === "section") {
       examBodyIndex = exam.examBody.findIndex((entry) => entry.id === item.id);
       dispatch(updateSection({
         examBodyIndex,
         newData: {
-          title: item.title,
+          sectionTitle: item.sectionTitle,
           contentText: item.contentText,
-        }
+        },
       }));
     } else if (type === "question") {
       for (let i = 0; i < exam.examBody.length; i++) {
@@ -174,12 +176,12 @@ const ExamDisplay = () => {
           break;
         }
       }
-  
+
       if (examBodyIndex === -1) {
         message.error("Failed to locate the question to update.");
         return;
       }
-  
+
       dispatch(updateQuestion({
         location: {
           examBodyIndex,
@@ -193,385 +195,283 @@ const ExamDisplay = () => {
         }
       }));
     }
-  
+
     message.success("Saved changes");
-    setEditModal({ visible: false, type: "", item: null });
+    setModalState({ ...modalState, visible: false });
   };
-  
+
+  // Confirm delete item
   const confirmDeleteItem = (examBodyIndex, questionsIndex = null) => {
-    const entry = exam?.examBody?.[examBodyIndex];
-    if (!entry) {
-      console.warn("No entry found at examBodyIndex:", examBodyIndex);
-      return;
-    }
-
-    const isSection = questionsIndex === null && entry.type === "section";
-
-    setDeleteModalState({
+    setModalState({
       visible: true,
+      type: '',
+      item: null,
+      isDelete: true,
       examBodyIndex,
-      questionsIndex,
-      isSection,
+      questionsIndex
     });
   };
 
+  // Execute delete item
   const executeDeleteItem = () => {
-    const { examBodyIndex, questionsIndex } = deleteModalState;
+    const { examBodyIndex, questionsIndex, isDelete } = modalState;
+    
+    if (!isDelete || examBodyIndex === undefined) {
+      setModalState({ visible: false, type: '', item: null, isDelete: false });
+      return;
+    }
+    
     const entry = exam?.examBody?.[examBodyIndex];
 
     if (questionsIndex !== null && questionsIndex !== undefined) {
       dispatch(removeQuestion({ examBodyIndex, questionsIndex }));
-    } else if (entry.type === "question") {
-      dispatch(removeQuestion({ examBodyIndex }));
-    } else if (entry.type === "section") {
+    } else if (entry?.type === "section") {
       dispatch(removeSection(examBodyIndex));
     }
 
-    setDeleteModalState({ visible: false, examBodyIndex: null, questionsIndex: null });
+    setModalState({ visible: false, type: '', item: null, isDelete: false });
   };
-  
+
   if (!exam || !Array.isArray(exam.examBody)) {
     return <div>Please open an exam or create a new file.</div>;
   }
-
 
   return (
     <div>
       <div style={{ marginBottom: 16 }}>
         <Typography.Title level={3}>{exam.examTitle}</Typography.Title>
         {(exam.courseCode || exam.courseName || exam.semester || exam.year) && (
-        <Typography.Text type="secondary">
-          {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
-          {exam.semester} {exam.year}
-        </Typography.Text>
-      )}
-
+          <Typography.Text type="secondary">
+            {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
+            {exam.semester} {exam.year}
+          </Typography.Text>
+        )}
       </div>
-  
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         dropAnimation={{ duration: 250, easing: 'ease' }}
         modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+        onDragStart={() => {}}
         onDragEnd={({ active, over }) => {
           if (!over || active.id === over.id) return;
-  
+          const activeItem = examItems.find(i => i.id === active.id);
+          const overItem = examItems.find(i => i.id === over.id);
+          if (!activeItem || !overItem) return;
           const updated = arrayMove(
             examItems,
             examItems.findIndex(i => i.id === active.id),
             examItems.findIndex(i => i.id === over.id)
           );
           setExamItems(updated);
+          if (activeItem.type === "section") {
+            dispatch(moveSection({
+              sourceIndex: activeItem.examBodyIndex,
+              destIndex: overItem.examBodyIndex
+            }));
+          } else {
+            dispatch(moveQuestion({
+              source: { 
+                examBodyIndex: activeItem.examBodyIndex,
+                questionsIndex: activeItem.questionsIndex
+              },
+              destination: { 
+                examBodyIndex: overItem.examBodyIndex,
+                questionsIndex: overItem.questionsIndex
+              }
+            }));
+          }
+          
           message.success("Reordered");
         }}
       >
-        {examItems.length === 0 && (
-          <div style={{ marginTop: 24, color: 'red' }}>
-            ⚠️ Exam loaded but contains no sections or questions to display.
-          </div>
-        )}
         <Table
+          rowClassName="highlighted-table-row"
+          rowKey="key" 
           columns={[
             {
-              title: "ID",
-              dataIndex: "id",
-              key: "id",
-              render: (id) => id?.split('-').pop(),
+              title: "Actions",
+              key: "actions-column",
+              fixed: 'left',
+              width: 140,
+              render: (_, record) => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Button size="small" onClick={() => handleEdit(record)}>
+                      Edit
+                    </Button>
+                    <div>
+                      <Button
+                        size="small"
+                        onClick={() => handleMove(-1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
+                        disabled={
+                          (record.questionsIndex !== undefined && record.questionsIndex === 0) || 
+                          (record.questionsIndex === undefined && record.examBodyIndex === 0)
+                        }
+                        style={{ marginRight: 4 }}
+                      >
+                        ↑
+                      </Button>
+                      <Button
+                        size="small"
+                        onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
+                        disabled={
+                          !exam.examBody?.[record.examBodyIndex] ||
+                          (record.questionsIndex !== undefined && 
+                           record.questionsIndex === (exam.examBody[record.examBodyIndex]?.questions?.length - 1)) || 
+                          (record.questionsIndex === undefined && record.examBodyIndex === (exam.examBody.length - 1))
+                        }
+                      >
+                        ↓
+                      </Button>
+                    </div>
+                  </div>
+                  <Button
+                    size="small"
+                    danger
+                    onClick={() => confirmDeleteItem(record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
+                    style={{ width: '100%' }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              ),
+            },
+            {
+              title: "Question #",
+              dataIndex: "questionNumber",
+              key: "question-number-column",
+              width: 100,
+              render: (text, record) => record.type === "question" ? record.questionNumber : null,
             },
             {
               title: "Type",
               dataIndex: "type",
-              key: "type",
+              key: "type-column",
+              width: 100,
             },
             {
               title: "Section",
               dataIndex: "section",
-              key: "section",
+              key: "section-column",
+              width: 120,
+              ellipsis: true,
+              render: (text, record) => {
+                if (record.type === "section") {
+                  return record.sectionNumber ? `Section ${record.sectionNumber}` : record.sectionTitle;
+                }
+                return record.section;
+              },
             },
             {
-              title: "Title / Question",
-              dataIndex: "titleOrQuestion",
-              key: "titleOrQuestion",
-              render: (text, record) =>
-                record.type === "section" ? (
-                  <div>
-                    <strong>{record.title?.split('-').slice(2).join('-').trim()}</strong>
-                    {record.contentText && (
-                      <div style={{ fontStyle: "italic", color: "#888" }}>{record.contentText}</div>
-                    )}
-                  </div>
-                ) : (
-                  <span>{record.contentText}</span>
-                ),
+              title: "Question / Content",
+              dataIndex: "questionContent",
+              key: "question-content-column",
+              width: 300, 
+              render: (text, record) => (record.type === "section" ? (
+                <div>
+                  {(record.contentText) && (
+                    <Typography.Paragraph
+                      style={{ margin: 0, maxWidth: 280 }}
+                      ellipsis={{ 
+                        rows: 3,
+                        expandable: true,
+                        symbol: 'more'
+                      }}
+                    >
+                      {record.contentText || record.contentFormatted}
+                    </Typography.Paragraph>
+                  )}
+                  {record.sectionTitle && <strong>{record.sectionTitle}</strong>}
+                  {record.subtext && <div style={{ fontStyle: "italic", color: "#888" }}>{record.subtext}</div>}
+                </div>
+              ) : (
+                <Typography.Paragraph
+                  style={{ margin: 0, maxWidth: 280 }}
+                  ellipsis={{ 
+                    rows: 3,
+                    expandable: true,
+                    symbol: 'more'
+                  }}
+                >
+                  {record.contentText}
+                </Typography.Paragraph>
+              )),
             },
             {
               title: "Options",
               dataIndex: "options",
-              key: "options",
-              render: (opts, record) =>
-                record.type === "question" && Array.isArray(opts)
-                  ? opts.map((o, i) => (
-                      <div key={i}>
-                        {String.fromCharCode(97 + i)}) {o}
-                      </div>
-                    ))
-                  : null,
+              key: "options-column",
+              width: 250,
+              render: (opts, record) => record.type === "question" && Array.isArray(opts) ? (
+                <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                  {opts.filter(opt => opt && opt.trim() !== '').map((o, i) => (
+                    <Typography.Paragraph 
+                      key={`${record.key}-option-${i}`} 
+                      ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
+                      style={{ margin: '2px 0' }}
+                    >
+                      {String.fromCharCode(97 + i)}) {o}
+                    </Typography.Paragraph>
+                  ))}
+                </div>
+              ) : null,
             },
             {
               title: "Correct Answer",
               dataIndex: "correctIndex",
-              key: "correctIndex",
-              render: (index, record) =>
-                record.type === "question" && Array.isArray(record.options)
-                  ? record.options[index]
-                  : null,
+              key: "correct-answer-column",
+              width: 150,
+              render: (index, record) => {
+                const validOptions = (record.options || []).filter(opt => opt && opt.trim() !== '');
+                return record.type === "question" && validOptions.length > 0 ? (
+                  <Typography.Paragraph 
+                    ellipsis={{ rows: 2, expandable: true, symbol: '...' }} 
+                    style={{ margin: 0 }}
+                  >
+                    {validOptions[index]}
+                  </Typography.Paragraph>
+                ) : null;
+              },  
             },
             {
               title: "Marks",
               dataIndex: "marks",
-              key: "marks",
-              render: (_, record) =>
-                record.type === "question"
-                  ? record.marks ?? 1
-                  : null,
-            },
-            {
-              title: "Actions",
-              key: "actions",
-              render: (_, record) => (
-                <>
-                  <Button size="small" onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>
-                    Edit
-                  </Button>
-                  <Button
-                    size="small"
-                    onClick={() =>
-                      handleMove(-1, record.examBodyIndex, record.questionsIndex)
-                    }
-                    disabled={record.questionsIndex !== undefined
-                      ? record.questionsIndex === 0
-                      : record.examBodyIndex === 0}
-                    style={{ marginRight: 4 }}
-                  >
-                    ↑
-                  </Button>
-                  <Button
-                    size="small"
-                    onClick={() =>
-                      handleMove(1, record.examBodyIndex, record.questionsIndex)
-                    }
-                    disabled={
-                      record.questionsIndex !== undefined
-                        ? record.questionsIndex === exam.examBody[record.examBodyIndex]?.questions.length - 1
-                        : record.examBodyIndex === exam.examBody.length - 1
-                    }
-                    style={{ marginRight: 8 }}
-                  >
-                    ↓
-                  </Button>
-                  <Button
-                    size="small"
-                    danger
-                    onClick={() =>
-                      record.type === "question"
-                        ? confirmDeleteItem(record.examBodyIndex, record.questionsIndex)
-                        : confirmDeleteItem(record.examBodyIndex)
-                    }
-                  >
-                    Delete
-                  </Button>
-                </>
-              ),
+              key: "marks-column",
+              width: 80,
+              render: (_, record) => record.type === "question" ? record.marks ?? 1 : null,
             },
           ]}
-          dataSource={(examItems || []).map((item, index) => {
-            const examBodyIndex = exam.examBody.findIndex(entry => {
-              if (item.type === "section") return entry.id === item.id;
-              if (item.type === "question") {
-                if (entry.type === "section") {
-                  return entry.questions?.some(q => q.id === item.id);
-                } else {
-                  return entry.id === item.id;
-                }
-              }
-              return false;
-            });
-
-            const questionsIndex =
-              item.type === "question" && exam.examBody[examBodyIndex]?.type === "section"
-                ? exam.examBody[examBodyIndex].questions.findIndex(q => q.id === item.id)
-                : undefined;
-
-            return {
-              key: `${item.type}-${item.id}-${index}`,
-              ...item,
-              titleOrQuestion: item.type === "section" ? item.title : item.contentText,
-              examBodyIndex,
-              questionsIndex,
-              marks: item.marks,
-            };
-          })}
-          pagination={{
-            pageSize,
-            showSizeChanger: true,
-            pageSizeOptions: ['10', '20', '50', '100'],
-            onChange: (page, pageSize) => setPageSize(pageSize),
-          }}
+          dataSource={examItems}
+          pagination={{ pageSize: 10 }}
           scroll={{ x: "max-content" }}
         />
       </DndContext>
-  
-      <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
-        <Button type="dashed" onClick={() => {
-          const questionData = {
-            contentText: "New Question",
-          };
-          dispatch(addQuestion({ questionData }));
-          message.success("Question added");
-        }}>Add Question</Button>
-        <Button type="dashed" onClick={() => {
-          dispatch(addSection({ title: "Untitled Section", contentText: "Instructions..." }));
-          message.success("Section added");
-        }}>Add Section</Button>
-        <Button
-          type="primary"
-          style={{ backgroundColor: '#722ed1' }}
-          onClick={async () => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = ".docx";
-            input.onchange = async (e) => {
-              const file = e.target.files[0];
-              if (!file) return;
-              try {
-                const module = await import('../services/examImportService');
-                const examDTO = await module.default.processDocxExam(file);
 
-                let index = 0;
-                for (const item of examDTO.examBody || []) {
-                  if (item.type === "section") {
-                    const { questions, ...sectionWithoutQuestions } = item;
-                    dispatch(addSection(sectionWithoutQuestions));
-                    for (const question of questions || []) {
-                      dispatch(addQuestion({ examBodyIndex: index, questionData: question }));
-                    }
-                  } else {
-                    dispatch(addQuestion({ examBodyIndex: null, questionData: item }));
-                  }
-                  index++;
-                }
-
-                message.success("Questions imported from DOCX");
-              } catch (error) {
-                console.error("DOCX import failed:", error);
-                message.error("Failed to import DOCX");
-              }
-            };
-            input.click();
-          }}
-        >
-          Add Questions from DOCX
-        </Button>
-        <Button
-          type="primary"
-          style={{ backgroundColor: '#389e0d' }}
-          onClick={async () => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = ".xml";
-            input.onchange = async (e) => {
-              const file = e.target.files[0];
-              if (!file) return;
-              try {
-                const module = await import('../services/examImportService');
-                const examDTO = await module.default.processMoodleExam(file);
-
-                let index = 0;
-                for (const item of examDTO.examBody || []) {
-                  if (item.type === "section") {
-                    const { questions, ...sectionWithoutQuestions } = item;
-                    dispatch(addSection(sectionWithoutQuestions));
-                    for (const question of questions || []) {
-                      dispatch(addQuestion({ examBodyIndex: index, questionData: question }));
-                    }
-                  } else {
-                    dispatch(addQuestion({ examBodyIndex: null, questionData: item }));
-                  }
-                  index++;
-                }
-
-                message.success("Questions imported from XML");
-              } catch (error) {
-                console.error("XML import failed:", error);
-                message.error("Failed to import XML");
-              }
-            };
-            input.click();
-          }}
-        >
-          Add Questions from XML
-        </Button>
-        <Button
-          type="primary"
-          style={{ backgroundColor: '#13c2c2' }}
-          onClick={async () => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = ".tex";
-            input.onchange = async (e) => {
-              const file = e.target.files[0];
-              if (!file) return;
-              try {
-                const module = await import('../services/examImportService');
-                const examDTO = await module.default.processLatexExam(file);
-
-                let index = 0;
-                for (const item of examDTO.examBody || []) {
-                  if (item.type === "section") {
-                    const { questions, ...sectionWithoutQuestions } = item;
-                    dispatch(addSection(sectionWithoutQuestions));
-                    for (const question of questions || []) {
-                      dispatch(addQuestion({ examBodyIndex: index, questionData: question }));
-                    }
-                  } else {
-                    dispatch(addQuestion({ examBodyIndex: null, questionData: item }));
-                  }
-                  index++;
-                }
-
-                message.success("Questions imported from LaTeX");
-              } catch (error) {
-                console.error("LaTeX import failed:", error);
-                message.error("Failed to import LaTeX");
-              }
-            };
-            input.click();
-          }}
-        >
-          Add Questions from LaTeX
-        </Button>
-      </div>
-  
+      {/* Modal for Edit Section or Question */}
       <Modal
-        open={editModal.visible}
-        title={`Edit ${editModal.type}`}
-        onCancel={() => setEditModal({ visible: false, type: "", item: null })}
-        onOk={handleSaveEdit}
+        open={modalState.visible}
+        title={modalState.isDelete ? 'Confirm Delete' : `Edit ${modalState.type}`}
+        onCancel={() => setModalState({ visible: false })}
+        onOk={modalState.isDelete ? executeDeleteItem : handleSaveEdit}
       >
-        {editModal.type === "section" && (
+        {modalState.isDelete ? (
+          <p>Are you sure you want to delete this item?</p>
+        ) : modalState.type === "section" ? (
           <>
             <Input
-              value={editModal.item?.title}
-              onChange={(e) => setEditModal((prev) => ({
+              value={modalState.item?.sectionTitle}
+              onChange={(e) => setModalState(prev => ({
                 ...prev,
-                item: { ...prev.item, title: e.target.value }
+                item: { ...prev.item, sectionTitle: e.target.value }
               }))}
               placeholder="Section Title"
               style={{ marginBottom: 8 }}
             />
             <TextArea
-              value={editModal.item?.contentText}
-              onChange={(e) => setEditModal((prev) => ({
+              value={modalState.item?.contentText}
+              onChange={(e) => setModalState(prev => ({
                 ...prev,
                 item: { ...prev.item, contentText: e.target.value }
               }))}
@@ -579,68 +479,35 @@ const ExamDisplay = () => {
               autoSize
             />
           </>
-        )}
-  
-        {editModal.type === "question" && (
+        ) : modalState.type === "question" && (
           <>
             <Input
-              value={editModal.item?.contentText}
-              onChange={(e) =>
-                setEditModal((prev) => ({
-                  ...prev,
-                  item: { ...prev.item, contentText: e.target.value },
-                }))
-              }
+              value={modalState.item?.contentText}
+              onChange={(e) => setModalState(prev => ({
+                ...prev,
+                item: { ...prev.item, contentText: e.target.value }
+              }))}
               placeholder="Question Text"
               style={{ marginBottom: 8 }}
             />
-            {editModal.item?.options?.map((opt, idx) => (
+            {modalState.item?.options?.filter(opt => opt && opt.trim() !== '').map((opt, index) => (
               <Input
-                key={idx}
+                key={`modal-option-${index}`}
                 value={opt}
                 onChange={(e) => {
-                  const newOpts = [...editModal.item.options];
-                  newOpts[idx] = e.target.value;
-                  setEditModal((prev) => ({
+                  const updatedOptions = [...modalState.item.options];
+                  updatedOptions[index] = e.target.value;
+                  setModalState(prev => ({
                     ...prev,
-                    item: { ...prev.item, options: newOpts },
+                    item: { ...prev.item, options: updatedOptions }
                   }));
                 }}
-                placeholder={`Option ${String.fromCharCode(97 + idx)}`}
-                style={{ marginBottom: 6 }}
+                placeholder={`Option ${String.fromCharCode(97 + index)}`}
+                style={{ marginBottom: 8 }}
               />
             ))}
-            <Input
-              type="number"
-              min={0}
-              max={editModal.item?.options?.length - 1}
-              value={editModal.item?.correctIndex}
-              onChange={(e) =>
-                setEditModal((prev) => ({
-                  ...prev,
-                  item: { ...prev.item, correctIndex: parseInt(e.target.value, 10) },
-                }))
-              }
-              placeholder="Correct Answer Index"
-            />
           </>
         )}
-      </Modal>
-
-      <Modal
-        open={deleteModalState.visible}
-        title={deleteModalState.isSection ? "Delete Section and All Its Questions?" : "Delete Question?"}
-        onOk={executeDeleteItem}
-        onCancel={() => setDeleteModalState({ visible: false, examBodyIndex: null, questionsIndex: null, isSection: false })}
-        okText="Yes, delete"
-        cancelText="Cancel"
-        okButtonProps={{ danger: true }}
-      >
-        <p>
-          {deleteModalState.isSection
-            ? "This will permanently remove the section and all its contained questions. This cannot be undone."
-            : "This will permanently remove the question. This cannot be undone."}
-        </p>
       </Modal>
     </div>
   );

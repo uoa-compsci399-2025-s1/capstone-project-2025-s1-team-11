@@ -58,7 +58,7 @@ const Marker = () => {
   };
 
   const handleExportResults = () => {
-    if (!results || results.length === 0) {
+    if (!resultsData || resultsData.length === 0) {
       message.error("No results available to export.");
       return;
     }
@@ -66,12 +66,12 @@ const Marker = () => {
     let content, filename, type;
     
     if (exportFormat === "json") {
-      content = JSON.stringify(results, null, 2);
+      content = JSON.stringify(resultsData, null, 2);
       filename = `${examData.courseCode || 'exam'}_results.json`;
       type = "application/json";
     } else {
       // Text format (similar to legacy output)
-      content = results.map(res => generateResultOutput(res, examData)).join('\n\n');
+      content = resultsData.map(res => generateResultOutput(res, examData)).join('\n\n');
       filename = `${examData.courseCode || 'exam'}_results.txt`;
       type = "text/plain";
     }
@@ -94,16 +94,14 @@ const Marker = () => {
     }
   };
 
-
-  // Render content based on the current step
   const renderContent = () => {
     switch (currentStep) {
       case 0:
-        return dataReview({ examData, markingKey} );
+        return dataReview({ examData, markingKey });
       case 1:
-        return teleformReader({teleformData,markingKey,handleTeleformDataChange,handleMarkExams});
+        return teleformReader({ teleformData, markingKey, handleTeleformDataChange, handleMarkExams });
       case 2:
-        return results({setExportFormat,exportFormat,resultsData,handleExportResults,examData});
+        return results({ setExportFormat, exportFormat, resultsData, handleExportResults, examData });
       default:
         return null;
     }
@@ -119,7 +117,6 @@ const Marker = () => {
 
   return (
     <>
-
       <Typography.Title>MCQ Auto-Marker</Typography.Title>
       <Divider />
       
