@@ -2,7 +2,7 @@ import React from 'react';
 import { Layout, Breadcrumb, theme } from 'antd';
 import { Navigation } from "./navigation.jsx";
 import { Link, useLocation } from 'react-router';
-import logo from "../../public/AssesslyLogoSmall.png";
+import logo from "../assets/AssesslyLogoSmall.png";
 import StaticContextBar from './StaticContextBar';
 
 const { Header, Content, Footer } = Layout;
