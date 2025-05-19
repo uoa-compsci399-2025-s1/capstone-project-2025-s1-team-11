@@ -240,6 +240,8 @@ function formatQuestionsWithVersion(questions, version, versionList) {
  */
 function formatQuestionWithVersion(question, version, versionList) {
     // Format the mark display (e.g., "[1 mark]" or "[2 marks]")
+    console.log("Version parameter:", version);
+    console.log("Version list:", versionList);
     const markText = question.marks
         ? `[${question.marks} mark${question.marks !== 1 ? 's' : ''}]`
         : '';
@@ -250,8 +252,26 @@ function formatQuestionWithVersion(question, version, versionList) {
     );
 
     // Determine which shuffle map to use based on version
-    const versionIndex = versionList ? versionList.indexOf(parseInt(version)) : 0;
+    let versionIndex = 0;
+    if (versionList) {
+        if (typeof version === 'string' && isNaN(parseInt(version))) {
+            // Handle letter versions (A, B, C, D)
+            versionIndex = versionList.indexOf(version);
+        } else {
+            // Handle numeric versions
+            versionIndex = versionList.indexOf(parseInt(version));
+        }
+        // Default to 0 if version not found
+        versionIndex = versionIndex === -1 ? 0 : versionIndex;
+    }
+
+    console.log("Version index:", versionIndex);
+    console.log("Question:", question.questionNumber);
+    console.log("Shuffle maps available:", question.answerShuffleMaps);
+
     const shuffleMap = question.answerShuffleMaps?.[versionIndex] || [...Array(question.answers?.length || 0).keys()];
+
+    console.log("Selected shuffle map for this version:", shuffleMap);
 
     // Format answers using the appropriate shuffle map for this version
     const formattedAnswers = [];

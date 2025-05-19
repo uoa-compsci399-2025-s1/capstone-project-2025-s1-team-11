@@ -3,6 +3,7 @@
 import { exportExamToText } from './docxExport/modules/textExport';
 import { exportExamToDocxWithDocxtemplater } from './docxExport/modules/docxtemplaterExport';
 import { generateFilename } from './docxExport/modules/docxtemplaterHelper';
+import { mergeDocxFiles } from '../utilities/docxMerger';
 
 
 /**
@@ -114,30 +115,113 @@ export class ExamExportService {
         // For the MVP, we're ignoring the version parameter and just using Docxtemplater
         return await exportExamToDocxWithDocxtemplater(examData);
     }
-
     /**
-     * Export exam to PDF format (placeholder for future implementation)
-     * @param {Object} examData - Exam data from Redux store
-     * @param {number|string} version - Exam version to export
-     * @returns {boolean} - Success indicator
+     * Export multiple versions of an exam as separate DOCX files
+     * Each version will have the same cover page but different body content
+     *
+     * @param {Object} examData - Complete exam data from Redux store
+     * @param {Blob} coverPageBlob - The cover page as a DOCX blob
+     * @returns {Promise<Array<{version: string, blob: Blob}>>} - Array of version-blob pairs
      */
-    static exportToPdf(examData, version) {
-        console.log("PDF export requested (not implemented):", version);
-        // This is just a placeholder - PDF export is not part of the MVP
-        return false;
+    static async exportVersionedDocx(examData, coverPageBlob) {
+        try {
+            if (!examData || !examData.versions || !examData.versions.length) {
+                throw new Error('No exam versions available for export');
+            }
+
+            if (!coverPageBlob) {
+                throw new Error('Cover page is required for versioned export');
+            }
+
+            console.log(`Starting export of ${examData.versions.length} exam versions`);
+
+            // Array to hold the results
+            const results = [];
+
+            // Process each version
+            for (const version of examData.versions) {
+                // Generate a version-specific body DOCX
+                // You need to ensure exportExamToDocxWithDocxtemplater accepts a version parameter
+                const bodyBlob = await exportExamToDocxWithDocxtemplater(examData, version);
+
+                // Merge the cover page with this body using the docxMerger function
+                const mergedBlob = await mergeDocxFiles(coverPageBlob, bodyBlob);
+
+                // Add to results
+                results.push({
+                    version,
+                    blob: mergedBlob
+                });
+
+                console.log(`Version ${version} export completed`);
+            }
+
+            console.log('All versions exported successfully');
+            return results;
+        } catch (error) {
+            console.error('Error in versioned exam export:', error);
+            throw error;
+        }
     }
 
     /**
-     * Export exam to both DOCX and PDF formats
-     * @param {Object} examData - Exam data from Redux store
-     * @param {number|string} version - Exam version to export
-     * @returns {Promise<[Blob, boolean]>} - Array with DOCX blob and PDF success indicator
+     * Save multiple versioned documents to the user's device
+     *
+     * @param {Array<{version: string, blob: Blob}>} versionedBlobs - Array of version-blob pairs
+     * @param {Object} examData - Exam data for generating filenames
      */
-    static async exportToDocxAndPdf(examData, version) {
-        const docxBlob = await this.exportToDocx(examData, version);
-        const pdfSuccess = this.exportToPdf(examData, version);
-        return [docxBlob, pdfSuccess];
+    static saveVersionedFiles(versionedBlobs, examData) {
+        try {
+            if (!versionedBlobs || !versionedBlobs.length) {
+                throw new Error('No files to save');
+            }
+
+            // Save each versioned file
+            for (const {version, blob} of versionedBlobs) {
+                // Generate appropriate filename with version included
+                const baseFilename = generateFilename(examData);
+                const filename = baseFilename.replace('.docx', `_Version${version}.docx`);
+
+                // Create a download link
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+
+                // Clean up
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                console.log(`File "${filename}" has been saved`);
+            }
+        } catch (error) {
+            console.error('Error saving versioned files:', error);
+            throw error;
+        }
     }
+
+    /**
+     * Export and save all versions of an exam in one operation
+     *
+     * @param {Object} examData - Exam data from Redux store
+     * @param {Blob} coverPageBlob - The cover page as a DOCX blob
+     * @returns {Promise<{success: boolean, error?: string}>}
+     */
+    static async exportAndSaveVersionedExam(examData, coverPageBlob) {
+        try {
+            const versionedBlobs = await this.exportVersionedDocx(examData, coverPageBlob);
+            this.saveVersionedFiles(versionedBlobs, examData);
+            return { success: true };
+        } catch (error) {
+            console.error('Error in export and save versioned operation:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
 }
 
 // Export default and named exports for flexibility

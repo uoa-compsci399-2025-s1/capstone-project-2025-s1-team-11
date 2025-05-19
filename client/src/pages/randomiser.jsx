@@ -5,15 +5,12 @@ import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, them
 import { regenerateShuffleMaps } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/mapDisplay";
-import { message } from 'antd';
-import examExportService from "../services/examExportService";
 
 const { Title, Text } = Typography;
 
 const Randomiser = () => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
-  console.log("🔎 Redux examData at load:", exam);
   const questions = useSelector(selectAllQuestionsFlat);
   const { token } = theme.useToken();
 
@@ -53,93 +50,6 @@ const Randomiser = () => {
     (current - 1) * pageSize,
     current * pageSize
   );
-  const handleDownloadDocx = async () => {
-    try {
-      message.loading({ content: 'Creating DOCX...', key: 'docxExport' });
-      console.log("Starting DOCX export with exam data:", {
-        title: exam?.examTitle,
-        hasBody: Boolean(exam?.examBody),
-        version: selectedVersion
-      });
-      console.log("📄 CoverPage contentFormatted in Redux:", exam?.coverPage?.contentFormatted);
-      const docxBlob = await examExportService.exportToDocx(exam, selectedVersion);
-
-      if (docxBlob && docxBlob instanceof Blob) {
-        // Create download link
-        const fileName = `${exam.examTitle || 'Exam'}_Version_${selectedVersion}.docx`;
-
-        const url = URL.createObjectURL(docxBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-        message.success({ content: 'DOCX created successfully!', key: 'docxExport' });
-      } else {
-        console.error("Invalid blob returned:", docxBlob);
-        message.error({ content: 'Failed to create DOCX: invalid output', key: 'docxExport' });
-      }
-    } catch (error) {
-      console.error('DOCX export error:', error);
-      message.error({
-        content: `Export error: ${error.message || "Unknown error"}`,
-        key: 'docxExport'
-      });
-    }
-  };
-
-  const handleDownloadPdf = () => {
-    try {
-      message.loading({ content: 'Creating PDF...', key: 'pdfExport' });
-      const success = examExportService.exportToPdf(exam, selectedVersion);
-
-      if (success) {
-        message.success({ content: 'PDF created successfully!', key: 'pdfExport' });
-      } else {
-        message.error({ content: 'Failed to create PDF', key: 'pdfExport' });
-      }
-    } catch (error) {
-      console.error('PDF export error:', error);
-      message.error({ content: `Export error: ${error.message}`, key: 'pdfExport' });
-    }
-  };
-
-  const handleDownloadBoth = async () => {
-    try {
-      message.loading({ content: 'Creating documents...', key: 'bothExport' });
-      const [docxBlob, pdfSuccess] = await examExportService.exportToDocxAndPdf(exam, selectedVersion);
-
-      if (docxBlob) {
-        // Create download link for DOCX
-        const fileName = `${exam.examTitle || 'Exam'}_Version_${selectedVersion}.docx`;
-
-        const url = URL.createObjectURL(docxBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
-
-      if (docxBlob && pdfSuccess) {
-        message.success({ content: 'Both formats created successfully!', key: 'bothExport' });
-      } else if (docxBlob) {
-        message.warning({ content: 'DOCX created, but PDF failed', key: 'bothExport' });
-      } else if (pdfSuccess) {
-        message.warning({ content: 'PDF created, but DOCX failed', key: 'bothExport' });
-      } else {
-        message.error({ content: 'Failed to create both formats', key: 'bothExport' });
-      }
-    } catch (error) {
-      console.error('Export error:', error);
-      message.error({ content: `Export error: ${error.message}`, key: 'bothExport' });
-    }
-  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -370,19 +280,6 @@ const Randomiser = () => {
             showSizeChanger={false}
           />
         </Spin>
-      </Card>
-      <Card title="Export Selected Version" style={{ marginTop: "20px" }}>
-        <Space>
-          <Button type="primary" onClick={handleDownloadDocx}>
-            Export as DOCX
-          </Button>
-          <Button onClick={handleDownloadPdf}>
-            Export as PDF
-          </Button>
-          <Button type="default" onClick={handleDownloadBoth}>
-            Export Both Formats
-          </Button>
-        </Space>
       </Card>
     </div>
   );

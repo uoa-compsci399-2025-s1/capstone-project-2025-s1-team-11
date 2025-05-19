@@ -111,9 +111,9 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
     const mathElements = detectMathElements(para);
     const containsMath = mathElements.length > 0;
 
-    console.log(`Processing block ${i}, has math:`, containsMath);
+    // console.log(`Processing block ${i}, has math:`, containsMath);
     if (containsMath) {
-      console.log(`Math elements found:`, mathElements.length);
+      // console.log(`Math elements found:`, mathElements.length);
     }
 
     // Get all runs
@@ -126,8 +126,8 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
       preserveMath: true
     }, para);
 
-    console.log(`Block ${i}: type=${block['w:p'] ? 'paragraph' : 'other'}, text="${text}"`,
-        text.trim() === '' ? '(EMPTY)' : '');
+    // console.log(`Block ${i}: type=${block['w:p'] ? 'paragraph' : 'other'}, text="${text}"`,
+    //     text.trim() === '' ? '(EMPTY)' : '');
 
     // Handle empty lines
     if (text.trim() === '') {
@@ -147,7 +147,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
     // Check if this is a new question
     if (isNewQuestion(text)) {
-      console.log(`Found question marker: ${text.substring(0, 30)}...`);
+      // console.log(`Found question marker: ${text.substring(0, 30)}...`);
       flushQuestion();
 
       // If we've accumulated section content after a section break, create a new section
@@ -181,7 +181,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
         answers: []
       };
 
-      console.log(`Created question with content: ${currentQuestion.contentFormatted.substring(0, 100)}...`);
+      // console.log(`Created question with content: ${currentQuestion.contentFormatted.substring(0, 100)}...`);
       continue;
     }
 
@@ -207,7 +207,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
         contentFormatted: sanitizeContentFormatted(answerText)
       });
 
-      console.log(`Added answer with content: ${answerText.substring(0, 50)}...`);
+      // console.log(`Added answer with content: ${answerText.substring(0, 50)}...`);
       continue;
     }
 

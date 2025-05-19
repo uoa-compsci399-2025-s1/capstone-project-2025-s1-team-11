@@ -10,7 +10,8 @@ import { useFileSystem } from "../hooks/useFileSystem.js";
 import { selectExamData } from '../store/exam/selectors.js';
 import CreateExamModal from './CreateExamModal';
 import EditExamModal from './EditExamModal';
-import { exportExamToPdf } from "../services/exportPdf";
+import { ExamExportService } from "../services/examExportService";
+// import { exportExamToPdf } from "../services/exportPdf";
 import { selectQuestionCount, selectTotalMarks } from '../store/exam/selectors';
 import '../index.css';
 
@@ -27,6 +28,7 @@ const StaticContextBar = ({
 }) => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
+  const coverPage = useSelector(state => state.exam.coverPage);
   const { fileHandle, createExam, openExam, saveExam } = useFileSystem();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newExamData, setNewExamData] = useState({
@@ -166,15 +168,11 @@ const StaticContextBar = ({
     if (["demo", "exemplar"].includes(type)) {
       if (!window.confirm("Are you sure you want to export this? It may be incomplete.")) return;
     }
-    // For now, call exportExamToPdf. In future, branch by type.
-    if (exam) {
-      // Stub branching for future formats
-      if (type === 'demo' || type === 'randomised' || type === 'exemplar' || type === 'marking') {
-        exportExamToPdf(exam, type);
-      } else {
-        console.log('Unknown export type:', type);
-      }
-    }
+
+    message.info(`Preparing ${type} export...`);
+    console.log(`Export of type '${type}' requested - will be implemented with DOCX export`);
+
+    // TODO: Implement specialized export types using the DOCX export
   };
 
   // Hover intent delay for bar expansion
@@ -393,12 +391,36 @@ const StaticContextBar = ({
                 menu={{
                   items: [
                     {
-                      key: 'pdf',
-                      label: 'Download as PDF',
-                      onClick: () => {
-                        setTimeout(() => message.info("Exporting PDF..."), 0);
-                        exportExamToPdf(exam);
-                        setExportDropdownOpen(false);
+                      key: 'docx',
+                      label: 'Download as DOCX',
+                      onClick: async () => {
+                        try {
+                          if (!exam) {
+                            message.error("No exam data available for export");
+                            return;
+                          }
+
+                          if (!coverPage) {
+                            message.error("No cover page available. Please upload a cover page first.");
+                            return;
+                          }
+
+                          setTimeout(() => message.info("Exporting DOCX versions..."), 0);
+
+                          // Use the coverPage from the selector
+                          const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
+
+                          if (result.success) {
+                            message.success("All exam versions exported successfully");
+                          } else {
+                            message.error(`Export failed: ${result.error}`);
+                          }
+                        } catch (error) {
+                          message.error(`Export error: ${error.message}`);
+                          console.error(error);
+                        } finally {
+                          setExportDropdownOpen(false);
+                        }
                       }
                     },
                     {
