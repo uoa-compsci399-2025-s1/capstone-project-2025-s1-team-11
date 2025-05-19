@@ -14,8 +14,6 @@ import {
     normaliseAnswersPerTeleformOptions
 } from '../examHelpers';
 
-import { createAnswer } from '../examUtils';
-
 describe('Exam Helpers', () => {
     describe('removeQuestionHelper', () => {
         test('should remove a question from a section', () => {

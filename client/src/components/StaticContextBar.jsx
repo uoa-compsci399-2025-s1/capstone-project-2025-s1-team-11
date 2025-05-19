@@ -18,8 +18,6 @@ const { Text } = Typography;
 
 const StaticContextBar = ({
   examTitle = "Untitled Exam",
-  status = "saved",
-  onExport,
   canExportDemo = false,
   canExportRandomised = false,
   canExportExemplar = false,
@@ -76,10 +74,7 @@ const StaticContextBar = ({
     unsaved: "red",
   };
 
-  const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
-
   // Handlers
-
   const handleOpenExam = async () => {
     const result = await openExam();
     if (result) {
@@ -314,7 +309,7 @@ const StaticContextBar = ({
                   ]
                 }}
                 trigger={['click']}
-                onVisibleChange={(visible) => {
+                onOpenChange={(visible) => {
                   setFileDropdownOpen(visible);
                   setIsHovered(visible);
                 }}
@@ -444,7 +439,7 @@ const StaticContextBar = ({
                   ]
                 }}
                 trigger={['click']}
-                onVisibleChange={(visible) => {
+                onOpenChange={(visible) => {
                   setExportDropdownOpen(visible);
                   setIsHovered(visible);
                 }}

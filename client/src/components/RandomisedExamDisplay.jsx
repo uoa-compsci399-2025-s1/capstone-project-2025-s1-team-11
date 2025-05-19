@@ -18,7 +18,6 @@ const shuffle = (arr) => {
 
 const baseData = () => {
   let data = [];
-  let sectionCount = 1;
   let questionNumber = 1;
 
   const sectionTitles = [

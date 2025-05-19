@@ -169,7 +169,7 @@ const examSlice = createSlice({
         //Object.assign(container.questions[questionsIndex], newData);
         Object.assign(question, newData);
         if (optionsCount !== question.answers.length) {
-          question.answers = normaliseAnswersToLength(question.answers, optionCount);
+          question.answers = normaliseAnswersToLength(question.answers, optionsCount);
         }
       } else if (container.type === 'question') {
         Object.assign(container, newData);
