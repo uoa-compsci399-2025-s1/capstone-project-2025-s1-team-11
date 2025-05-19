@@ -169,7 +169,7 @@ function ExamConsole() {
           clearOutput();
           break;
           
-        case 'create-exam': { {
+        case 'create-exam': {
           // Format: create-exam "Exam Title" "CS101" "Intro to CS" "Fall" 2023
           if (parts.length < 6) {
             addToOutput('Usage: create-exam "Title" "CourseCode" "CourseName" "Semester" Year', 'error');
@@ -194,11 +194,13 @@ function ExamConsole() {
           addToOutput('Exam created successfully!', 'success');
           break;
         }
+
         case 'clear-exam': {
           dispatch(clearExamState());
           addToOutput('Exam cleared successfully!', 'success');
           break;
         }
+
         case 'add-section': {
           // Format: add-section "Section Title" "Content Text"
           if (!examState.examData) {
@@ -221,8 +223,8 @@ function ExamConsole() {
           addToOutput('Section added successfully!', 'success');
           break;
         }
-        }          
-        case 'add-question': { {
+
+        case 'add-question': {
           // Format: add-question "Question content" MARKS EXAMBODY_INDEX 
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -259,8 +261,8 @@ function ExamConsole() {
           addToOutput('Question added successfully!', 'success');
           break;
         }
-        }
-        case 'set-cover-page': { {
+
+        case 'set-cover-page': {
           // Format: set-cover-page "Content" "Format"
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -280,9 +282,9 @@ function ExamConsole() {
           
           addToOutput('Cover page set successfully!', 'success');
           break;
-        }        }
-          
-        case 'set-appendix': { {
+        }
+
+        case 'set-appendix': {
           // Format: set-appendix "Content" "Format"
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -302,8 +304,8 @@ function ExamConsole() {
           
           addToOutput('Appendix set successfully!', 'success');
           break;
-        }        }
-          
+        }
+
         case 'remove-cover-page': {
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -313,7 +315,8 @@ function ExamConsole() {
           dispatch(removeCoverPage());
           addToOutput('Cover page removed successfully!', 'success');
           break;
-        }          
+        }
+
         case 'remove-appendix': {
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -323,146 +326,7 @@ function ExamConsole() {
           dispatch(removeAppendix());
           addToOutput('Appendix removed successfully!', 'success');
           break;
-          
         }
-        case 'update-question': {
-            if (!examState.examData) {
-              addToOutput('No exam is currently loaded. Create an exam first.', 'error');
-              break;
-            }
-          
-            if (parts.length < 5) {
-              addToOutput('Usage: update-question EXAMBODY_INDEX QUESTION_INDEX "field" "value"', 'error');
-              break;
-            }
-          
-            const updateQuestionArgs = parseQuotedArgs(trimmedCommand);
-            const exBodyIdx = parseInt(updateQuestionArgs[1]);
-            const qIdx = parseInt(updateQuestionArgs[2]);
-            const qField = updateQuestionArgs[3].toLowerCase();
-            const qValue = updateQuestionArgs[4];
-          
-            const location = { examBodyIndex: exBodyIdx };
-            const exBodyItem = examState.examData.examBody[exBodyIdx];
-            if (!exBodyItem) {
-              addToOutput('Invalid examBody index', 'error');
-              break;
-            }
-          
-            if (exBodyItem.type === 'section') location.questionsIndex = qIdx;
-            const currentQuestion = exBodyItem.type === 'section'
-              ? exBodyItem.questions[qIdx]
-              : exBodyItem;
-            console.log(`location: ${JSON.stringify(location)}`)
-          
-            if (!currentQuestion) {
-              addToOutput('Invalid question index', 'error');
-              break;
-            }
-          
-            const qUpdateData = {};
-          
-            switch (qField) {
-              case 'contenttext':
-                qUpdateData.contentText = qValue;
-                break;
-              case 'contentformatted':
-                qUpdateData.content = qValue;
-                break;
-              case 'questionumber':
-                qUpdateData.questionNumber = parseInt(qValue) || null;
-                break;
-              case 'marks':
-                qUpdateData.marks = parseInt(qValue) || null;
-                break;
-              case 'format':
-              case 'type':
-              case 'pagebreakafter':
-                qUpdateData[qField] = qValue;
-                break;
-          
-              case 'answer': {
-                // Format: "INDEX,contentText"
-                const ansParts = qValue.split(',');
-                if (ansParts.length < 2) {
-                  addToOutput('For answer field, use format: "INDEX,Text"', 'error');
-                  break;
-                }
-                const ansIdx = parseInt(ansParts[0]);
-                const ansContent = ansParts.slice(1).join(',').trim();
-                qUpdateData.answers = [...(currentQuestion.answers || [])];
-          
-                while (qUpdateData.answers.length <= ansIdx) {
-                  qUpdateData.answers.push(createAnswer({}));
-                }
-          
-                qUpdateData.answers[ansIdx] = {
-                  ...qUpdateData.answers[ansIdx],
-                  contentText: ansContent,
-                };
-                break;
-              }          
-              case 'answers': {
-                // Format: "text1|text2|text3"
-                qUpdateData.answers = qValue.split('|').map((text, i) => ({
-                  ...(currentQuestion.answers?.[i] || createAnswer({})),
-                  contentText: text.trim(),
-                }));
-                break;
-              }          
-              case 'correctanswer': {
-                // Format: "INDEX"
-                const correctIndex = parseInt(qValue);
-                qUpdateData.answers = (currentQuestion.answers || []).map((a, i) => ({
-                  ...a,
-                  correct: i === correctIndex,
-                }));
-                break;
-              }          
-              case 'correctanswers': {
-                // Format: "1,0,0,1"
-                try {
-                  const correctFlags = qValue.split(',').map(v => parseInt(v.trim()) === 1);
-                  qUpdateData.answers = (currentQuestion.answers || []).map((a, i) => ({
-                    ...a,
-                    correct: correctFlags[i] || false,
-                  }));
-                } catch {
-                  addToOutput('Invalid format for correctanswers', 'error');
-                  break;
-                }
-                break;
-              }          
-              case 'fixedposition': {
-                // Format: "INDEX,POSITION"
-                const lockSplit = qValue.split(',');
-                if (lockSplit.length < 2) {
-                  addToOutput('Use format: "fixedposition,INDEX,POSITION"', 'error');
-                  break;
-                }
-                const lockIndex = parseInt(lockSplit[0]);
-                const fixedPos = parseInt(lockSplit[1]);
-                qUpdateData.answers = [...(currentQuestion.answers || [])];
-          
-                while (qUpdateData.answers.length <= lockIndex) {
-                  qUpdateData.answers.push(createAnswer({}));
-                }
-          
-                qUpdateData.answers[lockIndex] = {
-                  ...qUpdateData.answers[lockIndex],
-                  fixedPosition: isNaN(fixedPos) ? null : fixedPos,
-                };
-                break;
-              }          
-              default:
-                addToOutput(`Unknown question field: ${qField}`, 'error');
-                return;          
-            dispatch(updateQuestion({ location, newData: qUpdateData }));
-            addToOutput(`Updated question ${qField} successfully!`, 'success');
-            break;
-          }          
-          
-        case 'update-section': {
 
         case 'update-question': {
           if (!examState.examData) {
@@ -502,28 +366,23 @@ function ExamConsole() {
           const qUpdateData = {};
         
           switch (qField) {
-            case 'contenttext': {
+            case 'contenttext':
               qUpdateData.contentText = qValue;
               break;
-            }
-            case 'contentformatted': {
+            case 'contentformatted':
               qUpdateData.content = qValue;
               break;
-            }
-            case 'questionumber': {
+            case 'questionumber':
               qUpdateData.questionNumber = parseInt(qValue) || null;
               break;
-            }
-            case 'marks': {
+            case 'marks':
               qUpdateData.marks = parseInt(qValue) || null;
               break;
-            }
             case 'format':
             case 'type':
-            case 'pagebreakafter': {
+            case 'pagebreakafter':
               qUpdateData[qField] = qValue;
               break;
-            }
             case 'answer': {
               // Format: "INDEX,contentText"
               const ansParts = qValue.split(',');
@@ -597,16 +456,16 @@ function ExamConsole() {
               };
               break;
             }
-            default: {
+            default:
               addToOutput(`Unknown question field: ${qField}`, 'error');
               return;
-            }
           }
         
           dispatch(updateQuestion({ location, newData: qUpdateData }));
           addToOutput(`Updated question ${qField} successfully!`, 'success');
           break;
         }
+
         case 'update-section': {
           // Format: update-section EXAMBODY_INDEX "field" "value"
           if (!examState.examData) {
@@ -634,27 +493,24 @@ function ExamConsole() {
           // Create update data object
           const secUpdateData = {};
           switch (secField) {
-            case 'title': {
-            case 'sectionTitle':  
+            case 'title':
+            case 'sectionTitle':
               secUpdateData.sectionTitle = secValue;
               break;
-            }
-            case 'contentText': {
+            case 'contentText':
               secUpdateData.contentText = secValue;
               break;
-            }
-            default: {
+            default:
               addToOutput(`Unknown section field: ${secField}`, 'error');
               return;
-            }
           }
           
           dispatch(updateSection({ examBodyIndex: secIdx, newData: secUpdateData }));
           addToOutput(`Updated section ${secField} successfully!`, 'success');
           break;
-        }        }
-          
-        case 'move-question': { {
+        }
+
+        case 'move-question': {
           // Format: move-question "<source examBodyIndex>.<questionsIndex (optional)>" "<destination examBodyIndex>.<questionsIndex (optional)>"
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -724,8 +580,8 @@ function ExamConsole() {
           addToOutput('Question moved successfully!', 'success');
           break;
         }
-        }          
-        case 'move-section': { {
+
+        case 'move-section': {
           // Format: move-question "<source examBodyIndex>" "<destination examBodyIndex>"
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -758,7 +614,8 @@ function ExamConsole() {
           dispatch(moveSection({ sourceIndex, destIndex }));
           addToOutput('Section moved sucessfully!', 'success');
           break;
-        }          
+        }
+
         case 'remove-section': {
           // Format: remove-section INDEX
           if (!examState.examData) {
@@ -782,9 +639,9 @@ function ExamConsole() {
           dispatch(removeSection(remSectionIdx));
           addToOutput('Section removed successfully!', 'success');
           break;
-        }        }
-          
-        case 'remove-question': { {
+        }
+
+        case 'remove-question': {
           // Format: remove-question [SECTION_INDEX.]QUESTION_INDEX
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -811,9 +668,9 @@ function ExamConsole() {
           dispatch(removeQuestion(location2));
           addToOutput('Question removed successfully!', 'success');
           break;
-        }        }
-          
-        case 'update-exam-field': { {
+        }
+
+        case 'update-exam-field': {
           // Format: update-exam-field "field" "value"
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -832,9 +689,9 @@ function ExamConsole() {
           dispatch(updateExamField({ field: fieldName, value: fieldValue }));
           addToOutput(`Updated exam field "${fieldName}" successfully!`, 'success');
           break;
-        }        }
-          
-        case 'update-exam-metadata': { {
+        }
+
+        case 'update-exam-metadata': {
           // Format: update-exam-metadata "key" "value"
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -857,9 +714,9 @@ function ExamConsole() {
           dispatch(updateExamMetadata(metadataUpdate));
           addToOutput(`Updated exam metadata "${metaKey}" successfully!`, 'success');
           break;
-        }        }
-          
-        case 'set-exam-versions': { {
+        }
+
+        case 'set-exam-versions': {
           // Format: set-exam-versions "version1,version2,version3"
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -877,9 +734,9 @@ function ExamConsole() {
           dispatch(setExamVersions(versions));
           addToOutput(`Set exam versions successfully: ${versions.join(', ')}`, 'success');
           break;
-        }        }
-          
-        case 'set-teleform-options': { {
+        }
+
+        case 'set-teleform-options': {
           // Format: set-teleform-options "a),b),c),d),e)"
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -897,8 +754,8 @@ function ExamConsole() {
           dispatch(setTeleformOptions(options));
           addToOutput(`Set teleform options successfully: ${options.join(', ')}`, 'success');
           break;
-        }        }
-          
+        }
+
         case 'shuffle-answers': {
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -908,8 +765,9 @@ function ExamConsole() {
           dispatch(regenerateShuffleMaps());
           addToOutput('Answers shuffled successfully!', 'success');
           break;
-        }          
-        case 'selector': { {
+        }
+
+        case 'selector': {
           // Format: selector NAME [ARGS]
           if (parts.length < 2) {
             addToOutput('Usage: selector NAME [ARGS]', 'error');
@@ -922,9 +780,9 @@ function ExamConsole() {
           
           runSelector(selectorName, ...selectorArgs);
           break;
-        }        }
-          
-        case 'show': { {
+        }
+
+        case 'show': {
           // Format: show exam
           if (!examState.examData) {
             addToOutput('No exam is currently loaded. Create an exam first.', 'error');
@@ -980,8 +838,8 @@ function ExamConsole() {
             addToOutput('Invalid show command', 'error');
           }
           break;
-        }        }
-          
+        }
+
         default: {
           addToOutput(`Unknown command: ${mainCommand}. Type 'help' for available commands.`, 'error');
           break;
@@ -995,8 +853,6 @@ function ExamConsole() {
     // Clear command input
     setCommand('');
   };
-  
-
   
   // Parse quoted arguments (handles spaces in arguments)
   const parseQuotedArgs = (cmdString) => {

@@ -38,6 +38,24 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
     color: isDarkMode ? '#ffffff' : '#000000'
   };
 
+  const contentStyle = {
+    padding: '24px 48px',
+    flex: 1,
+    backgroundColor: isDarkMode ? '#121212' : '#f0f2f5'
+  };
+
+  const breadcrumbStyle = {
+    margin: '16px 0',
+    color: isDarkMode ? '#ffffff' : '#000000'
+  };
+
+  const contentContainerStyle = {
+    padding: 24,
+    minHeight: 380,
+    backgroundColor: isDarkMode ? '#1f1f1f' : '#ffffff',
+    borderRadius: borderRadiusLG
+  };
+  
   return (
     <Layout style={layoutStyle}>
       <Header style={headerStyle}>
