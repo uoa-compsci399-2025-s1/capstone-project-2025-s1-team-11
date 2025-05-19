@@ -22,26 +22,10 @@
   "examBody": [
     {
       "type": "question",
-      "contentFormatted": "",
+      "contentFormatted": "What is my name?",
       "format": "HTML",
-      "contentText": "",
       "id": "id-1745890408860-1",
-      "questionText": "What is my name?",
-      "options": [
-        "William",
-        "Alice",
-        "Bob",
-        "Rob",
-        "Option E"
-      ],
-      "correctIndex": 0,
-      "lockedPositionsMap": [
-        -1,
-        -1,
-        -1,
-        -1,
-        -1
-      ],
+      "contentText": "What is my name?",
       "answerShuffleMap": [],
       "pageBreakAfter": false,
       "questionNumber": 1,
@@ -49,45 +33,45 @@
       "answers": [
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "William",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "William",
           "pageBreakAfter": false,
           "correct": true,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Alice",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Alice",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Bob",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Bob",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Rob",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Rob",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Option E",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Option E",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -126,71 +110,56 @@
     },
     {
       "type": "question",
-      "contentFormatted": "",
+      "contentFormatted": "Capital of New Zealand?",
       "format": "HTML",
-      "contentText": "",
       "id": "id-1745890409600-2",
-      "questionText": "Capital of New Zealand?",
-      "options": [
-        "Auckland",
-        "Christchurch",
-        "Otago",
-        "Hamilton"
-      ],
-      "correctIndex": 0,
-      "lockedPositionsMap": [
-        -1,
-        -1,
-        -1,
-        -1,
-        -1
-      ],
+      "contentText": "Capital of New Zealand?",
       "answerShuffleMap": [],
       "pageBreakAfter": false,
       "questionNumber": 2,
-      "marks": null,
+      "marks": 1,
       "answers": [
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Auckland",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Auckland",
           "pageBreakAfter": false,
           "correct": true,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Christchurch",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Christchurch",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Otago",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Otago",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Hamilton",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Hamilton",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Option E",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Option E",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -229,72 +198,56 @@
     },
     {
       "type": "question",
-      "contentFormatted": "",
+      "contentFormatted": "New Question",
       "format": "HTML",
-      "contentText": "",
       "id": "id-1745890410595-3",
-      "questionText": "New Question",
-      "options": [
-        "Option A",
-        "Option B",
-        "Option C",
-        "Option D",
-        "Option E"
-      ],
-      "correctIndex": 0,
-      "lockedPositionsMap": [
-        -1,
-        -1,
-        -1,
-        -1,
-        -1
-      ],
+      "contentText": "New Question",
       "answerShuffleMap": [],
       "pageBreakAfter": false,
       "questionNumber": 3,
-      "marks": null,
+      "marks": 2,
       "answers": [
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Option A",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Option A",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Option B",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Option B",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Option C",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Option C",
           "pageBreakAfter": false,
           "correct": true,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Option D",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Option D",
           "pageBreakAfter": false,
           "correct": true,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Option E",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Option E",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -333,72 +286,56 @@
     },
     {
       "type": "question",
-      "contentFormatted": "",
+      "contentFormatted": "New Question",
       "format": "HTML",
-      "contentText": "",
       "id": "id-1745890412644-4",
-      "questionText": "New Question",
-      "options": [
-        "Option A",
-        "Option B",
-        "Option C",
-        "Option D",
-        "Option E"
-      ],
-      "correctIndex": 0,
-      "lockedPositionsMap": [
-        -1,
-        -1,
-        -1,
-        -1,
-        -1
-      ],
+      "contentText": "New Question",
       "answerShuffleMap": [],
       "pageBreakAfter": false,
       "questionNumber": 4,
-      "marks": null,
+      "marks": 0,
       "answers": [
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Option A",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Option A",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Option B",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Option B",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Option C",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Option C",
           "pageBreakAfter": false,
           "correct": true,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Option D",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Option D",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
         },
         {
           "type": "answer",
-          "contentFormatted": "",
+          "contentFormatted": "Option E",
           "format": "HTML",
-          "contentText": "",
+          "contentText": "Option E",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -437,15 +374,103 @@
     },
     {
       "type": "section",
-      "contentFormatted": "",
+      "contentFormatted": "This sectin has a nested question",
       "format": "HTML",
-      "contentText": "",
-      "title": "This is a prompt",
-      "subtext": "Bla bla bla",
+      "contentText": "This section has a nested question",
+      "title": "Nest test Sect",
       "pageBreakAfter": false,
       "sectionTitle": "",
       "sectionNumber": 1,
-      "questions": [],
+      "questions": [
+        {
+          "type": "question",
+          "contentFormatted": "New Question",
+          "format": "HTML",
+          "id": "id-1745890412644-4",
+          "contentText": "New Question",
+          "answerShuffleMap": [],
+          "pageBreakAfter": false,
+          "questionNumber": 4,
+          "marks": 0,
+          "answers": [
+            {
+              "type": "answer",
+              "contentFormatted": "Option A",
+              "format": "HTML",
+              "contentText": "Option A",
+              "pageBreakAfter": false,
+              "correct": false,
+              "fixedPosition": null
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Option B",
+              "format": "HTML",
+              "contentText": "Option B",
+              "pageBreakAfter": false,
+              "correct": false,
+              "fixedPosition": null
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Option C",
+              "format": "HTML",
+              "contentText": "Option C",
+              "pageBreakAfter": false,
+              "correct": true,
+              "fixedPosition": null
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Option D",
+              "format": "HTML",
+              "contentText": "Option D",
+              "pageBreakAfter": false,
+              "correct": false,
+              "fixedPosition": null
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Option E",
+              "format": "HTML",
+              "contentText": "Option E",
+              "pageBreakAfter": false,
+              "correct": false,
+              "fixedPosition": null
+            }
+          ],
+          "answerShuffleMaps": [
+            [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            [
+              0,
+              1,
+              2,
+              3,
+              4
+            ]
+          ]
+        }
+      ],
       "id": "id-1746050505196-1"
     }
   ],

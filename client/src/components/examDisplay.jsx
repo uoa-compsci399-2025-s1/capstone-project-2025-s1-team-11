@@ -127,7 +127,57 @@ const ExamDisplay = () => {
     }
   };
 
-  // Edit item handler
+  useEffect(() => {
+    if (exam && !Array.isArray(exam?.examBody)) {
+      console.warn(" examBody is not an array or missing:", exam?.examBody);
+      return;
+    }
+    if (!exam) {
+      // Do nothing if exam is simply not ready yet
+      return;
+    }
+    
+    const items = [];
+
+    exam.examBody.forEach((entry) => {
+      const type = (entry.type || "").toLowerCase();
+
+      if (type === "section") {
+        items.push({
+          id: entry.id,
+          type: "section",
+          title: entry.title,
+          contentText: entry.contentText,
+        });
+
+        (entry.questions || []).forEach((q) => {
+          items.push({
+            ...q,
+            type: "question",
+            section: entry.sectionTitle,
+            contentText: q.contentText,
+            options: q.options || (q.answers || []).map(a => a.contentText),
+            correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
+          });
+        });
+        
+      } else if (type === "question") {
+        items.push({
+          ...entry,
+          type: "question",
+          contentText: entry.contentText,
+          options: entry.options || (entry.answers || []).map(a => a.contentText),
+          correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
+        });
+      
+      } else {
+        console.warn(" Unknown item type:", entry);
+      }
+    });
+
+    setExamItems(items);
+  }, [exam]);
+
   const handleEdit = (item) => {
     setModalState({
       visible: true,
@@ -149,7 +199,7 @@ const ExamDisplay = () => {
         examBodyIndex,
         newData: {
           sectionTitle: item.sectionTitle,
-          subtext: item.subtext,
+          contentText: item.contentText,
         },
       }));
     } else if (type === "question") {
@@ -180,7 +230,7 @@ const ExamDisplay = () => {
           questionId: item.id
         },
         newData: {
-          questionText: item.questionText,
+          contentText: item.contentText,
           options: item.options,
           correctIndex: item.correctIndex
         }
@@ -461,10 +511,10 @@ const ExamDisplay = () => {
               style={{ marginBottom: 8 }}
             />
             <TextArea
-              value={modalState.item?.subtext}
+              value={modalState.item?.contentText}
               onChange={(e) => setModalState(prev => ({
                 ...prev,
-                item: { ...prev.item, subtext: e.target.value }
+                item: { ...prev.item, contentText: e.target.value }
               }))}
               placeholder="Instructions or Subtext"
               autoSize
@@ -473,10 +523,10 @@ const ExamDisplay = () => {
         ) : modalState.type === "question" && (
           <>
             <Input
-              value={modalState.item?.questionText}
+              value={modalState.item?.contentText}
               onChange={(e) => setModalState(prev => ({
                 ...prev,
-                item: { ...prev.item, questionText: e.target.value }
+                item: { ...prev.item, contentText: e.target.value }
               }))}
               placeholder="Question Text"
               style={{ marginBottom: 8 }}

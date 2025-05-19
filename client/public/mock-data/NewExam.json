@@ -6,10 +6,10 @@
   "semester": "asd",
   "year": "asdasds",
   "versions": [
-    1,
-    2,
-    3,
-    4
+    "00000001",
+    "00000002",
+    "00000003",
+    "00000004"
   ],
   "teleformOptions": [
     "a",
@@ -22,7 +22,7 @@
   "examBody": [
     {
       "type": "question",
-      "contentFormatted": "",
+      "contentFormatted": "New Question",
       "format": "HTML",
       "contentText": "New Question",
       "pageBreakAfter": false,
@@ -90,20 +90,11 @@
           4
         ]
       ],
-      "id": "id-1746050079081-4",
-      "questionText": "New Question",
-      "options": [
-        "William",
-        "Michael",
-        "Answer 3",
-        "Answer 4",
-        "Answer 5"
-      ],
-      "correctIndex": 1
+      "id": "id-1746050079081-4"
     },
     {
       "type": "question",
-      "contentFormatted": "",
+      "contentFormatted": "New Question",
       "format": "HTML",
       "contentText": "New Question",
       "pageBreakAfter": false,
@@ -171,16 +162,7 @@
           4
         ]
       ],
-      "id": "id-1746050079081-5",
-      "questionText": "New Question",
-      "options": [
-        "Answer 1",
-        "Answer 2",
-        "Answer 3",
-        "Answer 4",
-        "Answer 5"
-      ],
-      "correctIndex": 1
+      "id": "id-1746050079081-5"
     },
     {
       "type": "question",
@@ -252,16 +234,7 @@
           4
         ]
       ],
-      "id": "id-1746050079081-6",
-      "questionText": "New Question",
-      "options": [
-        "Answer 1",
-        "Answer 2",
-        "Answer 3",
-        "Answer 4",
-        "Answer 5"
-      ],
-      "correctIndex": 1
+      "id": "id-1746050079081-6"
     },
     {
       "type": "section",
@@ -282,23 +255,7 @@
       "format": "HTML",
       "contentText": "",
       "id": "id-1746050461529-1",
-      "questionText": "New Question",
-      "options": [
-        "Option A",
-        "Option B",
-        "Option C",
-        "Option D",
-        "Option E"
-      ],
       "correctIndex": 1,
-      "lockedPositionsMap": [
-        -1,
-        -1,
-        -1,
-        -1,
-        -1
-      ],
-      "answerShuffleMap": [],
       "pageBreakAfter": false,
       "questionNumber": 4,
       "marks": 1,
