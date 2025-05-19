@@ -18,7 +18,6 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   const layoutStyle = {
     minHeight: '100vh', 
     minWidth: '100vw', 
-    display: 'flex', 
     flexDirection: 'column',
     backgroundColor: isDarkMode ? '#121212' : '#f0f2f5',
   };
@@ -39,7 +38,7 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   };
 
   const contentStyle = {
-    padding: '24px 48px',
+    padding: location.pathname === '/' ? '0' : '24px 48px',
     flex: 1,
     backgroundColor: isDarkMode ? '#121212' : '#f0f2f5'
   };
@@ -57,7 +56,7 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   };
   
   return (
-    <Layout style={layoutStyle}>
+    <Layout style={{layoutStyle}}>
       <Header style={headerStyle}>
         <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} />
         <Navigation isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}/>
@@ -73,7 +72,7 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
         {isPlainPage ? (
           children
         ) : (
-          <div style={{ maxWidth: '1650px', margin: '0 auto' }}>
+          <div style={{margin: '0 auto' }}>
             <Breadcrumb
               style={breadcrumbStyle}
               items={[
