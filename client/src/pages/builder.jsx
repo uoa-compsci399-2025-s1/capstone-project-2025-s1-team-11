@@ -43,46 +43,15 @@ const Builder = () => {
             label: 'MCQ Exam Questions',
             children: (
                 <div style={{ padding: '16px 0' }}>
-                    <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'flex-end', 
-                        marginBottom: 16
-                    }}>
-                        <Tooltip title={sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}>
-                            <Button 
-                                type="default"
-                                icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                                onClick={toggleSidebar}
-                            >
-                                {sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
-                            </Button>
-                        </Tooltip>
+                    <div>
+                        <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
+                        <ExamDisplay 
+                            exam={exam} 
+                            currentItemId={currentItemId}
+                            setCurrentItemId={setCurrentItemId}
+                        />
+                        {exam && <ExamFileManager />}
                     </div>
-                    
-                    <Row gutter={24}>
-                        <Col xs={24} xl={sidebarCollapsed ? 24 : 18} style={{ transition: 'width 0.3s' }}>
-                            <div>
-                                <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
-                                <ExamDisplay 
-                                    exam={exam} 
-                                    currentItemId={currentItemId}
-                                    setCurrentItemId={setCurrentItemId}
-                                />
-                                {exam && <ExamFileManager />}
-                            </div>
-                        </Col>
-                        {!sidebarCollapsed && (
-                            <Col xs={6} style={{ transition: 'width 0.3s' }}>
-                                <ExamSidebar 
-                                    exam={exam} 
-                                    currentItemId={currentItemId}
-                                    onNavigateToItem={handleNavigateToItem}
-                                    collapsed={false}
-                                    onToggleCollapse={toggleSidebar}
-                                />
-                            </Col>
-                        )}
-                    </Row>
                 </div>
             ),
         },
@@ -120,12 +89,43 @@ const Builder = () => {
 
     return (
         <div style={{ padding: '24px' }}>
-            <h1>Builder</h1>
-            <Collapse 
-                defaultActiveKey={['1', '2', '3']} 
-                items={items}
-                style={{ marginTop: '16px' }}
-            />
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'flex-end', 
+                marginBottom: 16
+            }}>
+                <Tooltip title={sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}>
+                    <Button 
+                        type="default"
+                        icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                        onClick={toggleSidebar}
+                    >
+                        {sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
+                    </Button>
+                </Tooltip>
+            </div>
+
+            <Row gutter={24}>
+                <Col xs={24} xl={sidebarCollapsed ? 24 : 18} style={{ transition: 'width 0.3s' }}>
+                    <h1>Builder</h1>
+                    <Collapse 
+                        defaultActiveKey={['1', '2', '3']} 
+                        items={items}
+                        style={{ marginTop: '16px' }}
+                    />
+                </Col>
+                {!sidebarCollapsed && (
+                    <Col xs={6} style={{ transition: 'width 0.3s' }}>
+                        <ExamSidebar 
+                            exam={exam} 
+                            currentItemId={currentItemId}
+                            onNavigateToItem={handleNavigateToItem}
+                            collapsed={false}
+                            onToggleCollapse={toggleSidebar}
+                        />
+                    </Col>
+                )}
+            </Row>
         </div>
     );
 };
