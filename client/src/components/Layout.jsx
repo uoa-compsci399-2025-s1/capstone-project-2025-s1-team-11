@@ -9,10 +9,10 @@ const { Header, Content, Footer } = Layout;
 
 const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   const location = useLocation();
-  const isPlainPage = ["/", "/about"].includes(location.pathname); // Borderless pages
+  const isPlainPage = ["/", "/about"].includes(location.pathname); 
 
   const {
-    token: { borderRadiusLG, colorBgContainer },
+    token: { borderRadiusLG },
   } = theme.useToken();
 
   const layoutStyle = {
@@ -57,41 +57,44 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh', minWidth: '100vw', display: 'flex', flexDirection: 'column' }}>
-      <Layout style={layoutStyle}>
-        <Header style={headerStyle}>
-          <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} />
-          <Navigation isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}/>
-        </Header>
+    <Layout style={layoutStyle}>
+      <Header style={headerStyle}>
+        <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} />
+        <Navigation isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}/>
+      </Header>
 
-          {["/builder", "/randomiser", "/marker"].includes(location.pathname) && (
-          <div style={{ position: "sticky", top: 0, zIndex: 1000 }}>
-            <StaticContextBar />
+      {["/builder", "/randomiser", "/marker"].includes(location.pathname) && (
+        <div style={{ padding: '0 48px' }}>
+          <StaticContextBar />
+        </div>
+      )}
+
+      <Content style={contentStyle}>
+        {isPlainPage ? (
+          children
+        ) : (
+          <div style={{ maxWidth: '1650px', margin: '0 auto' }}>
+            <Breadcrumb
+              style={breadcrumbStyle}
+              items={[
+                {
+                  title: <Link to="/">Home</Link>,
+                },
+                {
+                  title: <Link to="/builder">MCQ Builder</Link>,
+                },
+              ]}
+            />
+            <div style={contentContainerStyle}>
+              {children}
+            </div>
           </div>
         )}
-        <Content style={{ paddingBottom: isPlainPage ? 0 : '48px', flex: 1, position: 'relative', zIndex: 1 }}>
-          {isPlainPage ? (
-            children
-          ) : (
-            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-              <div
-                style={{
-                  background: colorBgContainer,
-                  borderRadius: borderRadiusLG,
-                  minHeight: '800px',
-                  padding: '32px'
-                }}
-              >
-                {children}
-              </div>
-            </div>
-          )}
-        </Content>
+      </Content>
 
-        <Footer style={footerStyle}>
-          University of Auckland | {new Date().getFullYear()} | Created by Team 11 (Cache Converters)
-        </Footer>
-      </Layout>
+      <Footer style={footerStyle}>
+        University of Auckland | {new Date().getFullYear()} | Created by Team 11 (Cache Converters)
+      </Footer>
     </Layout>
   );
 };
