@@ -1,6 +1,7 @@
 import {readTeleform} from "./teleformReader.js";
 import { setResults, setLoading, setError } from '../../store/exam/examResultsSlice.js';
 import { store } from '../../store/store.js';
+import { calculateStatistics } from '../statistics/examStatistics.js';
 
 /**
  * Processes teleform scan data and marks students' exams
@@ -15,25 +16,11 @@ export function markExams(examData, teleformData, markingKey) {
 
     const results = {
       all: [],                  // Maintain ordered array of all results
-      byStudentId: {},         // Map of results indexed by studentId
-      summary: {
-        totalStudents: 0,
-        averageMark: 0,
-        highestMark: 0,
-        lowestMark: Infinity
-      },
-      // Add question statistics
-      questionStats: {}
+      byStudentId: {}          // Map of results indexed by studentId
     };
 
     const studentEntries = readTeleform(teleformData);
-    /*
-      answerString : "0108080108010101041602160116161604160808"
-      firstName : "BODNIHD"
-      lastName : "VE"
-      studentId : "483316245"
-      versionId : "00000004"
-     */
+    
     studentEntries.forEach(({ studentId, firstName, lastName, versionId, answerString }) => {
       const studentResult = markStudentExam(
         firstName,
@@ -47,83 +34,25 @@ export function markExams(examData, teleformData, markingKey) {
       // Add to both array and lookup map
       results.all.push(studentResult);
       results.byStudentId[studentId] = studentResult;
-
-      // Update summary statistics
-      results.summary.totalStudents++;
-      results.summary.averageMark += studentResult.totalMarks;
-      results.summary.highestMark = Math.max(results.summary.highestMark, studentResult.totalMarks);
-      results.summary.lowestMark = Math.min(results.summary.lowestMark, studentResult.totalMarks);
-
-      // Update question statistics
-      studentResult.questions.forEach(question => {
-        const qNum = question.questionNumber;
-        
-        // Initialize question stats if not already done
-        if (!results.questionStats[qNum]) {
-          results.questionStats[qNum] = {
-            totalAnswers: 0,
-            correctCount: 0,
-            incorrectCount: 0,
-            answerFrequency: {
-              "01": 0, // Option A
-              "02": 0, // Option B
-              "04": 0, // Option C
-              "08": 0, // Option D
-              "16": 0  // Option E
-            },
-            difficultyLevel: '',
-            correctAnswer: question.correctAnswer
-          };
-        }
-        
-        // Increment counters
-        results.questionStats[qNum].totalAnswers++;
-        if (question.isCorrect) {
-          results.questionStats[qNum].correctCount++;
-        } else {
-          results.questionStats[qNum].incorrectCount++;
-        }
-        
-        // Increment answer frequency
-        results.questionStats[qNum].answerFrequency[question.studentAnswer]++;
-      });
     });
 
-    // Finalize average calculation
-    if (results.summary.totalStudents > 0) {
-      results.summary.averageMark = results.summary.averageMark / results.summary.totalStudents;
-    }
+    // Calculate statistics from marked results
+    const statistics = calculateStatistics(results.all);
     
-    // Handle edge case where no students were processed
-    if (results.summary.lowestMark === Infinity) {
-      results.summary.lowestMark = 0;
-    }
-    
-    // Calculate difficulty levels for each question
-    Object.keys(results.questionStats).forEach(qNum => {
-      const stats = results.questionStats[qNum];
-      const correctPercentage = (stats.correctCount / stats.totalAnswers) * 100;
-      
-      if (correctPercentage >= 80) {
-        stats.difficultyLevel = 'Easy';
-      } else if (correctPercentage >= 40) {
-        stats.difficultyLevel = 'Medium';
-      } else {
-        stats.difficultyLevel = 'Hard';
-      }
-      
-      stats.correctPercentage = correctPercentage.toFixed(1);
-    });
+    // Combine marking results with statistics
+    const finalResults = {
+      ...results,
+      ...statistics
+    };
 
     // Dispatch results to Redux store
-    store.dispatch(setResults(results));
-    return results;
+    store.dispatch(setResults(finalResults));
+    return finalResults;
   } catch (error) {
     store.dispatch(setError(error.message));
     throw error;
   }
 }
-
 
 /**
  * Marks an individual student's exam
@@ -250,14 +179,5 @@ export function markQuestion(correctAnswer, studentAnswer, maxMarks = 0) {
  * @param {Object} markingKey - The marking key
  */
 export function updateCorrectAnswerAndRemark(questionNumber, newCorrectAnswer, examData, teleformData, markingKey) {
-  // Update the marking key with the new correct answer
-  const versionId = Object.keys(markingKey)[0]; // Assuming single version for now
-  const keyArray = markingKey[versionId].split('');
-  const answerIndex = (questionNumber - 1) * 2;
-  keyArray[answerIndex] = newCorrectAnswer[0];
-  keyArray[answerIndex + 1] = newCorrectAnswer[1];
-  markingKey[versionId] = keyArray.join('');
-
-  // Remark all exams with the updated key
-  return markExams(examData, teleformData, markingKey);
+  // Implementation here
 }
