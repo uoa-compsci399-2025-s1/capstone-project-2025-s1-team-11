@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
-import ExamFileManager from "../components/ExamFileManager.jsx";
+import ExamQuestionManager from "../components/ExamQuestionManager.jsx";
 import ExamSidebar from "../components/ExamSidebar.jsx";
 import { Typography, Button, Space, Row, Col, Tooltip, Collapse, Divider } from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
@@ -79,7 +79,7 @@ const Builder = () => {
                             currentItemId={currentItemId}
                             setCurrentItemId={setCurrentItemId}
                         />
-                        {exam && <ExamFileManager />}
+                        {exam && <ExamQuestionManager />}
                     </div>
 
                     <Divider />
