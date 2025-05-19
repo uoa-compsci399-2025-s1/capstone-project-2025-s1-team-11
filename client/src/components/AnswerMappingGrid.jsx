@@ -31,9 +31,10 @@ const AnswerMappingGrid = ({ mapping }) => {
               padding: "4px",
               backgroundColor: "#fafafa",
               borderRadius: "4px",
+              color: "#000000"
             }}
           >
-            Original →
+            Original ↓
           </div>
 
           {/* Column headers */}
@@ -50,6 +51,7 @@ const AnswerMappingGrid = ({ mapping }) => {
                 borderRadius: "4px",
                 padding: "4px",
                 border: "1px solid #b7eb8f",
+                color: "#000000"
               }}
             >
               {letter}
@@ -70,6 +72,7 @@ const AnswerMappingGrid = ({ mapping }) => {
                     borderRadius: "4px",
                     padding: "4px",
                     border: "1px solid #91d5ff",
+                    color: "#000000"
                 }}
               >
                 {letters[originalIndex]}
