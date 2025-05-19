@@ -35,62 +35,72 @@ const ExamDisplay = () => {
   const sensors = useSensors(pointerSensor, keyboardSensor);
 
   useEffect(() => {
-    if (exam && Array.isArray(exam.examBody)) {
-      const items = [];
+    if (!exam) {
+      setExamItems([]);
+      return;
+    }
 
-      exam.examBody.forEach((entry, examBodyIndex) => {
-        const type = (entry.type || "").toLowerCase();
-        
-        if (type === "section") {
-          // Add section
-          const sectionKey = entry.id ? `section-${entry.id}` : `section-index-${examBodyIndex}`;
-          const section = { 
-            id: entry.id, 
-            type: "section", 
-            sectionTitle: entry.sectionTitle,
-            contentFormatted: entry.contentFormatted,
-            contentText: entry.contentText,
-            subtext: entry.subtext,
-            examBodyIndex, 
-            key: sectionKey 
-          };
-          items.push(section);
+    if (!Array.isArray(exam?.examBody)) {
+      console.warn("examBody is not an array or missing:", exam?.examBody);
+      return;
+    }
 
-          (entry.questions || []).forEach((question, questionsIndex) => {
-            const questionKey = question.id ? 
-              `question-${question.id}-${examBodyIndex}-${questionsIndex}` : 
-              `question-index-${examBodyIndex}-${questionsIndex}`;
-            
-            items.push({
-              ...question,
-              type: "question",
-              section: entry.sectionTitle,
-              questionText: question.questionText || question.contentFormatted,
-              options: question.options || (question.answers || []).map(a => a.contentFormatted || a.contentText),
-              correctIndex: question.correctIndex ?? (question.answers || []).findIndex(a => a.correct),
-              examBodyIndex, 
-              questionsIndex, 
-              key: questionKey 
-            });
-          });
-        } else if (type === "question") {
-          const questionKey = entry.id ? 
-            `question-${entry.id}-${examBodyIndex}` : 
-            `question-index-${examBodyIndex}`;
-            
+    const items = [];
+    exam.examBody.forEach((entry, examBodyIndex) => {
+      const type = (entry.type || "").toLowerCase();
+      
+      if (type === "section") {
+        const sectionKey = entry.id ? `section-${entry.id}` : `section-index-${examBodyIndex}`;
+        const section = { 
+          id: entry.id, 
+          type: "section", 
+          sectionTitle: entry.sectionTitle,
+          contentFormatted: entry.contentFormatted,
+          contentText: entry.contentText,
+          subtext: entry.subtext,
+          examBodyIndex,
+          sectionNumber: examBodyIndex + 1,
+          key: sectionKey 
+        };
+        items.push(section);
+
+        (entry.questions || []).forEach((question, questionsIndex) => {
+          const questionKey = question.id ? 
+            `question-${question.id}-${examBodyIndex}-${questionsIndex}` : 
+            `question-index-${examBodyIndex}-${questionsIndex}`;
+          
           items.push({
-            ...entry,
+            ...question,
             type: "question",
-            questionText: entry.questionText || entry.contentFormatted,
-            options: entry.options || (entry.answers || []).map(a => a.contentFormatted || a.contentText),
-            correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
+            section: entry.sectionTitle,
+            contentText: question.contentText,
+            options: question.options || (question.answers || []).map(a => a.contentText),
+            correctIndex: question.correctIndex ?? (question.answers || []).findIndex(a => a.correct),
             examBodyIndex,
+            questionsIndex,
+            questionNumber: questionsIndex + 1,
             key: questionKey
           });
-        }
-      });
-      setExamItems(items);
-    }
+        });
+      } else if (type === "question") {
+        const questionKey = entry.id ? 
+          `question-${entry.id}-${examBodyIndex}` : 
+          `question-index-${examBodyIndex}`;
+          
+        items.push({
+          ...entry,
+          type: "question",
+          contentText: entry.contentText,
+          options: entry.options || (entry.answers || []).map(a => a.contentText),
+          correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
+          examBodyIndex,
+          questionNumber: examBodyIndex + 1,
+          key: questionKey
+        });
+      }
+    });
+
+    setExamItems(items);
   }, [exam]);
 
   const handleMove = (direction, examBodyIndex, questionsIndex = null) => {
@@ -126,57 +136,6 @@ const ExamDisplay = () => {
       }
     }
   };
-
-  useEffect(() => {
-    if (exam && !Array.isArray(exam?.examBody)) {
-      console.warn(" examBody is not an array or missing:", exam?.examBody);
-      return;
-    }
-    if (!exam) {
-      // Do nothing if exam is simply not ready yet
-      return;
-    }
-    
-    const items = [];
-
-    exam.examBody.forEach((entry) => {
-      const type = (entry.type || "").toLowerCase();
-
-      if (type === "section") {
-        items.push({
-          id: entry.id,
-          type: "section",
-          title: entry.title,
-          contentText: entry.contentText,
-        });
-
-        (entry.questions || []).forEach((q) => {
-          items.push({
-            ...q,
-            type: "question",
-            section: entry.sectionTitle,
-            contentText: q.contentText,
-            options: q.options || (q.answers || []).map(a => a.contentText),
-            correctIndex: q.correctIndex ?? (q.answers || []).findIndex(a => a.correct),
-          });
-        });
-        
-      } else if (type === "question") {
-        items.push({
-          ...entry,
-          type: "question",
-          contentText: entry.contentText,
-          options: entry.options || (entry.answers || []).map(a => a.contentText),
-          correctIndex: entry.correctIndex ?? (entry.answers || []).findIndex(a => a.correct),
-        });
-      
-      } else {
-        console.warn(" Unknown item type:", entry);
-      }
-    });
-
-    setExamItems(items);
-  }, [exam]);
 
   const handleEdit = (item) => {
     setModalState({
@@ -412,7 +371,7 @@ const ExamDisplay = () => {
               width: 300, 
               render: (text, record) => (record.type === "section" ? (
                 <div>
-                  {(record.contentFormatted || record.contentText) && (
+                  {(record.contentText) && (
                     <Typography.Paragraph
                       style={{ margin: 0, maxWidth: 280 }}
                       ellipsis={{ 
@@ -436,7 +395,7 @@ const ExamDisplay = () => {
                     symbol: 'more'
                   }}
                 >
-                  {record.questionText || record.contentText}
+                  {record.contentText}
                 </Typography.Paragraph>
               )),
             },
