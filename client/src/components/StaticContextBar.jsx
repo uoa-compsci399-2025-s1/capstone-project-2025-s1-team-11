@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, message as antdMessage, Modal } from 'antd';
 import { App as AntApp } from 'antd';
-import { FileOutlined, ExportOutlined, SaveOutlined } from '@ant-design/icons';
+import { FileOutlined, ExportOutlined, SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
 import { updateExamField } from "../store/exam/examSlice";
 import { setExamVersions } from "../store/exam/examSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { selectExamData } from '../store/exam/selectors.js';
+import { useHistory } from '../hooks/useHistory';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import CreateExamModal from './CreateExamModal';
 import EditExamModal from './EditExamModal';
 //import { exportExamToPdf } from "../services/exportPdf";
@@ -55,6 +57,7 @@ const StaticContextBar = ({
   });
   // Manual auto-save toggle
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const { canUndo, canRedo, undo, redo } = useHistory();
 
   // Exam progress
 
@@ -266,6 +269,21 @@ const StaticContextBar = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exam, autoSaveEnabled]);
 
+  // Add keyboard shortcuts
+  useKeyboardShortcuts({
+    onUndo: () => {
+      if (canUndo) {
+        undo();
+        message.info('Undo');
+      }
+    },
+    onRedo: () => {
+      if (canRedo) {
+        redo();
+        message.info('Redo');
+      }
+    }
+  });
 
   return (
       <div className="floating-context-bar">
@@ -328,6 +346,41 @@ const StaticContextBar = ({
                     </Tooltip>
                   </div>
                 </Dropdown>
+              </div>
+              {/* Add Undo/Redo buttons */}
+              <div className="context-button" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <Tooltip title="Undo (Ctrl+Z)">
+                  <Button
+                      icon={<UndoOutlined />}
+                      onClick={undo}
+                      disabled={!canUndo}
+                      type="text"
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        gap: '4px',
+                        color: !canUndo ? 'rgba(0, 0, 0, 0.25)' : 'inherit'
+                      }}
+                  >
+                    <span className="context-button-label">Undo</span>
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Redo (Ctrl+Y)">
+                  <Button
+                      icon={<RedoOutlined />}
+                      onClick={redo}
+                      disabled={!canRedo}
+                      type="text"
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        gap: '4px',
+                        color: !canRedo ? 'rgba(0, 0, 0, 0.25)' : 'inherit'
+                      }}
+                  >
+                    <span className="context-button-label">Redo</span>
+                  </Button>
+                </Tooltip>
               </div>
               {exam && (
                   <>
