@@ -33,15 +33,21 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
     setQuestionStats(stats.questionStats);
 
     // Set the first student as selected by default if there's data
-    if (resultsData.length > 0 && resultsData[0].studentId) {
-      setSelectedStudentId(resultsData[0].studentId);
+    if (resultsData.length > 0) {
+      const firstStudent = resultsData[0];
+      console.log("First student data:", firstStudent);
+      setSelectedStudentId(firstStudent.studentId);
     }
   }, [resultsData]);
 
   // Get the selected student data - always define this, even if we don't use it
-  const selectedStudent = selectedStudentId && hasValidData
-    ? resultsData.find(s => s.studentId === selectedStudentId)
-    : (hasValidData && resultsData.length > 0 ? resultsData[0] : null);
+  const selectedStudent = React.useMemo(() => {
+    if (!hasValidData || !selectedStudentId) return null;
+    
+    const student = resultsData.find(s => s.studentId === selectedStudentId);
+    console.log("Selected student data:", student);
+    return student;
+  }, [selectedStudentId, hasValidData, resultsData]);
   
   // Validate resultsData
   if (!hasValidData) {
@@ -161,23 +167,31 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
         <Tabs.TabPane tab="Student Reports" key="students">
           <Space direction="vertical" style={{ width: '100%' }}>
             <Select
-              style={{ width: 200 }}
+              style={{ width: 300 }}
               placeholder="Select a student"
               value={selectedStudentId}
-              onChange={setSelectedStudentId}
+              onChange={(value) => {
+                console.log("Selecting student with ID:", value);
+                setSelectedStudentId(value);
+              }}
             >
-              {resultsData.map((student, index) => (
-                <Select.Option key={`student-${index}-${student.studentId || 'unknown'}`} value={student.studentId}>
-                  {student.studentId || 'Unknown ID'} - {student.firstName || 'Unknown'} {student.lastName || 'Student'}
+              {resultsData.map((student) => (
+                <Select.Option key={student.studentId} value={student.studentId}>
+                  {student.firstName} {student.lastName} ({student.studentId})
                 </Select.Option>
               ))}
             </Select>
 
-            {selectedStudent && (
+            {selectedStudent ? (
               <StudentReport 
                 student={selectedStudent}
+                questionStats={questionStats}
                 examData={examData}
               />
+            ) : (
+              <Typography.Text type="warning">
+                Please select a student to view their report
+              </Typography.Text>
             )}
           </Space>
         </Tabs.TabPane>

@@ -40,6 +40,7 @@ export function markExams(examData, teleformData, markingKey) {
         answerString,
         markingKey,
         examData,
+        studentId
       );
 
       // Add to both array and lookup map
@@ -83,7 +84,7 @@ export function markExams(examData, teleformData, markingKey) {
  * @param {Boolean} useLegacyKey - Flag indicating whether to use legacy key
  * @returns {Object} Student's results
  */
-function markStudentExam(firstName, lastName, versionId, answerString, markingKey, examData) {
+function markStudentExam(firstName, lastName, versionId, answerString, markingKey, examData, studentId) {
   const versionKey = markingKey[versionId];
   if (!versionKey) {
     console.log(`versionId: ${versionId}`);
@@ -96,6 +97,7 @@ function markStudentExam(firstName, lastName, versionId, answerString, markingKe
   const studentResult = {
     firstName,
     lastName,
+    studentId,
     versionId,
     totalMarks: 0,
     maxMarks: 0,
