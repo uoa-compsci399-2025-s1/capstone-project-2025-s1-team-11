@@ -4,11 +4,10 @@ import React, {useState, useEffect} from "react";
 import QuestionStats from "./QuestionStats.jsx";
 import StudentReport from "./StudentReport.jsx";
 // import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js";
-// import {sampleTestData} from "../../utilities/testing/sampleTestData.js";
 import {generateResultOutput} from "../../utilities/marker/outputFormatter.js";
 import {calculateStatistics} from "../../utilities/statistics/examStatistics.js";
 
-export const Results = ({setExportFormat, exportFormat, resultsData, handleExportResults, examData}) => { //}, teleformData, markingKey, setResultsData, setExamData}) => {
+export const Results = ({setExportFormat, exportFormat, resultsData, handleExportResults, examData}) => {
   console.log("Results component received:", resultsData);
   
   // Always define hooks at the top level, never conditionally
@@ -17,7 +16,6 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
   const [questionStats, setQuestionStats] = useState({});
   const [hasValidData, setHasValidData] = useState(false);
   const [statistics, setStatistics] = useState(null);
-  // const [isLoadingTestData, setIsLoadingTestData] = useState(false);
 
   // When results data changes, calculate the statistics
   useEffect(() => {
@@ -44,83 +42,6 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
   const selectedStudent = selectedStudentId && hasValidData
     ? resultsData.find(s => s.studentId === selectedStudentId)
     : (hasValidData && resultsData.length > 0 ? resultsData[0] : null);
-
-  // Handler for loading test data from JSON
-  /* const handleLoadTestData = async () => {
-    try {
-      setIsLoadingTestData(true);
-      
-      // Use the imported sample test data instead of fetching
-      const testData = sampleTestData;
-      console.log("Loaded test data:", testData);
-      
-      // Convert the test data format to match the expected format for resultsData
-      const formattedResults = testData.studentResponses.map((student) => {
-        // Create a results object for each student
-        const studentResult = {
-          studentId: student.studentId,
-          firstName: `Student${student.studentId.substring(8)}`,
-          lastName: `Test`,
-          versionNumber: student.examVersion,
-          totalMarks: 0,
-          maxMarks: testData.exam.questions.length * 2.5, // Assuming each question is worth 2.5 marks
-          questions: []
-        };
-        
-        // Add each question's result
-        testData.exam.questions.forEach((question, qIndex) => {
-          const questionNumber = question.id;
-          const studentAnswer = student.answers[qIndex] || "";
-          const correctAnswer = testData.correctAnswers[student.examVersion]?.[questionNumber] || "";
-          const isCorrect = studentAnswer === correctAnswer;
-          
-          // Add to total marks if correct
-          if (isCorrect) {
-            studentResult.totalMarks += 2.5;
-          }
-          
-          // Map numeric answer codes to letters for display
-          const answerMap = {
-            "01": "A",
-            "02": "B",
-            "04": "C",
-            "08": "D",
-            "16": "E"
-          };
-          
-          // Add question details
-          studentResult.questions.push({
-            questionNumber,
-            studentAnswer,
-            studentAnswerLetter: answerMap[studentAnswer] || "?",
-            correctAnswer,
-            correctAnswerLetter: answerMap[correctAnswer] || "?",
-            isCorrect,
-            marks: isCorrect ? 2.5 : 0,
-            feedback: isCorrect ? "Correct" : "Incorrect"
-          });
-        });
-        
-        return studentResult;
-      });
-      
-      // Set the results data and exam data
-      setResultsData(formattedResults);
-      
-      // Add courseCode to the exam data
-      const enhancedExamData = {
-        ...testData.exam,
-        courseCode: "CS111"
-      };
-      setExamData(enhancedExamData);
-      
-    } catch (error) {
-      console.error("Error loading test data:", error);
-      alert(`Failed to load test data: ${error.message}`);
-    } finally {
-      setIsLoadingTestData(false);
-    }
-  }; */
   
   // Validate resultsData
   if (!hasValidData) {

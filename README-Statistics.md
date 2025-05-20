@@ -31,51 +31,22 @@ The feature implements several visualization components:
 
 ## Implementation Details
 
-### Files Created
-
-1. **Test Data Utilities**
-   - `/client/src/utilities/testing/sampleTestData.js`: Pre-generated dataset with 385 simulated student responses
-   - `/client/src/utilities/testing/examTestDataGenerator.js`: Utility to process real exam files for test data
-   - `/client/src/utilities/testing/generateTestData.js`: Script to run the generator and save output
-
 ### Files Modified
 
 1. **UI Components**
-   - `/client/src/components/marker/results.jsx`: Added test data loading and histogram displays
-   - `/client/src/pages/marker.jsx`: Added state management for test data
-   - `/client/src/components/marker/StudentReport.jsx`: Enhanced with defensive programming
+   - `/client/src/components/marker/results.jsx`: Main results display and histogram visualization
+   - `/client/src/pages/marker.jsx`: State management for exam results
+   - `/client/src/components/marker/StudentReport.jsx`: Individual student report display
 
 ### Resource Files
 
-The data generation utilities reference several files in the resources folder:
+The system uses several types of files:
 
-- **`CS111.docx`**: Example exam document in Word format, containing question text and structure
-- **`Versions.xlsx`**: Excel file containing correct answers for different exam versions
-- **`2010S2_111.txt`**: Sample teleform data containing student responses
-- **`examTestData.json`**: Output file for the generated test data
-- **`COMPSCI 111_0000000X.doc`**: Various exam versions for reference
-
-## Test Data Implementation
-
-To test this feature without requiring actual exam files each time, we've implemented:
-
-1. A direct JavaScript data structure (`sampleTestData.js`) for immediate use in the application
-2. A data generation utility that can process real exam files when needed
-
-The test data provides:
-- A complete exam structure with 20 questions
-- Correct answers for each question
-- 385 simulated student responses with realistic answer patterns (70% correct rate)
-- Pre-calculated statistics for analysis
+- Exam documents in Word format, containing question text and structure
+- Excel files containing correct answers for different exam versions
+- Teleform data files containing student responses
 
 ## Using the Feature
-
-### Loading Test Data
-
-1. Open the MCQ Auto-Marker
-2. Navigate to the Results tab
-3. Click the "Load Test Data" button to populate with realistic exam data
-4. Explore the various statistics and visualization tabs
 
 ### Viewing Statistics
 
@@ -92,19 +63,19 @@ The system supports exporting results in two formats:
 
 ## Technical Details
 
-### Test Data Structure
+### Data Structure
 
-The test data follows this structure:
+The exam results follow this structure:
 ```javascript
 {
   exam: {
-    title: "CS111 Exam",
+    title: String,
     questions: [/* question objects */]
   },
   correctAnswers: {
-    "11000000004": {/* answer map */}
+    [versionId]: {/* answer map */}
   },
-  studentResponses: [/* 385 student response objects */]
+  studentResponses: [/* student response objects */]
 }
 ```
 
@@ -113,12 +84,6 @@ The test data follows this structure:
 - For performance reasons, the student results list limits display to 100 students
 - Answer formats are mapped between numeric codes (01, 02, 04, 08, 16) and letters (A, B, C, D, E)
 - The implementation includes defensive programming to handle edge cases
-
-### Extending the Test Data
-
-To modify the test data characteristics:
-- Adjust the `sampleTestData.js` file to change correct answer rates or response patterns
-- Use the generator utilities with different input files for more varied data
 
 ## Future Enhancements
 

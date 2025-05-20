@@ -1,6 +1,6 @@
 // src/pages/Marker.jsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Typography, message, Button, Input, Divider } from "antd";
 import { useSelector } from "react-redux";
 import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
@@ -36,18 +36,7 @@ const Marker = () => {
     setLocalExamData(examData);
   }, [examData]);
 
-  // Add effect to handle marking when on results page
-  useEffect(() => {
-    if (currentStep === 2 && teleformData && markingKey) {
-      handleMarkExams();
-    }
-  }, [currentStep, teleformData, markingKey, currentExamData]);
-
-  const handleTeleformDataChange = (e) => {
-    setTeleformData(e.target.value);
-  };
-
-  const handleMarkExams = () => {
+  const handleMarkExams = useCallback(() => {
     if (!teleformData) {
       message.error("Please enter teleform scan data before marking.");
       return;
@@ -64,11 +53,11 @@ const Marker = () => {
       console.log("Exam results:", examResults);
       
       if (examResults && examResults.all && Array.isArray(examResults.all) && examResults.all.length > 0) {
-      setResultsData(examResults);
+        setResultsData(examResults);
         message.success(`Successfully marked ${examResults.all.length} exams.`);
       
-      // Automatically advance to the results step
-      setCurrentStep(2);
+        // Automatically advance to the results step
+        setCurrentStep(2);
       } else {
         message.error("Failed to mark exams: No valid student data found");
       }
@@ -76,6 +65,17 @@ const Marker = () => {
       console.error("Error marking exams:", error);
       message.error("Failed to mark exams: " + error.message);
     }
+  }, [teleformData, markingKey, currentExamData]);
+
+  // Add effect to handle marking when on results page
+  useEffect(() => {
+    if (currentStep === 2 && teleformData && markingKey) {
+      handleMarkExams();
+    }
+  }, [currentStep, teleformData, markingKey, handleMarkExams]);
+
+  const handleTeleformDataChange = (e) => {
+    setTeleformData(e.target.value);
   };
 
   const handleExportResults = () => {
