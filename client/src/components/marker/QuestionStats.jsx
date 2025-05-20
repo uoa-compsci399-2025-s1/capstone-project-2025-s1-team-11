@@ -8,6 +8,7 @@ import { BarChartOutlined, PieChartOutlined } from '@ant-design/icons';
 const QuestionStats = ({ results, examData }) => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [viewMode, setViewMode] = useState('table');
+  const { token } = theme.useToken();  // Get access to the theme tokens
 
   // If no results or no question stats, show nothing
   if (!results || !results.questionStats || Object.keys(results.questionStats).length === 0) {
@@ -128,7 +129,7 @@ const QuestionStats = ({ results, examData }) => {
                   style={{ 
                     height: '100%', 
                     width: `${max > 0 ? (item.value / max) * 100 : 0}%`, 
-                    backgroundColor: item.isCorrect ? theme.colorSuccess : theme.colorFillSecondary,
+                    backgroundColor: item.isCorrect ? token.colorSuccess : token.colorFillSecondary,
                     marginRight: 2,
                     color: item.isCorrect ? 'white' : undefined,
                     textAlign: 'center',

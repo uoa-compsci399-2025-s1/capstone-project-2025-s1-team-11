@@ -138,14 +138,14 @@ const StudentReport = ({ student, questionStats, examData }) => {
               <YAxis label={{ value: 'Correct %', angle: -90, position: 'insideLeft' }} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="student" name="Your Score" fill="#8884d8">
+              <Bar dataKey="student" name="Your Score" fill="#52c41a">
                 {
                   questionComparisonData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.studentColor} />
                   ))
                 }
               </Bar>
-              <Bar dataKey="class" name="Class Average" fill="#82ca9d" />
+              <Bar dataKey="class" name="Class Average" fill="#1890ff" />
             </BarChart>
           </ResponsiveContainer>
         </div>
