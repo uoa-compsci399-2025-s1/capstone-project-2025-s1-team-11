@@ -1,6 +1,6 @@
 ﻿// src/services/docxExport/modules/contentProcessors/htmlParser.js
 
-import { processImage } from './imageProcessor';
+import { processImage } from './htmlImageProcessor.js';
 
 /**
  * Parse HTML content and extract different types of content for DOCX export

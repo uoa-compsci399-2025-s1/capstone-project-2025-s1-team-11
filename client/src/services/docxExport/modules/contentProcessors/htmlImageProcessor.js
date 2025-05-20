@@ -1,4 +1,4 @@
-﻿// src/services/docxExport/modules/contentProcessors/imageProcessor.js
+﻿// src/services/docxExport/modules/contentProcessors/htmlImageProcessor.js
 
 /**
  * Processes image elements for DOCX export

@@ -1,0 +1,1 @@
+export { mergeDocxFiles } from './modules/exporters/docxMergerExporter.js';

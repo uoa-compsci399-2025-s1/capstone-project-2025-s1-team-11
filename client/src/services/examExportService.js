@@ -1,9 +1,9 @@
 ﻿// src/services/examExportService.js
 
-import { exportExamToText } from './docxExport/modules/textExport';
-import { generateFilename } from './docxExport/modules/docxtemplaterHelper';
+import { exportExamToText } from './docxExport/modules/exporters/textExport.js';
+import { generateFilename } from './docxExport/modules/utils/docxtemplaterHelper.js';
 import { exportExamToDocxWithDocxtemplater } from "./docxExport/modules/exporters/docxtemplaterExporter.js";
-import { mergeDocxFiles } from "./docxExport/modules/docxMerger.js";
+import { mergeDocxFiles } from "./docxExport/docxMerger.js";
 
 /**
  * Main entry point for exam export functionality

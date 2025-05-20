@@ -2,10 +2,13 @@
  * Convert LaTeX math to OMML (Office Math Markup Language)
  * This is a simplified conversion for common math expressions
  * @param {string} latex - LaTeX math expression
- * @param {boolean} isDisplay - Whether this is display math
+ * @param {boolean} [isDisplay] - Whether this is display math
  * @returns {string} OMML markup
  */
-export function convertLatexToOmml(latex) {
+export function convertLatexToOmml(latex,
+                                   // eslint-disable-next-line no-unused-vars
+                                   isDisplay = false) {
+
     // Basic implementation - this would need to be expanded for complex equations
     let omml = '';
 

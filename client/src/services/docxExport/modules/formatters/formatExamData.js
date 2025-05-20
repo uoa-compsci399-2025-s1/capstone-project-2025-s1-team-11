@@ -1,6 +1,6 @@
 ﻿// src/services/docxExport/modules/formatExamData.js
 
-import { parseHtmlContent } from './contentProcessors/htmlParser';
+import { parseHtmlContent } from '../contentProcessors/htmlParser.js';
 // import { formatCoverPageForTemplate, parseAppendixForExport } from './contentProcessors/coverPageParser.js';
 
 /**

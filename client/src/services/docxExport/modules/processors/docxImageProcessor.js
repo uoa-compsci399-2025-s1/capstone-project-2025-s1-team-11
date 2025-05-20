@@ -5,6 +5,7 @@ import ImageModule from "docxtemplater-image-module-free";
  * Create the image module configuration
  */
 export function createImageModule() {
+    // noinspection JSUnusedGlobalSymbols
     const imageOpts = {
         centered: false,
         fileType: "docx",
