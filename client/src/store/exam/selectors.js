@@ -82,15 +82,6 @@ const getPlainTextContent = (contentFormatted) => {
   return htmlToText(contentFormatted || '');
 };
 
-// Normaliser to suit UI table display
-const normaliseQuestionForTable = (question, sectionNumber = null) => ({
-  sectionNumber,
-  questionNumber: question.questionNumber,
-  contentText: question.contentText || '',
-  marks: question.marks || 0,
-  answers: question.answers || []
-});
-
 export const selectQuestionsForTable = createSelector(
   [selectExamBody],
   (examBody) => {
