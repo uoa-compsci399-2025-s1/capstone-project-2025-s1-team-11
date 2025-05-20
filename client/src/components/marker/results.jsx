@@ -1,6 +1,6 @@
 import {Button, Col, Divider, Empty, Progress, Radio, Row, Statistic, Typography, Tabs, Select, Space} from "antd";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useRef} from "react";
 import QuestionStats from "./QuestionStats.jsx";
 import StudentReport from "./StudentReport.jsx";
 // import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js";
@@ -16,6 +16,12 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
   const [questionStats, setQuestionStats] = useState({});
   const [hasValidData, setHasValidData] = useState(false);
   const [statistics, setStatistics] = useState(null);
+
+  // Get the selected student data
+  const selectedStudent = React.useMemo(() => {
+    if (!hasValidData || !selectedStudentId || !resultsData) return null;
+    return resultsData.find(s => s.studentId === selectedStudentId);
+  }, [selectedStudentId, hasValidData, resultsData]);
 
   // When results data changes, calculate the statistics
   useEffect(() => {
@@ -40,15 +46,6 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
     }
   }, [resultsData]);
 
-  // Get the selected student data - always define this, even if we don't use it
-  const selectedStudent = React.useMemo(() => {
-    if (!hasValidData || !selectedStudentId) return null;
-    
-    const student = resultsData.find(s => s.studentId === selectedStudentId);
-    console.log("Selected student data:", student);
-    return student;
-  }, [selectedStudentId, hasValidData, resultsData]);
-  
   // Validate resultsData
   if (!hasValidData) {
     return (
@@ -88,8 +85,15 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
         </Button>
       </div>
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab}>
-        <Tabs.TabPane tab="Summary" key="summary">
+      <Tabs 
+        activeKey={activeTab} 
+        onChange={(key) => {
+          console.log("Tab changing to:", key);
+          setActiveTab(key);
+        }}
+        destroyInactiveTabPane={true}
+      >
+        <Tabs.TabPane tab="Summary" key="summary" forceRender={false}>
           <Row gutter={16}>
             <Col span={6}>
               <Statistic title="Total Students" value={statistics?.summary?.totalStudents || 0} />
@@ -136,8 +140,8 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
           <Row gutter={16} style={{ marginTop: 16 }}>
             <Col span={24}>
               <Typography.Title level={4}>Score Distribution</Typography.Title>
-              <div style={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
+              <div style={{ width: '100%', height: '300px' }}>
+                <ResponsiveContainer width="100%" aspect={16/9}>
                   <BarChart
                     data={statistics?.summary?.scoreDistribution || []}
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
@@ -154,7 +158,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
           </Row>
         </Tabs.TabPane>
 
-        <Tabs.TabPane tab="Question Analysis" key="questionStats">
+        <Tabs.TabPane tab="Question Analysis" key="questionStats" forceRender={false}>
           <QuestionStats 
             results={{ 
               all: resultsData,
@@ -164,7 +168,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
           />
         </Tabs.TabPane>
 
-        <Tabs.TabPane tab="Student Reports" key="students">
+        <Tabs.TabPane tab="Student Reports" key="students" forceRender={false}>
           <Space direction="vertical" style={{ width: '100%' }}>
             <Select
               style={{ width: 300 }}
