@@ -1,5 +1,5 @@
 import { pushState } from './historySlice';
-import { initializeExamState } from '../exam/examSlice';
+import { initialiseExamState } from '../exam/examSlice';
 
 // List of actions that should be tracked in history
 const TRACKED_ACTIONS = [
@@ -27,7 +27,7 @@ export const historyMiddleware = store => next => action => {
     if (historyState.present) {
       console.log('History middleware: Restoring exam state from history');
       // Update the exam state with the restored state
-      store.dispatch(initializeExamState(historyState.present.examData));
+      store.dispatch(initialiseExamState(historyState.present.examData));
     }
   }
   // If this is a tracked action, update history
