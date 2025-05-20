@@ -1,5 +1,5 @@
 import {Button, Col, Divider, Empty, Progress, Radio, Row, Statistic, Typography, Tabs, Select, Space} from "antd";
-import { Column } from '@ant-design/charts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import React, {useState, useEffect} from "react";
 import QuestionStats from "./QuestionStats.jsx";
 import StudentReport from "./StudentReport.jsx";
@@ -206,65 +206,25 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
 
           <Divider />
 
-          <Typography.Title level={4}>Score Distribution</Typography.Title>
-          {(() => {
-            // Calculate percentage scores
-            const scores = resultsData.map(student => 
-              (student.totalMarks / student.maxMarks) * 100
-            );
-            
-            // Use fixed 10% bins
-            const binWidth = 10;
-            const numBins = 10; // 0-10, 10-20, ..., 90-100
-            
-            // Create bins
-            const bins = Array.from({ length: numBins }, (_, idx) => {
-              const lower = idx * binWidth;
-              const upper = lower + binWidth;
-              const count = scores.filter(score => 
-                score >= lower && (idx === numBins - 1 ? score <= upper : score < upper)
-              ).length;
-              return {
-                range: `${lower}-${upper}%`,
-                count: count,
-              };
-            });
-
-            const config = {
-              data: bins,
-              xField: 'range',
-              yField: 'count',
-              label: false,
-              xAxis: {
-                label: {
-                  autoRotate: true,
-                  style: {
-                    fontSize: 12,
-                  }
-                },
-                tickLine: null,
-                line: {
-                  style: {
-                    stroke: '#E5E5E5',
-                  },
-                },
-              },
-              yAxis: {
-                tickLine: null,
-                line: {
-                  style: {
-                    stroke: '#E5E5E5',
-                  },
-                },
-              },
-              height: 300,
-              columnStyle: {
-                fill: '#1890ff',
-              },
-            };
-
-            return <Column {...config} />;
-          })()}
+          <Row gutter={16} style={{ marginTop: 16 }}>
+            <Col span={24}>
+              <Typography.Title level={4}>Score Distribution</Typography.Title>
+              <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                  <BarChart
+                    data={statistics?.summary?.scoreDistribution || []}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="range" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#1890ff" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Col>
+          </Row>
         </Tabs.TabPane>
 
         <Tabs.TabPane tab="Question Analysis" key="questionStats">
