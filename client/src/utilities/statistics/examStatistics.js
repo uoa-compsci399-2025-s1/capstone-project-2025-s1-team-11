@@ -98,6 +98,39 @@ export function calculateStatistics(markedResults) {
     stats.correctPercentage = correctPercentage.toFixed(1);
   });
 
+  const scoreDistribution = (() => {
+    // Calculate percentage scores
+    const scores = markedResults.map(student => 
+      (student.totalMarks / student.maxMarks) * 100
+    );
+    
+    // Use fixed 10% bins
+    const binWidth = 10;
+    const numBins = 10; // 0-10, 10-20, ..., 90-100
+    
+    // Create bins
+    return Array.from({ length: numBins }, (_, idx) => {
+      const lower = idx * binWidth;
+      const upper = lower + binWidth;
+      const count = scores.filter(score => 
+        score >= lower && (idx === numBins - 1 ? score <= upper : score < upper)
+      ).length;
+      return {
+        range: `${lower}-${upper}%`,
+        count: count,
+      };
+    });
+  })();
+
+  results.summary = {
+    totalStudents: markedResults.length,
+    averageMark: results.summary.averageMark.toFixed(1),
+    passRate: results.summary.passRate.toFixed(1),
+    highestMark: results.summary.highestMark.toFixed(1),
+    lowestMark: results.summary.lowestMark.toFixed(1),
+    scoreDistribution: scoreDistribution
+  };
+
   return results;
 }
 
