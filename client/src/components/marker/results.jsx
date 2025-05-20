@@ -3,12 +3,12 @@ import { Column } from '@ant-design/charts';
 import React, {useState, useEffect} from "react";
 import QuestionStats from "./QuestionStats.jsx";
 import StudentReport from "./StudentReport.jsx";
-//import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js";
+// import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js";
 // import {sampleTestData} from "../../utilities/testing/sampleTestData.js";
 import {generateResultOutput} from "../../utilities/marker/outputFormatter.js";
 import {calculateStatistics} from "../../utilities/statistics/examStatistics.js";
 
-export const Results = ({setExportFormat, exportFormat, resultsData, handleExportResults, examData, teleformData, markingKey, setResultsData, setExamData}) => {
+export const Results = ({setExportFormat, exportFormat, resultsData, handleExportResults, examData}) => { //}, teleformData, markingKey, setResultsData, setExamData}) => {
   console.log("Results component received:", resultsData);
   
   // Always define hooks at the top level, never conditionally
@@ -44,18 +44,6 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
   const selectedStudent = selectedStudentId && hasValidData
     ? resultsData.find(s => s.studentId === selectedStudentId)
     : (hasValidData && resultsData.length > 0 ? resultsData[0] : null);
-
-  // Handler for updating correct answers
-  const handleUpdateCorrectAnswer = (questionNumber, newCorrectAnswer) => {
-    // Re-mark exams with updated correct answer
-    updateCorrectAnswerAndRemark(
-      questionNumber,
-      newCorrectAnswer,
-      examData,
-      teleformData,
-      markingKey
-    );
-  };
 
   // Handler for loading test data from JSON
   /* const handleLoadTestData = async () => {
@@ -286,7 +274,6 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
               questionStats
             }}
             examData={examData}
-            onUpdateCorrectAnswer={handleUpdateCorrectAnswer}
           />
         </Tabs.TabPane>
 
@@ -315,10 +302,10 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
         </Tabs.TabPane>
 
         <Tabs.TabPane tab="Student Results" key="studentResults">
-          <div className="results-preview" style={{ backgroundColor: "#f5f5f5", padding: 16, maxHeight: 600, overflow: "auto" }}>
+          <div className="results-preview" style={{ padding: 16, maxHeight: 600, overflow: "auto" }}>
             <h4>Preview: {resultsData.length} students</h4>
             {resultsData.slice(0, 100).map((result, index) => (
-              <div key={index} className="student-result" style={{ marginBottom: 12, padding: 8, border: "1px solid #ddd", borderRadius: 4 }}>
+              <div key={index} className="student-result" style={{ marginBottom: 12, padding: 8, borderRadius: 4 }}>
                 <h5>{result.lastName || "Unknown"}, {result.firstName || "Student"} ({result.studentId || "N/A"})</h5>
                 <p>Version: {result.versionNumber || result.versionId || "N/A"}</p>
                 <p>Score: {result.totalMarks !== undefined ? result.totalMarks : "?"}/{result.maxMarks !== undefined ? result.maxMarks : "?"}</p>

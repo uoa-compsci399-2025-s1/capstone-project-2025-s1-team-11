@@ -5,11 +5,9 @@ import { BarChartOutlined, PieChartOutlined, EditOutlined, CheckOutlined } from 
 /**
  * Component to display detailed statistics for each question
  */
-const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
+const QuestionStats = ({ results, examData }) => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [viewMode, setViewMode] = useState('table');
-  const [editMode, setEditMode] = useState(false);
-  const [newCorrectAnswer, setNewCorrectAnswer] = useState({});
 
   // If no results or no question stats, show nothing
   if (!results || !results.questionStats || Object.keys(results.questionStats).length === 0) {
@@ -63,29 +61,9 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
     ];
   };
   
-  // Handle updating correct answer
-  const handleSaveCorrectAnswer = () => {
-    if (selectedQuestion && newCorrectAnswer[selectedQuestion]) {
-      onUpdateCorrectAnswer(selectedQuestion, newCorrectAnswer[selectedQuestion]);
-      setEditMode(false);
-    }
-  };
+
   
-  // Handle selecting options for multiple correct answers - adjusted for 4-i mapping
-  const handleSelectOption = (questionNumber, option) => {
-    const optionIndex = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4 }[option];
-    const bitPosition = 4 - optionIndex; // Reverse the bit position for 4-i mapping
-    const optionValue = 1 << bitPosition;
-    
-    // Toggle the bit for this option
-    const currentValue = newCorrectAnswer[questionNumber] || 0;
-    const newValue = currentValue ^ optionValue; // XOR to toggle
-    
-    setNewCorrectAnswer({
-      ...newCorrectAnswer,
-      [questionNumber]: newValue
-    });
-  };
+
   
   // Generate the difficulty tag
   const getDifficultyTag = (difficultyLevel) => {
@@ -98,19 +76,6 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
     return <Tag color={colorMap[difficultyLevel] || 'default'}>{difficultyLevel}</Tag>;
   };
   
-  // Convert a bitmask to an array of selected options - adjusted for 4-i mapping
-  const bitmaskToOptions = (bitmask) => {
-    const binary = bitmask.toString(2).padStart(5, '0');
-    const options = [];
-    
-    if (binary[0] === '1') options.push('A');
-    if (binary[1] === '1') options.push('B');
-    if (binary[2] === '1') options.push('C');
-    if (binary[3] === '1') options.push('D');
-    if (binary[4] === '1') options.push('E');
-    
-    return options;
-  };
   
   // The questions table
   const columns = [
@@ -215,69 +180,13 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
     const histData = generateHistogramData(selectedQuestion);
     
     return (
-      <Card title={`Question ${selectedQuestion} Details`} extra={
-        <Space>
-          {!editMode ? (
-            <Button 
-              icon={<EditOutlined />} 
-              onClick={() => {
-                setEditMode(true);
-                // Initialize with current correct answer
-                const currentBitmask = parseInt(stats.correctAnswer || '0', 10);
-                setNewCorrectAnswer({
-                  ...newCorrectAnswer,
-                  [selectedQuestion]: currentBitmask
-                });
-              }}
-            >
-              Edit Correct Answer
-            </Button>
-          ) : (
-            <Button 
-              type="primary"
-              icon={<CheckOutlined />}
-              onClick={handleSaveCorrectAnswer}
-            >
-              Save
-            </Button>
-          )}
-        </Space>
-      }>
+      <Card title={`Question ${selectedQuestion} Details`}>
         <div style={{ marginBottom: 20 }}>
           <Typography.Title level={5}>
             Difficulty: {getDifficultyTag(stats.difficultyLevel || 'Unknown')}
           </Typography.Title>
           <Typography.Text>
-            Correct Answer: {
-              editMode ? (
-                <Radio.Group 
-                  value={bitmaskToOptions(newCorrectAnswer[selectedQuestion] || 0)}
-                >
-                  {teleformOptions.map((option, i) => {
-                    const bitPosition = 4 - i; // Reverse for 4-i mapping
-                    const isSelected = Boolean((newCorrectAnswer[selectedQuestion] || 0) & (1 << bitPosition));
-                    
-                    return (
-                      <Radio.Button 
-                        key={i} 
-                        value={option}
-                        checked={isSelected}
-                        onClick={() => handleSelectOption(selectedQuestion, option)}
-                        style={{
-                          backgroundColor: isSelected ? '#52c41a' : undefined,
-                          color: isSelected ? 'white' : undefined,
-                        }}
-                      >
-                        {option}
-                      </Radio.Button>
-                    );
-                  })}
-                </Radio.Group>
-              ) : (
-                // Use our helper function to convert bitmask to options
-                bitmaskToOptionLetters(parseInt(stats.correctAnswer || '0', 10))
-              )
-            }
+            Correct Answer: {bitmaskToOptionLetters(parseInt(stats.correctAnswer || '0', 10))}
           </Typography.Text>
           <Typography.Text style={{ display: 'block', marginTop: 10 }}>
             Correct: {stats.correctCount || 0} ({stats.correctPercentage || '0.0'}%) 
@@ -336,7 +245,6 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
             onClick: () => {
               setSelectedQuestion(record.questionNumber);
               setViewMode('detail');
-              setEditMode(false);
             },
           })}
         />

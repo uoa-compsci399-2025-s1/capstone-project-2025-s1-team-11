@@ -287,8 +287,6 @@ export const ExamDisplay = () => {
         }}
       >
         <Table
-          rowClassName="highlighted-table-row"
-          rowKey="key" 
           columns={[
             {
               title: "Actions",
@@ -384,7 +382,7 @@ export const ExamDisplay = () => {
                     </Typography.Paragraph>
                   )}
                   {record.sectionTitle && <strong>{record.sectionTitle}</strong>}
-                  {record.subtext && <div style={{ fontStyle: "italic", color: "#888" }}>{record.subtext}</div>}
+                  {record.subtext && <div style={{ fontStyle: "italic" }}>{record.subtext}</div>}
                 </div>
               ) : (
                 <Typography.Paragraph

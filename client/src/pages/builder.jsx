@@ -7,7 +7,7 @@ import ExamFileManager from "../components/ExamFileManager.jsx";
 import ExamSidebar from "../components/ExamSidebar.jsx";
 import { Typography, Button, Space, Row, Col, Tooltip, Collapse, Divider } from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-import { exportExamToPdf } from "../services/exportPdf.js";
+//import { exportExamToPdf } from "../services/exportPdf.js";
 
 const Builder = () => {
     const exam = useSelector(selectExamData);
