@@ -166,9 +166,9 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
               value={selectedStudentId}
               onChange={setSelectedStudentId}
             >
-              {resultsData.map(student => (
-                <Select.Option key={student.studentId} value={student.studentId}>
-                  {student.studentId} - {student.firstName} {student.lastName}
+              {resultsData.map((student, index) => (
+                <Select.Option key={`student-${index}-${student.studentId || 'unknown'}`} value={student.studentId}>
+                  {student.studentId || 'Unknown ID'} - {student.firstName || 'Unknown'} {student.lastName || 'Student'}
                 </Select.Option>
               ))}
             </Select>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Table, Typography, Progress, Radio, Tag, Tooltip, token } from 'antd';
+import { Card, Table, Typography, Progress, Radio, Tag, Tooltip, theme } from 'antd';
 import { BarChartOutlined, PieChartOutlined } from '@ant-design/icons';
 
 /**
@@ -128,7 +128,7 @@ const QuestionStats = ({ results, examData }) => {
                   style={{ 
                     height: '100%', 
                     width: `${max > 0 ? (item.value / max) * 100 : 0}%`, 
-                    backgroundColor: item.isCorrect ? token.colorSuccess : token.colorFillSecondary,
+                    backgroundColor: item.isCorrect ? theme.colorSuccess : theme.colorFillSecondary,
                     marginRight: 2,
                     color: item.isCorrect ? 'white' : undefined,
                     textAlign: 'center',

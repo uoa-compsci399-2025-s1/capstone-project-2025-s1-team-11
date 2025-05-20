@@ -8,8 +8,8 @@ import {
   updateSection,
   moveQuestion,
   moveSection,
-} from "../store/exam/examSlice";
-import { selectExamData } from "../store/exam/selectors";
+} from "../../store/exam/examSlice";
+import { selectExamData } from "../../store/exam/selectors";
 import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";

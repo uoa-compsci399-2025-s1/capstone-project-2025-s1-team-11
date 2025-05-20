@@ -1,6 +1,6 @@
 // selectors.js
 import { createSelector } from "@reduxjs/toolkit";
-import { htmlToText } from '../../utils/textUtils';
+import { htmlToText } from '../../utilities/textUtils';
 
 // Root selector
 export const selectExamState = (state) => state.exam;
@@ -86,14 +86,9 @@ const getPlainTextContent = (contentFormatted) => {
 const normaliseQuestionForTable = (question, sectionNumber = null) => ({
   sectionNumber,
   questionNumber: question.questionNumber,
-  questionText: getPlainTextContent(question.contentFormatted),
+  contentText: question.contentText || '',
   marks: question.marks || 0,
-  answers: (question.answers || []).map(answer => ({
-    ...answer,
-    contentText: getPlainTextContent(answer.contentFormatted)
-  })),
-  correctAnswers: question.correctAnswers || [],
-  lockedPositions: question.lockedPositions || { a: false, b: false, c: false, d: false, e: false },
+  answers: question.answers || []
 });
 
 export const selectQuestionsForTable = createSelector(
@@ -117,16 +112,7 @@ export const selectQuestionsForTable = createSelector(
   }
 );
 
-// Normaliser to suit UI table display
-const normaliseQuestionForTable = (question, sectionNumber = null) => ({
-  sectionNumber,
-  questionNumber: question.questionNumber,
-  contentText: question.contentText || '',
-  marks: question.marks || 0,
-  answers: question.answers || [],
-  correctAnswers: question.correctAnswers || [],
-  lockedPositions: question.lockedPositions || { a: false, b: false, c: false, d: false, e: false },
-});
+
 
 export const selectCorrectAnswerIndices = createSelector(
   [selectExamData, selectAllQuestionsFlat],
