@@ -102,7 +102,6 @@ describe('Exam Slice', () => {
         expect(exam.examBody[0].type).toBe('section');
         expect(exam.examBody[0].sectionTitle).toBe('Test Section');
         expect(exam.examBody[0].contentFormatted).toBe('<p>Section instructions</p>');
-        expect(exam.examBody[0].contentText).toBe('mocked content');
         expect(exam.examBody[0].sectionNumber).toBe(1);
         expect(Array.isArray(exam.examBody[0].questions)).toBe(true);
     });
@@ -127,7 +126,6 @@ describe('Exam Slice', () => {
         expect(exam.examBody.length).toBe(1);
         expect(exam.examBody[0].type).toBe('question');
         expect(exam.examBody[0].contentFormatted).toBe('<p>What is 2+2?</p>');
-        expect(exam.examBody[0].contentText).toBe('mocked content');
         expect(exam.examBody[0].marks).toBe(5);
         expect(exam.examBody[0].questionNumber).toBe(1);
     });

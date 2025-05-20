@@ -65,7 +65,7 @@ describe('Exam Slice Integration', () => {
     // 2. Dispatch addSection to simulate adding a section to the exam
     store.dispatch(addSection({
       sectionTitle: 'Test Section',
-      contentText: 'Section content' // Currently unused by reducer
+      contentFormatted: 'Section content' // Currently unused by reducer
     }));
 
     // 3. Get updated state from store
@@ -82,7 +82,7 @@ describe('Exam Slice Integration', () => {
 
     // NOTE: As of current reducer implementation, contentText is not used,
     // so it defaults to an empty string. This test accounts for that.
-    expect(addedSection.contentText).toBe('');
+    expect(addedSection.contentFormatted).toBe('Section content');
   });
 
   test('updateExamField updates a field in the exam', () => {
