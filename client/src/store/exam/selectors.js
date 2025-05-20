@@ -116,7 +116,7 @@ export const selectCorrectAnswerIndices = createSelector(
 
     const result = {};
 
-    // Initialize result structure for each version
+    // initialise result structure for each version
     examData.versions.forEach(versionId => {
       result[versionId] = {};
     });

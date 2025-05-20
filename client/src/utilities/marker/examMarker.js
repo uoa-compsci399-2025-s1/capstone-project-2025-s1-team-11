@@ -86,6 +86,8 @@ export function markExams(examData, teleformData, markingKey) {
 function markStudentExam(firstName, lastName, versionId, answerString, markingKey, examData) {
   const versionKey = markingKey[versionId];
   if (!versionKey) {
+    console.log(`versionId: ${versionId}`);
+    console.log(`markingKey: ${JSON.stringify(markingKey)}`);
     throw new Error(`Marking key for version ${versionId} not found.`);
   }
 

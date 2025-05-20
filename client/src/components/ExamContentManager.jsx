@@ -1,13 +1,17 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { clearExamBody } from "../store/exam/examSlice.js";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { Button, Alert, Space, Typography, Modal, Input, message, Card, Select } from "antd";
+import { addQuestion, addSection } from "../store/exam/examSlice.js";
 
-const ExamFileManager = () => {
+const ExamContentManager = () => {
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const { createExam, saveExam, closeExam, importExam } = useFileSystem();
   const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
+
+  const dispatch = useDispatch();
 
   // State for create new exam modal
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -24,19 +28,6 @@ const ExamFileManager = () => {
   });
 
   const [isClearModalVisible, setIsClearModalVisible] = useState(false);
-
-  // Open a JSON exam file
-  // const handleOpenExam = async () => {
-  //   try {
-  //     const result = await openExam();
-  //     if (result) {
-  //       setShowSuccessAlert(true);
-  //       setError("");
-  //     }
-  //   } catch (err) {
-  //     setError("Error opening exam: " + err.message);
-  //   }
-  // };
 
   const handleImportExam = async (event) => {
     const selectedFile = event.target.files[0];
@@ -70,23 +61,10 @@ const ExamFileManager = () => {
 
   const examData = useSelector((state) => state.exam.examData);
 
-  // const handleSaveExam = async () => {
-  //   try {
-  //     const result = await saveExam();
-  //     if (result) {
-  //       setShowSuccessAlert(true);
-  //       console.log("File saved successfully");
-  //     }
-  //   } catch (err) {
-  //     setError("Error saving exam: " + err.message);
-  //     console.error(err);
-  //   }
-  // };
-
   return (
     <Card>
       {/* <Typography.Title level={3}>File Manager</Typography.Title> */}
-      <Alert message="Some of this is moved/moving to the static context menu..." type="info" showIcon/>
+      {/* <Alert message="Some of this is moved/moving to the static context menu..." type="info" showIcon/> */}
         {error && <p style={{ color: "red" }}>{error}</p>}
         {showSuccessAlert && (
           <Alert
@@ -100,22 +78,17 @@ const ExamFileManager = () => {
         {examData && (
           <Space style={{ marginTop: "16px", justifyContent: "space-between", width: "100%", display: "flex" }}>
             <span /> {/* Placeholder for left alignment */}
-            {/* <Button type="primary" onClick={handleSaveExam}>
-              Save Exam
-            </Button> */}
           </Space>
         )}
 
           <Space wrap style={{ width: "100%", justifyContent: "space-between" }}>
           <Space wrap>
-            {/* <Button type="primary" onClick={() => setShowCreateModal(true)}>
-              Create New Exam
+            <Button onClick={() => dispatch(addQuestion({ examBodyIndex: null, questionData: { contentFormatted: '' } }))}>
+              Add Question
             </Button>
-            <Button onClick={async () => {
-              await handleOpenExam();
-            }}>
-              Open Exam (JSON)
-            </Button> */}
+            <Button onClick={() => dispatch(addSection({ sectionTitle: '', contentFormatted: '' }))}>
+              Add Section
+            </Button>
             <Button>
             <label style={{ cursor: "pointer", marginBottom: 0 }}>
                 Import Exam
@@ -135,7 +108,7 @@ const ExamFileManager = () => {
             </Select>
           </Space>
             <Button danger onClick={() => setIsClearModalVisible(true)} type="primary">
-              Clear Exam
+              Clear Exam Content
             </Button>
           </Space>
 
@@ -248,7 +221,7 @@ const ExamFileManager = () => {
         open={isClearModalVisible}
         title="Are you sure you want to clear the exam?"
         onOk={() => {
-          closeExam();
+          dispatch(clearExamBody());
           setIsClearModalVisible(false);
           message.success("Exam cleared");
         }}
@@ -262,4 +235,4 @@ const ExamFileManager = () => {
   );
 };
 
-export default ExamFileManager;
+export default ExamContentManager;

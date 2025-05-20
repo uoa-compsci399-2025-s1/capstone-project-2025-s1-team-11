@@ -112,7 +112,7 @@ async function parseVersionsFile(versionsFile) {
     "11000000004": {}
   };
   
-  // Initialize with some reasonable default values
+  // initialise with some reasonable default values
   // Assuming 20 questions with correct answers cycling through options
   for (let i = 1; i <= 20; i++) {
     const answerOptions = ["01", "02", "04", "08", "16"];
@@ -209,7 +209,7 @@ function calculateStatistics(examStructure, correctAnswers, studentResponses) {
       answerFrequency: {}
     };
     
-    // Initialize answer frequency counters
+    // initialise answer frequency counters
     question.options.forEach(option => {
       statistics[questionId].answerFrequency[option.id] = 0;
     });

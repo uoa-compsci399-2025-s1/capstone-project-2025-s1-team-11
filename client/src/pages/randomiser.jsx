@@ -6,6 +6,7 @@ import { regenerateShuffleMaps } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/mapDisplay";
 import ExamSidebar from "../components/ExamSidebar";
+import EmptyExam from "../components/shared/emptyExam.jsx";
 
 const { Title, Text } = Typography;
 
@@ -293,7 +294,7 @@ const Randomiser = () => {
                   );
                 })}
               </div>
-
+              <EmptyExam/>
               <Pagination
                 current={pagination.current}
                 pageSize={pagination.pageSize}

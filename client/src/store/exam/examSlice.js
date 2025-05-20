@@ -27,6 +27,7 @@ const initialState = {
   coverPage: null,
   isLoading: false,
   error: null,
+  messages: [],
 };
 const generateId = (() => {
   let counter = 1;
@@ -59,7 +60,7 @@ const examSlice = createSlice({
   name: 'exam',
   initialState,
   reducers: {
-    initializeExamState: (state, action) => {
+    initialiseExamState: (state, action) => {
       state.examData = createExam(action.payload || {});
       ensureUniqueIds(state.examData);
     },
@@ -257,18 +258,20 @@ const examSlice = createSlice({
     },
 
     updateExamField: (state, action) => {
-      const allowedFields = ['examTitle', 'courseCode', 'courseName', 'semester', 'year'];
-      const { field, value } = action.payload;
       if (!state.examData) { return; }
-      if (allowedFields.includes(field)) {
+      const allowedProperties = [
+        'examTitle', 
+        'courseCode', 
+        'courseName', 
+        'semester', 
+        'year',
+        'versions',
+        'teleformOptions'
+      ];
+      const { field, value } = action.payload;
+      if (allowedProperties.includes(field)) {
         state.examData[field] = value;
       }
-    },
-
-    updateExamMetadata: (state, action) => {
-      if (!state.examData) { return; }
-      if (!state.examData.metadata) state.examData.metadata = {};
-      Object.assign(state.examData.metadata, action.payload);
     },
 
     setExamVersions: (state, action) => {
@@ -355,9 +358,9 @@ const examSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-    // setCurrentExam: (state, action) => {
-    //   state.examData = action.payload;
-    // }
+    addExamMessage: (state, action) => {
+      state.messages.push(action.payload);
+    }
   }
 });
 
@@ -372,7 +375,7 @@ function htmlToText(html) {
 
 // Export actions
 export const { 
-  initializeExamState,
+  initialiseExamState,
   clearExamState,
   clearExamBody,
   addSection,
@@ -389,13 +392,13 @@ export const {
   removeQuestion,
   removeSection,
   updateExamField,
-  updateExamMetadata,
   setExamVersions,
   setTeleformOptions,
   regenerateShuffleMaps,
   importExamStart,
   importExamSuccess,
   importExamFailure,  
+  addExamMessage
 } = examSlice.actions;
 
 // Export reducer

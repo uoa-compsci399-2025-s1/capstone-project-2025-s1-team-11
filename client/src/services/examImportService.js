@@ -1,22 +1,19 @@
-//import { parseExamDocx } from '../dto/DOCX_Exam_DTO';
-
 import { parseDocx } from '../dto/docx/docxParser.js';
 import { MoodleXmlDTO } from '../dto/moodleXML/moodleXmlDTO.js'
 import { parseLatex, isLikelyLatex } from '../dto/latex/latexParser.js';
-//import { normaliseDocxDTO, normaliseMoodleDTO } from './normalisers.js'; // Helper functions for normalization
-//import { convertMoodleXmlToJson } from '../utilities/convertMoodleXmlToJson.js';
 import { convertMoodleXmlDTOToJsonWithSections } from '../utilities/convertMoodleXmlToJsonWithSections.js';
 import { 
   importExamStart,
   importExamSuccess,
   importExamFailure,
-  clearExamState,
-  initializeExamState,
+  initialiseExamState,
   addSection,
   addQuestion,
-  setExamVersions,
-  setTeleformOptions
+  updateExamField,
+  addExamMessage
 } from '../store/exam/examSlice';
+
+import { selectExamData } from '../store/exam/selectors.js';
 
 // This service handles the import of exams from various formats
 export class ExamImportService {
@@ -89,27 +86,42 @@ export class ExamImportService {
   }
 }
 
-// Thunk for importing an exam properly
-export const importDTOToState = (examDTO) => async (dispatch) => {
+// Thunk for importing an exam - intended behaviour is to add questions from the imported exam to the existing examBody.
+// And if imported exam contains metadata, update the existing exam metadata.
+// However we do not want to clear existing exam metadata or replace existing questions.
+export const importDTOToState = (examDTO) => async (dispatch, getState) => {
   try {
     dispatch(importExamStart());
+    //let's check if an exam is already loaded, if so update exam metadata where imported exam has metadate.
+    const examData = selectExamData(getState());
+    let importMessages = [];
 
-    dispatch(clearExamState());
-
-    dispatch(initializeExamState({
-      examTitle: examDTO.examTitle,
-      courseCode: examDTO.courseCode,
-      courseName: examDTO.courseName,
-      semester: examDTO.semester,
-      year: examDTO.year,
-    }));
-
-    // Set versions and teleform options if needed
-    if (examDTO.versions) {
-      dispatch(setExamVersions(examDTO.versions));
-    }
-    if (examDTO.teleformOptions) {
-      dispatch(setTeleformOptions(examDTO.teleformOptions));
+    // This initialises an exam if somehow an import is attempted before an exam is loaded/created. Typically 
+    // import before exam load/creation would be disabled.
+    if (!examData) {
+      const message = "No existing exam found. Default properties will be loaded. Change in exam settings if required and re-import.";
+      console.log(message);
+      console.log(`examDTO: ${JSON.stringify(examDTO.examTitle)}`);
+      importMessages.push(message);
+      const examProps = {};
+      Object.keys(examDTO).forEach(key => {
+        if (key !== 'examBody' && examDTO[key]) {
+          examProps[key] = examDTO[key];
+        }
+      });
+      
+      dispatch(initialiseExamState(examProps));
+      console.log(`examData: ${JSON.stringify(examData)}`);
+    } else {
+      Object.keys(examDTO).forEach(key => {
+        if (key !== 'examBody' && examData[key] && examDTO[key] && examData[key] != examDTO[key]) {
+          dispatch(updateExamField({
+            field: key,
+            value: examDTO[key]
+          }));
+          importMessages.push(`${key} updated to ${examDTO[key]} by imported exam.`);
+        }
+      });
     }
 
     let examBodyIndexCounter = 0;
@@ -141,8 +153,8 @@ export const importDTOToState = (examDTO) => async (dispatch) => {
         throw error;  // still rethrow to trigger importExamFailure
       }
     }
-
-    dispatch(importExamSuccess()); // You could even repurpose this to mean "done loading"
+    importMessages.forEach(message => dispatch(addExamMessage(message)));
+    dispatch(importExamSuccess()); 
 
     return;
   } catch (error) {

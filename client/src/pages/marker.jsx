@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
 import { markExams } from "../utilities/marker/examMarker.js";
 import { generateResultOutput } from "../utilities/marker/outputFormatter.js";
-import {dataReview} from "../components/marker/dataReview.jsx";
+import DataReview from "../components/marker/dataReview.jsx";
 import {Results} from "../components/marker/results.jsx"
 import {teleformReader} from "../components/marker/teleformReader.jsx";
 import {selectCorrectAnswerIndices} from "../store/exam/selectors.js";
@@ -121,7 +121,7 @@ const Marker = () => {
     
     switch (currentStep) {
       case 0:
-        return dataReview({ examData: currentExamData, markingKey });
+        return DataReview({ examData: currentExamData, markingKey });
       case 1:
         return teleformReader({teleformData, markingKey, handleTeleformDataChange});
       case 2:

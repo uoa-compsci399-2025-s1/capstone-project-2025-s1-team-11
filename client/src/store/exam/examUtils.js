@@ -19,8 +19,6 @@ export const createExam = (overrides = {}) => ({
   teleformOptions: ['a', 'b', 'c', 'd', 'e'], // Default options
   coverPage: null,
   examBody: [],
-  appendix: null,
-  metadata: [],
   ...overrides,
 });
 

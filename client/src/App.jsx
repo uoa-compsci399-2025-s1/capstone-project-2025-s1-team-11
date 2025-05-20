@@ -5,7 +5,7 @@ import DevelopmentWarning from "./components/developmentWarning";
 import PopupWarning from "./components/popupWarning";
 import {Outlet} from "react-router";
 import "./index.css";
-import ThemeToggleButton from "./components/ThemeToggleSwitch.jsx";
+//import ThemeToggleButton from "./components/ThemeToggleSwitch.jsx";
 import {Card, ConfigProvider, theme} from "antd";
 
 
@@ -49,7 +49,7 @@ const App = () => {
       }}
     >
       <MCQLayout isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}>
-        <DevelopmentWarning />
+        
         <PopupWarning
           visible={showWarning}
           onClose={() => setShowWarning(false)}
@@ -57,11 +57,12 @@ const App = () => {
         <main>
           <Outlet />
         </main>
-        <Card style={{ width: "max-content", margin: "1rem" }}>
-          <h3>User Settings</h3>
+        {/* <Card style={{ width: "max-content", margin: "1rem" }}>
           <h4>Theme Mode</h4>
             <ThemeToggleButton isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-        </Card>
+        </Card> */}
+        <br/>
+        <DevelopmentWarning />
       </MCQLayout>
     </ConfigProvider>
   );

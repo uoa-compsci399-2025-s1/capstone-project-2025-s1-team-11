@@ -6,7 +6,7 @@
  */
 
 import { useDispatch, useSelector } from 'react-redux';
-import {initializeExamState, clearExamState} from '../store/exam/examSlice';
+import {initialiseExamState, clearExamState} from '../store/exam/examSlice';
 import { selectExamData } from '../store/exam/selectors';
 import { loadExamFromFile, saveExamToDisk } from '../services/fileSystemAccess.js';
 import examImportService  from '../services/examImportService.js';
@@ -23,14 +23,14 @@ export function useFileSystem() {
     const openExam = async () => {
       const result = await loadExamFromFile();
       if (result) {
-        dispatch(initializeExamState(result.exam));
+        dispatch(initialiseExamState(result.exam));
         setFileHandle(result.fileHandle);
       }
       return result;
     };
 
     const createExam = async (exam) => {
-        dispatch(initializeExamState(exam));
+        dispatch(initialiseExamState(exam));
         setFileHandle(null);
     };
 

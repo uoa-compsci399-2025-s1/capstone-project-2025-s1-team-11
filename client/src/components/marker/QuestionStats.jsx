@@ -128,9 +128,9 @@ const QuestionStats = ({ results, examData }) => {
                   style={{ 
                     height: '100%', 
                     width: `${max > 0 ? (item.value / max) * 100 : 0}%`, 
-                    backgroundColor: item.isCorrect ? '#52c41a' : '#D3D3D3',
+                    backgroundColor: item.isCorrect ? token.colorSuccess : token.colorFillSecondary,
                     marginRight: 2,
-                    color: item.isCorrect ? 'white' : 'black',
+                    color: item.isCorrect ? 'white' : undefined,
                     textAlign: 'center',
                     display: 'flex',
                     alignItems: 'center',

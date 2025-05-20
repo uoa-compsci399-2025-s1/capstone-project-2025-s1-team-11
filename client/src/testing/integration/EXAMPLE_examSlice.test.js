@@ -5,7 +5,7 @@ This test file serves as a reference for writing integration testing using Redux
 
 It verifies:
 - Initial state is correctly set up
-- initializeExamState properly creates a new exam
+- initialiseExamState properly creates a new exam
 - addSection adds a new section (with current known reducer limitations)
 - updateExamField correctly updates fields
 
@@ -16,7 +16,7 @@ without involving React components or side effects.
 
 import { configureStore } from '@reduxjs/toolkit';
 import examReducer, {
-  initializeExamState,
+  initialiseExamState,
   addSection,
   updateExamField
 } from '../../store/exam/examSlice';
@@ -38,9 +38,9 @@ describe('Exam Slice Integration', () => {
     expect(state.exam.error).toBeNull();
   });
 
-  test('initializeExamState action creates an exam with correct data', () => {
+  test('initialiseExamState action creates an exam with correct data', () => {
     // Dispatch action to create an exam
-    store.dispatch(initializeExamState({
+    store.dispatch(initialiseExamState({
       examTitle: 'Integration Test Exam',
       courseCode: 'INT101',
       courseName: 'Integration Testing'
@@ -60,7 +60,7 @@ describe('Exam Slice Integration', () => {
     // Integration test for addSection action and exam reducer interaction.
 
     // 1. Start by creating a new exam (mimics expected app flow)
-    store.dispatch(initializeExamState({ examTitle: 'Test Exam' }));
+    store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
 
     // 2. Dispatch addSection to simulate adding a section to the exam
     store.dispatch(addSection({
@@ -87,7 +87,7 @@ describe('Exam Slice Integration', () => {
 
   test('updateExamField updates a field in the exam', () => {
     // First create an exam
-    store.dispatch(initializeExamState({
+    store.dispatch(initialiseExamState({
       examTitle: 'Original Title',
       courseCode: 'ORIG101'
     }));

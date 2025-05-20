@@ -4,9 +4,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCoverPage } from "../store/exam/examSlice";
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
-import ExamFileManager from "../components/ExamFileManager.jsx";
+import ExamFileManager from "../components/ExamContentManager.jsx";
 import ExamSidebar from "../components/ExamSidebar.jsx";
-import { Typography, Button, Space, Row, Col, Tooltip, Collapse, Divider, message, Modal } from "antd";
+import EmptyExam from "../components/shared/emptyExam.jsx";
+import { Typography, Button, Space, Row, Col, Tooltip, Collapse, Divider, message, Modal, Empty } from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { ExamExportService } from "../services/examExportService";
 //import { exportExamToPdf } from "../services/exportPdf.js";
@@ -174,41 +175,18 @@ const Builder = () => {
                     {/* MCQ Exam Questions Section */}
                     <div style={{ marginTop: '24px' }}>
                         <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
+                        
                         <ExamDisplay
                             exam={exam}
                             currentItemId={currentItemId}
                             setCurrentItemId={setCurrentItemId}
                         />
-                        {exam && <ExamFileManager />}
+                        
+                        {<ExamFileManager />}
                     </div>
 
                     <Divider />
 
-                    {/* Export & Randomise Section */}
-                    <div style={{ marginTop: '24px' }}>
-                        <Typography.Title level={3}>Export & Randomise</Typography.Title>
-                        <Typography.Paragraph type="secondary">
-                            Export functions coming soon
-                        </Typography.Paragraph>
-                        <div style={{ marginTop: 24, marginBottom: 24 }}>
-                            <Space>
-                                <Button type="primary" onClick={() => navigate('/randomiser')}>
-                                    Open in Randomiser
-                                </Button>
-                            </Space>
-                        </div>
-
-                        <div style={{ marginBottom: 24 }}>
-                            <Space>
-                                <Button type="default" onClick={handleExportDocx}>
-                                    Download as DOCX
-                                </Button>
-                                {/* <Button type="default" onClick={() => exportExamToPdf(exam)}>
-                                    Download as PDF
-                                </Button> */}
-                            </Space>
-                        </div>
-                    </div>
                 </Col>
                 {!sidebarCollapsed && (
                     <Col xs={6} style={{ transition: 'width 0.3s' }}>

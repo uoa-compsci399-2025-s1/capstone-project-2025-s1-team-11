@@ -78,7 +78,7 @@ export const ExamDisplay = () => {
             correctIndex: question.correctIndex ?? (question.answers || []).findIndex(a => a.correct),
             examBodyIndex,
             questionsIndex,
-            questionNumber: questionsIndex + 1,
+            questionNumber: question.questionNumber,
             key: questionKey
           });
         });
