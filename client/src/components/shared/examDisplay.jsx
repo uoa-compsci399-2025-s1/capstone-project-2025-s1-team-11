@@ -391,7 +391,7 @@ const ExamDisplay = () => {
         if (record.type === "section") {
           return <strong>{record.sectionTitle || record.sectionNumber}</strong>;
         }
-        return record.sectionNumber;
+        return record.sectionNumber || record.sectionTitle || '';
       },
     },
     {

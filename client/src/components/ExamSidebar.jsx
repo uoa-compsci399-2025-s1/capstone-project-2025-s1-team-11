@@ -35,6 +35,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
 
       stats.questionsPerSection.push({
         sectionTitle: item.sectionTitle,
+        sectionNumber: item.sectionNumber,
         count: questionCount,
         marks: sectionMarks
       });
@@ -43,6 +44,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
         id: item.id,
         type: 'section',
         sectionTitle: item.sectionTitle,
+        sectionNumber: item.sectionNumber,
         index,
         questions: item.questions?.map((q, qIndex) => ({
           id: q.id,
@@ -77,7 +79,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
       label: (
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <span>
-            <ProfileOutlined /> {section.sectionTitle}
+            <ProfileOutlined /> {section.sectionNumber || section.sectionTitle}
           </span>
           <Badge count={section.questions.length} style={{ backgroundColor: '#52c41a' }} />
         </div>
@@ -174,7 +176,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
               <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                 <Tooltip title={section.sectionTitle}>
                   <Text style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {section.sectionTitle}
+                    {section.sectionNumber || section.sectionTitle}
                   </Text>
                 </Tooltip>
                 <div>
