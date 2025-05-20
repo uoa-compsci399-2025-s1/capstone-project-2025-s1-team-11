@@ -1,6 +1,6 @@
 ﻿import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
-import { createImageModule, processTemplateData, postProcessDocxImages } from "../processors/imageProcessor.js";
+import { createImageModule, postProcessDocxImages, processTemplateData } from "../processors/imageProcessor.js";
 import { formatExamDataForTemplate } from "../formatExamData.js";
 import { postProcessTextFormatting } from "../processors/textProcessor.js";
 import { insertPageBreaks } from "../processors/pageBreakProcessor.js";
