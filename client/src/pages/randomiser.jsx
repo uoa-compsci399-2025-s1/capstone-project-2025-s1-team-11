@@ -243,8 +243,9 @@ const Randomiser = () => {
 
                   if (!mapping) return null;
 
+                  const options = exam?.teleformOptions || ['A', 'B', 'C', 'D', 'E'];
                   const mappingDetails = mapping.map((pos, idx) =>
-                    `${String.fromCharCode(65 + idx)} → ${String.fromCharCode(65 + pos)}`
+                    `${options[idx]} → ${options[pos]}`
                   ).join(", ");
                   const rawMap = mapping.join(", ");
 

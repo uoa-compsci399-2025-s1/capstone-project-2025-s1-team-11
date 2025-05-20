@@ -1,8 +1,10 @@
 import React from "react";
 import { theme } from "antd";
+import { useSelector } from "react-redux";
 import { markQuestion } from "../../utilities/marker/examMarker";
+import { selectExamData } from "../../store/exam/selectors";
 
-const OPTIONS = ['A', 'B', 'C', 'D', 'E'];
+const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
 
 function decodeAnswerString(answerString) {
   const maxQuestions = Math.floor(answerString.length / 2);
@@ -24,6 +26,11 @@ function decodeAnswerString(answerString) {
 
 const AnswerGrid = ({ answerString = '', answerKeyString = '' }) => {
   const { token } = theme.useToken();
+  const examData = useSelector(selectExamData);
+  const options = examData?.teleformOptions || DEFAULT_OPTIONS;
+  
+  console.log('TeleformOptions from exam:', examData?.teleformOptions);
+  console.log('Options being used in grid:', options);
 
   const selectedMatrix = decodeAnswerString(answerString);
   const correctMatrix = answerKeyString ? decodeAnswerString(answerKeyString) : null;
@@ -54,7 +61,7 @@ const AnswerGrid = ({ answerString = '', answerKeyString = '' }) => {
         </tr>
         </thead>
         <tbody>
-        {OPTIONS.map((label, rowIndex) => (
+        {options.map((label, rowIndex) => (
           <tr key={label}>
             <td style={{
               padding: 4,

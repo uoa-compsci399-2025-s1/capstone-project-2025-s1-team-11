@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip } from 'antd';
 import { ProfileOutlined, FileTextOutlined, RightCircleOutlined } from '@ant-design/icons';
+import { htmlToText } from '../utilities/textUtils';
 
 const { Title, Text } = Typography;
 
@@ -46,7 +47,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
         questions: item.questions?.map((q, qIndex) => ({
           id: q.id,
           type: 'question',
-          text: q.contentText,
+          text: htmlToText(q.contentFormatted || q.contentText || ''),
           marks: q.marks || 1,
           sectionIndex: index,
           questionIndex: qIndex
@@ -61,7 +62,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
       examStructure.push({
         id: item.id,
         type: 'question',
-        text: item.contentText,
+        text: htmlToText(item.contentFormatted || item.contentText || ''),
         marks: item.marks || 1,
         index
       });

@@ -24,6 +24,8 @@ import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifi
 
 const { TextArea } = Input;
 
+const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
+
 // Memoized Question Editor Component
 const QuestionEditor = React.memo(({ content, onChange }) => {
   return (
@@ -437,6 +439,8 @@ const ExamDisplay = () => {
       render: (_, record) => {
         if (record.type !== "question" || !Array.isArray(record.answers)) return null;
         
+        const options = exam?.teleformOptions || DEFAULT_OPTIONS;
+        
         return (
           <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
             {record.answers.map((answer, i) => (
@@ -448,7 +452,7 @@ const ExamDisplay = () => {
                   color: answer.correct ? '#52c41a' : 'inherit'
                 }}
               >
-                {String(1 + i)}) {htmlToText(answer.contentFormatted)}
+                {options[i]}) {htmlToText(answer.contentFormatted)}
               </Typography.Paragraph>
             ))}
           </div>
