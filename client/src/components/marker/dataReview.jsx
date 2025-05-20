@@ -1,6 +1,6 @@
 import {Alert, Button, Card, Radio, Space, Typography} from "antd";
 import React from "react";
-//import {ExamDisplay} from "../examDisplay.jsx";
+import ExamDisplay from "../shared/examDisplay.jsx";
 import AnswerKeyPreview from "./AnswerKeyPreview.jsx";
 import { EmptyExam } from "../shared/emptyExam.jsx";
 

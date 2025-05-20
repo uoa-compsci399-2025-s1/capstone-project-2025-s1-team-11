@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setCoverPage } from "../store/exam/examSlice";
 import { selectExamData } from "../store/exam/selectors.js";
-import ExamDisplay from "../components/examDisplay.jsx";
+import ExamDisplay from "../components/shared/examDisplay.jsx";
 import ExamFileManager from "../components/ExamContentManager.jsx";
 import ExamSidebar from "../components/ExamSidebar.jsx";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";

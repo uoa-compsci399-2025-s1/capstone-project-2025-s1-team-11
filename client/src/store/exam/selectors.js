@@ -112,7 +112,63 @@ export const selectQuestionsForTable = createSelector(
   }
 );
 
+export const selectQuestionsAndSectionsForTable = createSelector(
+  [selectExamBody],
+  (examBody) => {
+    if (!examBody) return [];
+    
+    const result = [];
+    let currentSectionNumber = 1;
 
+    examBody.forEach((item, examBodyIndex) => {
+      if (item.type === 'section') {
+        // Add section row
+        result.push({
+          id: item.id,
+          type: 'section',
+          sectionNumber: currentSectionNumber,
+          sectionTitle: item.sectionTitle,
+          contentFormatted: item.contentFormatted,
+          examBodyIndex,
+        });
+
+        // Add all questions in this section
+        item.questions?.forEach((question, questionsIndex) => {
+          result.push({
+            ...normaliseQuestionForTable(question, currentSectionNumber),
+            examBodyIndex,
+            questionsIndex,
+            id: question.id,
+          });
+        });
+
+        currentSectionNumber++;
+      } else if (item.type === 'question') {
+        // Add standalone question
+        result.push({
+          ...normaliseQuestionForTable(item),
+          examBodyIndex,
+          id: item.id,
+        });
+      }
+    });
+
+    return result;
+  }
+);
+
+// Update the normaliseQuestionForTable function to handle more fields
+const normaliseQuestionForTable = (question, sectionNumber = null) => ({
+  type: 'question',
+  sectionNumber,
+  questionNumber: question.questionNumber,
+  contentFormatted: question.contentFormatted || '',
+  marks: question.marks || 0,
+  answers: (question.answers || []).map(answer => ({
+    ...answer,
+    contentFormatted: answer.contentFormatted || ''
+  })),
+});
 
 export const selectCorrectAnswerIndices = createSelector(
   [selectExamData, selectAllQuestionsFlat],
