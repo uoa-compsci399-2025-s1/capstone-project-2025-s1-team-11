@@ -86,14 +86,26 @@ const StaticContextBar = ({
       message.error("No exam data to save.");
       return;
     }
+    
+    // Skip if already saving
+    if (saveState === 'saving') {
+      message.info("Save already in progress.");
+      return;
+    }
+    
+    setSaveState('saving');
     try {
       const updatedHandle = await saveExam();
       if (!updatedHandle) {
         message.error("Save cancelled or no file handle available.");
+        setSaveState('unsaved');
         return;
       }
+      setSaveState('saved');
+      setLastSavedTime(new Date());
       message.success("Exam saved successfully.");
     } catch (error) {
+      setSaveState('unsaved');
       message.error("Failed to save exam: " + error.message);
     }
   };
@@ -152,6 +164,13 @@ const StaticContextBar = ({
     createExam(exam);
     setShowCreateModal(false);
     setTimeout(() => message.success("New exam created successfully."), 0);
+    
+    // Add delay before triggering save dialog
+    setTimeout(() => {
+      if (exam) {
+        handleSaveExam();
+      }
+    }, 300);
   };
 
   const handleCreateModalCancel = () => {
@@ -244,14 +263,27 @@ const StaticContextBar = ({
   useEffect(() => {
     if (!autoSaveEnabled) return;
     if (!exam) return;
+    
     // Mark as unsaved when exam changes
     setSaveState('unsaved');
+    
     // Clear any previous debounce
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
+    
     // Debounce: save after 2 seconds
     saveTimeoutRef.current = setTimeout(async () => {
+      // Skip autosave if no fileHandle exists (requires user gesture first time)
+      if (!fileHandle) {
+        return;
+      }
+      
+      // Skip if already saving
+      if (saveState === 'saving') {
+        return;
+      }
+      
       setSaveState('saving');
       try {
         await saveExam();
@@ -260,15 +292,20 @@ const StaticContextBar = ({
       } catch (err) {
         console.error("Auto-save failed:", err);
         setSaveState('unsaved');
-        message.error("Auto-save failed. Check your connection or file permissions.");
+        
+        // Don't show error messages for expected failures
+        if (err.name !== 'SecurityError' && err.name !== 'NotAllowedError') {
+          message.error("Auto-save failed. Check your connection or file permissions.");
+        }
       }
     }, 2000);
+    
     // Cleanup
     return () => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exam, autoSaveEnabled, message]);
+  }, [exam, autoSaveEnabled]);
 
   // Add keyboard shortcuts
   useKeyboardShortcuts({

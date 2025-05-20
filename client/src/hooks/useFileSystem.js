@@ -37,9 +37,17 @@ export function useFileSystem() {
     // Saves the exam and updates the file handle in the global state
     const saveExam = async () => {
         if (!exam) return null;
-        const updatedHandle = await saveExamToDisk(exam, fileHandle);
-        setFileHandle(updatedHandle);
-        return updatedHandle;
+        
+        try {
+            const updatedHandle = await saveExamToDisk(exam, fileHandle);
+            if (updatedHandle) {
+                setFileHandle(updatedHandle);
+            }
+            return updatedHandle;
+        } catch (error) {
+            // Propagate the error upward for the caller to handle
+            throw error;
+        }
     };
 
     const importExam = async (file, format) => {

@@ -63,6 +63,8 @@ export async function saveExamToDisk(exam, fileHandle = null) {
     // If no file handle exists, prompt the user for a save location.
     try {
         if (!fileHandle) {
+            // This operation requires a user gesture (like a click)
+            // It will fail with security error if called without user interaction
             fileHandle = await window.showSaveFilePicker({
                 suggestedName: "Exam.json",
                 types: [
@@ -73,14 +75,15 @@ export async function saveExamToDisk(exam, fileHandle = null) {
                 ],
             });
         }
+        
         // Create a writable stream, write the JSON content, and close the stream.
         const writable = await fileHandle.createWritable();
         await writable.write(JSON.stringify(exam, null, 2));
         await writable.close();
         return fileHandle; // Return the file handle so it can be stored for future saves.
     } catch (err) {
-        console.error("Failed to save:", err);
-        return null;
+        // Log error details for debugging
+        console.error("Failed to save:", err.name, err.message);
+        return null;  // Keep existing behavior of returning null on error
     } 
-    
 }
