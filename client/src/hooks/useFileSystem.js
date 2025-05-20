@@ -102,5 +102,15 @@ export function useFileSystem() {
         setFileHandle(null);
       };
 
-    return { exam, fileHandle, openExam, createExam, saveExam, importExam, closeExam, importFromFileInput };
+    return { 
+      exam, 
+      fileHandle, 
+      setFileHandle,
+      openExam, 
+      createExam, 
+      saveExam, 
+      importExam, 
+      closeExam, 
+      importFromFileInput 
+    };
 }

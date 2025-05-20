@@ -15,6 +15,8 @@ import EditExamModal from './EditExamModal';
 import { handleExportDocx } from '../utilities/UIUtils';
 import '../index.css';
 import useMessage from "../hooks/useMessage.js";
+// Import saveExamToDisk directly for use after creating a new exam
+import { saveExamToDisk } from '../services/fileSystemAccess.js';
 
 const { Text } = Typography;
 
@@ -28,7 +30,7 @@ const StaticContextBar = ({
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
   const coverPage = useSelector(state => state.exam.coverPage);
-  const { fileHandle, createExam, openExam, saveExam } = useFileSystem();
+  const { fileHandle, createExam, openExam, saveExam, setFileHandle } = useFileSystem();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newExamData, setNewExamData] = useState({
     examTitle: '',
@@ -129,7 +131,7 @@ const StaticContextBar = ({
   };
 
   const handleCreateModalOk = () => {
-    const exam = {
+    const examData = {
       answerOptions: parseInt(newExamData.answerOptions) || 4,
       examTitle: newExamData.examTitle || "Untitled Exam",
       courseCode: newExamData.courseCode || "",
@@ -146,7 +148,7 @@ const StaticContextBar = ({
 
     // Parse versions if defined and non-empty
     if (newExamData.versions?.trim()) {
-      exam.versions = newExamData.versions
+      examData.versions = newExamData.versions
           .split(',')
           .map(v => v.trim())
           .filter(Boolean);
@@ -155,20 +157,38 @@ const StaticContextBar = ({
     // Parse teleformOptions if defined and non-empty
     if (newExamData.teleformOptions?.trim()) {
       const cleaned = newExamData.teleformOptions.replace(/["']/g, '');
-      exam.teleformOptions = cleaned
+      examData.teleformOptions = cleaned
           .split(',')
           .map(o => o.trim())
           .filter(Boolean);
     }
 
-    createExam(exam);
+    // Create the exam in Redux
+    createExam(examData);
     setShowCreateModal(false);
+    
+    // Show success message
     setTimeout(() => message.success("New exam created successfully."), 0);
     
-    // Add delay before triggering save dialog
-    setTimeout(() => {
-      if (exam) {
-        handleSaveExam();
+    // Trigger save dialog after a short delay
+    setTimeout(async () => {
+      try {
+        setSaveState('saving'); // Update state before save
+        // We use saveExamToDisk directly since it doesn't rely on Redux state
+        const newFileHandle = await saveExamToDisk(examData);
+        if (newFileHandle) {
+          // Update the file handle in state
+          setFileHandle(newFileHandle);
+          setSaveState('saved');
+          setLastSavedTime(new Date());
+          message.success("Exam saved successfully.");
+        } else {
+          // If user cancelled the file picker
+          setSaveState('unsaved');
+        }
+      } catch (error) {
+        setSaveState('unsaved');
+        console.error("Failed to save new exam:", error);
       }
     }, 300);
   };
