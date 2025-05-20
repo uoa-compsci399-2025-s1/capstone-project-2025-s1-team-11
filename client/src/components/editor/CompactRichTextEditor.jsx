@@ -211,8 +211,8 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
         mouseup: (view, event) => {
           // Additional handler for resize completion
           if (event.target.closest('.resize-handler')) {
-            console.log('Resize mouseup detected');
-            console.log('Current doc content:', view.state.doc.toJSON());
+            //console.log('Resize mouseup detected');
+            //console.log('Current doc content:', view.state.doc.toJSON());
             onChange(view.state.doc.content.toJSON());
           }
         }
@@ -253,7 +253,7 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
         });
         
         if (hasImageChange) {
-          console.log('Image size changed - triggering update');
+          //console.log('Image size changed - triggering update');
           onChange(editor.getHTML());
         }
       });

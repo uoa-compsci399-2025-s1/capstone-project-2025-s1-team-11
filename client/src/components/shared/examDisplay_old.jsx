@@ -203,7 +203,7 @@ export const ExamDisplay = () => {
 
   // Confirm delete item
   const confirmDeleteItem = (examBodyIndex, questionsIndex = null) => {
-    console.log('Confirming delete:', { examBodyIndex, questionsIndex });
+    //console.log('Confirming delete:', { examBodyIndex, questionsIndex });
     setModalState({
       visible: true,
       type: '',
@@ -217,7 +217,7 @@ export const ExamDisplay = () => {
   // Execute delete item
   const executeDeleteItem = () => {
     const { examBodyIndex, questionsIndex, isDelete } = modalState;
-    console.log('Delete modal state:', { examBodyIndex, questionsIndex, isDelete });
+    //console.log('Delete modal state:', { examBodyIndex, questionsIndex, isDelete });
     
     if (!isDelete || examBodyIndex === undefined) {
       setModalState({ visible: false, type: '', item: null, isDelete: false });
@@ -225,7 +225,7 @@ export const ExamDisplay = () => {
     }
     
     const entry = exam?.examBody?.[examBodyIndex];
-    console.log('Entry type:', entry?.type, 'questionsIndex:', questionsIndex);
+    //console.log('Entry type:', entry?.type, 'questionsIndex:', questionsIndex);
 
     // If it's a section and we're not trying to delete a question within it
     if (entry?.type === "section" && questionsIndex === null) {

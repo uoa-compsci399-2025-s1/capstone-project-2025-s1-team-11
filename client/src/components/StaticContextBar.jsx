@@ -175,7 +175,7 @@ const StaticContextBar = ({
       // if (type === 'demo' || type === 'randomised' || type === 'exemplar' || type === 'marking') {
       //   exportExamToPdf(exam, type);
       // } else {
-      //   console.log('Unknown export type:', type);
+      //   //console.log('Unknown export type:', type);
       // }
     }
   };
@@ -220,7 +220,7 @@ const StaticContextBar = ({
     const versionsArray = typeof editDetailsData.versions === 'string'
         ? editDetailsData.versions.split(',').map(v => v.trim())
         : editDetailsData.versions;
-    console.log("Setting versions to:", versionsArray);
+    //console.log("Setting versions to:", versionsArray);
     dispatch(setExamVersions(versionsArray));
     setShowEditDetailsModal(false);
     setTimeout(() => message.success("Exam details updated."), 0);

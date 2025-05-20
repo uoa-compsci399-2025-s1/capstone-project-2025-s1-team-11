@@ -37,7 +37,7 @@ const Builder = () => {
     const handleFileChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {
-            console.log("Dispatching file:", file.name);
+            //console.log("Dispatching file:", file.name);
             dispatch(setCoverPage(file));
         }
     };

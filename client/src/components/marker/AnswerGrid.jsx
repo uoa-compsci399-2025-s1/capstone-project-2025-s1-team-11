@@ -29,8 +29,8 @@ const AnswerGrid = ({ answerString = '', answerKeyString = '' }) => {
   const examData = useSelector(selectExamData);
   const options = examData?.teleformOptions || DEFAULT_OPTIONS;
   
-  console.log('TeleformOptions from exam:', examData?.teleformOptions);
-  console.log('Options being used in grid:', options);
+  //console.log('TeleformOptions from exam:', examData?.teleformOptions);
+  //console.log('Options being used in grid:', options);
 
   const selectedMatrix = decodeAnswerString(answerString);
   const correctMatrix = answerKeyString ? decodeAnswerString(answerKeyString) : null;

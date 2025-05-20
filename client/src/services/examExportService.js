@@ -18,7 +18,7 @@ export class ExamExportService {
      * @returns {Promise<Blob>} - Blob containing the exported document
      */
     static async exportExam(examData, format = 'docxtemplater') {
-        console.log(`Starting exam export in ${format} format`);
+        //console.log(`Starting exam export in ${format} format`);
 
         if (!examData) {
             throw new Error('No exam data available for export');
@@ -43,7 +43,7 @@ export class ExamExportService {
                 throw new Error(`Unsupported export format: ${format}`);
         }
 
-        console.log(`Export completed successfully in ${format} format`);
+        //console.log(`Export completed successfully in ${format} format`);
         return result;
     }
 
@@ -65,7 +65,7 @@ export class ExamExportService {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
 
-        console.log(`File "${filename}" has been saved`);
+        //console.log(`File "${filename}" has been saved`);
     }
 
     /**
@@ -182,7 +182,7 @@ export class ExamExportService {
             throw new Error('Cover page is required for versioned export');
         }
 
-        console.log(`Starting export of ${examData.versions.length} exam versions`);
+        //console.log(`Starting export of ${examData.versions.length} exam versions`);
 
         // Array to hold the results
         const results = [];
@@ -201,10 +201,10 @@ export class ExamExportService {
                 blob: mergedBlob
             });
 
-            console.log(`Version ${version} export completed`);
+            //console.log(`Version ${version} export completed`);
         }
 
-        console.log('All versions exported successfully');
+        //console.log('All versions exported successfully');
         return results;
     }
 

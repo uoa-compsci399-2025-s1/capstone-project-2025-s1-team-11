@@ -26,11 +26,11 @@ export function findAndRemoveFirstSectPr(docBodyArray) {
         // Check if this element has w:sectPr
         if (element['w:sectPr']) {
             // Debug the section properties before removal
-            console.log('[SECTPR-DEBUG] Found section properties:', {
-                path: path.join(' > '),
-                headerRefs: extractRefs(element['w:sectPr'], 'w:headerReference'),
-                footerRefs: extractRefs(element['w:sectPr'], 'w:footerReference')
-            });
+            // console.log('[SECTPR-DEBUG] Found section properties:', {
+            //     path: path.join(' > '),
+            //     headerRefs: extractRefs(element['w:sectPr'], 'w:headerReference'),
+            //     footerRefs: extractRefs(element['w:sectPr'], 'w:footerReference')
+            // });
             firstSectPr = element['w:sectPr'];
             location = {path, element};
             return;
@@ -79,12 +79,12 @@ export function findAndRemoveFirstSectPr(docBodyArray) {
         }
 
         // Debug the section properties before removal
-        console.log('[SECTPR-DEBUG] About to remove section properties from:', {
-            containerType: Object.keys(container)[0],
-            hasDirectSectPr: !!container['w:sectPr'],
-            hasPPrSectPr: !!(container['w:pPr'] && container['w:pPr'][0] && container['w:pPr'][0]['w:sectPr']),
-            headerRefs: container['w:sectPr'] ? extractRefs(container['w:sectPr'], 'w:headerReference') : []
-        });
+        // console.log('[SECTPR-DEBUG] About to remove section properties from:', {
+        //     containerType: Object.keys(container)[0],
+        //     hasDirectSectPr: !!container['w:sectPr'],
+        //     hasPPrSectPr: !!(container['w:pPr'] && container['w:pPr'][0] && container['w:pPr'][0]['w:sectPr']),
+        //     headerRefs: container['w:sectPr'] ? extractRefs(container['w:sectPr'], 'w:headerReference') : []
+        // });
 
         // Remove the sectPr
         if (container['w:sectPr']) {

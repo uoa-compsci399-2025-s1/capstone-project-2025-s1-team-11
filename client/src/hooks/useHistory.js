@@ -8,14 +8,14 @@ export const useHistory = () => {
   const canRedo = useSelector(selectCanRedo);
 
   const handleUndo = useCallback(() => {
-    console.log('useHistory: Undo called, canUndo:', canUndo);
+    //console.log('useHistory: Undo called, canUndo:', canUndo);
     if (canUndo) {
       dispatch(undo());
     }
   }, [dispatch, canUndo]);
 
   const handleRedo = useCallback(() => {
-    console.log('useHistory: Redo called, canRedo:', canRedo);
+    //console.log('useHistory: Redo called, canRedo:', canRedo);
     if (canRedo) {
       dispatch(redo());
     }

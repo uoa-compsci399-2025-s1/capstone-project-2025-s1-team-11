@@ -8,7 +8,7 @@ import {generateResultOutput} from "../../utilities/marker/outputFormatter.js";
 import {calculateStatistics} from "../../utilities/statistics/examStatistics.js";
 
 export const Results = ({setExportFormat, exportFormat, resultsData, handleExportResults, examData}) => {
-  console.log("Results component received:", resultsData);
+  //console.log("Results component received:", resultsData);
   
   // Always define hooks at the top level, never conditionally
   const [activeTab, setActiveTab] = useState("summary");
@@ -26,7 +26,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
   // When results data changes, calculate the statistics
   useEffect(() => {
     if (!resultsData || !Array.isArray(resultsData) || resultsData.length === 0) {
-      console.log("No valid results data to process");
+      //console.log("No valid results data to process");
       setHasValidData(false);
       return;
     }
@@ -41,7 +41,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
     // Set the first student as selected by default if there's data
     if (resultsData.length > 0) {
       const firstStudent = resultsData[0];
-      console.log("First student data:", firstStudent);
+      //console.log("First student data:", firstStudent);
       setSelectedStudentId(firstStudent.studentId);
     }
   }, [resultsData]);
@@ -155,7 +155,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
             placeholder="Select a student"
             value={selectedStudentId}
             onChange={(value) => {
-              console.log("Selecting student with ID:", value);
+              //console.log("Selecting student with ID:", value);
               setSelectedStudentId(value);
             }}
           >
@@ -236,7 +236,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
       <Tabs 
         activeKey={activeTab} 
         onChange={(key) => {
-          console.log("Tab changing to:", key);
+          //console.log("Tab changing to:", key);
           setActiveTab(key);
         }}
         destroyOnHidden={true}

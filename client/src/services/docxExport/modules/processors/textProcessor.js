@@ -18,7 +18,7 @@ export async function postProcessTextFormatting(docxBlob) {
         let docXml = await zip.file('word/document.xml').async('string');
 
         // Debug logging
-        console.log("Document contains §CODE§:", docXml.includes('§CODE§'));
+        //console.log("Document contains §CODE§:", docXml.includes('§CODE§'));
         if (docXml.includes('§CODE§')) {
             const codeIndex = docXml.indexOf('§CODE§');
             console.log("XML around code tag:", docXml.substring(codeIndex - 100, codeIndex + 200));

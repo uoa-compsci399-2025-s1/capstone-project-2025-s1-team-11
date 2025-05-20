@@ -12,7 +12,7 @@ const historySlice = createSlice({
   initialState,
   reducers: {
     pushState: (state, action) => {
-      console.log('History slice: Pushing state, past length:', state.past.length);
+      //console.log('History slice: Pushing state, past length:', state.past.length);
       // If we have a present state, move it to past
       if (state.present !== null) {
         state.past.push(state.present);
@@ -25,13 +25,13 @@ const historySlice = createSlice({
       state.present = action.payload;
       // Clear future states as we're creating a new branch
       state.future = [];
-      console.log('History slice: New state pushed, past length:', state.past.length);
+      //console.log('History slice: New state pushed, past length:', state.past.length);
     },
 
     undo: (state) => {
-      console.log('History slice: Undo called, past length:', state.past.length);
+      //console.log('History slice: Undo called, past length:', state.past.length);
       if (state.past.length === 0) {
-        console.log('History slice: Nothing to undo');
+        //console.log('History slice: Nothing to undo');
         return;
       }
 
@@ -42,13 +42,13 @@ const historySlice = createSlice({
 
       // Get the last state from past
       state.present = state.past.pop();
-      console.log('History slice: Undo complete, past length:', state.past.length, 'future length:', state.future.length);
+      //console.log('History slice: Undo complete, past length:', state.past.length, 'future length:', state.future.length);
     },
 
     redo: (state) => {
-      console.log('History slice: Redo called, future length:', state.future.length);
+      //console.log('History slice: Redo called, future length:', state.future.length);
       if (state.future.length === 0) {
-        console.log('History slice: Nothing to redo');
+        //console.log('History slice: Nothing to redo');
         return;
       }
 
@@ -59,11 +59,11 @@ const historySlice = createSlice({
 
       // Get the first state from future
       state.present = state.future.shift();
-      console.log('History slice: Redo complete, past length:', state.past.length, 'future length:', state.future.length);
+      //console.log('History slice: Redo complete, past length:', state.past.length, 'future length:', state.future.length);
     },
 
     clearHistory: (state) => {
-      console.log('History slice: Clearing history');
+      //console.log('History slice: Clearing history');
       state.past = [];
       state.future = [];
     }

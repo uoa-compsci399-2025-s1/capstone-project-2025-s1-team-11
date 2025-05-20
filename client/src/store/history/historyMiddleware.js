@@ -25,24 +25,24 @@ export const historyMiddleware = store => next => action => {
   if (action.type === 'history/undo' || action.type === 'history/redo') {
     const historyState = store.getState().history;
     if (historyState.present) {
-      console.log('History middleware: Restoring exam state from history');
+      //console.log('History middleware: Restoring exam state from history');
       // Update the exam state with the restored state
       store.dispatch(initialiseExamState(historyState.present.examData));
     }
   }
   // If this is a tracked action, update history
   else if (TRACKED_ACTIONS.includes(action.type)) {
-    console.log('History middleware: Tracking action:', action.type);
+    //console.log('History middleware: Tracking action:', action.type);
     // Get the current exam state
     const currentState = store.getState().exam;
     
     // Only track if we have exam data
     if (currentState.examData) {
-      console.log('History middleware: Pushing state to history');
+      //console.log('History middleware: Pushing state to history');
       // Push a deep copy of the current state to history
       store.dispatch(pushState(JSON.parse(JSON.stringify(currentState))));
     } else {
-      console.log('History middleware: No exam data to track');
+      //console.log('History middleware: No exam data to track');
     }
   }
 

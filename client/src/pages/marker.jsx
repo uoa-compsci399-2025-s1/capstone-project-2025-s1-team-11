@@ -49,10 +49,10 @@ const Marker = () => {
     }
     
     try {
-      console.log("Marking exams with data:", teleformData);
+      //console.log("Marking exams with data:", teleformData);
       
       const examResults = markExams(currentExamData, teleformData, markingKey);
-      console.log("Exam results:", examResults);
+      //console.log("Exam results:", examResults);
       
       if (examResults && examResults.all && Array.isArray(examResults.all) && examResults.all.length > 0) {
         setResultsData(examResults);
@@ -111,8 +111,8 @@ const Marker = () => {
   };
 
   const renderContent = () => {
-    console.log("Current step:", currentStep);
-    console.log("Results data:", resultsData);
+    //console.log("Current step:", currentStep);
+    //console.log("Results data:", resultsData);
     
     switch (currentStep) {
       case 0:
@@ -137,7 +137,7 @@ const Marker = () => {
           );
         }
         
-        console.log("Passing to Results component:", resultsData.all);
+        //console.log("Passing to Results component:", resultsData.all);
         return (
           <Results
             setExportFormat={setExportFormat}

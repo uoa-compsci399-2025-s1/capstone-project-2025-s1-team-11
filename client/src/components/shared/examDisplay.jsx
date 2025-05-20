@@ -538,7 +538,7 @@ const ExamDisplay = () => {
         onCancel={resetModalState}
         onOk={modalState.isDelete ? executeDeleteItem : handleSaveEdit}
         width={800}
-        destroyOnClose={true}
+        destroyOnHidden={true}
       >
         {modalState.isDelete ? (
           <p>Are you sure you want to delete this item?</p>

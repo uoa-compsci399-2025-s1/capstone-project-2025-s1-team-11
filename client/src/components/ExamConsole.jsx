@@ -667,7 +667,7 @@ function ExamConsole() {
           const currentQuestion = exBodyItem.type === 'section'
             ? exBodyItem.questions[qIdx]
             : exBodyItem;
-          console.log(`location: ${JSON.stringify(location)}`)
+          //console.log(`location: ${JSON.stringify(location)}`)
         
           if (!currentQuestion) {
             addToOutput('Invalid question index', 'error');

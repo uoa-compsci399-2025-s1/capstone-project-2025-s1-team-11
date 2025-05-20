@@ -19,7 +19,7 @@ async function main() {
     const teleformFilePath = path.join(__dirname, '../../resources/2010S2_111.txt');
     const outputFilePath = path.join(__dirname, '../../resources/examTestData.json');
     
-    console.log('Generating test data from real exam files...');
+    //console.log('Generating test data from real exam files...');
     
     // Read files using fs instead of fetch
     const docxFile = fs.readFileSync(docxFilePath);
@@ -31,13 +31,13 @@ async function main() {
     // Save the generated data
     saveTestData(testData, outputFilePath);
     
-    console.log('Test data generation complete!');
-    console.log(`JSON data saved to: ${outputFilePath}`);
+    //console.log('Test data generation complete!');
+    //console.log(`JSON data saved to: ${outputFilePath}`);
     
     // You can now use this JSON file in your application for testing
-    console.log('To use this test data:');
-    console.log('1. Load the JSON file in your exam marker component');
-    console.log('2. Use it to simulate real student responses and statistics');
+    //console.log('To use this test data:');
+    //console.log('1. Load the JSON file in your exam marker component');
+    //console.log('2. Use it to simulate real student responses and statistics');
     
   } catch (error) {
     console.error('Error generating test data:', error);

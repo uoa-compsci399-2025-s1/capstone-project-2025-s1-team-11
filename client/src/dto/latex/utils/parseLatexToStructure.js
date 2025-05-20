@@ -169,7 +169,7 @@ function extractMetadata(body, content) {
   const preambleMatch = content.match(/\\(?:firstpage|running)header\s*\{\s*\}\s*\{\s*\}\s*\{\s*([^}]+)\s*\}/);
   if (preambleMatch && preambleMatch[1] && preambleMatch[1].match(/([A-Z]+)\s+(\d+)/)) {
     courseCode = preambleMatch[1].trim();
-    console.log("Found course code in document header:", courseCode);
+    //console.log("Found course code in document header:", courseCode);
   } else {
     // Fall back to looking in the document body
     const courseCodeMatches = headerContent.match(/([A-Z]+)\s+(\d+)/g);
@@ -184,7 +184,7 @@ function extractMetadata(body, content) {
         !match.includes('FALL')
       );
       courseCode = filteredMatches.length > 0 ? filteredMatches[0].trim() : '';
-      console.log("Found course code in document body:", courseCode);
+      //console.log("Found course code in document body:", courseCode);
     }
   }
   
@@ -249,7 +249,7 @@ function extractMetadata(body, content) {
  * @returns {Array} - Array of parsed questions and sections
  */
 function parseQuestions(body) {
-  console.log("Starting to parse questions from LaTeX body");
+  //console.log("Starting to parse questions from LaTeX body");
   
   // Find the questions environment
   const questionsMatch = body.match(/\\begin{questions}([\s\S]*?)\\end{questions}/);
@@ -259,7 +259,7 @@ function parseQuestions(body) {
   }
   
   const questionsContent = questionsMatch[1];
-  console.log("Found questions content with length:", questionsContent.length);
+  //console.log("Found questions content with length:", questionsContent.length);
   
   // Split content into individual questions and sections
   const questions = [];
@@ -282,7 +282,7 @@ function parseQuestions(body) {
     });
   }
   
-  console.log(`Found ${allQuestions.length} questions in the document`);
+  //console.log(`Found ${allQuestions.length} questions in the document`);
   
   // Process each question
   allQuestions.forEach((item, index) => {
@@ -324,7 +324,7 @@ function parseQuestions(body) {
         const partMarks = partMatch[1] ? parseInt(partMatch[1], 10) : 1;
         const partContent = partMatch[2].trim();
         
-        console.log(`  - Found part with ${partMarks} marks`);
+        //console.log(`  - Found part with ${partMarks} marks`);
         
         // Clean part content by removing choices and solution environments
         let cleanedPartContent = partContent;
@@ -356,7 +356,7 @@ function parseQuestions(body) {
       questions.push(section);
     } else {
       // Regular standalone question
-      console.log(`Question ${index + 1} is a standalone question with ${item.marks} marks`);
+      //console.log(`Question ${index + 1} is a standalone question with ${item.marks} marks`);
       
       // Clean question content by removing choices and solution environments
       let cleanedContent = item.content;
@@ -388,7 +388,7 @@ function parseQuestions(body) {
     }
   });
   
-  console.log(`Processed ${questions.length} total items (questions + sections)`);
+  //console.log(`Processed ${questions.length} total items (questions + sections)`);
   return questions;
 }
 
@@ -403,12 +403,12 @@ function extractAnswers(questionContent) {
   // Find choices environments (supports both choices and oneparchoices)
   const choicesMatch = questionContent.match(/\\begin\{(?:choices|oneparchoices)\}([\s\S]*?)\\end\{(?:choices|oneparchoices)\}/);
   if (!choicesMatch) {
-    console.log("No choices environment found in question");
+    //console.log("No choices environment found in question");
     return answers;
   }
   
   const choicesContent = choicesMatch[1];
-  console.log("Found choices content with length:", choicesContent.length);
+  //console.log("Found choices content with length:", choicesContent.length);
 
   // Special handling for certain patterns with math in them
   // First, try to extract choices with \mycorrectchoice and \choice commands 
@@ -476,7 +476,7 @@ function extractAnswers(questionContent) {
           content: match[1].trim(),
           correct: pattern.isCorrect
         });
-        console.log(`Found ${pattern.isCorrect ? 'correct' : 'regular'} choice: "${match[1].trim().substring(0, 20)}..."`);
+        //console.log(`Found ${pattern.isCorrect ? 'correct' : 'regular'} choice: "${match[1].trim().substring(0, 20)}..."`);
       }
     }
   }
@@ -518,7 +518,7 @@ function extractAnswers(questionContent) {
             content,
             correct: true
           });
-          console.log(`Found correct choice: "${content.substring(0, 20)}..."`);
+          //console.log(`Found correct choice: "${content.substring(0, 20)}..."`);
         }
       } else if (line.startsWith('\\choice')) {
         let content = line.replace(/^\\choice\s*/, '').trim();
@@ -537,7 +537,7 @@ function extractAnswers(questionContent) {
             content,
             correct: false
           });
-          console.log(`Found regular choice: "${content.substring(0, 20)}..."`);
+          //console.log(`Found regular choice: "${content.substring(0, 20)}..."`);
         }
       }
     }

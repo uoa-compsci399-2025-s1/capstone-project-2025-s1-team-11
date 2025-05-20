@@ -14,7 +14,7 @@ import { transformLatexToDto } from './transformLatexToDto.js';
  */
 export function parseLatex(content, options = {}) {
   try {
-    console.log("Starting LaTeX parsing process");
+    //console.log("Starting LaTeX parsing process");
     
     // Ensure content is a string
     if (content === null || content === undefined) {
@@ -35,7 +35,7 @@ export function parseLatex(content, options = {}) {
     
     // For debugging: optionally save intermediate structure
     if (options.debug) {
-      console.log("Parsed LaTeX structure:", JSON.stringify(parsedStructure, null, 2));
+      //console.log("Parsed LaTeX structure:", JSON.stringify(parsedStructure, null, 2));
     }
     
     // Step 2: Transform the parsed structure into the application's DTO format
@@ -43,10 +43,10 @@ export function parseLatex(content, options = {}) {
     
     // For debugging: optionally save final DTO
     if (options.debug) {
-      console.log("Final DTO:", JSON.stringify(dto, null, 2));
+      //console.log("Final DTO:", JSON.stringify(dto, null, 2));
     }
     
-    console.log("LaTeX parsing completed successfully");
+    //console.log("LaTeX parsing completed successfully");
     return dto;
   } catch (error) {
     console.error("Error parsing LaTeX:", error);
@@ -64,7 +64,7 @@ export function saveDebugData(data, filename) {
   // In a browser environment, this could trigger a download
   // In Node.js, this could write to a file
   console.log(`Debug data would be saved to ${filename}`);
-  console.log(JSON.stringify(data, null, 2));
+  //console.log(JSON.stringify(data, null, 2));
 }
 
 /**

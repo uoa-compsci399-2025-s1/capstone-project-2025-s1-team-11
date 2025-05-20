@@ -75,7 +75,7 @@ const ExamFileManager = () => {
       const result = await saveExam();
       if (result) {
         setShowSuccessAlert(true);
-        console.log("File saved successfully");
+        //console.log("File saved successfully");
       }
     } catch (err) {
       setError("Error saving exam: " + err.message);

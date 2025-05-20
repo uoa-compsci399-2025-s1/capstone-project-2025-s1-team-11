@@ -26,7 +26,7 @@ export class ExamImportService {
   }
 
   async importExamToDTO(file, format) {
-    console.log("Importing exam to DTO with format:", format);
+    //console.log("Importing exam to DTO with format:", format);
     if (!this.importFormats[format]) {
       throw new Error(`Unsupported exam format: ${format}`);
     }
@@ -100,8 +100,8 @@ export const importDTOToState = (examDTO) => async (dispatch, getState) => {
     // import before exam load/creation would be disabled.
     if (!examData) {
       const message = "No existing exam found. Default properties will be loaded. Change in exam settings if required and re-import.";
-      console.log(message);
-      console.log(`examDTO: ${JSON.stringify(examDTO.examTitle)}`);
+      //console.log(message);
+      //console.log(`examDTO: ${JSON.stringify(examDTO.examTitle)}`);
       importMessages.push(message);
       const examProps = {};
       Object.keys(examDTO).forEach(key => {
@@ -111,7 +111,7 @@ export const importDTOToState = (examDTO) => async (dispatch, getState) => {
       });
       
       dispatch(initialiseExamState(examProps));
-      console.log(`examData: ${JSON.stringify(examData)}`);
+      //console.log(`examData: ${JSON.stringify(examData)}`);
     } else {
       Object.keys(examDTO).forEach(key => {
         if (key !== 'examBody' && examData[key] && examDTO[key] && examData[key] != examDTO[key]) {

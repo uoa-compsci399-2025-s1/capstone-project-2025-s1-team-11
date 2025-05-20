@@ -132,10 +132,10 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
             }
             // Add back the preserved final section properties
             coverBody.push(finalSectPr);
-            console.log('[SECTPR-DEBUG] Restored final section properties:', {
-                headerRefs: extractRefs(finalSectPr['w:sectPr'], 'w:headerReference'),
-                footerRefs: extractRefs(finalSectPr['w:sectPr'], 'w:footerReference')
-            });
+            // console.log('[SECTPR-DEBUG] Restored final section properties:', {
+            //     headerRefs: extractRefs(finalSectPr['w:sectPr'], 'w:headerReference'),
+            //     footerRefs: extractRefs(finalSectPr['w:sectPr'], 'w:footerReference')
+            // });
         }
 
         // Copy related files
