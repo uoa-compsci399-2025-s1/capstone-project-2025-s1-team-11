@@ -1,6 +1,6 @@
 export function convertMoodleXmlToJson(moodleXmlDTO) {
     // Convert all questions directly to the examBody array
-    const examBody = moodleXmlDTO.questions.map((question) => {
+    const examBody = moodleXmlDTO.questions.map((question, index) => {
         // Extract marks from question text if present
         let marks = 1;
         const marksMatch = question.contentText.match(/\[(\d+)\s*marks?\]/i);
@@ -13,7 +13,7 @@ export function convertMoodleXmlToJson(moodleXmlDTO) {
             contentFormatted: question.contentText,
             format: 'HTML',
             pageBreakAfter: false,
-            //questionNumber: index,
+            questionNumber: index + 1, // Add 1-based question numbering
             marks: marks,
             answers: question.answers.map((answer) => ({
                 type: 'answer',

@@ -8,8 +8,8 @@ import ExamFileManager from "../components/ExamFileManager.jsx";
 import ExamSidebar from "../components/ExamSidebar.jsx";
 import { Typography, Button, Space, Row, Col, Tooltip, Collapse, Divider, message } from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-// import { exportExamToPdf } from "../services/exportPdf.js";
 import { ExamExportService } from "../services/examExportService";
+//import { exportExamToPdf } from "../services/exportPdf.js";
 
 const Builder = () => {
     const exam = useSelector(selectExamData);
@@ -161,9 +161,9 @@ const Builder = () => {
                                 <Button type="default" onClick={handleExportDocx}>
                                     Download as DOCX
                                 </Button>
-                                <Button type="default" onClick={() => {/* TODO: implement PDF export */}}>
+                                {/* <Button type="default" onClick={() => exportExamToPdf(exam)}>
                                     Download as PDF
-                                </Button>
+                                </Button> */}
                             </Space>
                         </div>
                     </div>

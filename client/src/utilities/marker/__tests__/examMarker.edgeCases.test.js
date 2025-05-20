@@ -79,7 +79,7 @@ const testCases = [
     expectedMarks: 2
   },
   {
-    name: '11_missing_teleformOptions',
+    name: '14_missing_teleformOptions',
     answerString: '16',
     markingKey: { '00000001': '16' },
     expectedMarks: 1,
