@@ -167,11 +167,12 @@ const StaticContextBar = ({
     // For now, call exportExamToPdf. In future, branch by type.
     if (exam) {
       // Stub branching for future formats
-      if (type === 'demo' || type === 'randomised' || type === 'exemplar' || type === 'marking') {
-        exportExamToPdf(exam, type);
-      } else {
-        console.log('Unknown export type:', type);
-      }
+      message.info(`PDF export (${type}) functionality is currently a Work In Progress!`);
+      // if (type === 'demo' || type === 'randomised' || type === 'exemplar' || type === 'marking') {
+      //   exportExamToPdf(exam, type);
+      // } else {
+      //   console.log('Unknown export type:', type);
+      // }
     }
   };
 
