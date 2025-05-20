@@ -172,7 +172,7 @@ const ExamDisplay = () => {
   const keyboardSensor = useSensor(KeyboardSensor);
   const sensors = useSensors(pointerSensor, keyboardSensor);
 
-  const handleMove = (direction, examBodyIndex, questionsIndex = null) => {
+  const handleMove = useCallback((direction, examBodyIndex, questionsIndex = null) => {
     if (examBodyIndex === undefined) return;
 
     if (questionsIndex !== null && questionsIndex !== undefined) {
@@ -204,7 +204,7 @@ const ExamDisplay = () => {
         }));
       }
     }
-  };
+  }, [dispatch, exam]);
 
   // Reset modal state helper
   const resetModalState = () => {
@@ -219,7 +219,7 @@ const ExamDisplay = () => {
   };
 
   // Edit item handler
-  const handleEdit = (item) => {
+  const handleEdit = useCallback((item) => {
     // Get the actual item from the exam data
     let actualItem;
     if (item.type === 'section') {
@@ -246,7 +246,7 @@ const ExamDisplay = () => {
       questionsIndex: item.questionsIndex,
       isDelete: false,
     });
-  };
+  }, [exam]);
 
   // Save edited item
   const handleSaveEdit = () => {
@@ -462,7 +462,7 @@ const ExamDisplay = () => {
       width: 80,
       render: (marks, record) => record.type === "question" ? marks : null,
     },
-  ], [exam]); // Add exam as a dependency since we use it in the columns
+  ], [exam, handleEdit, handleMove]); // Added handleEdit and handleMove to dependencies
 
   // Memoize the table data
   const memoizedTableData = useMemo(() => tableData || [], [tableData]);
