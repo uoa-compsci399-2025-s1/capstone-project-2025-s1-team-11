@@ -6,9 +6,10 @@ import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 import ExamSidebar from "../components/ExamSidebar.jsx";
-import { Typography, Button, Space, Row, Col, Tooltip, Collapse, Divider } from "antd";
+import { Typography, Button, Space, Row, Col, Tooltip, Collapse, Divider, message } from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 // import { exportExamToPdf } from "../services/exportPdf.js";
+import { ExamExportService } from "../services/examExportService";
 
 const Builder = () => {
     const exam = useSelector(selectExamData);
@@ -40,6 +41,33 @@ const Builder = () => {
         if (file) {
             console.log("Dispatching file:", file.name);
             dispatch(setCoverPage(file));
+        }
+    };
+
+    const handleExportDocx = async () => {
+        try {
+            if (!exam) {
+                message.error("No exam data available for export");
+                return;
+            }
+
+            if (!coverPage) {
+                message.error("No cover page available. Please upload a cover page first.");
+                return;
+            }
+
+            message.info("Exporting DOCX versions...");
+
+            const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
+
+            if (result.success) {
+                message.success("All exam versions exported successfully");
+            } else {
+                message.error(`Export failed: ${result.error}`);
+            }
+        } catch (error) {
+            message.error(`Export error: ${error.message}`);
+            console.error(error);
         }
     };
 
@@ -130,7 +158,7 @@ const Builder = () => {
 
                         <div style={{ marginBottom: 24 }}>
                             <Space>
-                                <Button type="default" onClick={() => {/* TODO: implement DOCX download */}}>
+                                <Button type="default" onClick={handleExportDocx}>
                                     Download as DOCX
                                 </Button>
                                 <Button type="default" onClick={() => {/* TODO: implement PDF export */}}>
