@@ -1,6 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react'
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 const ResizableImageComponent = ({ node, updateAttributes }) => {
   const imageRef = useRef(null)

@@ -1,6 +1,6 @@
 import {Button, Col, Divider, Empty, Progress, Radio, Row, Statistic, Typography, Tabs, Select, Space} from "antd";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import React, {useState, useEffect, useRef} from "react";
+import React, {useState, useEffect } from "react";
 import QuestionStats from "./QuestionStats.jsx";
 import StudentReport from "./StudentReport.jsx";
 // import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js";

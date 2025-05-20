@@ -348,15 +348,6 @@ const examSlice = createSlice({
   }
 });
 
-
-
-
-function htmlToText(html) {
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = html;
-  return tempDiv.textContent || tempDiv.innerText || "";
-}
-
 // Export actions
 export const { 
   initialiseExamState,

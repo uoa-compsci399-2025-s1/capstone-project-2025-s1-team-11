@@ -1,6 +1,6 @@
 //examDisplay.jsx
 
-import React, { useState, useMemo, useCallback, Suspense, lazy } from "react";
+import React, { useState, useMemo, useCallback, Suspense } from "react";
 import { Button, Typography, Modal, Input, message, Table } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -13,16 +13,13 @@ import {
 } from "../../store/exam/examSlice";
 import { 
   selectExamData, 
-  selectQuestionsAndSectionsForTable,
-  selectExamMetadata,
-  selectQuestionByPath,
-  selectSectionByIndex
+  selectQuestionsAndSectionsForTable
 } from "../../store/exam/selectors";
 import { htmlToText } from "../../utilities/textUtils";
 import CompactRichTextEditor from "../editor/CompactRichTextEditor";
 import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
+//import { arrayMove } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 
 const { TextArea } = Input;
@@ -76,7 +73,7 @@ const AnswerEditorsContainer = React.memo(({ answers, onAnswerChange }) => {
 });
 
 // New component for the modal editor
-const ExamItemEditor = React.memo(({ modalState, onSave, onCancel }) => {
+const ExamItemEditor = React.memo(({ modalState, onSave }) => {
   const [itemState, setItemState] = useState(modalState.item);
 
   const handleQuestionContentChange = useCallback((html) => {
@@ -156,7 +153,6 @@ const ExamItemEditor = React.memo(({ modalState, onSave, onCancel }) => {
 
 const ExamDisplay = () => {
   const exam = useSelector(selectExamData);
-  const examMetadata = useSelector(selectExamMetadata);
   const tableData = useSelector(selectQuestionsAndSectionsForTable);
   const dispatch = useDispatch();
 

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, message as antdMessage, Modal } from 'antd';
+import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, Modal } from 'antd';
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
 import { updateExamField } from "../store/exam/examSlice";

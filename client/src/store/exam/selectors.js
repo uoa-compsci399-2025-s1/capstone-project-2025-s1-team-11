@@ -1,6 +1,5 @@
 // selectors.js
 import { createSelector } from "@reduxjs/toolkit";
-import { htmlToText } from '../../utilities/textUtils';
 
 // Root selector
 export const selectExamState = (state) => state.exam;
@@ -76,11 +75,6 @@ export const selectQuestionCount = createSelector(
   [selectAllQuestionsFlat],
   (questions) => questions.length
 );
-
-// Helper function to get plain text content for UI display
-const getPlainTextContent = (contentFormatted) => {
-  return htmlToText(contentFormatted || '');
-};
 
 export const selectQuestionsForTable = createSelector(
   [selectExamBody],
