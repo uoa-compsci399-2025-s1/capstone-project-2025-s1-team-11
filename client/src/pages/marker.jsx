@@ -1,7 +1,7 @@
 // src/pages/Marker.jsx
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Typography, message, Button, Input, Divider } from "antd";
+import { Typography, Button, Input, Divider } from "antd";
 import { useSelector } from "react-redux";
 import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
 import { markExams } from "../utilities/marker/examMarker.js";
@@ -10,8 +10,10 @@ import DataReview from "../components/marker/dataReview.jsx";
 import {Results} from "../components/marker/results.jsx"
 import {teleformReader} from "../components/marker/teleformReader.jsx";
 import {selectCorrectAnswerIndices, selectExamData} from "../store/exam/selectors.js";
+import useMessage from "../hooks/useMessage.js";
 
 const Marker = () => {
+  const message = useMessage();
   const examData = useSelector(selectExamData);
   const examAnswers = useSelector(selectCorrectAnswerIndices);
   const [teleformData, setTeleformData] = useState("");
@@ -39,11 +41,11 @@ const Marker = () => {
   const handleMarkExams = useCallback(() => {
     if (!teleformData) {
       message.error("Please enter teleform scan data before marking.");
-      return;
+      return false;
     }
     if (!markingKey) {
       message.error("Marking key is not available.");
-      return;
+      return false;
     }
     
     try {
@@ -55,24 +57,17 @@ const Marker = () => {
       if (examResults && examResults.all && Array.isArray(examResults.all) && examResults.all.length > 0) {
         setResultsData(examResults);
         message.success(`Successfully marked ${examResults.all.length} exams.`);
-      
-        // Automatically advance to the results step
-        setCurrentStep(2);
+        return true;
       } else {
         message.error("Failed to mark exams: No valid student data found");
+        return false;
       }
     } catch (error) {
       console.error("Error marking exams:", error);
       message.error("Failed to mark exams: " + error.message);
+      return false;
     }
-  }, [teleformData, markingKey, currentExamData]);
-
-  // Add effect to handle marking when on results page
-  useEffect(() => {
-    if (currentStep === 2 && teleformData && markingKey) {
-      handleMarkExams();
-    }
-  }, [currentStep, teleformData, markingKey, handleMarkExams]);
+  }, [teleformData, markingKey, currentExamData, message]);
 
   const handleTeleformDataChange = (e) => {
     setTeleformData(e.target.value);
@@ -162,7 +157,15 @@ const Marker = () => {
   };
 
   const next = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, 2));
+    const nextStep = Math.min(currentStep + 1, 2);
+    // Only try to mark exams when moving to step 2
+    if (nextStep === 2) {
+      if (handleMarkExams()) {
+        setCurrentStep(nextStep);
+      }
+    } else {
+      setCurrentStep(nextStep);
+    }
   };
 
   const prev = () => {

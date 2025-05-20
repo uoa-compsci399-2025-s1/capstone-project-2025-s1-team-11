@@ -14,6 +14,7 @@ import EditExamModal from './EditExamModal';
 //import { exportExamToPdf } from "../services/exportPdf";
 import { handleExportDocx } from '../utilities/UIUtils';
 import '../index.css';
+import useMessage from "../hooks/useMessage.js";
 
 const { Text } = Typography;
 
@@ -61,7 +62,7 @@ const StaticContextBar = ({
 
   // Exam progress
 
-  const { message } = AntApp.useApp();
+  const message = useMessage();
 
   const fileDropdownRef = useRef(null);
   const exportDropdownRef = useRef(null);
@@ -82,24 +83,24 @@ const StaticContextBar = ({
 
   const handleSaveExam = async () => {
     if (!exam) {
-      setTimeout(() => message.error("No exam data to save."), 0);
+      message.error("No exam data to save.");
       return;
     }
     try {
       const updatedHandle = await saveExam();
       if (!updatedHandle) {
-        setTimeout(() => message.error("Save cancelled or no file handle available."), 0);
+        message.error("Save cancelled or no file handle available.");
         return;
       }
-      setTimeout(() => message.success("Exam saved successfully."), 0);
+      message.success("Exam saved successfully.");
     } catch (error) {
-      setTimeout(() => message.error("Failed to save exam: " + error.message), 0);
+      message.error("Failed to save exam: " + error.message);
     }
   };
 
   const handleCloseExam = () => {
-    setTimeout(() => message.info("Clearing exam..."), 0);
-    window.location.reload(); // or dispatch(clearExam()) if you want to retain the Redux method
+    message.info("Clearing exam...");
+    window.location.reload();
   };
 
   const handleCreateNewExam = () => {
@@ -259,7 +260,7 @@ const StaticContextBar = ({
       } catch (err) {
         console.error("Auto-save failed:", err);
         setSaveState('unsaved');
-        antdMessage.error("Auto-save failed. Check your connection or file permissions.");
+        message.error("Auto-save failed. Check your connection or file permissions.");
       }
     }, 2000);
     // Cleanup
@@ -267,7 +268,7 @@ const StaticContextBar = ({
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exam, autoSaveEnabled]);
+  }, [exam, autoSaveEnabled, message]);
 
   // Add keyboard shortcuts
   useKeyboardShortcuts({
@@ -467,7 +468,7 @@ const StaticContextBar = ({
                           label: 'Randomised Answer Scripts',
                           disabled: !canExportRandomised,
                           onClick: () => {
-                            setTimeout(() => message.info("Exporting randomised scripts..."), 0);
+                            message.info("Exporting randomised scripts...");
                             confirmExport("randomised");
                             setExportDropdownOpen(false);
                           }
@@ -477,7 +478,7 @@ const StaticContextBar = ({
                           label: 'Exemplar Answer Scripts',
                           disabled: !canExportExemplar,
                           onClick: () => {
-                            setTimeout(() => message.info("Exporting exemplar scripts..."), 0);
+                            message.info("Exporting exemplar scripts...");
                             confirmExport("exemplar");
                             setExportDropdownOpen(false);
                           }
@@ -487,7 +488,7 @@ const StaticContextBar = ({
                           label: 'Marking Scheme',
                           disabled: !canExportMarking,
                           onClick: () => {
-                            setTimeout(() => message.info("Exporting marking scheme..."), 0);
+                            message.info("Exporting marking scheme...");
                             confirmExport("marking");
                             setExportDropdownOpen(false);
                           }
