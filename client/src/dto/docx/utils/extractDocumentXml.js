@@ -2,6 +2,114 @@ import JSZip from 'jszip';
 //import fs from 'fs/promises';
 import { parseXmlToJson } from './parseXmlToJson.js';
 
+/**
+ * Helper function to extract image dimensions and positioning information
+ * @param {Object} zip - JSZip object containing the document
+ * @param {String} relationships - Object mapping relationship IDs to targets
+ * @returns {Promise<Object>} - Object containing drawing elements with their information
+ */
+const extractDrawingElements = async (zip) => {
+  const drawingMap = {};
+
+  try {
+    // Get the document.xml content
+    const documentXml = await zip.file('word/document.xml').async('string');
+    const documentJson = parseXmlToJson(documentXml);
+
+    // Process all paragraphs
+    const paragraphs = documentJson['w:document']?.['w:body']?.['w:p'];
+    const paragraphArray = Array.isArray(paragraphs) ? paragraphs : (paragraphs ? [paragraphs] : []);
+
+    paragraphArray.forEach(paragraph => {
+      const runs = paragraph['w:r'];
+      const runArray = Array.isArray(runs) ? runs : (runs ? [runs] : []);
+
+      runArray.forEach(run => {
+        if (run['w:drawing']) {
+          // Process inline images
+          if (run['w:drawing']['wp:inline']) {
+            const inline = run['w:drawing']['wp:inline'];
+            const blip = inline?.['a:graphic']?.['a:graphicData']?.['pic:pic']?.['pic:blipFill']?.['a:blip'];
+            const embedId = blip?.['@_r:embed'];
+
+            if (embedId) {
+              // Extract dimensions from extent
+              const extent = inline['wp:extent'];
+              const widthEmu = extent?.['@_cx'] ? parseInt(extent['@_cx']) : 0;
+              const heightEmu = extent?.['@_cy'] ? parseInt(extent['@_cy']) : 0;
+
+              // Convert EMU to points (1 inch = 72 points = 914400 EMU)
+              const widthPt = widthEmu / 12700; // 914400/72 = 12700
+              const heightPt = heightEmu / 12700;
+
+              drawingMap[embedId] = {
+                type: 'inline',
+                width: widthPt,
+                height: heightPt,
+                embedId: embedId
+              };
+            }
+          }
+
+          // Process floating images
+          if (run['w:drawing']['wp:anchor']) {
+            const anchor = run['w:drawing']['wp:anchor'];
+            const blip = anchor?.['a:graphic']?.['a:graphicData']?.['pic:pic']?.['pic:blipFill']?.['a:blip'];
+            const embedId = blip?.['@_r:embed'];
+
+            if (embedId) {
+              // Extract dimensions from extent
+              const extent = anchor['wp:extent'];
+              const widthEmu = extent?.['@_cx'] ? parseInt(extent['@_cx']) : 0;
+              const heightEmu = extent?.['@_cy'] ? parseInt(extent['@_cy']) : 0;
+
+              // Convert EMU to points
+              const widthPt = widthEmu / 12700;
+              const heightPt = heightEmu / 12700;
+
+              // Get positioning information
+              const positionH = anchor['wp:positionH'];
+              const positionV = anchor['wp:positionV'];
+
+              const hRelative = positionH?.['@_relativeFrom'] || 'column';
+              const vRelative = positionV?.['@_relativeFrom'] || 'paragraph';
+
+              // Get offset values
+              const hOffset = positionH?.['wp:posOffset'] ? parseInt(positionH['wp:posOffset']) / 12700 : 0;
+              const vOffset = positionV?.['wp:posOffset'] ? parseInt(positionV['wp:posOffset']) / 12700 : 0;
+
+              // Get wrapping info
+              const wrapType = anchor['wp:wrapNone'] ? 'none' :
+                  anchor['wp:wrapSquare'] ? 'square' :
+                      anchor['wp:wrapTight'] ? 'tight' :
+                          anchor['wp:wrapThrough'] ? 'through' : 'inline';
+
+              drawingMap[embedId] = {
+                type: 'floating',
+                width: widthPt,
+                height: heightPt,
+                embedId: embedId,
+                position: {
+                  horizontalRelative: hRelative,
+                  verticalRelative: vRelative,
+                  horizontalOffset: hOffset,
+                  verticalOffset: vOffset
+                },
+                wrapping: wrapType
+              };
+            }
+          }
+        }
+      });
+    });
+
+    return drawingMap;
+  } catch (error) {
+    console.error('Error extracting drawing elements:', error);
+    return {};
+  }
+};
+
 export const extractDocumentXml = async (file) => {
   //const data = await fs.readFile(filePath);
   const zip = await JSZip.loadAsync(file);
@@ -27,6 +135,9 @@ export const extractDocumentXml = async (file) => {
     }
   }
 
+  // Extract drawing elements with positioning and dimension info
+  const drawingElements = await extractDrawingElements(zip);
+
   // Extract images as base64
   const imageData = {};
   for (const relId in relationships) {
@@ -38,19 +149,15 @@ export const extractDocumentXml = async (file) => {
         const imageFile = zip.file(imagePath);
 
         if (imageFile) {
-          // Get image as base64 with nodebuffer (not browser compatible)
-          // const imageBuffer = await imageFile.async('nodebuffer');
-          // const base64Image = imageBuffer.toString('base64');
-
           // Get image as ArrayBuffer (browser-compatible)
           const imageArrayBuffer = await imageFile.async('arraybuffer');
 
           const base64Image = btoa(
-            Array.from(new Uint8Array(imageArrayBuffer))
-              .map(b => String.fromCharCode(b))
-              .join('')
+              Array.from(new Uint8Array(imageArrayBuffer))
+                  .map(b => String.fromCharCode(b))
+                  .join('')
           );
-          
+
           // Determine mime type based on file extension
           const fileExt = target.split('.').pop().toLowerCase();
           let mimeType = 'image/jpeg'; // Default
@@ -60,8 +167,13 @@ export const extractDocumentXml = async (file) => {
           else if (fileExt === 'svg') mimeType = 'image/svg+xml';
           else if (fileExt === 'webp') mimeType = 'image/webp';
 
-          // Store the data URL
-          imageData[relId] = `data:${mimeType};base64,${base64Image}`;
+          // Store the data URL and image properties
+          imageData[relId] = {
+            dataUrl: `data:${mimeType};base64,${base64Image}`,
+            mimeType: mimeType,
+            filename: target.split('/').pop(),
+            ...drawingElements[relId] // Add dimension and position data if available
+          };
         }
       } catch (error) {
         console.error(`Error extracting image ${target}:`, error);

@@ -43,11 +43,11 @@ export const createSection = ({
   sectionTitle,
   sectionNumber,
   questions,
-}); 
+});
 
 export const createQuestion = ({
   questionNumber = null, 
-  marks = 1, 
+  marks = 1,
   answers = [],
   contentText = '',
   // shuffle map is created and managed by reducers

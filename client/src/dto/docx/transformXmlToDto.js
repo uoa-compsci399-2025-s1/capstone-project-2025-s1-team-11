@@ -1,8 +1,10 @@
 // client/docxDTO/transformXmlToDto.js
 
-import { buildContentFormatted } from './utils/buildContentFormatted.js';
-import { convertOmmlToMathML } from './utils/ommlToMathML.js';
+import { buildContentFormatted, detectMathElements } from './utils/buildContentFormatted.js';
 import { createExam } from '../../store/exam/examUtils.js';
+// import { convertOmmlToMathML } from './utils/ommlToMathML.js';
+import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
+// import { extractPlainText } from './utils/extractPlainText.js';
 
 export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) => {
   const body = xmlJson['w:document']?.['w:body'];
@@ -22,7 +24,6 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
   //const dto = [];
   const dto = createExam();
-  
 
   let currentSection = null;
   let currentQuestion = null;
@@ -97,39 +98,36 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
     // Check if this is a section break
     if (isSectionBreak(block)) {
 //      console.log(`Found section break at block ${i}`);
-
-      // Finish current question and section
       flushQuestion();
       flushSection();
-
-      // Mark that we just saw a section break
       afterSectionBreak = true;
       continue;
     }
 
-    // Check if this block contains an equation (OMML)
-    let containsEquation = false;
-    let equationContent = '';
+    // Extract the paragraph content
+    const para = block['w:p'] ?? block;
 
-    if (block['m:oMath'] || block['m:oMathPara']) {
-      containsEquation = true;
-      // Use the proper math conversion function
-      equationContent = convertOmmlToMathML(block);
+    // Check if this paragraph contains math elements
+    const mathElements = detectMathElements(para);
+    const containsMath = mathElements.length > 0;
+
+    // console.log(`Processing block ${i}, has math:`, containsMath);
+    if (containsMath) {
+      // console.log(`Math elements found:`, mathElements.length);
     }
 
-    // Get the runs and text from this block
-    const runs = Array.isArray(block['w:r']) ? block['w:r'] : (block['w:r'] ? [block['w:r']] : []);
-    let text;
+    // Get all runs
+    const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
 
-    if (containsEquation) {
-      text = equationContent;
-    } else {
-      text = buildContentFormatted(runs, { relationships, imageData });
-    }
+    // Build content with math handling, passing the parent paragraph for direct math access
+    let text = buildContentFormatted(runs, {
+      relationships,
+      imageData,
+      preserveMath: true
+    }, para);
 
-    if (text.trim() !== '') {
-//      console.log(`Block ${i}: ${text.substring(0, 30)}${text.length > 30 ? '...' : ''}`);
-    }
+    // console.log(`Block ${i}: type=${block['w:p'] ? 'paragraph' : 'other'}, text="${text}"`,
+    //     text.trim() === '' ? '(EMPTY)' : '');
 
     // Handle empty lines
     if (text.trim() === '') {
@@ -149,9 +147,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
     // Check if this is a new question
     if (isNewQuestion(text)) {
-//      console.log(`Found question marker: ${text.substring(0, 30)}...`);
-
-      // End previous question if any
+      // console.log(`Found question marker: ${text.substring(0, 30)}...`);
       flushQuestion();
 
       // If we've accumulated section content after a section break, create a new section
@@ -169,16 +165,23 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
       // Extract marks and create new question
       const marks = extractMarks(text);
-      const contentText = buildContentFormatted(runs, { removeMarks: true, relationships, imageData });
+
+      // Process the question content with math preservation
+      const contentText = buildContentFormatted(runs, {
+        removeMarks: true,
+        relationships,
+        imageData,
+        preserveMath: true
+      }, para);
 
       currentQuestion = {
         type: 'question',
-        contentFormatted: contentText,
+        contentFormatted: sanitizeContentFormatted(contentText),
         marks: marks,
         answers: []
       };
 
-//      console.log(`Created new question: "${contentText}" with ${marks} marks`);
+      // console.log(`Created question with content: ${currentQuestion.contentFormatted.substring(0, 100)}...`);
       continue;
     }
 
@@ -193,11 +196,18 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
     // Handle question answers
     if (currentQuestion) {
+      const answerText = buildContentFormatted(runs, {
+        relationships,
+        imageData,
+        preserveMath: true
+      }, para);
+
       currentAnswers.push({
         type: 'answer',
-        contentFormatted: text
+        contentFormatted: sanitizeContentFormatted(answerText)
       });
-//      console.log(`Added answer to "${currentQuestion.contentFormatted}": ${text.substring(0, 30)}...`);
+
+      // console.log(`Added answer with content: ${answerText.substring(0, 50)}...`);
       continue;
     }
 
@@ -235,6 +245,7 @@ const isSectionBreak = (block) => {
 
 const isNewQuestion = (text) => {
   if (!text) return false;
+  // Check if text starts with [X mark] or [X marks] pattern
   return /^\[\d+(?:\.\d+)?\s*marks?\]/i.test(text.trim());
 };
 

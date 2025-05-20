@@ -24,6 +24,7 @@ import {
 
 const initialState = {
   examData: null,
+  coverPage: null,
   isLoading: false,
   error: null,
 };
@@ -65,6 +66,12 @@ const examSlice = createSlice({
 
     clearExamState: (state) => {
       state.examData = null;
+    },
+
+    clearExamBody: (state) => {
+      if (state.examData) {
+        state.examData.examBody = [];
+      }
     },
 
     addSection: (state, action) => {
@@ -135,9 +142,7 @@ const examSlice = createSlice({
     },
 
     setCoverPage: (state, action) => {
-      const { contentFormatted, format } = action.payload;
-      if (!state.examData) { return; }
-      state.examData.coverPage = createExamComponent(contentFormatted, format);
+      state.coverPage = action.payload;
     },
 
     setAppendix: (state, action) => {
@@ -147,8 +152,7 @@ const examSlice = createSlice({
     },
 
     removeCoverPage: (state) => {
-      if (!state.examData) { return; }
-      state.examData.coverPage = null;
+      state.coverPage = null;
     },
 
     removeAppendix: (state) => {
@@ -370,7 +374,8 @@ function htmlToText(html) {
 export const { 
   initializeExamState,
   clearExamState,
-  addSection, 
+  clearExamBody,
+  addSection,
   addQuestion, 
   setCoverPage, // supplied as document, add from file system via UI
   setAppendix, // supplied as document, add from file system via UI
