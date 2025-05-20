@@ -16,12 +16,12 @@ import '../index.css';
 const { Text } = Typography;
 
 const StaticContextBar = ({
-  examTitle = "Untitled Exam",
-  canExportDemo = false,
-  canExportRandomised = false,
-  canExportExemplar = false,
-  canExportMarking = false
-}) => {
+                            examTitle = "Untitled Exam",
+                            canExportDemo = false,
+                            canExportRandomised = false,
+                            canExportExemplar = false,
+                            canExportMarking = false
+                          }) => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
   const coverPage = useSelector(state => state.exam.coverPage);
@@ -123,26 +123,26 @@ const StaticContextBar = ({
       examBody: [],
       appendix: {},
       metadata:
-        newExamData.metadataKey && newExamData.metadataValue
-          ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
-          : []
+          newExamData.metadataKey && newExamData.metadataValue
+              ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
+              : []
     };
 
     // Parse versions if defined and non-empty
     if (newExamData.versions?.trim()) {
       exam.versions = newExamData.versions
-        .split(',')
-        .map(v => v.trim())
-        .filter(Boolean);
+          .split(',')
+          .map(v => v.trim())
+          .filter(Boolean);
     }
 
     // Parse teleformOptions if defined and non-empty
     if (newExamData.teleformOptions?.trim()) {
       const cleaned = newExamData.teleformOptions.replace(/["']/g, '');
       exam.teleformOptions = cleaned
-        .split(',')
-        .map(o => o.trim())
-        .filter(Boolean);
+          .split(',')
+          .map(o => o.trim())
+          .filter(Boolean);
     }
 
     createExam(exam);
@@ -214,8 +214,8 @@ const StaticContextBar = ({
     dispatch(updateExamField({ field: 'year', value: editDetailsData.year }));
     // Set exam versions from editDetailsData.versions if available
     const versionsArray = typeof editDetailsData.versions === 'string'
-      ? editDetailsData.versions.split(',').map(v => v.trim())
-      : editDetailsData.versions;
+        ? editDetailsData.versions.split(',').map(v => v.trim())
+        : editDetailsData.versions;
     console.log("Setting versions to:", versionsArray);
     dispatch(setExamVersions(versionsArray));
     setShowEditDetailsModal(false);
@@ -268,314 +268,331 @@ const StaticContextBar = ({
 
 
   return (
-    <div className="floating-context-bar">
-      <div
-        className="context-bar-wrapper"
-        ref={contextBarRef}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        {/* Context Bar Main */}
-        <div className="context-bar-main">
-          {/* Left side: File menu and status */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div className="context-button">
-              <Dropdown
-                menu={{
-                  items: [
-                    {
-                      key: 'new',
-                      label: 'New Exam',
-                      onClick: () => {
-                        setTimeout(() => message.info("Creating new exam..."), 0);
-                        handleCreateNewExam();
-                        setFileDropdownOpen(false);
-                      }
-                    },
-                    {
-                      key: 'open',
-                      label: 'Open Exam',
-                      onClick: () => {
-                        setTimeout(() => message.info("Opening exam..."), 0);
-                        handleOpenExam();
-                        setFileDropdownOpen(false);
-                      }
-                    },
-                    {
-                      key: 'close',
-                      label: 'Close Exam',
-                      onClick: () => {
-                        setTimeout(() => message.info("Closing exam..."), 0);
-                        handleCloseExam();
-                        setFileDropdownOpen(false);
-                      }
-                    }
-                  ]
-                }}
-                trigger={['click']}
-                onOpenChange={(visible) => {
-                  setFileDropdownOpen(visible);
-                  setIsHovered(visible);
-                }}
-                open={fileDropdownOpen}
-                getPopupContainer={() => contextBarRef.current}
-              >
-                <div ref={fileDropdownRef}>
-                  <Tooltip title="File Menu">
-                    <Button icon={<FileOutlined />} type="text">
-                      <span className="context-button-label"> Menu</span>
-                    </Button>
-                  </Tooltip>
-                </div>
-              </Dropdown>
-            </div>
-            {exam && (
-              <>
-                <Tooltip title={`File: ${examTitle}`}>
-                  <Tag color={statusColours[saveState] || "default"} style={{ marginLeft: 8 }}>
-                    {saveState === 'saved'
-                      ? (
-                          lastSavedTime
-                            ? `Saved (${lastSavedTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })})`
-                            : 'Saved'
-                        )
-                      : (saveState === 'saving' ? 'Saving...' : 'Unsaved')}
-                    {saveState === 'saving' && (
-                      <Spin size="small" style={{ marginLeft: 6 }} />
-                    )}
-                  </Tag>
-                </Tooltip>
-                {fileHandle && (
-                  <Tooltip title="Full file path not available due to browser privacy restrictions.">
-                  <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
-                    File: {fileHandle.name || '[unsaved file]'}{fileHandle.kind ? `` : ""}
-                  </Text>
-                </Tooltip>
-                )}
-              </>
-            )}
-          </div>
-          {/* Exam title and file name */}
-          <div className="editable-title-wrapper" style={{ marginLeft: "12", display: "flex", alignItems: "center" }}>
-            {exam ? (
-              <>
-                <Text strong style={{ marginRight: 8 }}>
-                  {`${exam?.courseName || "Unknown Course"} ${exam?.courseCode || ""}: ${exam?.examTitle || "Untitled Exam"}`}
-                </Text>
-                {/* Inline warning if key fields are missing */}
-                {(!exam?.examTitle || !exam?.courseCode) && (
-                  <Text className="context-warning" type="warning" style={{ marginLeft: 12 }}>
-                    Missing required exam details
-                  </Text>
-                )}
-              </>
-            ) : (
-              <Text type="danger" strong>No exam uploaded</Text>
-            )}
-          </div>
-          {/* Right side: Save and Export buttons */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div className="context-button" style={{ display: "flex", alignItems: "center" }}>
-              <Tooltip title="Save Exam">
-                <Button
-                  icon={<SaveOutlined />}
-                  onClick={handleSaveExam}
-                  disabled={!exam}
-                  type="text"
-                >
-                  <span className="context-button-label">Save</span>
-                </Button>
-              </Tooltip>
-            </div>
-            <div className="context-button">
-              <Dropdown
-                menu={{
-                  items: [
-                    {
-                      key: 'docx',
-                      label: 'Download as DOCX',
-                      onClick: async () => {
-                        try {
-                          if (!exam) {
-                            message.error("No exam data available for export");
-                            return;
+      <div className="floating-context-bar">
+        <div
+            className="context-bar-wrapper"
+            ref={contextBarRef}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+        >
+          {/* Context Bar Main */}
+          <div className="context-bar-main">
+            {/* Left side: File menu and status */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div className="context-button">
+                <Dropdown
+                    menu={{
+                      items: [
+                        {
+                          key: 'new',
+                          label: 'New Exam',
+                          onClick: () => {
+                            setTimeout(() => message.info("Creating new exam..."), 0);
+                            handleCreateNewExam();
+                            setFileDropdownOpen(false);
                           }
-
-                          if (!coverPage) {
-                            message.error("No cover page available. Please upload a cover page first.");
-                            return;
+                        },
+                        {
+                          key: 'open',
+                          label: 'Open Exam',
+                          onClick: () => {
+                            setTimeout(() => message.info("Opening exam..."), 0);
+                            handleOpenExam();
+                            setFileDropdownOpen(false);
                           }
-
-                          setTimeout(() => message.info("Exporting DOCX versions..."), 0);
-
-                          // Use the coverPage from the selector
-                          const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
-
-                          if (result.success) {
-                            message.success("All exam versions exported successfully");
-                          } else {
-                            message.error(`Export failed: ${result.error}`);
+                        },
+                        {
+                          key: 'close',
+                          label: 'Close Exam',
+                          onClick: () => {
+                            setTimeout(() => message.info("Closing exam..."), 0);
+                            handleCloseExam();
+                            setFileDropdownOpen(false);
                           }
-                        } catch (error) {
-                          message.error(`Export error: ${error.message}`);
-                          console.error(error);
-                        } finally {
-                          setExportDropdownOpen(false);
                         }
-                      }
-                    },
-                    {
-                      key: 'demo',
-                      label: 'Demo Answer Scripts',
-                      disabled: !canExportDemo,
-                      onClick: () => {
-                        setTimeout(() => message.info("Exporting demo scripts..."), 0);
-                        confirmExport("demo");
-                        setExportDropdownOpen(false);
-                      }
-                    },
-                    {
-                      key: 'randomised',
-                      label: 'Randomised Answer Scripts',
-                      disabled: !canExportRandomised,
-                      onClick: () => {
-                        setTimeout(() => message.info("Exporting randomised scripts..."), 0);
-                        confirmExport("randomised");
-                        setExportDropdownOpen(false);
-                      }
-                    },
-                    {
-                      key: 'exemplar',
-                      label: 'Exemplar Answer Scripts',
-                      disabled: !canExportExemplar,
-                      onClick: () => {
-                        setTimeout(() => message.info("Exporting exemplar scripts..."), 0);
-                        confirmExport("exemplar");
-                        setExportDropdownOpen(false);
-                      }
-                    },
-                    {
-                      key: 'marking',
-                      label: 'Marking Scheme',
-                      disabled: !canExportMarking,
-                      onClick: () => {
-                        setTimeout(() => message.info("Exporting marking scheme..."), 0);
-                        confirmExport("marking");
-                        setExportDropdownOpen(false);
-                      }
-                    }
-                  ]
-                }}
-                trigger={['click']}
-                onOpenChange={(visible) => {
-                  setExportDropdownOpen(visible);
-                  setIsHovered(visible);
-                }}
-                open={exportDropdownOpen}
-                getPopupContainer={() => contextBarRef.current}
-              >
-                <div ref={exportDropdownRef}>
-                  <Tooltip title="Export Options">
-                    <Button icon={<ExportOutlined />} type="text">
-                      <span className="context-button-label">Export</span>
-                    </Button>
-                  </Tooltip>
-                </div>
-              </Dropdown>
+                      ]
+                    }}
+                    trigger={['click']}
+                    onOpenChange={(visible) => {
+                      setFileDropdownOpen(visible);
+                      setIsHovered(visible);
+                    }}
+                    open={fileDropdownOpen}
+                    getPopupContainer={() => contextBarRef.current}
+                >
+                  <div ref={fileDropdownRef}>
+                    <Tooltip title="File Menu">
+                      <Button icon={<FileOutlined />} type="text">
+                        <span className="context-button-label"> Menu</span>
+                      </Button>
+                    </Tooltip>
+                  </div>
+                </Dropdown>
+              </div>
+              {exam && (
+                  <>
+                    <Tooltip title={`File: ${examTitle}`}>
+                      <Tag color={statusColours[saveState] || "default"} style={{ marginLeft: 8 }}>
+                        {saveState === 'saved'
+                            ? (
+                                lastSavedTime
+                                    ? `Saved (${lastSavedTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })})`
+                                    : 'Saved'
+                            )
+                            : (saveState === 'saving' ? 'Saving...' : 'Unsaved')}
+                        {saveState === 'saving' && (
+                            <Spin size="small" style={{ marginLeft: 6 }} />
+                        )}
+                      </Tag>
+                    </Tooltip>
+                    {fileHandle && (
+                        <Tooltip title="Full file path not available due to browser privacy restrictions.">
+                          <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
+                            File: {fileHandle.name || '[unsaved file]'}{fileHandle.kind ? `` : ""}
+                          </Text>
+                        </Tooltip>
+                    )}
+                  </>
+              )}
             </div>
-            {/* Manual Auto-Save Toggle */}
-            <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: 8 }}>
-              <Tooltip title="Enable or disable auto-save">
-                <Switch
-                  checked={autoSaveEnabled}
-                  onChange={setAutoSaveEnabled}
-                  size="small"
-                  style={{ marginRight: 4 }}
-                />
-              </Tooltip>
-              <span style={{ fontSize: 12 }}>{autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}</span>
+            {/* Exam title and file name */}
+            <div className="editable-title-wrapper" style={{ marginLeft: "12", display: "flex", alignItems: "center" }}>
+              {exam ? (
+                  <>
+                    <Text strong style={{ marginRight: 8 }}>
+                      {`${exam?.courseName || "Unknown Course"} ${exam?.courseCode || ""}: ${exam?.examTitle || "Untitled Exam"}`}
+                    </Text>
+                    {/* Inline warning if key fields are missing */}
+                    {(!exam?.examTitle || !exam?.courseCode) && (
+                        <Text className="context-warning" type="warning" style={{ marginLeft: 12 }}>
+                          Missing required exam details
+                        </Text>
+                    )}
+                  </>
+              ) : (
+                  <Text type="danger" strong>No exam uploaded</Text>
+              )}
+            </div>
+            {/* Right side: Save and Export buttons */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div className="context-button" style={{ display: "flex", alignItems: "center" }}>
+                <Tooltip title="Save Exam">
+                  <Button
+                      icon={<SaveOutlined />}
+                      onClick={handleSaveExam}
+                      disabled={!exam}
+                      type="text"
+                  >
+                    <span className="context-button-label">Save</span>
+                  </Button>
+                </Tooltip>
+              </div>
+              <div className="context-button">
+                <Dropdown
+                    menu={{
+                      items: [
+                        {
+                          key: 'docx',
+                          label: 'Download as DOCX',
+                          onClick: async () => {
+                            try {
+                              if (!exam) {
+                                message.error("No exam data available for export");
+                                return;
+                              }
+
+                              if (!coverPage) {
+                                message.error("No cover page available. Please upload a cover page first.");
+                                return;
+                              }
+
+                              // Check if exam is ready for export
+                              const { warnings } = ExamExportService.checkExamVersionsReady(exam);
+
+                              // Show warnings if present
+                              if (warnings && warnings.length > 0) {
+                                const warningText = warnings.join("\n");
+                                const proceed = window.confirm(`${warningText}\n\nDo you want to proceed with the export anyway?`);
+                                if (!proceed) {
+                                  return;
+                                }
+                              }
+
+                              setTimeout(() => message.info("Exporting DOCX versions..."), 0);
+
+                              // Use the coverPage from the selector
+                              const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
+
+                              if (result.success) {
+                                message.success("All exam versions exported successfully");
+
+                                // Show any warnings that came back
+                                if (result.warnings && result.warnings.length > 0) {
+                                  message.warning(result.warnings.join("\n"));
+                                }
+                              } else {
+                                message.error(`Export failed: ${result.error}`);
+                              }
+                            } catch (error) {
+                              message.error(`Export error: ${error.message}`);
+                              console.error(error);
+                            } finally {
+                              setExportDropdownOpen(false);
+                            }
+                          }
+                        },
+                        {
+                          key: 'demo',
+                          label: 'Demo Answer Scripts',
+                          disabled: !canExportDemo,
+                          onClick: () => {
+                            setTimeout(() => message.info("Exporting demo scripts..."), 0);
+                            confirmExport("demo");
+                            setExportDropdownOpen(false);
+                          }
+                        },
+                        {
+                          key: 'randomised',
+                          label: 'Randomised Answer Scripts',
+                          disabled: !canExportRandomised,
+                          onClick: () => {
+                            setTimeout(() => message.info("Exporting randomised scripts..."), 0);
+                            confirmExport("randomised");
+                            setExportDropdownOpen(false);
+                          }
+                        },
+                        {
+                          key: 'exemplar',
+                          label: 'Exemplar Answer Scripts',
+                          disabled: !canExportExemplar,
+                          onClick: () => {
+                            setTimeout(() => message.info("Exporting exemplar scripts..."), 0);
+                            confirmExport("exemplar");
+                            setExportDropdownOpen(false);
+                          }
+                        },
+                        {
+                          key: 'marking',
+                          label: 'Marking Scheme',
+                          disabled: !canExportMarking,
+                          onClick: () => {
+                            setTimeout(() => message.info("Exporting marking scheme..."), 0);
+                            confirmExport("marking");
+                            setExportDropdownOpen(false);
+                          }
+                        }
+                      ]
+                    }}
+                    trigger={['click']}
+                    onOpenChange={(visible) => {
+                      setExportDropdownOpen(visible);
+                      setIsHovered(visible);
+                    }}
+                    open={exportDropdownOpen}
+                    getPopupContainer={() => contextBarRef.current}
+                >
+                  <div ref={exportDropdownRef}>
+                    <Tooltip title="Export Options">
+                      <Button icon={<ExportOutlined />} type="text">
+                        <span className="context-button-label">Export</span>
+                      </Button>
+                    </Tooltip>
+                  </div>
+                </Dropdown>
+              </div>
+              {/* Manual Auto-Save Toggle */}
+              <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: 8 }}>
+                <Tooltip title="Enable or disable auto-save">
+                  <Switch
+                      checked={autoSaveEnabled}
+                      onChange={setAutoSaveEnabled}
+                      size="small"
+                      style={{ marginRight: 4 }}
+                  />
+                </Tooltip>
+                <span style={{ fontSize: 12 }}>{autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Context Bar Expanded (shown on hover or dropdown open) */}
-        <div className={`context-bar-expanded ${shouldShowContextBar ? 'show' : ''}`}>
-          <div style={{ padding: '24px 0px' }}>
-            {exam ? (
-              <>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "32px", alignItems: "flex-end" }}>
-                  <div>
-                    <div style={{ marginBottom: 4 }}><strong>Course Code:</strong></div>
-                    <div>{exam?.courseCode || "N/A"}</div>
-                  </div>
-                  <div>
-                    <div style={{ marginBottom: 4 }}><strong>Course Name:</strong></div>
-                    <div>{exam?.courseName || "N/A"}</div>
-                  </div>
-                  <div>
-                    <div style={{ marginBottom: 4 }}><strong>Semester:</strong></div>
-                    <div>{exam?.semester || "N/A"}</div>
-                  </div>
-                  <div>
-                    <div style={{ marginBottom: 4 }}><strong>Year:</strong></div>
-                    <div>{exam?.year || "N/A"}</div>
-                  </div>
-                  {exam?.versions && exam.versions.length > 0 && (
-                    <div>
-                      <div style={{ marginBottom: 4 }}><strong>Versions:</strong></div>
-                      <div className="version-tags">
-                        {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
+          {/* Context Bar Expanded (shown on hover or dropdown open) */}
+          <div className={`context-bar-expanded ${shouldShowContextBar ? 'show' : ''}`}>
+            <div style={{ padding: '24px 0px' }}>
+              {exam ? (
+                  <>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "32px", alignItems: "flex-end" }}>
+                      <div>
+                        <div style={{ marginBottom: 4 }}><strong>Course Code:</strong></div>
+                        <div>{exam?.courseCode || "N/A"}</div>
+                      </div>
+                      <div>
+                        <div style={{ marginBottom: 4 }}><strong>Course Name:</strong></div>
+                        <div>{exam?.courseName || "N/A"}</div>
+                      </div>
+                      <div>
+                        <div style={{ marginBottom: 4 }}><strong>Semester:</strong></div>
+                        <div>{exam?.semester || "N/A"}</div>
+                      </div>
+                      <div>
+                        <div style={{ marginBottom: 4 }}><strong>Year:</strong></div>
+                        <div>{exam?.year || "N/A"}</div>
+                      </div>
+                      {exam?.versions && exam.versions.length > 0 && (
+                          <div>
+                            <div style={{ marginBottom: 4 }}><strong>Versions:</strong></div>
+                            <div className="version-tags">
+                              {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
+                            </div>
+                          </div>
+                      )}
+                      <div>
+                        <Button
+                            type="primary"
+                            onClick={() => {
+                              setTimeout(() => message.info("Editing exam details..."), 0);
+                              openEditDetailsModal();
+                            }}
+                            style={{ marginLeft: 16 }}
+                        >
+                          Edit Exam Details
+                        </Button>
                       </div>
                     </div>
-                  )}
-                  <div>
-                    <Button
-                      type="primary"
-                      onClick={() => {
-                        setTimeout(() => message.info("Editing exam details..."), 0);
-                        openEditDetailsModal();
-                      }}
-                      style={{ marginLeft: 16 }}
-                    >
-                      Edit Exam Details
-                    </Button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <Alert
-                message="No exam is currently loaded"
-                description="Create a new exam or open an existing one to begin editing."
-                type="error"
-                showIcon
-              />
-            )}
+                  </>
+              ) : (
+                  <Alert
+                      message="No exam is currently loaded"
+                      description="Create a new exam or open an existing one to begin editing."
+                      type="error"
+                      showIcon
+                  />
+              )}
+            </div>
           </div>
+
+          {/* Create New Exam Modal */}
+          <CreateExamModal
+              open={showCreateModal}
+              onOk={handleCreateModalOk}
+              onCancel={handleCreateModalCancel}
+              newExamData={newExamData}
+              setNewExamData={setNewExamData}
+              versionCount={versionCount}
+              setVersionCount={setVersionCount}
+              customVersionMode={customVersionMode}
+              setCustomVersionMode={setCustomVersionMode}
+          />
+          {/* Edit Exam Details Modal */}
+          <EditExamModal
+              open={showEditDetailsModal}
+              onOk={handleEditDetailsSave}
+              onCancel={() => setShowEditDetailsModal(false)}
+              editDetailsData={editDetailsData}
+              setEditDetailsData={setEditDetailsData}
+          />
+
         </div>
-
-        {/* Create New Exam Modal */}
-        <CreateExamModal
-          open={showCreateModal}
-          onOk={handleCreateModalOk}
-          onCancel={handleCreateModalCancel}
-          newExamData={newExamData}
-          setNewExamData={setNewExamData}
-          versionCount={versionCount}
-          setVersionCount={setVersionCount}
-          customVersionMode={customVersionMode}
-          setCustomVersionMode={setCustomVersionMode}
-        />
-        {/* Edit Exam Details Modal */}
-        <EditExamModal
-          open={showEditDetailsModal}
-          onOk={handleEditDetailsSave}
-          onCancel={() => setShowEditDetailsModal(false)}
-          editDetailsData={editDetailsData}
-          setEditDetailsData={setEditDetailsData}
-        />
-
       </div>
-    </div>
   );
 };
 

@@ -56,12 +56,29 @@ const Builder = () => {
                 return;
             }
 
+            // Check if exam is ready for export
+            const { warnings } = ExamExportService.checkExamVersionsReady(exam);
+
+            // Show warnings if present
+            if (warnings && warnings.length > 0) {
+                const warningText = warnings.join("\n");
+                const proceed = window.confirm(`${warningText}\n\nDo you want to proceed with the export anyway?`);
+                if (!proceed) {
+                    return;
+                }
+            }
+
             message.info("Exporting DOCX versions...");
 
             const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
 
             if (result.success) {
                 message.success("All exam versions exported successfully");
+
+                // Show any warnings that came back
+                if (result.warnings && result.warnings.length > 0) {
+                    message.warning(result.warnings.join("\n"));
+                }
             } else {
                 message.error(`Export failed: ${result.error}`);
             }

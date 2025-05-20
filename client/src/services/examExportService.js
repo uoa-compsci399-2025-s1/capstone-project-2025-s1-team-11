@@ -81,6 +81,91 @@ export class ExamExportService {
     }
 
     /**
+     * Checks if exam questions have been shuffled
+     * @param {Object} examData - The exam data to check
+     * @returns {boolean} - True if at least one question has shuffled answers, false otherwise
+     */
+    static areAnswersShuffled(examData) {
+        // If no exam data or no questions, return false
+        if (!examData || !examData.examBody) {
+            return false;
+        }
+
+        // Check each question for shuffle maps
+        let hasShuffledAnswers = false;
+
+        // Process each exam body item
+        examData.examBody.forEach(item => {
+            // Check standalone questions
+            if (item.type === 'question' && item.answerShuffleMaps) {
+                // Check if any shuffle maps are different from the identity map
+                hasShuffledAnswers = hasShuffledAnswers || this.isNonIdentityShuffle(item.answerShuffleMaps);
+            }
+
+            // Check questions within sections
+            if (item.type === 'section' && item.questions) {
+                item.questions.forEach(question => {
+                    if (question.answerShuffleMaps) {
+                        hasShuffledAnswers = hasShuffledAnswers || this.isNonIdentityShuffle(question.answerShuffleMaps);
+                    }
+                });
+            }
+        });
+
+        return hasShuffledAnswers;
+    }
+
+    /**
+     * Helper function to check if shuffle maps are actually shuffled (not identity)
+     * @param {Array} shuffleMaps - Array of shuffle maps
+     * @returns {boolean} - True if at least one map is not an identity mapping
+     */
+    static isNonIdentityShuffle(shuffleMaps) {
+        if (!Array.isArray(shuffleMaps) || shuffleMaps.length <= 1) {
+            return false;
+        }
+
+        // Check if all maps are different from each other
+        for (let i = 0; i < shuffleMaps.length; i++) {
+            for (let j = i + 1; j < shuffleMaps.length; j++) {
+                // Compare two shuffle maps
+                if (shuffleMaps[i] && shuffleMaps[j] &&
+                    JSON.stringify(shuffleMaps[i]) !== JSON.stringify(shuffleMaps[j])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the exam is ready for versioned export
+     * @param {Object} examData - The exam data to check
+     * @returns {{ready: boolean, warnings: string[]}} - Ready status and any warnings
+     */
+    static checkExamVersionsReady(examData) {
+        const warnings = [];
+
+        // Check if exam has versions defined
+        if (!examData.versions || examData.versions.length <= 1) {
+            warnings.push("Exam has only one version. Multiple versions are recommended for versioned export.");
+        }
+
+        // Check if answers have been shuffled
+        if (!this.areAnswersShuffled(examData)) {
+            warnings.push("Answers are not shuffled. All versions will have identical answer orders.");
+        }
+
+        // Add other checks as needed (e.g., ensuring all questions have the same number of answers)
+
+        return {
+            ready: true, // You can set conditions for this
+            warnings
+        };
+    }
+
+    /**
      * Export multiple versions of an exam as separate DOCX files
      * Each version will have the same cover page but different body content
      *
@@ -148,13 +233,26 @@ export class ExamExportService {
      *
      * @param {Object} examData - Exam data from Redux store
      * @param {Blob} coverPageBlob - The cover page as a DOCX blob
-     * @returns {Promise<{success: boolean, error?: string}>}
+     * @returns {Promise<{success: boolean, error?: string, warnings?: string[]}>}
      */
     static async exportAndSaveVersionedExam(examData, coverPageBlob) {
         try {
+            // Check if exam is ready for versioned export
+            const { warnings } = this.checkExamVersionsReady(examData);
+
+            // Show warnings and get confirmation if there are warnings
+            if (warnings && warnings.length > 0) {
+                // For safety, check inside the export function too
+                console.warn("Export warnings:", warnings);
+            }
+
             const versionedBlobs = await this.exportVersionedDocx(examData, coverPageBlob);
             this.saveVersionedFiles(versionedBlobs, examData);
-            return { success: true };
+
+            return {
+                success: true,
+                warnings: warnings && warnings.length > 0 ? warnings : undefined
+            };
         } catch (error) {
             console.error('Error in export and save versioned operation:', error);
             return { success: false, error: error.message };
