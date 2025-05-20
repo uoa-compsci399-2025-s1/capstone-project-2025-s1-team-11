@@ -55,11 +55,11 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
     const binary = correctAnswerNum.toString(2).padStart(5, '0');
     
     return [
-      { option: teleformOptions[0], value: answerFreq['01'] || 0, isCorrect: binary[0] === '1' },
-      { option: teleformOptions[1], value: answerFreq['02'] || 0, isCorrect: binary[1] === '1' },
+      { option: teleformOptions[0], value: answerFreq['01'] || 0, isCorrect: binary[4] === '1' },
+      { option: teleformOptions[1], value: answerFreq['02'] || 0, isCorrect: binary[3] === '1' },
       { option: teleformOptions[2], value: answerFreq['04'] || 0, isCorrect: binary[2] === '1' },
-      { option: teleformOptions[3], value: answerFreq['08'] || 0, isCorrect: binary[3] === '1' },
-      { option: teleformOptions[4], value: answerFreq['16'] || 0, isCorrect: binary[4] === '1' },
+      { option: teleformOptions[3], value: answerFreq['08'] || 0, isCorrect: binary[1] === '1' },
+      { option: teleformOptions[4], value: answerFreq['16'] || 0, isCorrect: binary[0] === '1' },
     ];
   };
   
@@ -141,7 +141,7 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
       dataIndex: 'correctPercentage',
       key: 'correctPercentage',
       width: 120,
-      render: (text) => <Progress percent={parseFloat(text || 0)} size="small" />,
+      render: (text) => <Progress percent={parseFloat(text || 0)} size="small" strokeColor="#52c41a" success={{ percent: 0 }} />,
     },
     {
       title: 'Answer Distribution',
@@ -163,7 +163,7 @@ const QuestionStats = ({ results, examData, onUpdateCorrectAnswer }) => {
                   style={{ 
                     height: '100%', 
                     width: `${max > 0 ? (item.value / max) * 100 : 0}%`, 
-                    backgroundColor: item.isCorrect ? '#52c41a' : '#f5f5f5',
+                    backgroundColor: item.isCorrect ? '#52c41a' : '#D3D3D3',
                     marginRight: 2,
                     color: item.isCorrect ? 'white' : 'black',
                     textAlign: 'center',

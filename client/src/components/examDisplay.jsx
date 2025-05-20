@@ -17,7 +17,7 @@ import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifi
 
 const { TextArea } = Input;
 
-const ExamDisplay = () => {
+export const ExamDisplay = () => {
   const exam = useSelector(selectExamData);
   const dispatch = useDispatch();
 

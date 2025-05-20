@@ -7,7 +7,7 @@ import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
 import { markExams } from "../utilities/marker/examMarker.js";
 import { generateResultOutput } from "../utilities/marker/outputFormatter.js";
 import {dataReview} from "../components/marker/dataReview.jsx";
-import {Results} from "../components/marker/Results.jsx"
+import {Results} from "../components/marker/results.jsx"
 import {teleformReader} from "../components/marker/teleformReader.jsx";
 import {selectCorrectAnswerIndices} from "../store/exam/selectors.js";
 
@@ -116,8 +116,14 @@ const Marker = () => {
       case 0:
         return dataReview({ examData: currentExamData, markingKey });
       case 1:
-        return teleformReader({teleformData, markingKey, handleTeleformDataChange, handleMarkExams});
+        return teleformReader({teleformData, markingKey, handleTeleformDataChange});
       case 2:
+        // Automatically mark exams if we have teleform data and no results yet
+        if (teleformData && !resultsData && markingKey) {
+          handleMarkExams();
+          return <div>Marking exams...</div>;
+        }
+        
         // Make sure we're passing valid data to the Results component
         if (!resultsData || !resultsData.all || !Array.isArray(resultsData.all)) {
           return (

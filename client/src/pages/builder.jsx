@@ -100,12 +100,12 @@ const Builder = () => {
 
                         <div style={{ marginBottom: 24 }}>
                             <Space>
-                                <Button type="default" onClick={() => {/* TODO: implement DOCX download */}}>
+                                <Button type="default" onClick={() => {}}> {/* TODO: implement DOCX download */}
                                     Download as DOCX
                                 </Button>
-                                <Button type="default" onClick={() => exportExamToPdf(exam)}>
+                                {/* <Button type="default" onClick={() => exportExamToPdf(exam)}>
                                     Download as PDF
-                                </Button>
+                                </Button> */}
                             </Space>
                         </div>
                     </div>

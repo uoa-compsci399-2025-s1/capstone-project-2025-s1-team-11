@@ -1,4 +1,5 @@
 import {Button, Col, Divider, Empty, Progress, Radio, Row, Statistic, Typography, Tabs, Select, Space} from "antd";
+import { Column } from '@ant-design/charts';
 import React, {useState, useEffect} from "react";
 import QuestionStats from "./QuestionStats.jsx";
 import StudentReport from "./StudentReport.jsx";
@@ -56,9 +57,8 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
     );
   };
 
-  // Handler for loading test data from JSON - commented out for production
-  /*
-  const handleLoadTestData = async () => {
+  // Handler for loading test data from JSON
+  /* const handleLoadTestData = async () => {
     try {
       setIsLoadingTestData(true);
       
@@ -132,15 +132,19 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
     } finally {
       setIsLoadingTestData(false);
     }
-  };
-  */
+  }; */
   
   // Validate resultsData
   if (!hasValidData) {
     return (
       <>
-        <Empty description="No results available. Mark exams to see results here."/>
-        {/* Test data loading button removed for production */}
+        <Empty 
+          description={
+            <div>
+              <p>No results available. Mark exams to see results here.</p>
+            </div>
+          }
+        />
       </>
     );
   }
@@ -167,7 +171,6 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
         <Button type="primary" onClick={handleExportResults} style={{ marginRight: 16 }}>
           Export Results
         </Button>
-        {/* Test data loading button removed for production */}
       </div>
 
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
@@ -216,25 +219,64 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
           <Divider />
 
           <Typography.Title level={4}>Score Distribution</Typography.Title>
-          {Array.from({ length: 5 }).map((_, idx) => {
-            const lower = idx * 20;
-            const upper = lower + 20;
-            const count = resultsData.filter(student => {
-              const percentScore = (student.totalMarks / student.maxMarks) * 100;
-              return percentScore >= lower && percentScore < upper;
-            }).length;
-
-            return (
-              <div key={idx} style={{ marginBottom: 8 }}>
-                <Typography.Text>{`${lower}% - ${upper}%:`}</Typography.Text>
-                <Progress
-                  percent={count / resultsData.length * 100}
-                  showInfo={true}
-                  format={() => `${count} students`}
-                />
-              </div>
+          {(() => {
+            // Calculate percentage scores
+            const scores = resultsData.map(student => 
+              (student.totalMarks / student.maxMarks) * 100
             );
-          })}
+            
+            // Use fixed 10% bins
+            const binWidth = 10;
+            const numBins = 10; // 0-10, 10-20, ..., 90-100
+            
+            // Create bins
+            const bins = Array.from({ length: numBins }, (_, idx) => {
+              const lower = idx * binWidth;
+              const upper = lower + binWidth;
+              const count = scores.filter(score => 
+                score >= lower && (idx === numBins - 1 ? score <= upper : score < upper)
+              ).length;
+              return {
+                range: `${lower}-${upper}%`,
+                count: count,
+              };
+            });
+
+            const config = {
+              data: bins,
+              xField: 'range',
+              yField: 'count',
+              label: false,
+              xAxis: {
+                label: {
+                  autoRotate: true,
+                  style: {
+                    fontSize: 12,
+                  }
+                },
+                tickLine: null,
+                line: {
+                  style: {
+                    stroke: '#E5E5E5',
+                  },
+                },
+              },
+              yAxis: {
+                tickLine: null,
+                line: {
+                  style: {
+                    stroke: '#E5E5E5',
+                  },
+                },
+              },
+              height: 300,
+              columnStyle: {
+                fill: '#1890ff',
+              },
+            };
+
+            return <Column {...config} />;
+          })()}
         </Tabs.TabPane>
 
         <Tabs.TabPane tab="Question Analysis" key="questionStats">
