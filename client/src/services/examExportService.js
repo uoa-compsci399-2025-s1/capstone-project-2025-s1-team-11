@@ -1,9 +1,9 @@
 ﻿// src/services/examExportService.js
 
 import { exportExamToText } from './docxExport/modules/textExport';
-import { exportExamToDocxWithDocxtemplater } from './docxExport/modules/docxtemplaterExport';
 import { generateFilename } from './docxExport/modules/docxtemplaterHelper';
 import { mergeDocxFiles } from './docxExport/modules/docxMerger.js';
+import {exportExamToDocxWithDocxtemplater} from "./docxExport/modules/exporters/docxtemplaterExporter.js";
 
 
 /**
