@@ -142,10 +142,15 @@ function formatQuestionsWithVersion(questions, version, versionList) {
  * @param {Array} versionList - List of all versions
  * @returns {Object} - Formatted question
  */
+/**
+ * Format a single question for template use, with version-specific answer ordering
+ * @param {Object} question - Question object
+ * @param {string|number} version - Version number being exported
+ * @param {Array} versionList - List of all versions
+ * @returns {Object} - Formatted question
+ */
 function formatQuestionWithVersion(question, version, versionList) {
-    // Format the mark display (e.g., "[1 mark]" or "[2 marks]")
-    console.log("Version parameter:", version);
-    console.log("Version list:", versionList);
+    // Format the mark display
     const markText = question.marks
         ? `[${question.marks} mark${question.marks !== 1 ? 's' : ''}]`
         : '';
@@ -155,31 +160,31 @@ function formatQuestionWithVersion(question, version, versionList) {
         question.contentFormatted || question.contentText || ''
     );
 
-    // Determine which shuffle map to use based on version
+    // Determine which shuffle map to use based on version position in versionList
     let versionIndex = 0;
-    if (versionList) {
-        if (typeof version === 'string' && isNaN(parseInt(version))) {
-            // Handle letter versions (A, B, C, D)
-            versionIndex = versionList.indexOf(version);
-        } else {
-            // Handle numeric versions
-            versionIndex = versionList.indexOf(parseInt(version));
+    if (versionList && versionList.length > 0) {
+        // Find the position of this version in the versionList
+        const position = versionList.indexOf(version);
+        // If found, use that position; otherwise use a position based on numeric value or default to 0
+        if (position !== -1) {
+            versionIndex = position;
+        } else if (typeof version === 'string' && !isNaN(parseInt(version))) {
+            // If version is numeric but not in the list, calculate position based on value
+            versionIndex = (parseInt(version) - 1) % versionList.length;
         }
-        // Default to 0 if version not found
-        versionIndex = versionIndex === -1 ? 0 : versionIndex;
     }
 
-    console.log("Version index:", versionIndex);
-    console.log("Question:", question.questionNumber);
-    console.log("Shuffle maps available:", question.answerShuffleMaps);
+    console.log("Version:", version, "Position in list:", versionIndex);
 
+    // Get the appropriate shuffle map for this version
     const shuffleMap = question.answerShuffleMaps?.[versionIndex] || [...Array(question.answers?.length || 0).keys()];
 
-    console.log("Selected shuffle map for this version:", shuffleMap);
+    console.log("Using shuffle map:", shuffleMap);
 
     // Format answers using the appropriate shuffle map for this version
     const formattedAnswers = [];
 
+    // Rest of the function remains the same...
     if (question.answers && question.answers.length > 0) {
         // Use the shuffle map to reorder answers
         shuffleMap.forEach((originalIndex, newIndex) => {
@@ -192,7 +197,7 @@ function formatQuestionWithVersion(question, version, versionList) {
                 // Only include non-empty answers
                 if (answerContent.text.trim()) {
                     // Use letters for answer labels (A, B, C, etc.)
-                    const label = String.fromCharCode(97 + newIndex);
+                    const label = String.fromCharCode(65 + newIndex);
                     formattedAnswers.push({
                         label: label,
                         text: answerContent.text,
