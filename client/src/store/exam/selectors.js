@@ -111,7 +111,7 @@ export const selectQuestionsAndSectionsForTable = createSelector(
         result.push({
           id: item.id,
           type: 'section',
-          sectionNumber: currentSectionNumber,
+          sectionNumber: item.sectionNumber || currentSectionNumber,
           sectionTitle: item.sectionTitle,
           contentFormatted: item.contentFormatted,
           examBodyIndex,
@@ -120,7 +120,7 @@ export const selectQuestionsAndSectionsForTable = createSelector(
         // Add all questions in this section
         item.questions?.forEach((question, questionsIndex) => {
           result.push({
-            ...normaliseQuestionForTable(question, currentSectionNumber),
+            ...normaliseQuestionForTable(question, item.sectionNumber || currentSectionNumber),
             examBodyIndex,
             questionsIndex,
             id: question.id,

@@ -389,9 +389,9 @@ const ExamDisplay = () => {
       ellipsis: true,
       render: (_, record) => {
         if (record.type === "section") {
-          return <strong>{record.sectionTitle || record.sectionNumber}</strong>;
+          return record.sectionNumber || record.sectionTitle;
         }
-        return record.sectionNumber || record.sectionTitle || '';
+        return record.sectionNumber;
       },
     },
     {
