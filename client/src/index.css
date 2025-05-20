@@ -277,14 +277,6 @@ button:focus-visible {
   transition: all 0.3s;
 }
 
-.highlighted-table-row {
-  background-color: #e6f7ff;
-}
-
-.highlighted-table-row:hover td {
-  background-color: #bae7ff !important;
-}
-
 .exam-sidebar .ant-list-item:hover {
   background-color: #f5f5f5;
 }
