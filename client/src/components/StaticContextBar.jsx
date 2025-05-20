@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, message as antdMessage } from 'antd';
+import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, message as antdMessage, Modal } from 'antd';
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined } from '@ant-design/icons';
 import { updateExamField } from "../store/exam/examSlice";
@@ -412,15 +412,39 @@ const StaticContextBar = ({
                               // Show warnings if present
                               if (warnings && warnings.length > 0) {
                                 const warningText = warnings.join("\n");
-                                const proceed = window.confirm(`${warningText}\n\nDo you want to proceed with the export anyway?`);
-                                if (!proceed) {
-                                  return;
-                                }
+
+                                Modal.confirm({
+                                  title: 'Warning: Issues with Export',
+                                  content: (
+                                      <div>
+                                        <p>{warningText}</p>
+                                        <p>Do you want to proceed with the export anyway?</p>
+                                      </div>
+                                  ),
+                                  okText: 'Proceed',
+                                  cancelText: 'Cancel',
+                                  onOk: async () => {
+                                    // Continue with export
+                                    setTimeout(() => message.info("Exporting DOCX versions..."), 0);
+                                    const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
+
+                                    if (result.success) {
+                                      message.success("All exam versions exported successfully");
+
+                                      // Show any warnings that came back
+                                      if (result.warnings && result.warnings.length > 0) {
+                                        message.warning(result.warnings.join("\n"));
+                                      }
+                                    } else {
+                                      message.error(`Export failed: ${result.error}`);
+                                    }
+                                  }
+                                });
+                                return; // Exit early, the Modal callback will handle continuation
                               }
 
+// Only execute this code if there are no warnings
                               setTimeout(() => message.info("Exporting DOCX versions..."), 0);
-
-                              // Use the coverPage from the selector
                               const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
 
                               if (result.success) {

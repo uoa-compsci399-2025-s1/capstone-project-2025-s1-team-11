@@ -6,7 +6,7 @@ import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/examDisplay.jsx";
 import ExamFileManager from "../components/ExamFileManager.jsx";
 import ExamSidebar from "../components/ExamSidebar.jsx";
-import { Typography, Button, Space, Row, Col, Tooltip, Collapse, Divider, message } from "antd";
+import { Typography, Button, Space, Row, Col, Tooltip, Collapse, Divider, message, Modal } from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { ExamExportService } from "../services/examExportService";
 //import { exportExamToPdf } from "../services/exportPdf.js";
@@ -62,14 +62,39 @@ const Builder = () => {
             // Show warnings if present
             if (warnings && warnings.length > 0) {
                 const warningText = warnings.join("\n");
-                const proceed = window.confirm(`${warningText}\n\nDo you want to proceed with the export anyway?`);
-                if (!proceed) {
-                    return;
-                }
+
+                Modal.confirm({
+                    title: 'Warning: Issues with Export',
+                    content: (
+                        <div>
+                            <p>{warningText}</p>
+                            <p>Do you want to proceed with the export anyway?</p>
+                        </div>
+                    ),
+                    okText: 'Proceed',
+                    cancelText: 'Cancel',
+                    onOk: async () => {
+                        // Continue with export
+                        message.info("Exporting DOCX versions...");
+                        const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
+
+                        if (result.success) {
+                            message.success("All exam versions exported successfully");
+
+                            // Show any warnings that came back
+                            if (result.warnings && result.warnings.length > 0) {
+                                message.warning(result.warnings.join("\n"));
+                            }
+                        } else {
+                            message.error(`Export failed: ${result.error}`);
+                        }
+                    }
+                });
+                return; // Exit early, the Modal callback will handle continuation
             }
 
+// Only execute this code if there are no warnings
             message.info("Exporting DOCX versions...");
-
             const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
 
             if (result.success) {
