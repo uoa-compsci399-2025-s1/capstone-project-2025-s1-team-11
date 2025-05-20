@@ -192,7 +192,7 @@ function formatQuestionWithVersion(question, version, versionList) {
                 // Only include non-empty answers
                 if (answerContent.text.trim()) {
                     // Use letters for answer labels (A, B, C, etc.)
-                    const label = String.fromCharCode(65 + newIndex);
+                    const label = String.fromCharCode(97 + newIndex);
                     formattedAnswers.push({
                         label: label,
                         text: answerContent.text,
