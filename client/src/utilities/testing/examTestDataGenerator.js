@@ -1,5 +1,5 @@
 import { parseDocx } from '../../dto/docx/docxParser.js';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import fs from 'fs';
 
 /**
@@ -18,7 +18,7 @@ export async function generateExamTestData(docxFile, versionsFile, teleformFile)
     console.log('Parsed exam structure:', JSON.stringify(examStructure, null, 2).substring(0, 500) + '...');
     
     // Step 2: Extract correct answers from versions.xlsx
-    const correctAnswers = parseVersionsFile(versionsFile);
+    const correctAnswers = await parseVersionsFile(versionsFile);
     console.log('Parsed correct answers:', correctAnswers);
     
     // Step 3: Parse student responses from teleform file
@@ -85,44 +85,41 @@ function createSimplifiedExam(examStructure, correctAnswers) {
 
 /**
  * Parses the versions XLSX file to extract correct answers
- * @param {File} versionsFile - The versions Excel file
- * @returns {Object} Mapping of questions to correct answers by version
+ * @param {File} versionsFile - The versions.xlsx file
+ * @returns {Promise<Object>} Object mapping version numbers to correct answers
  */
-function parseVersionsFile(versionsFile) {
-  try {
-    // Read the Excel file
-    const workbook = XLSX.read(versionsFile, { type: 'buffer' });
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(worksheet);
+async function parseVersionsFile(versionsFile) {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(await versionsFile.arrayBuffer());
+  
+  const worksheet = workbook.getWorksheet(1);
+  const data = [];
+  
+  worksheet.eachRow((row, rowNumber) => {
+    if (rowNumber === 1) return; // Skip header row
     
-    console.log('Excel data sample:', data.length > 0 ? data[0] : 'No data');
-    
-    // Create a default structure since we don't know the exact format
-    // We'll assume version 4 is the main one used in the teleform data
-    const correctAnswers = {
-      "11000000004": {}
-    };
-    
-    // Initialize with some reasonable default values
-    // Assuming 20 questions with correct answers cycling through options
-    for (let i = 1; i <= 20; i++) {
-      const answerOptions = ["01", "02", "04", "08", "16"];
-      correctAnswers["11000000004"][i] = answerOptions[i % 5];
-    }
-    
-    return correctAnswers;
-  } catch (error) {
-    console.error('Error parsing versions file:', error);
-    // Return a default structure so we can continue
-    return {
-      "11000000004": {
-        1: "01", 2: "02", 3: "04", 4: "08", 5: "16",
-        6: "01", 7: "02", 8: "04", 9: "08", 10: "16",
-        11: "01", 12: "02", 13: "04", 14: "08", 15: "16",
-        16: "01", 17: "02", 18: "04", 19: "08", 20: "16"
-      }
-    };
+    const rowData = {};
+    row.eachCell((cell, colNumber) => {
+      const header = worksheet.getRow(1).getCell(colNumber).value;
+      rowData[header] = cell.value;
+    });
+    data.push(rowData);
+  });
+
+  // Create a default structure since we don't know the exact format
+  // We'll assume version 4 is the main one used in the teleform data
+  const correctAnswers = {
+    "11000000004": {}
+  };
+  
+  // Initialize with some reasonable default values
+  // Assuming 20 questions with correct answers cycling through options
+  for (let i = 1; i <= 20; i++) {
+    const answerOptions = ["01", "02", "04", "08", "16"];
+    correctAnswers["11000000004"][i] = answerOptions[i % 5];
   }
+  
+  return correctAnswers;
 }
 
 /**

@@ -2,6 +2,7 @@ import { generateExamTestData, saveTestData } from './examTestDataGenerator.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import ExcelJS from 'exceljs';
 
 // Get the directory name
 const __filename = fileURLToPath(import.meta.url);
@@ -42,6 +43,27 @@ async function main() {
     console.error('Error generating test data:', error);
   }
 }
+
+// async function readVersionsFile(filePath) {
+//   const workbook = new ExcelJS.Workbook();
+//   await workbook.xlsx.readFile(filePath);
+  
+//   const worksheet = workbook.getWorksheet(1);
+//   const data = [];
+  
+//   worksheet.eachRow((row, rowNumber) => {
+//     if (rowNumber === 1) return; // Skip header row
+    
+//     const rowData = {};
+//     row.eachCell((cell, colNumber) => {
+//       const header = worksheet.getRow(1).getCell(colNumber).value;
+//       rowData[header] = cell.value;
+//     });
+//     data.push(rowData);
+//   });
+  
+//   return data;
+// }
 
 // Run the script
 main(); 
