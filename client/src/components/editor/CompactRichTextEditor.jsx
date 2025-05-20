@@ -9,7 +9,7 @@ import TextStyle from '@tiptap/extension-text-style';
 import Image from '@tiptap/extension-image';
 import { Plugin } from 'prosemirror-state';
 import { Extension } from '@tiptap/core';
-import { Button, Tooltip, message, Select, Upload, Slider, Card } from 'antd';
+import { Button, Tooltip, message, Select, Upload, Slider, Card, theme } from 'antd';
 import {
   BoldOutlined, ItalicOutlined, UnderlineOutlined,
   AlignLeftOutlined, AlignCenterOutlined, AlignRightOutlined,
@@ -96,6 +96,8 @@ const CustomIndentExtension = Extension.create({
 });
 
 const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content...' }) => {
+  const { token } = theme.useToken();
+  
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -320,19 +322,19 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
         styles={{ 
           body: { 
             padding: 0,
-          },
-          border: {
-            borderColor: '#d9d9d9'
           }
         }}
-        variant="outlined"
       >
         <div style={{ 
           display: 'flex',
           flexDirection: 'column',
           height: '100%'
         }}>
-          <div style={{ padding: '2px', borderBottom: '1px solid #d9d9d9', background: '#fafafa' }}>
+          <div style={{ 
+            padding: '2px', 
+            borderBottom: `1px solid ${token.colorBorder}`, 
+            background: token.colorBgElevated 
+          }}>
             <Tooltip title="Bold">
               <Button
                 type="text"
@@ -468,7 +470,7 @@ const CompactRichTextEditor = ({ content, onChange, placeholder = 'Enter content
             style={{ 
               padding: '0 6px',
               minHeight: '4px',
-              background: '#fff',
+              background: token.colorBgContainer,
               outline: 'none',
               position: 'relative'
             }} 
