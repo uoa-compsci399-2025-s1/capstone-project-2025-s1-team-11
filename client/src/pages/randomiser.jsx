@@ -72,11 +72,10 @@ const Randomiser = () => {
   );
 
   return (
+    <>
+        <Typography.Title level={1}>MCQ Randomiser</Typography.Title>
     <Row gutter={24}>
       <Col xs={24} lg={18}>
-        <div style={{ padding: "20px" }}>
-          <Title level={2}>Answer Randomiser</Title>
-
           <Card style={{ marginBottom: "20px" }}>
             <Space direction="vertical" size="middle" style={{ width: "100%" }}>
               <Text>
@@ -306,7 +305,7 @@ const Randomiser = () => {
               />
             </Spin>
           </Card>
-        </div>
+
       </Col>
       <Col xs={24} lg={6}>
         <ExamSidebar 
@@ -315,7 +314,8 @@ const Randomiser = () => {
           onNavigateToItem={handleNavigateToItem}
         />
       </Col>
-    </Row>
+      </Row>
+      </>
   );
 };
 

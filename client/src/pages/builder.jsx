@@ -10,6 +10,8 @@ import { Typography, Button, Row, Col, Tooltip, Collapse, Divider} from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 //import { exportExamToPdf } from "../services/exportPdf.js";
 
+const { Paragraph } = Typography;
+
 const Builder = () => {
     const exam = useSelector(selectExamData);
     const [currentItemId, setCurrentItemId] = useState(null);
@@ -62,9 +64,9 @@ const Builder = () => {
                         onChange={handleFileChange}
                     />
                     {coverPage && (
-                        <p style={{ marginBottom: 24, color: "green" }}>
+                        <Paragraph style={{ marginBottom: 24, color: "green" }}>
                             Cover page uploaded: {coverPage.name}
-                        </p>
+                        </Paragraph>
                     )}
                 </div>
             ),
@@ -72,7 +74,8 @@ const Builder = () => {
     ];
 
     return (
-        <div style={{ padding: '24px' }}>
+        <>
+            <Typography.Title level={1}>MCQ Builder</Typography.Title>
             <div style={{
                 display: 'flex',
                 justifyContent: 'flex-end',
@@ -91,7 +94,6 @@ const Builder = () => {
 
             <Row gutter={24}>
                 <Col xs={24} xl={sidebarCollapsed ? 24 : 18} style={{ transition: 'width 0.3s' }}>
-                    <h1>Builder</h1>
 
                     {/* Cover Page Section */}
                     <Collapse
@@ -130,7 +132,7 @@ const Builder = () => {
                     </Col>
                 )}
             </Row>
-        </div>
+        </>
     );
 };
 
