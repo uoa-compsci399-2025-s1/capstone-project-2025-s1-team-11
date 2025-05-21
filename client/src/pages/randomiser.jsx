@@ -71,6 +71,25 @@ const Randomiser = () => {
     current * pageSize
   );
 
+  // Helper function to find question location in exam body
+  const findQuestionLocation = (questionId) => {
+    if (!exam?.examBody) return {};
+    
+    for (let examBodyIndex = 0; examBodyIndex < exam.examBody.length; examBodyIndex++) {
+      const item = exam.examBody[examBodyIndex];
+      if (item.type === 'section') {
+        for (let questionsIndex = 0; questionsIndex < item.questions.length; questionsIndex++) {
+          if (item.questions[questionsIndex].id === questionId) {
+            return { examBodyIndex, questionsIndex };
+          }
+        }
+      } else if (item.type === 'question' && item.id === questionId) {
+        return { examBodyIndex };
+      }
+    }
+    return {};
+  };
+
   return (
     <Row gutter={24}>
       <Col xs={24} lg={18}>
@@ -248,6 +267,7 @@ const Randomiser = () => {
                     `${options[idx]} → ${options[pos]}`
                   ).join(", ");
                   const rawMap = mapping.join(", ");
+                  const location = findQuestionLocation(question.id);
 
                   return (
                     <Card
@@ -285,6 +305,8 @@ const Randomiser = () => {
                           selectedVersion={selectedVersion}
                           exam={exam}
                           displayStyle={visualStyle}
+                          examBodyIndex={location.examBodyIndex}
+                          questionsIndex={location.questionsIndex}
                         />
                       ) : (
                         <Text>
