@@ -1,4 +1,4 @@
-﻿// src/services/docxExport/modules/formatExamData.js
+﻿// src/services/docxExport/modules/formatters/formatExamData.js
 
 import { parseHtmlContent } from '../contentProcessors/htmlParser.js';
 // import { formatCoverPageForTemplate, parseAppendixForExport } from './contentProcessors/coverPageParser.js';
@@ -177,6 +177,8 @@ function formatQuestionWithVersion(question, version, versionList) {
     //console.log("Version:", version, "Position in list:", versionIndex);
 
     // Get the appropriate shuffle map for this version
+    // Note: shuffleMap.[original index] = new index
+
     const shuffleMap = question.answerShuffleMaps?.[versionIndex] || [...Array(question.answers?.length || 0).keys()];
 
     //console.log("Using shuffle map:", shuffleMap);
@@ -186,8 +188,11 @@ function formatQuestionWithVersion(question, version, versionList) {
 
     // Rest of the function remains the same...
     if (question.answers && question.answers.length > 0) {
-        // Use the shuffle map to reorder answers
-        shuffleMap.forEach((originalIndex, newIndex) => {
+        // Create a temporary array to hold answers in their new positions
+        const tempAnswers = new Array(question.answers.length);
+        
+        // Place each answer in its new position in the temp array
+        shuffleMap.forEach((newIndex, originalIndex) => {
             const answer = question.answers[originalIndex];
             if (answer) {
                 const answerContent = processContent(
@@ -198,14 +203,19 @@ function formatQuestionWithVersion(question, version, versionList) {
                 if (answerContent.text.trim()) {
                     // Use letters for answer labels (A, B, C, etc.)
                     const label = String.fromCharCode(65 + newIndex);
-                    formattedAnswers.push({
+                    tempAnswers[newIndex] = {
                         label: label,
                         text: answerContent.text,
                         elements: answerContent.elements,
                         isCorrect: answer.correct || false
-                    });
+                    };
                 }
             }
+        });
+
+        // Now push the answers in their correct order to formattedAnswers
+        tempAnswers.forEach(answer => {
+            if (answer) formattedAnswers.push(answer);
         });
     }
 

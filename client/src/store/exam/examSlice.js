@@ -271,6 +271,7 @@ const examSlice = createSlice({
     },
 
     // Generate answer shuffling for all questions
+    // Note: answersShuffleMap[version][original index] = new index
     regenerateShuffleMaps: (state) => {
       if (!state.examData) { return; }
     

@@ -99,13 +99,13 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
         }}>
           {/* Headers */}
           <div style={{ 
-            display: "grid", 
+            display: "grid",
             gridTemplateColumns: `70px repeat(${letters.length}, 32px)`,
             gap: "2px",
             height: "32px"
           }}>
             <div style={originalHeaderStyle}>
-              Original ↓
+            Original ↓
             </div>
             {letters.map((letter, i) => (
               <div key={i} style={randomizedHeaderStyle}>
@@ -126,18 +126,18 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
               }}
             >
               <div style={originalHeaderStyle}>
-                {letter}
+              {letter}
               </div>
               {letters.map((_, colIndex) => (
                 <div
                   key={colIndex}
-                  style={{
+                    style={{
                     ...columnStyles.cell,
                     backgroundColor: mapping[rowIndex] === colIndex ? token.colorPrimary : token.colorBgContainer,
                     color: mapping[rowIndex] === colIndex ? token.colorTextLightSolid : token.colorTextDisabled,
                     border: `1px solid ${mapping[rowIndex] === colIndex ? token.colorPrimaryBorder : token.colorBorder}`,
-                    borderRadius: "4px",
-                  }}
+                        borderRadius: "4px",
+                    }}
                 >
                   {mapping[rowIndex] === colIndex ? `${letter}→${letters[colIndex]}` : ""}
                 </div>
