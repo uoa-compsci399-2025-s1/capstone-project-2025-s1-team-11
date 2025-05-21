@@ -7,6 +7,7 @@ import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors"
 import MapDisplay from "../components/mapDisplay";
 import ExamSidebar from "../components/ExamSidebar";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
+import { htmlToText } from "../utilities/textUtils.js";
 
 const { Title, Text } = Typography;
 
@@ -278,7 +279,7 @@ const Randomiser = () => {
                     >
                       {showQuestion && (
                         <Text style={{ display: "block", marginBottom: 8 }}>
-                          {question.contentText}
+                          {htmlToText(question.contentFormatted)}
                         </Text>
                       )}
                       {showAnswers && question.answers?.length > 0 && mapping && (
@@ -286,11 +287,11 @@ const Randomiser = () => {
                           <ul style={{ paddingLeft: "1.5em", marginBottom: 0 }}>
                             {mapping.map((shuffledIndex, originalIndex) => {
                               const answer = question.answers?.[shuffledIndex];
-                              if (!answer?.contentText) return null;
+                              if (!answer?.contentFormatted) return null;
                               return (
                                 <li key={originalIndex}>
                                   <Text>
-                                    {String.fromCharCode(65 + originalIndex)}. {answer.contentText}
+                                    {String.fromCharCode(65 + originalIndex)}. {htmlToText(answer.contentFormatted)}
                                   </Text>
                                 </li>
                               );

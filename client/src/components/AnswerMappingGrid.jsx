@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { selectExamData } from "../store/exam/selectors";
 import { AnswerControls } from "./AnswerControls";
 import { Typography, theme } from "antd";
+import { htmlToText } from "../utilities/textUtils";
 
 const { Text } = Typography;
 const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
@@ -155,7 +156,7 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
           {letters.map((_, rowIndex) => (
             <div key={rowIndex} style={{ ...columnStyles.cell, justifyContent: "flex-start", padding: "0 8px" }}>
               <Text ellipsis style={{ width: "100%" }}>
-                {question.answers[rowIndex]?.contentText || ''}
+                {question.answers[rowIndex]?.contentFormatted ? htmlToText(question.answers[rowIndex].contentFormatted) : ''}
               </Text>
             </div>
           ))}
