@@ -15,7 +15,7 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 import examReducer, {
-    createNewExam,
+    initialiseExamState,
     addQuestion,
 //    updateQuestion,
 //    removeQuestion
@@ -40,7 +40,7 @@ describe('Question Model', () => {
         });
 
         // Create a base exam for testing
-        store.dispatch(createNewExam({
+        store.dispatch(initialiseExamState({
             examTitle: 'Test Exam',
             courseCode: 'CS101'
         }));

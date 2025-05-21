@@ -1,12 +1,17 @@
 // src/components/AnswerMappingVisual.jsx
 import React from "react";
+import { useSelector } from "react-redux";
+import { selectExamData } from "../store/exam/selectors";
+
+const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
 
 const AnswerMappingVisual = ({ mapping }) => {
+  const examData = useSelector(selectExamData);
+  const options = examData?.teleformOptions || DEFAULT_OPTIONS;
+
   if (!mapping || !mapping.length) return null;
 
-  const letters = Array.from({ length: mapping.length }, (_, i) =>
-    String.fromCharCode(65 + i)
-  );
+  const letters = options.slice(0, mapping.length);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>

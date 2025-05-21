@@ -7,8 +7,8 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 import examReducer, {
-    createNewExam,
-    clearExam,
+    initialiseExamState,
+    clearExamState,
     addSection,
     addQuestion,
     removeQuestion,
@@ -40,7 +40,7 @@ describe('Exam Slice', () => {
         });
     });
 
-    test('should initialize with correct default state', () => {
+    test('should initialise with correct default state', () => {
         const state = store.getState().exam;
         expect(state.examData).toBeNull();
         expect(state.isLoading).toBe(false);
@@ -49,7 +49,7 @@ describe('Exam Slice', () => {
 
     test('should create a new exam with provided data', () => {
         // Act
-        store.dispatch(createNewExam({
+        store.dispatch(initialiseExamState({
             examTitle: 'Test Exam',
             courseCode: 'TEST101',
             courseName: 'Test Course',
@@ -74,10 +74,10 @@ describe('Exam Slice', () => {
 
     test('should clear exam data', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         
         // Act
-        store.dispatch(clearExam());
+        store.dispatch(clearExamState());
         
         // Assert
         const state = store.getState();
@@ -86,7 +86,7 @@ describe('Exam Slice', () => {
 
     test('should add a section to the exam', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         
         // Act
         store.dispatch(addSection({
@@ -102,14 +102,13 @@ describe('Exam Slice', () => {
         expect(exam.examBody[0].type).toBe('section');
         expect(exam.examBody[0].sectionTitle).toBe('Test Section');
         expect(exam.examBody[0].contentFormatted).toBe('<p>Section instructions</p>');
-        expect(exam.examBody[0].contentText).toBe('mocked content');
         expect(exam.examBody[0].sectionNumber).toBe(1);
         expect(Array.isArray(exam.examBody[0].questions)).toBe(true);
     });
 
     test('should add a question directly to the exam body', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         
         // Act
         store.dispatch(addQuestion({
@@ -127,14 +126,13 @@ describe('Exam Slice', () => {
         expect(exam.examBody.length).toBe(1);
         expect(exam.examBody[0].type).toBe('question');
         expect(exam.examBody[0].contentFormatted).toBe('<p>What is 2+2?</p>');
-        expect(exam.examBody[0].contentText).toBe('mocked content');
         expect(exam.examBody[0].marks).toBe(5);
         expect(exam.examBody[0].questionNumber).toBe(1);
     });
 
     test('should add a question to a section', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         store.dispatch(addSection({ sectionTitle: 'Test Section' }));
         
         // Act
@@ -161,7 +159,7 @@ describe('Exam Slice', () => {
 
     test('should update a question', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         store.dispatch(addQuestion({
             questionData: {
                 contentFormatted: '<p>Original question</p>',
@@ -188,7 +186,7 @@ describe('Exam Slice', () => {
 
     test('should update a section', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         store.dispatch(addSection({
             sectionTitle: 'Original Section',
             contentFormatted: '<p>Original instructions</p>'
@@ -213,7 +211,7 @@ describe('Exam Slice', () => {
 
     test('should remove a question', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         store.dispatch(addQuestion({
             questionData: { contentFormatted: '<p>Question 1</p>' }
         }));
@@ -235,7 +233,7 @@ describe('Exam Slice', () => {
 
     test('should remove a section', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         store.dispatch(addSection({ sectionTitle: 'Section 1' }));
         store.dispatch(addSection({ sectionTitle: 'Section 2' }));
         
@@ -253,7 +251,7 @@ describe('Exam Slice', () => {
 
     test('should update exam field', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         
         // Act
         store.dispatch(updateExamField({
@@ -270,7 +268,7 @@ describe('Exam Slice', () => {
 
     test('should set exam versions', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         
         // Act
         store.dispatch(setExamVersions(['A', 'B', 'C']));
@@ -284,7 +282,7 @@ describe('Exam Slice', () => {
 
     test('should set teleform options', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         
         // Act
         store.dispatch(setTeleformOptions(['i', 'ii', 'iii']));
@@ -298,7 +296,7 @@ describe('Exam Slice', () => {
 
     test('should regenerate shuffle maps', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         store.dispatch(addQuestion({
             questionData: {
                 contentFormatted: '<p>Test question</p>',
@@ -338,7 +336,7 @@ describe('Exam Slice', () => {
 
     test('should preserve IDs when importing from JSON', () => {
         // Arrange
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
         
         // Add a question and capture its ID
         store.dispatch(addQuestion({
@@ -355,8 +353,8 @@ describe('Exam Slice', () => {
         
         // Convert to JSON and back
         const examJSON = JSON.parse(JSON.stringify(originalExam));
-        store.dispatch(clearExam());
-        store.dispatch(createNewExam(examJSON)); // uses createNewExam to import from JSON
+        store.dispatch(clearExamState());
+        store.dispatch(initialiseExamState(examJSON)); // uses initialiseExamState to import from JSON
         
         // Check the new ID
         const importedExam = selectExamData(store.getState());
@@ -370,7 +368,7 @@ describe('Exam Slice', () => {
     test('should correctly import exam from JSON', () => {
         // Arrange
         // First create an exam with some content
-        store.dispatch(createNewExam({
+        store.dispatch(initialiseExamState({
             examTitle: 'Original Exam',
             courseCode: 'TEST101',
             courseName: 'Test Course',
@@ -402,10 +400,10 @@ describe('Exam Slice', () => {
         const examJSON = JSON.parse(JSON.stringify(originalExam));
     
         // Clear the exam to ensure we're starting fresh
-        store.dispatch(clearExam());
+        store.dispatch(clearExamState());
     
-        // Act (uses createNewExam to import from JSON) 
-        store.dispatch(createNewExam(examJSON));
+        // Act (uses initialiseExamState to import from JSON) 
+        store.dispatch(initialiseExamState(examJSON));
     
         // Assert
         const importedExam = selectExamData(store.getState());

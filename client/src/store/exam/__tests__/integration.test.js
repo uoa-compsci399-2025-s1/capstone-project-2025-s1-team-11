@@ -7,7 +7,7 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 import examReducer, {
-    createNewExam,
+    initialiseExamState,
     addSection,
     addQuestion,
     updateQuestion,
@@ -41,7 +41,7 @@ describe('Exam Store Integration', () => {
 
     test('should build a complete exam structure and calculate derived data', () => {
         // Create an exam
-        store.dispatch(createNewExam({
+        store.dispatch(initialiseExamState({
             examTitle: 'Integration Test Exam',
             courseCode: 'INT101',
             courseName: 'Integration Testing',
@@ -123,7 +123,7 @@ describe('Exam Store Integration', () => {
 
     test('should maintain data integrity through a series of operations', () => {
         // Create an exam
-        store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+        store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
 
         // Add a section and questions
         store.dispatch(addSection({ sectionTitle: 'Section 1' }));
@@ -178,7 +178,7 @@ describe('Exam Store Integration', () => {
 
     test('should handle answer shuffling correctly', () => {
         // Create an exam with specific versions
-        store.dispatch(createNewExam({
+        store.dispatch(initialiseExamState({
             examTitle: 'Shuffle Test',
             versions: ['A', 'B']
         }));
@@ -232,7 +232,7 @@ describe('Exam Store Integration', () => {
     });
 
     test('should handle fixed positions in answer shuffling', () => {
-        store.dispatch(createNewExam({
+        store.dispatch(initialiseExamState({
             examTitle: 'Fixed Position Test',
             versions: ['A', 'B']
         }));
@@ -250,9 +250,9 @@ describe('Exam Store Integration', () => {
             }
         }));
 
-        let state = store.getState();
-        let examData = selectExamData(state);
-        let question = examData.examBody[0];
+        let state;
+        let examData;
+        let question;
 
         store.dispatch(regenerateShuffleMaps());
 

@@ -1,12 +1,17 @@
 // src/components/AnswerMappingGrid.jsx
 import React from "react";
+import { useSelector } from "react-redux";
+import { selectExamData } from "../store/exam/selectors";
+
+const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
 
 const AnswerMappingGrid = ({ mapping }) => {
+  const examData = useSelector(selectExamData);
+  const options = examData?.teleformOptions || DEFAULT_OPTIONS;
+
   if (!mapping || !mapping.length) return null;
 
-  const letters = Array.from({ length: mapping.length }, (_, i) =>
-    String.fromCharCode(65 + i)
-  );
+  const letters = options.slice(0, mapping.length);
 
   return (
     <div className="mapping-grid-container" style={{ marginTop: "12px" }}>
@@ -31,9 +36,10 @@ const AnswerMappingGrid = ({ mapping }) => {
               padding: "4px",
               backgroundColor: "#fafafa",
               borderRadius: "4px",
+              color: "#000000"
             }}
           >
-            Original →
+            Original ↓
           </div>
 
           {/* Column headers */}
@@ -50,6 +56,7 @@ const AnswerMappingGrid = ({ mapping }) => {
                 borderRadius: "4px",
                 padding: "4px",
                 border: "1px solid #b7eb8f",
+                color: "#000000"
               }}
             >
               {letter}
@@ -70,6 +77,7 @@ const AnswerMappingGrid = ({ mapping }) => {
                     borderRadius: "4px",
                     padding: "4px",
                     border: "1px solid #91d5ff",
+                    color: "#000000"
                 }}
               >
                 {letters[originalIndex]}
@@ -94,22 +102,7 @@ const AnswerMappingGrid = ({ mapping }) => {
                         position: "relative",
                     }}
                 >
-                  {targetPos === colIndex && (
-                    <div
-                      style={{
-                        fontSize: "0.7rem",
-                        fontWeight: "bold",
-                        lineHeight: 1,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        height: "100%",
-                        width: "100%",
-                      }}
-                    >
-                      {letters[originalIndex]}→{letters[colIndex]}
-                    </div>
-                  )}
+                    {targetPos === colIndex ? `${letters[originalIndex]}→${letters[colIndex]}` : ""}
                 </div>
               ))}
             </React.Fragment>

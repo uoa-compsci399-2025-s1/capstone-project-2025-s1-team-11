@@ -5,6 +5,7 @@ export const parseXmlToJson = (xmlString) => {
     ignoreAttributes: false,
     attributeNamePrefix: '@_',
     ignoreDeclaration: true,
+    trimValues: false
   });
   return parser.parse(xmlString);
 };

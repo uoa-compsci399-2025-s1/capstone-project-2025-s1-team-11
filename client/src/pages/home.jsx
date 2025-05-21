@@ -7,7 +7,7 @@ const Home = () => {
         <div style={{ width: "100%" }}>
             <div style={{
                 position: "relative", 
-                width: "100%", 
+                width: "100", 
                 height: "100vh", 
                 overflow: "hidden"
             }}>

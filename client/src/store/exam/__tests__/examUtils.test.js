@@ -78,7 +78,6 @@ describe('Exam Utility Functions', () => {
     expect(component.type).toBe('content');
     expect(component.contentFormatted).toBe('');
     expect(component.format).toBe('HTML');
-    expect(component.contentText).toBe('');
     expect(component.pageBreakAfter).toBe(false);
   });
 

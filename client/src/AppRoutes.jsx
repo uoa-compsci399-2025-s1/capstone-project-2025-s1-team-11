@@ -8,6 +8,8 @@ import Randomiser from "./pages/randomiser.jsx";
 import About from "./pages/about.jsx";
 import Documentation from "./pages/documentation.jsx";
 import ExamConsolePage from './pages/examConsole';
+// import SimpleRichTextEditor from './components/editor/SimpleRichTextEditor';
+//import CompactRichTextEditor from './components/editor/CompactRichTextEditor';
 
 export default function AppRoutes({ isDarkMode, toggleTheme }) {
     return (

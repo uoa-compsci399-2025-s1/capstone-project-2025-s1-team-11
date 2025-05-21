@@ -1,5 +1,10 @@
 // examSlice.js
 
+/*
+ * Important: This module does not handle the file loading of exams, this is used to manage the exam state.
+ * Do not use this module to load, close or import an exam. Use the hook.
+ */
+
 import { createSlice } from '@reduxjs/toolkit';
 import { 
   createExam, 
@@ -19,8 +24,10 @@ import {
 
 const initialState = {
   examData: null,
+  coverPage: null,
   isLoading: false,
   error: null,
+  messages: [],
 };
 const generateId = (() => {
   let counter = 1;
@@ -53,29 +60,25 @@ const examSlice = createSlice({
   name: 'exam',
   initialState,
   reducers: {
-    createNewExam: (state, action) => {
+    initialiseExamState: (state, action) => {
       state.examData = createExam(action.payload || {});
       ensureUniqueIds(state.examData);
     },
 
-    clearExam: (state) => {
+    clearExamState: (state) => {
       state.examData = null;
+    },
+
+    clearExamBody: (state) => {
+      if (state.examData) {
+        state.examData.examBody = [];
+      }
     },
 
     addSection: (state, action) => {
       if (!state.examData) { return; }
       const newSection = createSection(action.payload);
       newSection.id = generateId();
-
-      // fill simplified contentText from contentFormatted
-      newSection.contentText = htmlToText(newSection.contentFormatted || "");
-      for (const question of newSection.questions || []) {
-        question.contentText = htmlToText(question.contentFormatted || "");
-        for (const answer of question.answers || []) {
-          answer.contentText = htmlToText(answer.contentFormatted || "");
-        }
-      }
-
       state.examData.examBody.push(newSection);
       renumberSections(state.examData.examBody);
     },
@@ -84,22 +87,17 @@ const examSlice = createSlice({
       if (!state.examData) { return; }
       const { examBodyIndex, questionData } = action.payload;
 
-      questionData.contentText = htmlToText(questionData.contentFormatted || "");
-
       const examData = state.examData;
-    
       const examBody = examData.examBody;
       const versionCount = examData.versions.length;
       const optionCount = examData.teleformOptions.length;
 
       const rawAnswers = questionData.answers || [];
       let answers = rawAnswers.map((ans, idx) => {
-        const contentText = htmlToText(ans.contentFormatted || "");
         return createAnswer({ 
-          contentFormatted: ans.contentFormatted, 
-          contentText: contentText,
+          contentFormatted: ans.contentFormatted,
           correct: idx === 0,
-          fixedPosition: ans.fixedPosition? ans.fixedPosition : null
+          fixedPosition: ans.fixedPosition ? ans.fixedPosition : null
         });
       });
 
@@ -110,29 +108,26 @@ const examSlice = createSlice({
         ...questionData,
         answers: normalisedAnswers,
       });
-      
-    
+
       // Create default (non-shuffled) answerShuffleMaps
       newQuestion.answerShuffleMaps = Array.from({ length: versionCount }, () =>
         [...Array(optionCount).keys()]
       );
-    
+
       // Add question to examBody or a section
       if (examBodyIndex != null && examBody[examBodyIndex]?.type === 'section') {
         examBody[examBodyIndex].questions.push(newQuestion);
       } else {
-        
+
         examBody.push(newQuestion);
       }
-    
+
       // Update numbering
       renumberQuestions(examBody);
     },
 
     setCoverPage: (state, action) => {
-      const { contentFormatted, format } = action.payload;
-      if (!state.examData) { return; }
-      state.examData.coverPage = createExamComponent(contentFormatted, format);
+      state.coverPage = action.payload;
     },
 
     setAppendix: (state, action) => {
@@ -142,8 +137,7 @@ const examSlice = createSlice({
     },
 
     removeCoverPage: (state) => {
-      if (!state.examData) { return; }
-      state.examData.coverPage = null;
+      state.coverPage = null;
     },
 
     removeAppendix: (state) => {
@@ -164,7 +158,7 @@ const examSlice = createSlice({
         //Object.assign(container.questions[questionsIndex], newData);
         Object.assign(question, newData);
         if (optionsCount !== question.answers.length) {
-          question.answers = normaliseAnswersToLength(question.answers, optionCount);
+          question.answers = normaliseAnswersToLength(question.answers, optionsCount);
         }
       } else if (container.type === 'question') {
         Object.assign(container, newData);
@@ -248,18 +242,20 @@ const examSlice = createSlice({
     },
 
     updateExamField: (state, action) => {
-      const allowedFields = ['examTitle', 'courseCode', 'courseName', 'semester', 'year'];
-      const { field, value } = action.payload;
       if (!state.examData) { return; }
-      if (allowedFields.includes(field)) {
+      const allowedProperties = [
+        'examTitle', 
+        'courseCode', 
+        'courseName', 
+        'semester', 
+        'year',
+        'versions',
+        'teleformOptions'
+      ];
+      const { field, value } = action.payload;
+      if (allowedProperties.includes(field)) {
         state.examData[field] = value;
       }
-    },
-
-    updateExamMetadata: (state, action) => {
-      if (!state.examData) { return; }
-      if (!state.examData.metadata) state.examData.metadata = {};
-      Object.assign(state.examData.metadata, action.payload);
     },
 
     setExamVersions: (state, action) => {
@@ -334,7 +330,7 @@ const examSlice = createSlice({
         }
       });
     },
-    
+
     importExamStart: (state) => {
       state.loading = true;
       state.error = null;
@@ -346,88 +342,18 @@ const examSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-    // setCurrentExam: (state, action) => {
-    //   state.examData = action.payload;
-    // }
+    addExamMessage: (state, action) => {
+      state.messages.push(action.payload);
+    }
   }
 });
 
-
-// Thunk for importing an exam properly
-export const importDTOToState = (examDTO) => async (dispatch) => {
-  try {
-    dispatch(importExamStart());
-
-    dispatch(clearExam());
-
-    dispatch(createNewExam({
-      examTitle: examDTO.examTitle,
-      courseCode: examDTO.courseCode,
-      courseName: examDTO.courseName,
-      semester: examDTO.semester,
-      year: examDTO.year,
-    }));
-
-    // Set versions and teleform options if needed
-    if (examDTO.versions) {
-      dispatch(setExamVersions(examDTO.versions));
-    }
-    if (examDTO.teleformOptions) {
-      dispatch(setTeleformOptions(examDTO.teleformOptions));
-    }
-
-    let examBodyIndexCounter = 0;
-
-    // Import the examBody (sections and/or questions)
-    for (const item of examDTO.examBody || []) {
-      try {
-        if (item.type === 'section') {
-          const { questions, ...sectionWithoutQuestions } = item;
-          await dispatch(addSection(sectionWithoutQuestions));
-          
-          //const sectionIndex = result.payload;
-          //const sectionIndex = state.examData.examBody.length - 1;
-
-          for (const question of item.questions || []) {
-            await dispatch(addQuestion({ 
-              examBodyIndex: examBodyIndexCounter, 
-              questionData: question 
-            }));
-          }
-        } else {
-          await dispatch(addQuestion({ 
-            examBodyIndex: null, 
-            questionData: item 
-          }));
-        }
-        examBodyIndexCounter++;
-      } catch (error) {
-        console.error(`Error while processing item:`, item);
-        console.error(error);
-        throw error;  // still rethrow to trigger importExamFailure
-      }
-    }
-
-    dispatch(importExamSuccess()); // You could even repurpose this to mean "done loading"
-
-    return;
-  } catch (error) {
-    dispatch(importExamFailure(error.message));
-    throw error;
-  }
-};
-
-function htmlToText(html) {
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = html;
-  return tempDiv.textContent || tempDiv.innerText || "";
-}
-
 // Export actions
 export const { 
-  createNewExam, 
-  clearExam,
-  addSection, 
+  initialiseExamState,
+  clearExamState,
+  clearExamBody,
+  addSection,
   addQuestion, 
   setCoverPage, // supplied as document, add from file system via UI
   setAppendix, // supplied as document, add from file system via UI
@@ -441,13 +367,13 @@ export const {
   removeQuestion,
   removeSection,
   updateExamField,
-  updateExamMetadata,
   setExamVersions,
   setTeleformOptions,
   regenerateShuffleMaps,
   importExamStart,
   importExamSuccess,
   importExamFailure,  
+  addExamMessage
 } = examSlice.actions;
 
 // Export reducer

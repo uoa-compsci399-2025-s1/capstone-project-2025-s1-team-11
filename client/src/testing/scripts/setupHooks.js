@@ -20,18 +20,18 @@ const promptYesNo = (question) => {
 
 // Helper function to set git config value
 const setGitConfig = (key, value) => {
-    //console.log(`Setting ${key} to ${value}`);
+    ////console.log(`Setting ${key} to ${value}`);
     spawnSync('git', ['config', key, value], { stdio: 'inherit' });
 };
 
 // Main setup function
 const setupHooks = async () => {
-    console.log('==================================');
-    console.log('Git Hooks Configuration Assistant');
-    console.log('==================================\n');
-    //console.log('This script will help you configure which git hooks run in your local environment.');
-    //console.log('The team defaults are set in lefthook.yml, but you can customize your personal settings.');
-    //console.log('\n');
+    //console.log('==================================');
+    //console.log('Git Hooks Configuration Assistant');
+    //console.log('==================================\n');
+    ////console.log('This script will help you configure which git hooks run in your local environment.');
+    ////console.log('The team defaults are set in lefthook.yml, but you can customize your personal settings.');
+    ////console.log('\n');
 
     // Configure pre-commit hooks
     const runPreCommit = await promptYesNo('Do you want to run pre-commit hooks (lint-staged)?');
@@ -55,12 +55,12 @@ const setupHooks = async () => {
     // const runCypressTests = await promptYesNo('Do you want to run Cypress testing?');
     // setGitConfig('hooks.skipCypressTests', (!runCypressTests).toString());
 
-    //console.log('\n==================================');
-    console.log('\nConfiguration complete.\n');
-    //console.log(`- Pre-commit hooks: ${runPreCommit ? 'Enabled' : 'Disabled'}`);
-    //console.log(`- ESLint checks: ${runLinting ? 'Enabled' : 'Disabled'}`);
-    //console.log(`- Jest testing: ${runJestTests ? 'Enabled' : 'Disabled'}`);
-    //console.log(`- Cypress testing: ${runCypressTests ? 'Enabled' : 'Disabled'}`);
+    ////console.log('\n==================================');
+    //console.log('\nConfiguration complete.\n');
+    ////console.log(`- Pre-commit hooks: ${runPreCommit ? 'Enabled' : 'Disabled'}`);
+    ////console.log(`- ESLint checks: ${runLinting ? 'Enabled' : 'Disabled'}`);
+    ////console.log(`- Jest testing: ${runJestTests ? 'Enabled' : 'Disabled'}`);
+    ////console.log(`- Cypress testing: ${runCypressTests ? 'Enabled' : 'Disabled'}`);
 
     rl.close();
 };

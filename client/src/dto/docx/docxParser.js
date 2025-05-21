@@ -5,7 +5,7 @@ import { transformXmlToDto } from './transformXmlToDto.js';
 
 /**
  * Parses a DOCX file and returns a structured data transfer object
- * @param {string} filePath - Path to the DOCX file
+ * @param {string} file - Path to the DOCX file
  * @returns {Promise<Object>} The parsed document structure
  */
 export async function parseDocx(file) {

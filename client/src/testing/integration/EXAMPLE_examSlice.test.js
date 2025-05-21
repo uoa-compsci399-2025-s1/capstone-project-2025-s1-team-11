@@ -5,7 +5,7 @@ This test file serves as a reference for writing integration testing using Redux
 
 It verifies:
 - Initial state is correctly set up
-- createNewExam properly creates a new exam
+- initialiseExamState properly creates a new exam
 - addSection adds a new section (with current known reducer limitations)
 - updateExamField correctly updates fields
 
@@ -16,7 +16,7 @@ without involving React components or side effects.
 
 import { configureStore } from '@reduxjs/toolkit';
 import examReducer, {
-  createNewExam,
+  initialiseExamState,
   addSection,
   updateExamField
 } from '../../store/exam/examSlice';
@@ -38,9 +38,9 @@ describe('Exam Slice Integration', () => {
     expect(state.exam.error).toBeNull();
   });
 
-  test('createNewExam action creates an exam with correct data', () => {
+  test('initialiseExamState action creates an exam with correct data', () => {
     // Dispatch action to create an exam
-    store.dispatch(createNewExam({
+    store.dispatch(initialiseExamState({
       examTitle: 'Integration Test Exam',
       courseCode: 'INT101',
       courseName: 'Integration Testing'
@@ -60,12 +60,12 @@ describe('Exam Slice Integration', () => {
     // Integration test for addSection action and exam reducer interaction.
 
     // 1. Start by creating a new exam (mimics expected app flow)
-    store.dispatch(createNewExam({ examTitle: 'Test Exam' }));
+    store.dispatch(initialiseExamState({ examTitle: 'Test Exam' }));
 
     // 2. Dispatch addSection to simulate adding a section to the exam
     store.dispatch(addSection({
       sectionTitle: 'Test Section',
-      contentText: 'Section content' // Currently unused by reducer
+      contentFormatted: 'Section content' // Currently unused by reducer
     }));
 
     // 3. Get updated state from store
@@ -82,12 +82,12 @@ describe('Exam Slice Integration', () => {
 
     // NOTE: As of current reducer implementation, contentText is not used,
     // so it defaults to an empty string. This test accounts for that.
-    expect(addedSection.contentText).toBe('');
+    expect(addedSection.contentFormatted).toBe('Section content');
   });
 
   test('updateExamField updates a field in the exam', () => {
     // First create an exam
-    store.dispatch(createNewExam({
+    store.dispatch(initialiseExamState({
       examTitle: 'Original Title',
       courseCode: 'ORIG101'
     }));

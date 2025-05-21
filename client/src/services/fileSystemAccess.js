@@ -1,11 +1,16 @@
 // src/services/fileSystemAccess.js
 
+/*
+ * Important: This module does not handle the importing of exams, this is simply used to retrieve the exam from a file.
+ * Do not use this module to import an exam. Use the hook.
+ */
+
 /**
  * Opens a file picker and reads an exam from a JSON file.
  * Returns an object with the file handle and the parsed Exam instance.
  */
 
-export async function openExamFile() {
+export async function loadExamFromFile() {
     try {
       const [fileHandle] = await window.showOpenFilePicker({
         types: [
@@ -27,7 +32,7 @@ export async function openExamFile() {
     }
 }
 
-export async function openImportFile() {
+export async function importExamFile() {
     try {
       const [fileHandle] = await window.showOpenFilePicker({
         types: [
@@ -54,10 +59,12 @@ export async function openImportFile() {
 /**
  * Saves the given exam to the file represented by fileHandle.
  */
-export async function saveExamToFile(exam, fileHandle = null) {
+export async function saveExamToDisk(exam, fileHandle = null) {
     // If no file handle exists, prompt the user for a save location.
     try {
         if (!fileHandle) {
+            // This operation requires a user gesture (like a click)
+            // It will fail with security error if called without user interaction
             fileHandle = await window.showSaveFilePicker({
                 suggestedName: "Exam.json",
                 types: [
@@ -68,14 +75,15 @@ export async function saveExamToFile(exam, fileHandle = null) {
                 ],
             });
         }
+        
         // Create a writable stream, write the JSON content, and close the stream.
         const writable = await fileHandle.createWritable();
         await writable.write(JSON.stringify(exam, null, 2));
         await writable.close();
         return fileHandle; // Return the file handle so it can be stored for future saves.
     } catch (err) {
-        console.error("Failed to save:", err);
-        return null;
+        // Log error details for debugging
+        console.error("Failed to save:", err.name, err.message);
+        return null;  // Keep existing behavior of returning null on error
     } 
-    
 }
