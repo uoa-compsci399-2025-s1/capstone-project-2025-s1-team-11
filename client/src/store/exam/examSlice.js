@@ -284,11 +284,13 @@ const examSlice = createSlice({
       };
     
       const generateShuffleMap = (answers) => {
-        //fixedPostion should describe where the current answer falls in the output
         const count = answers.length;
         const fixed = {};
+        const fixedPositions = new Set(); // Track which positions are taken
         const movable = [];
+        const availablePositions = []; // Track which positions are still available
     
+        // First pass: identify fixed positions and movable answers
         answers.forEach((ans, i) => {
           if (
             ans.fixedPosition !== null &&
@@ -296,21 +298,43 @@ const examSlice = createSlice({
             ans.fixedPosition < count
           ) {
             fixed[i] = ans.fixedPosition;
+            fixedPositions.add(ans.fixedPosition);
           } else {
             movable.push(i);
             if (ans.fixedPosition >= count) {
-              ans.fixedPosition = null;  //Reset fixedPosition if beyond answers.length
+              ans.fixedPosition = null;  // Reset fixedPosition if beyond answers.length
             }
           }
         });
-    
-        shuffleInPlace(movable);
-    
-        const result = new Array(count).fill(null);
-        let m = 0;
+
+        // Create list of available positions (those not fixed)
         for (let i = 0; i < count; i++) {
-          result[i] = fixed[i] !== undefined ? fixed[i] : movable[m++];
+          if (!fixedPositions.has(i)) {
+            availablePositions.push(i);
+          }
         }
+
+        // Shuffle the available positions
+        shuffleInPlace(availablePositions);
+    
+        // Create the result array
+        const result = new Array(count).fill(null);
+        let availableIndex = 0;
+
+        // Fill in fixed positions first
+        for (let i = 0; i < count; i++) {
+          if (fixed[i] !== undefined) {
+            result[i] = fixed[i];
+          }
+        }
+
+        // Then fill remaining positions with shuffled available positions
+        for (let i = 0; i < count; i++) {
+          if (result[i] === null) {
+            result[i] = availablePositions[availableIndex++];
+          }
+        }
+
         return result;
       };
     
