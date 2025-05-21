@@ -1,7 +1,10 @@
 import React from 'react';
 import { Checkbox, Select } from 'antd';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { updateQuestion } from '../store/exam/examSlice';
+import { selectExamData } from '../store/exam/selectors';
+
+const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
 
 const AnswerCheckbox = ({ question, answerIndex, examBodyIndex, questionsIndex }) => {
   const dispatch = useDispatch();
@@ -29,7 +32,9 @@ const AnswerCheckbox = ({ question, answerIndex, examBodyIndex, questionsIndex }
 
 const AnswerSelect = ({ question, answerIndex, examBodyIndex, questionsIndex }) => {
   const dispatch = useDispatch();
-  const options = ['random', '0', '1', '2', '3', '4'];
+  const examData = useSelector(selectExamData);
+  const options = examData?.teleformOptions || DEFAULT_OPTIONS;
+  
   const currentValue = question.answers[answerIndex]?.fixedPosition !== null
     ? question.answers[answerIndex].fixedPosition.toString()
     : 'random';
@@ -59,13 +64,13 @@ const AnswerSelect = ({ question, answerIndex, examBodyIndex, questionsIndex }) 
       style={{ width: 100 }}
     >
       <Select.Option value="random">random</Select.Option>
-      {options.slice(1).map(pos => (
+      {options.map((letter, index) => (
         <Select.Option 
-          key={pos} 
-          value={pos}
-          disabled={selectedPositions.includes(pos)}
+          key={index.toString()} 
+          value={index.toString()}
+          disabled={selectedPositions.includes(index.toString())}
         >
-          {parseInt(pos) + 1}
+          {letter}
         </Select.Option>
       ))}
     </Select>

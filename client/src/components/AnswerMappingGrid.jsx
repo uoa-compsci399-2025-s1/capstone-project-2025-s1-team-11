@@ -23,9 +23,6 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
       padding: "6px",
       textAlign: "center",
       fontWeight: "bold",
-      backgroundColor: token.colorFillSecondary,
-      borderRadius: "4px",
-      border: `1px solid ${token.colorBorderSecondary}`,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -36,6 +33,21 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
       alignItems: "center",
       justifyContent: "center",
     }
+  };
+
+  const originalHeaderStyle = {
+    ...columnStyles.header,
+    whiteSpace: "nowrap",
+    backgroundColor: token.colorInfoBg,
+    border: `1px solid ${token.colorInfoBorder}`,
+    borderRadius: "4px",
+  };
+
+  const randomizedHeaderStyle = {
+    ...columnStyles.header,
+    backgroundColor: token.colorSuccessBg,
+    border: `1px solid ${token.colorSuccessBorder}`,
+    borderRadius: "4px",
   };
 
   return (
@@ -82,7 +94,7 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
         <div style={{ 
           display: "flex", 
           flexDirection: "column",
-          width: "fit-content" // Ensure it only takes needed space
+          width: "fit-content"
         }}>
           {/* Headers */}
           <div style={{ 
@@ -91,11 +103,11 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
             gap: "2px",
             height: "32px"
           }}>
-            <div style={{ ...columnStyles.header, whiteSpace: "nowrap" }}>
+            <div style={originalHeaderStyle}>
               Original ↓
             </div>
             {letters.map((letter, i) => (
-              <div key={i} style={columnStyles.header}>
+              <div key={i} style={randomizedHeaderStyle}>
                 {letter}
               </div>
             ))}
@@ -112,7 +124,7 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
                 height: "32px"
               }}
             >
-              <div style={columnStyles.header}>
+              <div style={originalHeaderStyle}>
                 {letter}
               </div>
               {letters.map((_, colIndex) => (
@@ -137,7 +149,7 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
         <div style={{ 
           display: "flex", 
           flexDirection: "column",
-          minWidth: 0, // Enable text truncation
+          minWidth: 0,
         }}>
           <div style={columnStyles.header}>Answer Text</div>
           {letters.map((_, rowIndex) => (
@@ -147,7 +159,7 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
-                paddingRight: "16px" // Ensure text doesn't touch the card edge
+                paddingRight: "16px"
               }}>
                 {question.answers[rowIndex]?.contentText || question.answers[rowIndex]?.contentFormatted}
               </Text>
