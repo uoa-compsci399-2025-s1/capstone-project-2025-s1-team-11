@@ -49,18 +49,18 @@ export function processRelationships(coverRels, bodyRels) {
 
     // Create map of cover page relationships by target path
     const coverRelsByTarget = new Map();
-    console.log('[HEADER-DEBUG] Cover page relationships:', coverRels.filter(rel =>
-        rel.type === RELATIONSHIP_TYPES.HEADER || rel.type === RELATIONSHIP_TYPES.FOOTER
-    ).map(rel => ({id: rel.id, target: rel.target})));
+    // console.log('[HEADER-DEBUG] Cover page relationships:', coverRels.filter(rel =>
+    //     rel.type === RELATIONSHIP_TYPES.HEADER || rel.type === RELATIONSHIP_TYPES.FOOTER
+    // ).map(rel => ({id: rel.id, target: rel.target})));
 
     coverRels.forEach(rel => {
         coverRelsByTarget.set(rel.target, rel);
     });
 
     // Process body relationships
-    console.log('[HEADER-DEBUG] Body relationships before processing:', bodyRels.filter(rel =>
-        rel.type === RELATIONSHIP_TYPES.HEADER || rel.type === RELATIONSHIP_TYPES.FOOTER
-    ).map(rel => ({id: rel.id, target: rel.target})));
+    // console.log('[HEADER-DEBUG] Body relationships before processing:', bodyRels.filter(rel =>
+    //     rel.type === RELATIONSHIP_TYPES.HEADER || rel.type === RELATIONSHIP_TYPES.FOOTER
+    // ).map(rel => ({id: rel.id, target: rel.target})));
 
     for (const rel of bodyRels) {
         const existingRel = coverRelsByTarget.get(rel.target);
@@ -71,11 +71,11 @@ export function processRelationships(coverRels, bodyRels) {
             (rel.type === RELATIONSHIP_TYPES.HEADER ||
                 rel.type === RELATIONSHIP_TYPES.FOOTER)) {
             // Use existing relationship for headers/footers
-            console.log('[HEADER-DEBUG] Reusing existing header/footer:', {
-                bodyId: rel.id,
-                coverPageId: existingRel.id,
-                target: rel.target
-            });
+            // console.log('[HEADER-DEBUG] Reusing existing header/footer:', {
+            //     bodyId: rel.id,
+            //     coverPageId: existingRel.id,
+            //     target: rel.target
+            // });
             relIdMap.set(rel.id, existingRel.id);
             continue;
         }
@@ -89,11 +89,11 @@ export function processRelationships(coverRels, bodyRels) {
         let target = rel.target;
         if (coverRelsByTarget.has(target)) {
             if (rel.type === RELATIONSHIP_TYPES.HEADER || rel.type === RELATIONSHIP_TYPES.FOOTER) {
-                console.log('[HEADER-DEBUG] Header/footer name conflict:', {
-                    originalTarget: target,
-                    bodyId: rel.id,
-                    newId: newId
-                });
+                // console.log('[HEADER-DEBUG] Header/footer name conflict:', {
+                //     originalTarget: target,
+                //     bodyId: rel.id,
+                //     newId: newId
+                // });
             }
 
             // Extract path parts
@@ -116,12 +116,12 @@ export function processRelationships(coverRels, bodyRels) {
             } while (coverRelsByTarget.has(newTarget));
 
             if (rel.type === RELATIONSHIP_TYPES.HEADER || rel.type === RELATIONSHIP_TYPES.FOOTER) {
-                console.log('[HEADER-DEBUG] Generated new header/footer name:', {
-                    originalTarget: target,
-                    newTarget: newTarget,
-                    bodyId: rel.id,
-                    newId: newId
-                });
+                //console.log('[HEADER-DEBUG] Generated new header/footer name:', {
+                //    originalTarget: target,
+                //    newTarget: newTarget,
+                //    bodyId: rel.id,
+                //    newId: newId
+                //});
             }
 
             mediaFileMap.set(target, newTarget);
@@ -135,18 +135,18 @@ export function processRelationships(coverRels, bodyRels) {
         });
     }
 
-    console.log('[HEADER-DEBUG] Final relationship mapping for headers/footers:',
-        Array.from(relIdMap.entries())
-            .filter(([oldId]) => bodyRels.find(rel =>
-                rel.id === oldId &&
-                (rel.type === RELATIONSHIP_TYPES.HEADER || rel.type === RELATIONSHIP_TYPES.FOOTER)
-            ))
-            .map(([oldId, newId]) => ({
-                oldId,
-                newId,
-                target: bodyRels.find(rel => rel.id === oldId)?.target
-            }))
-    );
+    // console.log('[HEADER-DEBUG] Final relationship mapping for headers/footers:',
+    //     Array.from(relIdMap.entries())
+    //         .filter(([oldId]) => bodyRels.find(rel =>
+    //             rel.id === oldId &&
+    //             (rel.type === RELATIONSHIP_TYPES.HEADER || rel.type === RELATIONSHIP_TYPES.FOOTER)
+    //         ))
+    //         .map(([oldId, newId]) => ({
+    //             oldId,
+    //             newId,
+    //             target: bodyRels.find(rel => rel.id === oldId)?.target
+    //         }))
+    //);
 
     return {relIdMap, newRelationships, mediaFileMap};
 }

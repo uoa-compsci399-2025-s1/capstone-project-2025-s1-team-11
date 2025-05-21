@@ -8,20 +8,20 @@
 export const convertOmmlToLatex = (ommlElement) => {
     if (!ommlElement) return '';
 
-    console.log('Converting OMML to LaTeX. Element keys:', Object.keys(ommlElement));
+    //console.log('Converting OMML to LaTeX. Element keys:', Object.keys(ommlElement));
 
     try {
         // First try recursive extraction with formatting
         const formattedText = extractFormattedTextFromOMML(ommlElement);
         if (formattedText) {
-            console.log('Extracted formatted text:', formattedText);
+            //console.log('Extracted formatted text:', formattedText);
             return formattedText;
         }
 
         // Fallback to simple extraction
         const textContent = extractTextFromOMML(ommlElement);
         if (textContent) {
-            console.log('Extracted simple text:', textContent);
+            //console.log('Extracted simple text:', textContent);
             return textContent;
         }
 
@@ -204,89 +204,89 @@ const processOmmlStructure = (element) => {
 
     // Handle different types of math elements
     if (element['m:oMathPara']) {
-        console.log('Found m:oMathPara');
+        //console.log('Found m:oMathPara');
         return processMathPara(element['m:oMathPara']);
     } else if (element['m:oMath']) {
-        console.log('Found m:oMath');
+        //console.log('Found m:oMath');
         return processMath(element['m:oMath']);
     } else if (Array.isArray(element)) {
-        console.log('Found array element with length:', element.length);
+        //console.log('Found array element with length:', element.length);
         return element.map(processOmmlStructure).join('');
     } else if (typeof element === 'object') {
-        console.log('Processing object element with keys:', Object.keys(element));
+        //console.log('Processing object element with keys:', Object.keys(element));
 
         // Process specific OMML elements
         if (element['m:f']) {
-            console.log('Found fraction');
+            //console.log('Found fraction');
             return processFraction(element['m:f']);
         }
         if (element['m:rad']) {
-            console.log('Found radical');
+            //console.log('Found radical');
             return processRadical(element['m:rad']);
         }
         if (element['m:sSup']) {
-            console.log('Found superscript');
+            //console.log('Found superscript');
             return processSuperscript(element['m:sSup']);
         }
         if (element['m:sSub']) {
-            console.log('Found subscript');
+            //console.log('Found subscript');
             return processSubscript(element['m:sSub']);
         }
         if (element['m:sSubSup']) {
-            console.log('Found subsuperscript');
+            //console.log('Found subsuperscript');
             return processSubSuperscript(element['m:sSubSup']);
         }
         if (element['m:d']) {
-            console.log('Found delimiter');
+            //console.log('Found delimiter');
             return processDelimiter(element['m:d']);
         }
         if (element['m:e']) {
-            console.log('Found element m:e');
+            //console.log('Found element m:e');
             return processElement(element['m:e']);
         }
         if (element['m:r']) {
-            console.log('Found run');
+            //console.log('Found run');
             return processRun(element['m:r']);
         }
         if (element['m:t']) {
-            console.log('Found text:', element['m:t']);
+            //console.log('Found text:', element['m:t']);
             return element['m:t'] || '';
         }
         if (element['m:acc']) {
-            console.log('Found accent');
+            //console.log('Found accent');
             return processAccent(element['m:acc']);
         }
         if (element['m:eqArr']) {
-            console.log('Found equation array');
+            //console.log('Found equation array');
             return processEquationArray(element['m:eqArr']);
         }
         if (element['m:func']) {
-            console.log('Found function');
+            //console.log('Found function');
             return processFunction(element['m:func']);
         }
         if (element['m:limLow']) {
-            console.log('Found lower limit');
+            //console.log('Found lower limit');
             return processLowerLimit(element['m:limLow']);
         }
         if (element['m:limUpp']) {
-            console.log('Found upper limit');
+            //console.log('Found upper limit');
             return processUpperLimit(element['m:limUpp']);
         }
         if (element['m:m']) {
-            console.log('Found matrix');
+            //console.log('Found matrix');
             return processMatrix(element['m:m']);
         }
         if (element['m:nary']) {
-            console.log('Found nary operator');
+            //console.log('Found nary operator');
             return processNary(element['m:nary']);
         }
         if (element['m:groupChr']) {
-            console.log('Found group char');
+            //console.log('Found group char');
             return processGroupChar(element['m:groupChr']);
         }
 
         // If no specific handler found, try to process children
-        console.log('No specific handler, processing children');
+        //console.log('No specific handler, processing children');
         return Object.values(element).map(child => {
             if (Array.isArray(child)) {
                 return child.map(processOmmlStructure).join('');

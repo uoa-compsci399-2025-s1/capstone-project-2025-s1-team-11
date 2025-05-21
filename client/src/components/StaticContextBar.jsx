@@ -1,17 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, message as antdMessage, Modal } from 'antd';
+import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, Modal } from 'antd';
 import { App as AntApp } from 'antd';
-import { FileOutlined, ExportOutlined, SaveOutlined } from '@ant-design/icons';
+import { FileOutlined, ExportOutlined, SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
 import { updateExamField } from "../store/exam/examSlice";
 import { setExamVersions } from "../store/exam/examSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { selectExamData } from '../store/exam/selectors.js';
+import { useHistory } from '../hooks/useHistory';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import CreateExamModal from './CreateExamModal';
 import EditExamModal from './EditExamModal';
 //import { exportExamToPdf } from "../services/exportPdf";
-import { ExamExportService } from "../services/examExportService";
+import { handleExportDocx } from '../utilities/UIUtils';
 import '../index.css';
+import useMessage from "../hooks/useMessage.js";
+// Import saveExamToDisk directly for use after creating a new exam
+import { saveExamToDisk } from '../services/fileSystemAccess.js';
 
 const { Text } = Typography;
 
@@ -25,7 +30,7 @@ const StaticContextBar = ({
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
   const coverPage = useSelector(state => state.exam.coverPage);
-  const { fileHandle, createExam, openExam, saveExam } = useFileSystem();
+  const { fileHandle, createExam, openExam, saveExam, setFileHandle } = useFileSystem();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newExamData, setNewExamData] = useState({
     examTitle: '',
@@ -55,10 +60,11 @@ const StaticContextBar = ({
   });
   // Manual auto-save toggle
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const { canUndo, canRedo, undo, redo } = useHistory();
 
   // Exam progress
 
-  const { message } = AntApp.useApp();
+  const message = useMessage();
 
   const fileDropdownRef = useRef(null);
   const exportDropdownRef = useRef(null);
@@ -79,24 +85,36 @@ const StaticContextBar = ({
 
   const handleSaveExam = async () => {
     if (!exam) {
-      setTimeout(() => message.error("No exam data to save."), 0);
+      message.error("No exam data to save.");
       return;
     }
+    
+    // Skip if already saving
+    if (saveState === 'saving') {
+      message.info("Save already in progress.");
+      return;
+    }
+    
+    setSaveState('saving');
     try {
       const updatedHandle = await saveExam();
       if (!updatedHandle) {
-        setTimeout(() => message.error("Save cancelled or no file handle available."), 0);
+        message.error("Save cancelled or no file handle available.");
+        setSaveState('unsaved');
         return;
       }
-      setTimeout(() => message.success("Exam saved successfully."), 0);
+      setSaveState('saved');
+      setLastSavedTime(new Date());
+      message.success("Exam saved successfully.");
     } catch (error) {
-      setTimeout(() => message.error("Failed to save exam: " + error.message), 0);
+      setSaveState('unsaved');
+      message.error("Failed to save exam: " + error.message);
     }
   };
 
   const handleCloseExam = () => {
-    setTimeout(() => message.info("Clearing exam..."), 0);
-    window.location.reload(); // or dispatch(clearExam()) if you want to retain the Redux method
+    message.info("Clearing exam...");
+    window.location.reload();
   };
 
   const handleCreateNewExam = () => {
@@ -113,7 +131,7 @@ const StaticContextBar = ({
   };
 
   const handleCreateModalOk = () => {
-    const exam = {
+    const examData = {
       answerOptions: parseInt(newExamData.answerOptions) || 4,
       examTitle: newExamData.examTitle || "Untitled Exam",
       courseCode: newExamData.courseCode || "",
@@ -130,7 +148,7 @@ const StaticContextBar = ({
 
     // Parse versions if defined and non-empty
     if (newExamData.versions?.trim()) {
-      exam.versions = newExamData.versions
+      examData.versions = newExamData.versions
           .split(',')
           .map(v => v.trim())
           .filter(Boolean);
@@ -139,15 +157,40 @@ const StaticContextBar = ({
     // Parse teleformOptions if defined and non-empty
     if (newExamData.teleformOptions?.trim()) {
       const cleaned = newExamData.teleformOptions.replace(/["']/g, '');
-      exam.teleformOptions = cleaned
+      examData.teleformOptions = cleaned
           .split(',')
           .map(o => o.trim())
           .filter(Boolean);
     }
 
-    createExam(exam);
+    // Create the exam in Redux
+    createExam(examData);
     setShowCreateModal(false);
+    
+    // Show success message
     setTimeout(() => message.success("New exam created successfully."), 0);
+    
+    // Trigger save dialog after a short delay
+    setTimeout(async () => {
+      try {
+        setSaveState('saving'); // Update state before save
+        // We use saveExamToDisk directly since it doesn't rely on Redux state
+        const newFileHandle = await saveExamToDisk(examData);
+        if (newFileHandle) {
+          // Update the file handle in state
+          setFileHandle(newFileHandle);
+          setSaveState('saved');
+          setLastSavedTime(new Date());
+          message.success("Exam saved successfully.");
+        } else {
+          // If user cancelled the file picker
+          setSaveState('unsaved');
+        }
+      } catch (error) {
+        setSaveState('unsaved');
+        console.error("Failed to save new exam:", error);
+      }
+    }, 300);
   };
 
   const handleCreateModalCancel = () => {
@@ -171,7 +214,7 @@ const StaticContextBar = ({
       // if (type === 'demo' || type === 'randomised' || type === 'exemplar' || type === 'marking') {
       //   exportExamToPdf(exam, type);
       // } else {
-      //   console.log('Unknown export type:', type);
+      //   //console.log('Unknown export type:', type);
       // }
     }
   };
@@ -216,7 +259,7 @@ const StaticContextBar = ({
     const versionsArray = typeof editDetailsData.versions === 'string'
         ? editDetailsData.versions.split(',').map(v => v.trim())
         : editDetailsData.versions;
-    console.log("Setting versions to:", versionsArray);
+    //console.log("Setting versions to:", versionsArray);
     dispatch(setExamVersions(versionsArray));
     setShowEditDetailsModal(false);
     setTimeout(() => message.success("Exam details updated."), 0);
@@ -240,14 +283,27 @@ const StaticContextBar = ({
   useEffect(() => {
     if (!autoSaveEnabled) return;
     if (!exam) return;
+    
     // Mark as unsaved when exam changes
     setSaveState('unsaved');
+    
     // Clear any previous debounce
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
+    
     // Debounce: save after 2 seconds
     saveTimeoutRef.current = setTimeout(async () => {
+      // Skip autosave if no fileHandle exists (requires user gesture first time)
+      if (!fileHandle) {
+        return;
+      }
+      
+      // Skip if already saving
+      if (saveState === 'saving') {
+        return;
+      }
+      
       setSaveState('saving');
       try {
         await saveExam();
@@ -256,9 +312,14 @@ const StaticContextBar = ({
       } catch (err) {
         console.error("Auto-save failed:", err);
         setSaveState('unsaved');
-        antdMessage.error("Auto-save failed. Check your connection or file permissions.");
+        
+        // Don't show error messages for expected failures
+        if (err.name !== 'SecurityError' && err.name !== 'NotAllowedError') {
+          message.error("Auto-save failed. Check your connection or file permissions.");
+        }
       }
     }, 2000);
+    
     // Cleanup
     return () => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
@@ -266,6 +327,21 @@ const StaticContextBar = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exam, autoSaveEnabled]);
 
+  // Add keyboard shortcuts
+  useKeyboardShortcuts({
+    onUndo: () => {
+      if (canUndo) {
+        undo();
+        message.info('Undo');
+      }
+    },
+    onRedo: () => {
+      if (canRedo) {
+        redo();
+        message.info('Redo');
+      }
+    }
+  });
 
   return (
       <div className="floating-context-bar">
@@ -328,6 +404,41 @@ const StaticContextBar = ({
                     </Tooltip>
                   </div>
                 </Dropdown>
+              </div>
+              {/* Add Undo/Redo buttons */}
+              <div className="context-button" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <Tooltip title="Undo (Ctrl+Z)">
+                  <Button
+                      icon={<UndoOutlined />}
+                      onClick={undo}
+                      disabled={!canUndo}
+                      type="text"
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        gap: '4px',
+                        color: !canUndo ? 'rgba(0, 0, 0, 0.25)' : 'inherit'
+                      }}
+                  >
+                    <span className="context-button-label">Undo</span>
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Redo (Ctrl+Y)">
+                  <Button
+                      icon={<RedoOutlined />}
+                      onClick={redo}
+                      disabled={!canRedo}
+                      type="text"
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        gap: '4px',
+                        color: !canRedo ? 'rgba(0, 0, 0, 0.25)' : 'inherit'
+                      }}
+                  >
+                    <span className="context-button-label">Redo</span>
+                  </Button>
+                </Tooltip>
               </div>
               {exam && (
                   <>
@@ -395,74 +506,8 @@ const StaticContextBar = ({
                           key: 'docx',
                           label: 'Download as DOCX',
                           onClick: async () => {
-                            try {
-                              if (!exam) {
-                                message.error("No exam data available for export");
-                                return;
-                              }
-
-                              if (!coverPage) {
-                                message.error("No cover page available. Please upload a cover page first.");
-                                return;
-                              }
-
-                              // Check if exam is ready for export
-                              const { warnings } = ExamExportService.checkExamVersionsReady(exam);
-
-                              // Show warnings if present
-                              if (warnings && warnings.length > 0) {
-                                const warningText = warnings.join("\n");
-
-                                Modal.confirm({
-                                  title: 'Warning: Issues with Export',
-                                  content: (
-                                      <div>
-                                        <p>{warningText}</p>
-                                        <p>Do you want to proceed with the export anyway?</p>
-                                      </div>
-                                  ),
-                                  okText: 'Proceed',
-                                  cancelText: 'Cancel',
-                                  onOk: async () => {
-                                    // Continue with export
-                                    setTimeout(() => message.info("Exporting DOCX versions..."), 0);
-                                    const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
-
-                                    if (result.success) {
-                                      message.success("All exam versions exported successfully");
-
-                                      // Show any warnings that came back
-                                      if (result.warnings && result.warnings.length > 0) {
-                                        message.warning(result.warnings.join("\n"));
-                                      }
-                                    } else {
-                                      message.error(`Export failed: ${result.error}`);
-                                    }
-                                  }
-                                });
-                                return; // Exit early, the Modal callback will handle continuation
-                              }
-
-// Only execute this code if there are no warnings
-                              setTimeout(() => message.info("Exporting DOCX versions..."), 0);
-                              const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
-
-                              if (result.success) {
-                                message.success("All exam versions exported successfully");
-
-                                // Show any warnings that came back
-                                if (result.warnings && result.warnings.length > 0) {
-                                  message.warning(result.warnings.join("\n"));
-                                }
-                              } else {
-                                message.error(`Export failed: ${result.error}`);
-                              }
-                            } catch (error) {
-                              message.error(`Export error: ${error.message}`);
-                              console.error(error);
-                            } finally {
-                              setExportDropdownOpen(false);
-                            }
+                            await handleExportDocx(exam, coverPage);
+                            setExportDropdownOpen(false);
                           }
                         },
                         {
@@ -480,7 +525,7 @@ const StaticContextBar = ({
                           label: 'Randomised Answer Scripts',
                           disabled: !canExportRandomised,
                           onClick: () => {
-                            setTimeout(() => message.info("Exporting randomised scripts..."), 0);
+                            message.info("Exporting randomised scripts...");
                             confirmExport("randomised");
                             setExportDropdownOpen(false);
                           }
@@ -490,7 +535,7 @@ const StaticContextBar = ({
                           label: 'Exemplar Answer Scripts',
                           disabled: !canExportExemplar,
                           onClick: () => {
-                            setTimeout(() => message.info("Exporting exemplar scripts..."), 0);
+                            message.info("Exporting exemplar scripts...");
                             confirmExport("exemplar");
                             setExportDropdownOpen(false);
                           }
@@ -500,7 +545,7 @@ const StaticContextBar = ({
                           label: 'Marking Scheme',
                           disabled: !canExportMarking,
                           onClick: () => {
-                            setTimeout(() => message.info("Exporting marking scheme..."), 0);
+                            message.info("Exporting marking scheme...");
                             confirmExport("marking");
                             setExportDropdownOpen(false);
                           }

@@ -40,7 +40,6 @@ export const selectQuestionByNumber = (state, questionNumber) => {
 
   for (const item of state.exam.examData.examBody) {
     if (item.type === 'question' && item.questionNumber === questionNumber) {
-
       return item;
     }
 
@@ -88,8 +87,8 @@ export const selectQuestionsForTable = createSelector(
       if (item.type === 'question') {
         result.push(normaliseQuestionForTable(item, null));
       } else if (item.type === 'section') {
-        item.questions?.forEach((q, i) => {
-          result.push(normaliseQuestionForTable(q, item.sectionNumber, i));
+        item.questions?.forEach((q) => {
+          result.push(normaliseQuestionForTable(q, item.sectionNumber));
         });
       }
     });
@@ -98,15 +97,62 @@ export const selectQuestionsForTable = createSelector(
   }
 );
 
-// Normaliser to suit UI table display
+export const selectQuestionsAndSectionsForTable = createSelector(
+  [selectExamBody],
+  (examBody) => {
+    if (!examBody) return [];
+    
+    const result = [];
+    let currentSectionNumber = 1;
+
+    examBody.forEach((item, examBodyIndex) => {
+      if (item.type === 'section') {
+        // Add section row
+        result.push({
+          id: item.id,
+          type: 'section',
+          sectionNumber: item.sectionNumber || currentSectionNumber,
+          sectionTitle: item.sectionTitle,
+          contentFormatted: item.contentFormatted,
+          examBodyIndex,
+        });
+
+        // Add all questions in this section
+        item.questions?.forEach((question, questionsIndex) => {
+          result.push({
+            ...normaliseQuestionForTable(question, item.sectionNumber || currentSectionNumber),
+            examBodyIndex,
+            questionsIndex,
+            id: question.id,
+          });
+        });
+
+        currentSectionNumber++;
+      } else if (item.type === 'question') {
+        // Add standalone question
+        result.push({
+          ...normaliseQuestionForTable(item),
+          examBodyIndex,
+          id: item.id,
+        });
+      }
+    });
+
+    return result;
+  }
+);
+
+// Update the normaliseQuestionForTable function to handle more fields
 const normaliseQuestionForTable = (question, sectionNumber = null) => ({
+  type: 'question',
   sectionNumber,
   questionNumber: question.questionNumber,
-  contentText: question.contentText || '',
+  contentFormatted: question.contentFormatted || '',
   marks: question.marks || 0,
-  answers: question.answers || [],
-  correctAnswers: question.correctAnswers || [],
-  lockedPositions: question.lockedPositions || { a: false, b: false, c: false, d: false, e: false },
+  answers: (question.answers || []).map(answer => ({
+    ...answer,
+    contentFormatted: answer.contentFormatted || ''
+  })),
 });
 
 export const selectCorrectAnswerIndices = createSelector(
@@ -116,7 +162,7 @@ export const selectCorrectAnswerIndices = createSelector(
 
     const result = {};
 
-    // Initialize result structure for each version
+    // initialise result structure for each version
     examData.versions.forEach(versionId => {
       result[versionId] = {};
     });

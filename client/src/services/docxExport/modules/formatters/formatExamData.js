@@ -174,12 +174,12 @@ function formatQuestionWithVersion(question, version, versionList) {
         }
     }
 
-    console.log("Version:", version, "Position in list:", versionIndex);
+    //console.log("Version:", version, "Position in list:", versionIndex);
 
     // Get the appropriate shuffle map for this version
     const shuffleMap = question.answerShuffleMaps?.[versionIndex] || [...Array(question.answers?.length || 0).keys()];
 
-    console.log("Using shuffle map:", shuffleMap);
+    //console.log("Using shuffle map:", shuffleMap);
 
     // Format answers using the appropriate shuffle map for this version
     const formattedAnswers = [];

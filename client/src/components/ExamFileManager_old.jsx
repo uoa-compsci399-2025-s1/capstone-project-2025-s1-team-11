@@ -6,7 +6,7 @@ import { Button, Alert, Space, Typography, Modal, Input, message, Card, Select }
 const ExamFileManager = () => {
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  const { createExam, saveExam, closeExam, importExam } = useFileSystem();
+  const { openExam, createExam, saveExam, closeExam, importExam } = useFileSystem();
   const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
 
   // State for create new exam modal
@@ -26,17 +26,17 @@ const ExamFileManager = () => {
   const [isClearModalVisible, setIsClearModalVisible] = useState(false);
 
   // Open a JSON exam file
-  // const handleOpenExam = async () => {
-  //   try {
-  //     const result = await openExam();
-  //     if (result) {
-  //       setShowSuccessAlert(true);
-  //       setError("");
-  //     }
-  //   } catch (err) {
-  //     setError("Error opening exam: " + err.message);
-  //   }
-  // };
+  const handleOpenExam = async () => {
+    try {
+      const result = await openExam();
+      if (result) {
+        setShowSuccessAlert(true);
+        setError("");
+      }
+    } catch (err) {
+      setError("Error opening exam: " + err.message);
+    }
+  };
 
   const handleImportExam = async (event) => {
     const selectedFile = event.target.files[0];
@@ -70,27 +70,28 @@ const ExamFileManager = () => {
 
   const examData = useSelector((state) => state.exam.examData);
 
-  // const handleSaveExam = async () => {
-  //   try {
-  //     const result = await saveExam();
-  //     if (result) {
-  //       setShowSuccessAlert(true);
-  //       console.log("File saved successfully");
-  //     }
-  //   } catch (err) {
-  //     setError("Error saving exam: " + err.message);
-  //     console.error(err);
-  //   }
-  // };
+  const handleSaveExam = async () => {
+    try {
+      const result = await saveExam();
+      if (result) {
+        setShowSuccessAlert(true);
+        //console.log("File saved successfully");
+      }
+    } catch (err) {
+      setError("Error saving exam: " + err.message);
+      console.error(err);
+    }
+  };
 
   return (
     <Card>
-      {/* <Typography.Title level={3}>File Manager</Typography.Title> */}
-      <Alert message="Some of this is moved/moving to the static context menu..." type="info" showIcon/>
+      <Typography.Title level={3}>File Manager</Typography.Title>
+      <Alert message="These options will be moving to the static context menu..." type="info" showIcon/>
         {error && <p style={{ color: "red" }}>{error}</p>}
         {showSuccessAlert && (
           <Alert
             message="Success"
+            description="File saved successfully!"
             type="success"
             showIcon
             closable
@@ -100,22 +101,22 @@ const ExamFileManager = () => {
         {examData && (
           <Space style={{ marginTop: "16px", justifyContent: "space-between", width: "100%", display: "flex" }}>
             <span /> {/* Placeholder for left alignment */}
-            {/* <Button type="primary" onClick={handleSaveExam}>
+            <Button type="primary" onClick={handleSaveExam}>
               Save Exam
-            </Button> */}
+            </Button>
           </Space>
         )}
 
           <Space wrap style={{ width: "100%", justifyContent: "space-between" }}>
           <Space wrap>
-            {/* <Button type="primary" onClick={() => setShowCreateModal(true)}>
+            <Button type="primary" onClick={() => setShowCreateModal(true)}>
               Create New Exam
             </Button>
             <Button onClick={async () => {
               await handleOpenExam();
             }}>
               Open Exam (JSON)
-            </Button> */}
+            </Button>
             <Button>
             <label style={{ cursor: "pointer", marginBottom: 0 }}>
                 Import Exam

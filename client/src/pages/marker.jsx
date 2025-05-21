@@ -1,18 +1,20 @@
 // src/pages/Marker.jsx
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Typography, message, Button, Input, Divider } from "antd";
+import { Typography, Button, Input, Divider } from "antd";
 import { useSelector } from "react-redux";
 import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
 import { markExams } from "../utilities/marker/examMarker.js";
 import { generateResultOutput } from "../utilities/marker/outputFormatter.js";
-import {dataReview} from "../components/marker/dataReview.jsx";
+import DataReview from "../components/marker/dataReview.jsx";
 import {Results} from "../components/marker/results.jsx"
 import {teleformReader} from "../components/marker/teleformReader.jsx";
-import {selectCorrectAnswerIndices} from "../store/exam/selectors.js";
+import {selectCorrectAnswerIndices, selectExamData} from "../store/exam/selectors.js";
+import useMessage from "../hooks/useMessage.js";
 
 const Marker = () => {
-  const examData = useSelector((state) => state.exam.examData);
+  const message = useMessage();
+  const examData = useSelector(selectExamData);
   const examAnswers = useSelector(selectCorrectAnswerIndices);
   const [teleformData, setTeleformData] = useState("");
   const [markingKey, setMarkingKey] = useState(null);
@@ -39,40 +41,33 @@ const Marker = () => {
   const handleMarkExams = useCallback(() => {
     if (!teleformData) {
       message.error("Please enter teleform scan data before marking.");
-      return;
+      return false;
     }
     if (!markingKey) {
       message.error("Marking key is not available.");
-      return;
+      return false;
     }
     
     try {
-      console.log("Marking exams with data:", teleformData);
+      //console.log("Marking exams with data:", teleformData);
       
       const examResults = markExams(currentExamData, teleformData, markingKey);
-      console.log("Exam results:", examResults);
+      //console.log("Exam results:", examResults);
       
       if (examResults && examResults.all && Array.isArray(examResults.all) && examResults.all.length > 0) {
         setResultsData(examResults);
         message.success(`Successfully marked ${examResults.all.length} exams.`);
-      
-        // Automatically advance to the results step
-        setCurrentStep(2);
+        return true;
       } else {
         message.error("Failed to mark exams: No valid student data found");
+        return false;
       }
     } catch (error) {
       console.error("Error marking exams:", error);
       message.error("Failed to mark exams: " + error.message);
+      return false;
     }
-  }, [teleformData, markingKey, currentExamData]);
-
-  // Add effect to handle marking when on results page
-  useEffect(() => {
-    if (currentStep === 2 && teleformData && markingKey) {
-      handleMarkExams();
-    }
-  }, [currentStep, teleformData, markingKey, handleMarkExams]);
+  }, [teleformData, markingKey, currentExamData, message]);
 
   const handleTeleformDataChange = (e) => {
     setTeleformData(e.target.value);
@@ -116,12 +111,12 @@ const Marker = () => {
   };
 
   const renderContent = () => {
-    console.log("Current step:", currentStep);
-    console.log("Results data:", resultsData);
+    //console.log("Current step:", currentStep);
+    //console.log("Results data:", resultsData);
     
     switch (currentStep) {
       case 0:
-        return dataReview({ examData: currentExamData, markingKey });
+        return <DataReview examData={currentExamData} markingKey={markingKey} />;
       case 1:
         return teleformReader({teleformData, markingKey, handleTeleformDataChange});
       case 2:
@@ -142,7 +137,7 @@ const Marker = () => {
           );
         }
         
-        console.log("Passing to Results component:", resultsData.all);
+        //console.log("Passing to Results component:", resultsData.all);
         return (
           <Results
             setExportFormat={setExportFormat}
@@ -162,7 +157,15 @@ const Marker = () => {
   };
 
   const next = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, 2));
+    const nextStep = Math.min(currentStep + 1, 2);
+    // Only try to mark exams when moving to step 2
+    if (nextStep === 2) {
+      if (handleMarkExams()) {
+        setCurrentStep(nextStep);
+      }
+    } else {
+      setCurrentStep(nextStep);
+    }
   };
 
   const prev = () => {

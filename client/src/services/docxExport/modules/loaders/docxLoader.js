@@ -56,11 +56,11 @@ export function copyRelatedFiles(body, coverPage, bodyRels, relIdMap, mediaFileM
                 rel.type === RELATIONSHIP_TYPES.THEME)) {
 
             if (rel.type === RELATIONSHIP_TYPES.HEADER || rel.type === RELATIONSHIP_TYPES.FOOTER) {
-                console.log('[HEADER-DEBUG] Copying header/footer file:', {
-                    from: originalPath,
-                    to: targetPath,
-                    type: rel.type === RELATIONSHIP_TYPES.HEADER ? 'HEADER' : 'FOOTER'
-                });
+                // console.log('[HEADER-DEBUG] Copying header/footer file:', {
+                //     from: originalPath,
+                //     to: targetPath,
+                //     type: rel.type === RELATIONSHIP_TYPES.HEADER ? 'HEADER' : 'FOOTER'
+                // });
             }
 
             coverPage.files.set(targetPath, body.files.get(originalPath));

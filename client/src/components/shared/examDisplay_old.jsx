@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Typography, Modal, Input, message, Table } from "antd";
+import { Button, Typography, Modal, Input, App, Table } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import {
   removeQuestion,
@@ -8,8 +8,8 @@ import {
   updateSection,
   moveQuestion,
   moveSection,
-} from "../store/exam/examSlice";
-import { selectExamData } from "../store/exam/selectors";
+} from "../../store/exam/examSlice";
+import { selectExamData } from "../../store/exam/selectors";
 import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -20,6 +20,7 @@ const { TextArea } = Input;
 export const ExamDisplay = () => {
   const exam = useSelector(selectExamData);
   const dispatch = useDispatch();
+  const { message } = App.useApp();
 
   const [modalState, setModalState] = useState({
     visible: false,
@@ -78,7 +79,7 @@ export const ExamDisplay = () => {
             correctIndex: question.correctIndex ?? (question.answers || []).findIndex(a => a.correct),
             examBodyIndex,
             questionsIndex,
-            questionNumber: questionsIndex + 1,
+            questionNumber: question.questionNumber,
             key: questionKey
           });
         });
@@ -202,19 +203,21 @@ export const ExamDisplay = () => {
 
   // Confirm delete item
   const confirmDeleteItem = (examBodyIndex, questionsIndex = null) => {
+    //console.log('Confirming delete:', { examBodyIndex, questionsIndex });
     setModalState({
       visible: true,
       type: '',
       item: null,
       isDelete: true,
       examBodyIndex,
-      questionsIndex
+      questionsIndex: questionsIndex !== undefined ? questionsIndex : null
     });
   };
 
   // Execute delete item
   const executeDeleteItem = () => {
     const { examBodyIndex, questionsIndex, isDelete } = modalState;
+    //console.log('Delete modal state:', { examBodyIndex, questionsIndex, isDelete });
     
     if (!isDelete || examBodyIndex === undefined) {
       setModalState({ visible: false, type: '', item: null, isDelete: false });
@@ -222,14 +225,21 @@ export const ExamDisplay = () => {
     }
     
     const entry = exam?.examBody?.[examBodyIndex];
+    //console.log('Entry type:', entry?.type, 'questionsIndex:', questionsIndex);
 
-    if (questionsIndex !== null && questionsIndex !== undefined) {
-      dispatch(removeQuestion({ examBodyIndex, questionsIndex }));
-    } else if (entry?.type === "section") {
+    // If it's a section and we're not trying to delete a question within it
+    if (entry?.type === "section" && questionsIndex === null) {
       dispatch(removeSection(examBodyIndex));
+    } else if (entry?.type === "section") {
+      // If it's a question within a section
+      dispatch(removeQuestion({ examBodyIndex, questionsIndex }));
+    } else {
+      // If it's a standalone question
+      dispatch(removeQuestion({ examBodyIndex }));
     }
 
     setModalState({ visible: false, type: '', item: null, isDelete: false });
+    message.success("Item deleted successfully");
   };
 
   if (!exam || !Array.isArray(exam.examBody)) {

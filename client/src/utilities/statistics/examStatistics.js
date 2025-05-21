@@ -40,7 +40,7 @@ export function calculateStatistics(markedResults) {
     studentResult.questions.forEach(question => {
       const qNum = question.questionNumber;
       
-      // Initialize question stats if not already done
+      // initialise question stats if not already done
       if (!results.questionStats[qNum]) {
         results.questionStats[qNum] = {
           totalAnswers: 0,

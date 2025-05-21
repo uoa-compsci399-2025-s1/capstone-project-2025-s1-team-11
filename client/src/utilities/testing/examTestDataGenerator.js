@@ -15,23 +15,23 @@ export async function generateExamTestData(docxFile, versionsFile, teleformFile)
   try {
     // Step 1: Parse the exam structure from DOCX
     const examStructure = await parseDocx(docxFile);
-    console.log('Parsed exam structure:', JSON.stringify(examStructure, null, 2).substring(0, 500) + '...');
+    //console.log('Parsed exam structure:', JSON.stringify(examStructure, null, 2).substring(0, 500) + '...');
     
     // Step 2: Extract correct answers from versions.xlsx
     const correctAnswers = await parseVersionsFile(versionsFile);
-    console.log('Parsed correct answers:', correctAnswers);
+    //console.log('Parsed correct answers:', correctAnswers);
     
     // Step 3: Parse student responses from teleform file
     const studentResponses = parseTeleformData(teleformFile);
-    console.log(`Parsed ${studentResponses.length} student responses`);
+    //console.log(`Parsed ${studentResponses.length} student responses`);
     
     // Step 4: Create a simplified exam structure based on what we have
     const simplifiedExam = createSimplifiedExam(examStructure, correctAnswers);
-    console.log('Created simplified exam structure');
+    //console.log('Created simplified exam structure');
     
     // Step 5: Calculate statistics based on responses
     const statistics = calculateStatistics(simplifiedExam, correctAnswers, studentResponses);
-    console.log('Calculated statistics');
+    //console.log('Calculated statistics');
     
     // Step 6: Combine everything into a comprehensive test dataset
     const testData = {
@@ -112,7 +112,7 @@ async function parseVersionsFile(versionsFile) {
     "11000000004": {}
   };
   
-  // Initialize with some reasonable default values
+  // initialise with some reasonable default values
   // Assuming 20 questions with correct answers cycling through options
   for (let i = 1; i <= 20; i++) {
     const answerOptions = ["01", "02", "04", "08", "16"];
@@ -150,7 +150,7 @@ function parseTeleformData(teleformFile) {
         // Find where the student answers begin (after the version number)
         const versionStartIdx = line.indexOf('11000000');
         if (versionStartIdx === -1) {
-          console.log('Skipping line, no version number found:', line.substring(0, 50) + '...');
+          //console.log('Skipping line, no version number found:', line.substring(0, 50) + '...');
           return;
         }
         
@@ -209,7 +209,7 @@ function calculateStatistics(examStructure, correctAnswers, studentResponses) {
       answerFrequency: {}
     };
     
-    // Initialize answer frequency counters
+    // initialise answer frequency counters
     question.options.forEach(option => {
       statistics[questionId].answerFrequency[option.id] = 0;
     });
@@ -250,7 +250,7 @@ export function saveTestData(testData, outputPath) {
   try {
     const jsonData = JSON.stringify(testData, null, 2);
     fs.writeFileSync(outputPath, jsonData);
-    console.log(`Test data saved to ${outputPath}`);
+    //console.log(`Test data saved to ${outputPath}`);
   } catch (error) {
     console.error('Error saving test data:', error);
     throw error;

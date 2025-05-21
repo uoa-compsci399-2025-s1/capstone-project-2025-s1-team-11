@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Table, Typography, Progress, Tabs, Radio, Tag, Tooltip, InputNumber, Button, Space } from 'antd';
-import { BarChartOutlined, PieChartOutlined, EditOutlined, CheckOutlined } from '@ant-design/icons';
+import { Card, Table, Typography, Progress, Radio, Tag, Tooltip, theme } from 'antd';
+import { BarChartOutlined, PieChartOutlined } from '@ant-design/icons';
 
 /**
  * Component to display detailed statistics for each question
@@ -8,6 +8,7 @@ import { BarChartOutlined, PieChartOutlined, EditOutlined, CheckOutlined } from 
 const QuestionStats = ({ results, examData }) => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [viewMode, setViewMode] = useState('table');
+  const { token } = theme.useToken();  // Get access to the theme tokens
 
   // If no results or no question stats, show nothing
   if (!results || !results.questionStats || Object.keys(results.questionStats).length === 0) {
@@ -128,9 +129,9 @@ const QuestionStats = ({ results, examData }) => {
                   style={{ 
                     height: '100%', 
                     width: `${max > 0 ? (item.value / max) * 100 : 0}%`, 
-                    backgroundColor: item.isCorrect ? '#52c41a' : '#D3D3D3',
+                    backgroundColor: item.isCorrect ? token.colorSuccess : token.colorFillSecondary,
                     marginRight: 2,
-                    color: item.isCorrect ? 'white' : 'black',
+                    color: item.isCorrect ? 'white' : undefined,
                     textAlign: 'center',
                     display: 'flex',
                     alignItems: 'center',

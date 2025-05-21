@@ -101,8 +101,8 @@ const StudentReport = ({ student, questionStats, examData }) => {
             <Text>Correct Answers: {totalCorrect} / {totalQuestions}</Text>
           </div>
           
-          <div style={{ width: 200, height: 200 }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div style={{ width: '200px', height: '200px' }}>
+            <ResponsiveContainer width="100%" aspect={1}>
               <PieChart>
                 <Pie
                   data={summaryData}
@@ -128,8 +128,8 @@ const StudentReport = ({ student, questionStats, examData }) => {
       <Divider />
       
       <Card type="inner" title="Performance Comparison" style={{ marginBottom: 20 }}>
-        <div style={{ width: '100%', height: 300 }}>
-          <ResponsiveContainer width="100%" height="100%">
+        <div style={{ width: '100%', height: '300px' }}>
+          <ResponsiveContainer width="100%" aspect={16/9}>
             <BarChart
               data={questionComparisonData}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
@@ -138,14 +138,14 @@ const StudentReport = ({ student, questionStats, examData }) => {
               <YAxis label={{ value: 'Correct %', angle: -90, position: 'insideLeft' }} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="student" name="Your Score" fill="#8884d8">
+              <Bar dataKey="student" name="Your Score" fill="#52c41a">
                 {
                   questionComparisonData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.studentColor} />
                   ))
                 }
               </Bar>
-              <Bar dataKey="class" name="Class Average" fill="#82ca9d" />
+              <Bar dataKey="class" name="Class Average" fill="#1890ff" />
             </BarChart>
           </ResponsiveContainer>
         </div>

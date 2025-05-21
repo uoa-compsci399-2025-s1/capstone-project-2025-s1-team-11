@@ -6,6 +6,7 @@ import { regenerateShuffleMaps } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/mapDisplay";
 import ExamSidebar from "../components/ExamSidebar";
+import { EmptyExam } from "../components/shared/emptyExam.jsx";
 
 const { Title, Text } = Typography;
 
@@ -242,8 +243,9 @@ const Randomiser = () => {
 
                   if (!mapping) return null;
 
+                  const options = exam?.teleformOptions || ['A', 'B', 'C', 'D', 'E'];
                   const mappingDetails = mapping.map((pos, idx) =>
-                    `${String.fromCharCode(65 + idx)} → ${String.fromCharCode(65 + pos)}`
+                    `${options[idx]} → ${options[pos]}`
                   ).join(", ");
                   const rawMap = mapping.join(", ");
 
@@ -293,7 +295,7 @@ const Randomiser = () => {
                   );
                 })}
               </div>
-
+              <EmptyExam/>
               <Pagination
                 current={pagination.current}
                 pageSize={pagination.pageSize}

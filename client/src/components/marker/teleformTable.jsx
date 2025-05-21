@@ -15,9 +15,9 @@ const columns = (answerKey) => [
       const versionId = record.versionId;
       const keyUsed = answerKey?.[versionId];
 
-      console.log(`Rendering AnswerGrid for versionId: ${versionId}`);
-      console.log(`Answer key:`, answerKey);
-      console.log(`Answer key found:`, keyUsed);
+      //console.log(`Rendering AnswerGrid for versionId: ${versionId}`);
+      //console.log(`Answer key:`, answerKey);
+      //console.log(`Answer key found:`, keyUsed);
 
       return (
         <AnswerGrid

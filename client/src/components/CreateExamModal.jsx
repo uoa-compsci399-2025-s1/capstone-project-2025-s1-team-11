@@ -16,7 +16,7 @@ const CreateExamModal = ({
       title="Create New Exam"
       open={open}
       onOk={() => {
-        console.log("Creating exam with data:", newExamData);
+        //console.log("Creating exam with data:", newExamData);
         onOk();
       }}
       onCancel={onCancel}

@@ -48,11 +48,11 @@ describe('useFileSystem hook', () => {
     });
 
     expect(store.getActions()).toContainEqual(
-      examSlice.initializeExamState(expect.objectContaining({ examTitle: 'Test' }))
+      examSlice.initialiseExamState(expect.objectContaining({ examTitle: 'Test' }))
     );
   });
 
-  it('createExam: dispatches initializeExamState', async () => {
+  it('createExam: dispatches initialiseExamState', async () => {
     const { result } = renderWithProvider();
 
     await act(async () => {
@@ -60,7 +60,7 @@ describe('useFileSystem hook', () => {
     });
 
     expect(store.getActions()).toContainEqual(
-      examSlice.initializeExamState(expect.objectContaining({ examTitle: 'Test' }))
+      examSlice.initialiseExamState(expect.objectContaining({ examTitle: 'Test' }))
     );
   });
 

@@ -42,12 +42,12 @@ describe('Exam Selectors', () => {
                                 type: 'question',
                                 id: 'question-1',
                                 questionNumber: 1,
-                                contentText: 'Question 1',
+                                contentFormatted: 'Question 1',
                                 marks: 2,
                                 answers: [
-                                    { contentText: 'Answer 1', correct: true },
-                                    { contentText: 'Answer 2', correct: false },
-                                    { contentText: 'Answer 3', correct: true }
+                                    { contentFormatted: 'Answer 1', correct: true },
+                                    { contentFormatted: 'Answer 2', correct: false },
+                                    { contentFormatted: 'Answer 3', correct: true }
                                 ],
                                 answerShuffleMaps: [
                                     [1, 2, 0],  // V1: original indices [0,2] become [2,1]
@@ -58,12 +58,12 @@ describe('Exam Selectors', () => {
                                 type: 'question',
                                 id: 'question-2',
                                 questionNumber: 2,
-                                contentText: 'Question 2',
+                                contentFormatted: 'Question 2',
                                 marks: 3,
                                 answers: [
-                                    { contentText: 'Answer 1', correct: false },
-                                    { contentText: 'Answer 2', correct: true },
-                                    { contentText: 'Answer 3', correct: false }
+                                    { contentFormatted: 'Answer 1', correct: false },
+                                    { contentFormatted: 'Answer 2', correct: true },
+                                    { contentFormatted: 'Answer 3', correct: false }
                                 ],
                                 answerShuffleMaps: [
                                     [2, 0, 1],  // V1: original index 1 becomes 2
@@ -76,11 +76,11 @@ describe('Exam Selectors', () => {
                         type: 'question',
                         id: 'question-3',
                         questionNumber: 3,
-                        contentText: 'Question 3',
+                        contentFormatted: 'Question 3',
                         marks: 5,
                         answers: [
-                            { contentText: 'Answer 1', correct: true },
-                            { contentText: 'Answer 2', correct: false }
+                            { contentFormatted: 'Answer 1', correct: true },
+                            { contentFormatted: 'Answer 2', correct: false }
                         ]
                     }
                 ]
@@ -125,14 +125,14 @@ describe('Exam Selectors', () => {
         const question = selectQuestionByPath(mockState, 0, 0);
         expect(question).toBe(mockState.exam.examData.examBody[0].questions[0]);
         expect(question.type).toBe('question');
-        expect(question.contentText).toBe('Question 1');
+        expect(question.contentFormatted).toBe('Question 1');
     });
 
     test('selectQuestionByPath should return a standalone question', () => {
         const question = selectQuestionByPath(mockState, 1, 1);
         expect(question).toBe(mockState.exam.examData.examBody[1]);
         expect(question.type).toBe('question');
-        expect(question.contentText).toBe('Question 3');
+        expect(question.contentFormatted).toBe('Question 3');
     });
 
     test('selectQuestionByPath should return null for invalid paths', () => {
@@ -143,7 +143,7 @@ describe('Exam Selectors', () => {
     test('selectQuestionByNumber should find a question by its number', () => {
         const question = selectQuestionByNumber(mockState, 2);
         expect(question).toBe(mockState.exam.examData.examBody[0].questions[1]);
-        expect(question.contentText).toBe('Question 2');
+        expect(question.contentFormatted).toBe('Question 2');
     });
 
     test('selectQuestionByNumber should return null for non-existent question numbers', () => {
@@ -153,9 +153,9 @@ describe('Exam Selectors', () => {
     test('selectAllQuestionsFlat should return all questions in a flat array', () => {
         const questions = selectAllQuestionsFlat(mockState);
         expect(questions).toHaveLength(3);
-        expect(questions[0].contentText).toBe('Question 1');
-        expect(questions[1].contentText).toBe('Question 2');
-        expect(questions[2].contentText).toBe('Question 3');
+        expect(questions[0].contentFormatted).toBe('Question 1');
+        expect(questions[1].contentFormatted).toBe('Question 2');
+        expect(questions[2].contentFormatted).toBe('Question 3');
     });
 
     test('selectTotalMarks should calculate the total marks correctly', () => {
@@ -169,13 +169,13 @@ describe('Exam Selectors', () => {
         // Check first question (from section)
         expect(tableQuestions[0].sectionNumber).toBe(1);
         expect(tableQuestions[0].questionNumber).toBe(1);
-        expect(tableQuestions[0].contentText).toBe('Question 1');
+        expect(tableQuestions[0].contentFormatted).toBe('Question 1');
         expect(tableQuestions[0].marks).toBe(2);
         
         // Check standalone question
         expect(tableQuestions[2].sectionNumber).toBeNull();
         expect(tableQuestions[2].questionNumber).toBe(3);
-        expect(tableQuestions[2].contentText).toBe('Question 3');
+        expect(tableQuestions[2].contentFormatted).toBe('Question 3');
         expect(tableQuestions[2].marks).toBe(5);
     });
 

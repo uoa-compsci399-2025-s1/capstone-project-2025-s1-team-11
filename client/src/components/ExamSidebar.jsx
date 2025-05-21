@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip } from 'antd';
 import { ProfileOutlined, FileTextOutlined, RightCircleOutlined } from '@ant-design/icons';
+import { htmlToText } from '../utilities/textUtils';
 
 const { Title, Text } = Typography;
 
@@ -34,6 +35,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
 
       stats.questionsPerSection.push({
         sectionTitle: item.sectionTitle,
+        sectionNumber: item.sectionNumber,
         count: questionCount,
         marks: sectionMarks
       });
@@ -42,11 +44,12 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
         id: item.id,
         type: 'section',
         sectionTitle: item.sectionTitle,
+        sectionNumber: item.sectionNumber,
         index,
         questions: item.questions?.map((q, qIndex) => ({
           id: q.id,
           type: 'question',
-          text: q.contentText,
+          text: htmlToText(q.contentFormatted || q.contentText || ''),
           marks: q.marks || 1,
           sectionIndex: index,
           questionIndex: qIndex
@@ -61,7 +64,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
       examStructure.push({
         id: item.id,
         type: 'question',
-        text: item.contentText,
+        text: htmlToText(item.contentFormatted || item.contentText || ''),
         marks: item.marks || 1,
         index
       });
@@ -76,7 +79,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
       label: (
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <span>
-            <ProfileOutlined /> {section.sectionTitle}
+            <ProfileOutlined /> {section.sectionNumber || section.sectionTitle}
           </span>
           <Badge count={section.questions.length} style={{ backgroundColor: '#52c41a' }} />
         </div>
@@ -173,7 +176,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
               <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                 <Tooltip title={section.sectionTitle}>
                   <Text style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {section.sectionTitle}
+                    {section.sectionNumber || section.sectionTitle}
                   </Text>
                 </Tooltip>
                 <div>
