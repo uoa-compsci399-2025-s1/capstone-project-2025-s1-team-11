@@ -2,12 +2,12 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { selectExamData } from "../store/exam/selectors";
-import { AnswerControls } from "./AnswerControls";
+import AnswerControls from "./AnswerControls";
 import { Typography, theme } from "antd";
 import { htmlToText } from "../utilities/textUtils";
+import { DEFAULT_OPTIONS } from '../constants/answerOptions';
 
 const { Text } = Typography;
-const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
 
 const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex }) => {
   const examData = useSelector(selectExamData);

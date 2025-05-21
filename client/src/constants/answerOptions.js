@@ -1,0 +1,1 @@
+export const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E']; 

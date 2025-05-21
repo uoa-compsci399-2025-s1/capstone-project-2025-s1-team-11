@@ -3,8 +3,7 @@ import { Checkbox, Select } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateQuestion } from '../store/exam/examSlice';
 import { selectExamData } from '../store/exam/selectors';
-
-const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
+import { DEFAULT_OPTIONS } from '../constants/answerOptions';
 
 const AnswerCheckbox = ({ question, answerIndex, examBodyIndex, questionsIndex }) => {
   const dispatch = useDispatch();
@@ -77,7 +76,7 @@ const AnswerSelect = ({ question, answerIndex, examBodyIndex, questionsIndex }) 
   );
 };
 
-export const AnswerControls = {
+const AnswerControls = {
   Checkbox: AnswerCheckbox,
   Select: AnswerSelect
 };
