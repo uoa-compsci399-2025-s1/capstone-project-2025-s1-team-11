@@ -99,7 +99,7 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
           {/* Headers */}
           <div style={{ 
             display: "grid", 
-            gridTemplateColumns: "70px repeat(5, 32px)", 
+            gridTemplateColumns: `70px repeat(${letters.length}, 32px)`,
             gap: "2px",
             height: "32px"
           }}>
@@ -119,7 +119,7 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
               key={rowIndex}
               style={{
                 display: "grid",
-                gridTemplateColumns: "70px repeat(5, 32px)",
+                gridTemplateColumns: `70px repeat(${letters.length}, 32px)`,
                 gap: "2px",
                 height: "32px"
               }}
@@ -153,15 +153,9 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
         }}>
           <div style={columnStyles.header}>Answer Text</div>
           {letters.map((_, rowIndex) => (
-            <div key={rowIndex} style={{ ...columnStyles.cell, justifyContent: "flex-start" }}>
-              <Text style={{
-                width: "100%",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                paddingRight: "16px"
-              }}>
-                {question.answers[rowIndex]?.contentText || question.answers[rowIndex]?.contentFormatted}
+            <div key={rowIndex} style={{ ...columnStyles.cell, justifyContent: "flex-start", padding: "0 8px" }}>
+              <Text ellipsis style={{ width: "100%" }}>
+                {question.answers[rowIndex]?.contentText || ''}
               </Text>
             </div>
           ))}

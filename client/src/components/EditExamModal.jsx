@@ -83,6 +83,18 @@ const EditExamModal = ({
             }
           />
         </Form.Item>
+        <Form.Item label="Teleform Options (comma-separated, optional)">
+          <Input
+            placeholder="e.g., a,b,c"
+            value={editDetailsData.teleformOptions || ''}
+            onChange={(e) =>
+              setEditDetailsData(prev => ({
+                ...prev,
+                teleformOptions: e.target.value
+              }))
+            }
+          />
+        </Form.Item>
       </Form>
     </Modal>
   );
