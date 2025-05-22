@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useCallback, Suspense } from "react";
 import { Button, Typography, Modal, Input, message, Table } from "antd";
+const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
   removeQuestion,
@@ -404,7 +405,7 @@ const ExamDisplay = () => {
         if (record.type === "section") {
           return (
             <div key={`section-content-${record.id}`}>
-              <Typography.Paragraph
+              <Paragraph
                 style={{ margin: 0, maxWidth: 280 }}
                 ellipsis={{ 
                   rows: 3,
@@ -413,12 +414,12 @@ const ExamDisplay = () => {
                 }}
               >
                 {htmlToText(record.contentFormatted)}
-              </Typography.Paragraph>
+              </Paragraph>
             </div>
           );
         }
         return (
-          <Typography.Paragraph
+          <Paragraph
             key={`question-content-${record.id}`}
             style={{ margin: 0, maxWidth: 280 }}
             ellipsis={{ 
@@ -428,7 +429,7 @@ const ExamDisplay = () => {
             }}
           >
             {htmlToText(record.contentFormatted)}
-          </Typography.Paragraph>
+          </Paragraph>
         );
       },
     },
@@ -444,7 +445,7 @@ const ExamDisplay = () => {
         return (
           <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
             {record.answers.map((answer, i) => (
-              <Typography.Paragraph 
+              <Paragraph 
                 key={`${record.id}-answer-${i}`} 
                 ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
                 style={{ 
@@ -453,7 +454,7 @@ const ExamDisplay = () => {
                 }}
               >
                 {options[i]}) {htmlToText(answer.contentFormatted)}
-              </Typography.Paragraph>
+              </Paragraph>
             ))}
           </div>
         );
@@ -478,12 +479,12 @@ const ExamDisplay = () => {
   return (
     <div>
       <div style={{ marginBottom: 16 }}>
-        <Typography.Title level={3}>{exam.examTitle}</Typography.Title>
+       <Title level={3}>{exam.examTitle}</Title>
         {(exam.courseCode || exam.courseName || exam.semester || exam.year) && (
-          <Typography.Text type="secondary">
+          <Text type="secondary">
             {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
             {exam.semester} {exam.year}
-          </Typography.Text>
+          </Text>
         )}
       </div>
 
@@ -541,7 +542,7 @@ const ExamDisplay = () => {
         destroyOnHidden={true}
       >
         {modalState.isDelete ? (
-          <p>Are you sure you want to delete this item?</p>
+          <Paragraph>Are you sure you want to delete this item?</Paragraph>
         ) : (
           <ExamItemEditor
             modalState={modalState}

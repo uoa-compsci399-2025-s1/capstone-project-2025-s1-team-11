@@ -18,7 +18,7 @@ import useMessage from "../hooks/useMessage.js";
 // Import saveExamToDisk directly for use after creating a new exam
 import { saveExamToDisk } from '../services/fileSystemAccess.js';
 
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 const StaticContextBar = ({
                             examTitle = "Untitled Exam",
@@ -579,7 +579,7 @@ const StaticContextBar = ({
                       style={{ marginRight: 4 }}
                   />
                 </Tooltip>
-                <span style={{ fontSize: 12 }}>{autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}</span>
+                <Text style={{ fontSize: 12 }}>{autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}</Text>
               </div>
             </div>
           </div>
@@ -591,24 +591,24 @@ const StaticContextBar = ({
                   <>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "32px", alignItems: "flex-end" }}>
                       <div>
-                        <div style={{ marginBottom: 4 }}><strong>Course Code:</strong></div>
-                        <div>{exam?.courseCode || "N/A"}</div>
+                        <Text strong>Course Code:</Text>
+                        <Paragraph>{exam?.courseCode || "N/A"}</Paragraph>
                       </div>
                       <div>
-                        <div style={{ marginBottom: 4 }}><strong>Course Name:</strong></div>
-                        <div>{exam?.courseName || "N/A"}</div>
+                        <Text strong>Course Name:</Text>
+                        <Paragraph>{exam?.courseName || "N/A"}</Paragraph>
                       </div>
                       <div>
-                        <div style={{ marginBottom: 4 }}><strong>Semester:</strong></div>
-                        <div>{exam?.semester || "N/A"}</div>
+                        <Text strong>Semester:</Text>
+                        <Paragraph>{exam?.semester || "N/A"}</Paragraph>
                       </div>
                       <div>
-                        <div style={{ marginBottom: 4 }}><strong>Year:</strong></div>
-                        <div>{exam?.year || "N/A"}</div>
+                        <Text strong>Year:</Text>
+                        <Paragraph>{exam?.year || "N/A"}</Paragraph>
                       </div>
                       {exam?.versions && exam.versions.length > 0 && (
                           <div>
-                            <div style={{ marginBottom: 4 }}><strong>Versions:</strong></div>
+                            <Text strong>Versions:</Text>
                             <div className="version-tags">
                               {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
                             </div>

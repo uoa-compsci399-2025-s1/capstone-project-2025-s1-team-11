@@ -1,5 +1,7 @@
 // src/components/AnswerMappingGrid.jsx
 import React from "react";
+import { Typography } from "antd";
+const { Paragraph } = Typography;
 import { useSelector } from "react-redux";
 import { selectExamData } from "../store/exam/selectors";
 
@@ -110,12 +112,10 @@ const AnswerMappingGrid = ({ mapping }) => {
         </div>
         {/* Example */}
         {mapping.length > 0 && (
-            <div style={{ marginTop: "6px", fontStyle: "italic", fontSize: "0.85rem" }}>
-                <p style={{ margin: "0 0 4px 0" }}>
+            <Paragraph style={{ margin: "0 0 4px 0", fontStyle: "italic", fontSize: "0.85rem" }}>
                 Example: Original answer <strong>{letters[0]}</strong> is now in position{" "}
                 <strong>{letters[mapping[0]]}</strong> in the student's exam.
-                </p>
-            </div>
+            </Paragraph>
         )}
       </div>
     </div>

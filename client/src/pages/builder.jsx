@@ -10,7 +10,7 @@ import { Typography, Button, Row, Col, Tooltip, Collapse, Divider} from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 //import { exportExamToPdf } from "../services/exportPdf.js";
 
-const { Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 const Builder = () => {
     const exam = useSelector(selectExamData);
@@ -52,7 +52,7 @@ const Builder = () => {
             label: 'Cover Page',
             children: (
                 <div style={{ padding: '16px 0' }}>
-                    <Typography.Title level={3}>Cover Page</Typography.Title>
+                    <Title level={3}>Cover Page</Title>
                     <Button type="default" style={{ marginBottom: 12 }} onClick={handleUploadClick}>
                         Upload Cover Page
                     </Button>
@@ -75,7 +75,7 @@ const Builder = () => {
 
     return (
         <>
-            <Typography.Title level={1}>MCQ Builder</Typography.Title>
+            <Title level={1}>MCQ Builder</Title>
             <Divider />
             <div style={{
                 display: 'flex',
@@ -107,7 +107,7 @@ const Builder = () => {
 
                     {/* MCQ Exam Questions Section */}
                     <div style={{ marginTop: '24px' }}>
-                        <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
+                        <Title level={3}>MCQ Exam Questions</Title>
                         {exam?
                         <ExamDisplay
                             exam={exam}

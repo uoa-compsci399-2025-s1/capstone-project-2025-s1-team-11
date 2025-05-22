@@ -7,6 +7,8 @@ import {
   markExams, 
   generateResultOutput 
 } from '../utilities/createMarkingKey';
+import { Typography } from 'antd';
+const { Title, Paragraph, Text } = Typography;
 
 const ExamMarkingPanel = () => {
   const examData = useSelector(state => state.exam.examData);
@@ -108,11 +110,11 @@ const ExamMarkingPanel = () => {
 
   return (
     <div className="exam-marking-panel">
-      <h2>Exam Marking Utility</h2>
+      <Title level={2}>Exam Marking Utility</Title>
       
       {/* Marking Key Options */}
       <div className="marking-key-options">
-        <h3>Marking Key</h3>
+        <Title level={4}>Marking Key</Title>
         <div>
           <label>
             <input 
@@ -142,7 +144,7 @@ const ExamMarkingPanel = () => {
       
       {/* Teleform Data Input */}
       <div className="teleform-data">
-        <h3>Teleform Scan Data</h3>
+        <Title level={4}>Teleform Scan Data</Title>
         <textarea 
           rows="10" 
           placeholder="Paste teleform scan data here..."
@@ -157,7 +159,7 @@ const ExamMarkingPanel = () => {
       {/* Results */}
       {results.length > 0 && (
         <div className="results-section">
-          <h3>Results ({results.length} students)</h3>
+          <Title level={4}>Results ({results.length} students)</Title>
           <div>
             <label>
               <input 
@@ -185,12 +187,12 @@ const ExamMarkingPanel = () => {
           </div>
           
           <div className="results-preview">
-            <h4>Preview:</h4>
+            <Title level={5}>Preview:</Title>
             {results.map((result, index) => (
               <div key={index} className="student-result">
-                <h5>{result.lastName}, {result.firstName} ({result.studentId})</h5>
-                <p>Version: {result.versionNumber}</p>
-                <p>Score: {result.totalMarks}/{result.maxMarks}</p>
+                <Text strong>{result.lastName}, {result.firstName} ({result.studentId})</Text>
+                <Paragraph>Version: {result.versionNumber}</Paragraph>
+                <Paragraph>Score: {result.totalMarks}/{result.maxMarks}</Paragraph>
                 <details>
                   <summary>View Details</summary>
                   <pre>{generateResultOutput(result, examData)}</pre>
