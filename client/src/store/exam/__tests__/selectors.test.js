@@ -50,7 +50,7 @@ describe('Exam Selectors', () => {
                                     { contentFormatted: 'Answer 3', correct: true }
                                 ],
                                 answerShuffleMaps: [
-                                    [1, 2, 0],  // V1: original indices [0,2] become [2,1]
+                                    [0, 1, 2],  // V1: unshuffled
                                     [2, 0, 1]   // V2: original indices [0,2] become [1,0]
                                 ]
                             },
@@ -66,8 +66,8 @@ describe('Exam Selectors', () => {
                                     { contentFormatted: 'Answer 3', correct: false }
                                 ],
                                 answerShuffleMaps: [
-                                    [2, 0, 1],  // V1: original index 1 becomes 2
-                                    [1, 2, 0]   // V2: original index 1 becomes 0
+                                    [2, 0, 1],  // V1: answer at original index 0 maps to output index 2
+                                    [1, 2, 0]   // V2: answer at original index 0 maps to output index 1
                                 ]
                             }
                         ]
@@ -80,7 +80,12 @@ describe('Exam Selectors', () => {
                         marks: 5,
                         answers: [
                             { contentFormatted: 'Answer 1', correct: true },
-                            { contentFormatted: 'Answer 2', correct: false }
+                            { contentFormatted: 'Answer 2', correct: false },
+                            { contentFormatted: 'Answer 3', correct: false }
+                        ],
+                    answerShuffleMaps: [
+                        [1, 0, 2],  // V1: answer at original index 0 maps to output index 2
+                        [0, 2, 1]   // V2: answer at original index 0 maps to output index 1
                         ]
                     }
                 ]
@@ -181,18 +186,24 @@ describe('Exam Selectors', () => {
 
     test('selectCorrectAnswerIndices should return correct indices for each version and question', () => {
         const correctIndices = selectCorrectAnswerIndices(mockState);
+        // this result in the structure correctIndices[versionId][questionNumber] = [correctAnswerIndices]
+        // where correctAnswerIndices is an array containing the indices of each correct answer for the question
         
         // Check structure
         expect(Object.keys(correctIndices)).toEqual(['V1', 'V2']);
-        expect(Object.keys(correctIndices.V1)).toEqual(['1', '2']);
+        expect(Object.keys(correctIndices.V1)).toEqual(['1', '2', '3']);
         
         // Check Question 1 (has two correct answers)
-        expect(correctIndices.V1[1]).toEqual([1, 2]); // V1 shuffled [0,2] to [2,1]
-        expect(correctIndices.V2[1]).toEqual([0, 1]); // V2 shuffled [0,2] to [1,0]
+        expect(correctIndices.V1[1]).toEqual([0, 2]); // V1: original [0,2] maps to [1,0] through [1,2,0]
+        expect(correctIndices.V2[1]).toEqual([1, 2]); // V2: original [0,2] maps to [2,1] through [2,0,1]
         
         // Check Question 2 (has one correct answer)
-        expect(correctIndices.V1[2]).toEqual([2]); // V1 shuffled 1 to 2
-        expect(correctIndices.V2[2]).toEqual([0]); // V2 shuffled 1 to 0
+        expect(correctIndices.V1[2]).toEqual([0]); // V1: original correct index 1 maps to 0 through [2,0,1]
+        expect(correctIndices.V2[2]).toEqual([2]); // V2: original correct index 1 maps to 0 through [1,2,0]
+
+        // Check Question 3 (has one correct answer)
+        expect(correctIndices.V1[3]).toEqual([1]); // V1: original correct index 1 maps to 0 through [2,0,1]
+        expect(correctIndices.V2[3]).toEqual([0]); // V2: original correct index 1 maps to 0 through [1,2,0]
     });
 
     test('selectCorrectAnswerIndices should handle empty or invalid state', () => {

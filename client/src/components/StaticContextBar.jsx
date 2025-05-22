@@ -3,7 +3,7 @@ import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spi
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
 import { updateExamField } from "../store/exam/examSlice";
-import { setExamVersions } from "../store/exam/examSlice";
+import { setExamVersions, setTeleformOptions } from "../store/exam/examSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { selectExamData } from '../store/exam/selectors.js';
@@ -244,7 +244,8 @@ const StaticContextBar = ({
       courseName: exam.courseName || '',
       semester: exam.semester || '',
       year: exam.year || '',
-      versions: exam.versions || []
+      versions: exam.versions || [],
+      teleformOptions: exam.teleformOptions || []
     });
     setShowEditDetailsModal(true);
   };
@@ -255,12 +256,21 @@ const StaticContextBar = ({
     dispatch(updateExamField({ field: 'courseName', value: editDetailsData.courseName }));
     dispatch(updateExamField({ field: 'semester', value: editDetailsData.semester }));
     dispatch(updateExamField({ field: 'year', value: editDetailsData.year }));
+    
     // Set exam versions from editDetailsData.versions if available
     const versionsArray = typeof editDetailsData.versions === 'string'
         ? editDetailsData.versions.split(',').map(v => v.trim())
         : editDetailsData.versions;
-    //console.log("Setting versions to:", versionsArray);
     dispatch(setExamVersions(versionsArray));
+
+    // Set teleform options if available
+    const teleformOptionsArray = typeof editDetailsData.teleformOptions === 'string'
+        ? editDetailsData.teleformOptions.split(',').map(o => o.trim())
+        : editDetailsData.teleformOptions;
+    if (teleformOptionsArray) {
+      dispatch(setTeleformOptions(teleformOptionsArray));
+    }
+
     setShowEditDetailsModal(false);
     setTimeout(() => message.success("Exam details updated."), 0);
   };
