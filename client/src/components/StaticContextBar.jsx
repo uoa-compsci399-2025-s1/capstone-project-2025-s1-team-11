@@ -46,7 +46,7 @@ const StaticContextBar = ({
   const [saveState, setSaveState] = useState('saved'); // 'saved', 'saving', 'unsaved'
   const saveTimeoutRef = useRef(null);
   const [versionCount, setVersionCount] = useState(4);
-  const [isHovered, setIsHovered] = useState(false);
+
   const [fileDropdownOpen, setFileDropdownOpen] = useState(false);
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const contextBarRef = useRef(null);
@@ -221,19 +221,7 @@ const StaticContextBar = ({
 
   // No hover effects - context bar is always in expanded state
 
-  const openEditDetailsModal = () => {
-    if (!exam) return;
-    setEditDetailsData({
-      examTitle: exam.examTitle || '',
-      courseCode: exam.courseCode || '',
-      courseName: exam.courseName || '',
-      semester: exam.semester || '',
-      year: exam.year || '',
-      versions: exam.versions || [],
-      teleformOptions: exam.teleformOptions || []
-    });
-    setShowEditDetailsModal(true);
-  };
+
 
   const handleEditDetailsSave = () => {
     dispatch(updateExamField({ field: 'examTitle', value: editDetailsData.examTitle }));
