@@ -594,61 +594,6 @@ const StaticContextBar = ({
             </div>
           </div>
 
-          {/* Context Bar Expanded (shown on hover or dropdown open) */}
-          <div className={`context-bar-expanded ${shouldShowContextBar ? 'show' : ''}`}>
-            <div style={{ padding: '24px 0px' }}>
-              {exam ? (
-                  <>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "32px", alignItems: "flex-end" }}>
-                      <div>
-                        <div style={{ marginBottom: 4 }}><strong>Course Code:</strong></div>
-                        <div>{exam?.courseCode || "N/A"}</div>
-                      </div>
-                      <div>
-                        <div style={{ marginBottom: 4 }}><strong>Course Name:</strong></div>
-                        <div>{exam?.courseName || "N/A"}</div>
-                      </div>
-                      <div>
-                        <div style={{ marginBottom: 4 }}><strong>Semester:</strong></div>
-                        <div>{exam?.semester || "N/A"}</div>
-                      </div>
-                      <div>
-                        <div style={{ marginBottom: 4 }}><strong>Year:</strong></div>
-                        <div>{exam?.year || "N/A"}</div>
-                      </div>
-                      {exam?.versions && exam.versions.length > 0 && (
-                          <div>
-                            <div style={{ marginBottom: 4 }}><strong>Versions:</strong></div>
-                            <div className="version-tags">
-                              {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
-                            </div>
-                          </div>
-                      )}
-                      <div>
-                        <Button
-                            type="primary"
-                            onClick={() => {
-                              setTimeout(() => message.info("Editing exam details..."), 0);
-                              openEditDetailsModal();
-                            }}
-                            style={{ marginLeft: 16 }}
-                        >
-                          Edit Exam Details
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-              ) : (
-                  <Alert
-                      message="No exam is currently loaded"
-                      description="Create a new exam or open an existing one to begin editing."
-                      type="error"
-                      showIcon
-                  />
-              )}
-            </div>
-          </div>
-
           {/* Create New Exam Modal */}
           <CreateExamModal
               open={showCreateModal}

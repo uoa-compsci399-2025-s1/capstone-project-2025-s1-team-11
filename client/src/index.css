@@ -107,7 +107,7 @@ button:focus-visible {
   transition: all 0.25s ease;
   z-index: 1000;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px; /* Increased from 1200px */
   max-height: 70px;
   overflow: hidden;
 }
