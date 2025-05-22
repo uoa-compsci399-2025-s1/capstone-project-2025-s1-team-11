@@ -219,22 +219,7 @@ const StaticContextBar = ({
     }
   };
 
-  // Hover intent delay for bar expansion
-  const hoverTimeout = useRef(null);
-  const handleMouseEnter = () => {
-    hoverTimeout.current = setTimeout(() => setIsHovered(true), 150);
-  };
-  const handleMouseLeave = () => {
-    clearTimeout(hoverTimeout.current);
-    setTimeout(() => {
-      if (!fileDropdownOpen && !exportDropdownOpen) {
-        setIsHovered(false);
-      }
-    }, 150);
-  };
-
-  // Expanded context bar should show if hovered or dropdowns are open
-  const shouldShowContextBar = isHovered || fileDropdownOpen || exportDropdownOpen;
+  // No hover effects - context bar is always in expanded state
 
   const openEditDetailsModal = () => {
     if (!exam) return;
@@ -358,8 +343,6 @@ const StaticContextBar = ({
         <div
             className="context-bar-wrapper"
             ref={contextBarRef}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
         >
           {/* Context Bar Main */}
           <div className="context-bar-main">
@@ -401,7 +384,6 @@ const StaticContextBar = ({
                     trigger={['click']}
                     onOpenChange={(visible) => {
                       setFileDropdownOpen(visible);
-                      setIsHovered(visible);
                     }}
                     open={fileDropdownOpen}
                     getPopupContainer={() => contextBarRef.current}
@@ -565,7 +547,6 @@ const StaticContextBar = ({
                     trigger={['click']}
                     onOpenChange={(visible) => {
                       setExportDropdownOpen(visible);
-                      setIsHovered(visible);
                     }}
                     open={exportDropdownOpen}
                     getPopupContainer={() => contextBarRef.current}

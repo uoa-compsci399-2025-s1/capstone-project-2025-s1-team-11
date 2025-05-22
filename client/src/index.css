@@ -108,8 +108,8 @@ button:focus-visible {
   z-index: 1000;
   width: 100%;
   max-width: 1400px; /* Increased from 1200px */
-  max-height: 70px;
-  overflow: hidden;
+  max-height: none; /* Remove height restriction */
+  overflow: visible; /* Remove overflow hidden */
 }
 
 .context-bar-wrapper.intent-delay {
@@ -121,12 +121,6 @@ button:focus-visible {
   top: 12px;
   right: 16px;
   z-index: 2;
-}
-
-.context-bar-wrapper:hover {
-  max-height: 420px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-  border-color: #d0d0d0;
 }
 
 .context-bar-main {
@@ -161,17 +155,12 @@ button:focus-visible {
 }
 
 .context-button-label {
-  display: none;
+  display: inline; /* Always show labels */
   margin-left: 8px;
   font-weight: 500;
   color: var(--text-color);
-  opacity: 0;
+  opacity: 1; /* Always visible */
   transition: opacity 0.3s ease;
-}
-
-.context-bar-wrapper:hover .context-button-label {
-  display: inline;
-  opacity: 1;
 }
 
 .context-bar-expanded {
@@ -213,13 +202,9 @@ button:focus-visible {
   color: #ff7875 !important;
 } */
 
-/* Hide Ant Design's edit icon by default, show only when context bar is hovered */
+/* Always show Ant Design's edit icon */
 .ant-typography-edit {
-  display: none;
-}
-
-.context-bar-wrapper:hover .ant-typography-edit {
-  display: inline-block;
+  display: inline-block; /* Always visible */
 }
 
 .context-bar-actions {
