@@ -5,8 +5,9 @@ import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/shared/examDisplay.jsx";
 import ExamFileManager from "../components/ExamContentManager.jsx";
 import ExamSidebar from "../components/ExamSidebar.jsx";
+import ExamPreview from "../components/exam/ExamPreview";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
-import { Typography, Button, Row, Col, Tooltip, Collapse, Divider} from "antd";
+import { Typography, Button, Row, Col, Tooltip, Collapse, Divider, Tabs } from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 //import { exportExamToPdf } from "../services/exportPdf.js";
 
@@ -14,6 +15,7 @@ const Builder = () => {
     const exam = useSelector(selectExamData);
     const [currentItemId, setCurrentItemId] = useState(null);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [activeTab, setActiveTab] = useState("editor");
     const coverPage = useSelector((state) => state.exam.coverPage);
     const dispatch = useDispatch();
 
@@ -42,7 +44,9 @@ const Builder = () => {
         }
     };
 
-
+    const handleTabChange = (key) => {
+        setActiveTab(key);
+    };
 
     const coverPageItems = [
         {
@@ -102,18 +106,39 @@ const Builder = () => {
 
                     <Divider />
 
-                    {/* MCQ Exam Questions Section */}
-                    <div style={{ marginTop: '24px' }}>
-                        <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
-                        {exam?
-                        <ExamDisplay
-                            exam={exam}
-                            currentItemId={currentItemId}
-                            setCurrentItemId={setCurrentItemId}
-                        />
-                        : <EmptyExam />}
-                        <ExamFileManager />
-                    </div>
+                    {/* Tabs for Editor and Preview */}
+                    <Tabs 
+                        activeKey={activeTab} 
+                        onChange={handleTabChange}
+                        items={[
+                            {
+                                key: "editor",
+                                label: "Editor",
+                                children: (
+                                    <div style={{ marginTop: '24px' }}>
+                                        <Typography.Title level={3}>MCQ Exam Questions</Typography.Title>
+                                        {exam?
+                                        <ExamDisplay
+                                            exam={exam}
+                                            currentItemId={currentItemId}
+                                            setCurrentItemId={setCurrentItemId}
+                                        />
+                                        : <EmptyExam />}
+                                        <ExamFileManager />
+                                    </div>
+                                )
+                            },
+                            {
+                                key: "preview",
+                                label: "Preview",
+                                children: (
+                                    <div style={{ marginTop: '24px' }}>
+                                        <ExamPreview />
+                                    </div>
+                                )
+                            }
+                        ]}
+                    />
 
                     <Divider />
 
