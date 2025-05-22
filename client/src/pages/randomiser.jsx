@@ -1,7 +1,7 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Row, Col} from "antd";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Row, Col, Divider} from "antd";
 import { regenerateShuffleMaps } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/mapDisplay";
@@ -73,7 +73,8 @@ const Randomiser = () => {
 
   return (
     <>
-        <Typography.Title level={1}>MCQ Randomiser</Typography.Title>
+      <Typography.Title level={1}>MCQ Randomiser</Typography.Title>
+      <Divider />
     <Row gutter={24}>
       <Col xs={24} lg={18}>
           <Card style={{ marginBottom: "20px" }}>

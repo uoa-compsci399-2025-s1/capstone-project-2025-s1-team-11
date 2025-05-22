@@ -76,6 +76,7 @@ const Builder = () => {
     return (
         <>
             <Typography.Title level={1}>MCQ Builder</Typography.Title>
+            <Divider />
             <div style={{
                 display: 'flex',
                 justifyContent: 'flex-end',
