@@ -282,24 +282,6 @@ const Randomiser = () => {
                           {htmlToText(question.contentFormatted)}
                         </Text>
                       )}
-                      {showAnswers && question.answers?.length > 0 && mapping && (
-                        <div style={{ marginBottom: 8 }}>
-                          <ul style={{ paddingLeft: "1.5em", marginBottom: 0 }}>
-                            {mapping.map((shuffledIndex, originalIndex) => {
-                              const answer = question.answers?.[shuffledIndex];
-                              if (!answer?.contentFormatted) return null;
-                              return (
-                                <li key={originalIndex}>
-                                  <Text>
-                                    {String.fromCharCode(65 + originalIndex)}. {htmlToText(answer.contentFormatted)}
-                                  </Text>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </div>
-                      )}
-
                       {displayMode === "visual" ? (
                         <MapDisplay
                           question={question}
@@ -308,6 +290,7 @@ const Randomiser = () => {
                           displayStyle={visualStyle}
                           examBodyIndex={location.examBodyIndex}
                           questionsIndex={location.questionsIndex}
+                          showAnswers={showAnswers}
                         />
                       ) : (
                         <Text>

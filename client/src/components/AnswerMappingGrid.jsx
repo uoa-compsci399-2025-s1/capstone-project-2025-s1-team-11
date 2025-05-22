@@ -9,7 +9,7 @@ import { DEFAULT_OPTIONS } from '../constants/answerOptions';
 
 const { Text } = Typography;
 
-const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex }) => {
+const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex, showAnswers }) => {
   const examData = useSelector(selectExamData);
   const options = examData?.teleformOptions || DEFAULT_OPTIONS;
   const { token } = theme.useToken();
@@ -147,20 +147,22 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex })
         </div>
 
         {/* Answer Text Column */}
-        <div style={{ 
-          display: "flex", 
-          flexDirection: "column",
-          minWidth: 0,
-        }}>
-          <div style={columnStyles.header}>Answer Text</div>
-          {letters.map((_, rowIndex) => (
-            <div key={rowIndex} style={{ ...columnStyles.cell, justifyContent: "flex-start", padding: "0 8px" }}>
-              <Text ellipsis style={{ width: "100%" }}>
-                {question.answers[rowIndex]?.contentFormatted ? htmlToText(question.answers[rowIndex].contentFormatted) : ''}
-              </Text>
-            </div>
-          ))}
-        </div>
+        {showAnswers && (
+          <div style={{ 
+            display: "flex", 
+            flexDirection: "column",
+            minWidth: 0,
+          }}>
+            <div style={columnStyles.header}>Answer Text</div>
+            {letters.map((_, rowIndex) => (
+              <div key={rowIndex} style={{ ...columnStyles.cell, justifyContent: "flex-start", padding: "0 8px" }}>
+                <Text ellipsis style={{ width: "100%" }}>
+                  {question.answers[rowIndex]?.contentFormatted ? htmlToText(question.answers[rowIndex].contentFormatted) : ''}
+                </Text>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Example text */}

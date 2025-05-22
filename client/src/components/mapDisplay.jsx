@@ -5,7 +5,7 @@ import AnswerMappingGrid from "./AnswerMappingGrid";
 import { useSelector } from "react-redux";
 import { selectExamData } from "../store/exam/selectors";
 
-export default function MapDisplay({ question, selectedVersion, exam, displayStyle = "grid", examBodyIndex, questionsIndex }) {
+export default function MapDisplay({ question, selectedVersion, exam, displayStyle = "grid", examBodyIndex, questionsIndex, showAnswers }) {
   const versionIndex = exam?.versions?.indexOf(selectedVersion) ?? 0;
   const mapping = question?.answerShuffleMaps?.[versionIndex];
   const examData = useSelector(selectExamData);
@@ -24,6 +24,7 @@ export default function MapDisplay({ question, selectedVersion, exam, displaySty
           question={question}
           examBodyIndex={examBodyIndex}
           questionsIndex={questionsIndex}
+          showAnswers={showAnswers}
         />
       ) : (
         <AnswerMappingVisual mapping={effectiveMapping} />
