@@ -1,11 +1,11 @@
 import React from 'react';
-import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip } from 'antd';
-import { ProfileOutlined, FileTextOutlined, RightCircleOutlined } from '@ant-design/icons';
+import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip, Tag } from 'antd';
+import { ProfileOutlined, FileTextOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { htmlToText } from '../utilities/textUtils';
 
 const { Title, Text } = Typography;
 
-const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
+const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) => {
   if (!exam || !exam.examBody || !Array.isArray(exam.examBody)) {
     return (
       <Card className="exam-sidebar">
@@ -120,6 +120,47 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem }) => {
 
   return (
     <Card className="exam-sidebar" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+      {/* Exam Details Section */}
+      <div style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <Title level={4} style={{ margin: 0 }}>Exam Details</Title>
+          <Button 
+            type="text" 
+            icon={<EditOutlined />} 
+            onClick={onEditDetails}
+            size="small"
+          />
+        </div>
+        <List size="small">
+          <List.Item>
+            <Text type="secondary">Course Code:</Text>
+            <Text style={{ marginLeft: '8px' }}>{exam?.courseCode || "N/A"}</Text>
+          </List.Item>
+          <List.Item>
+            <Text type="secondary">Course Name:</Text>
+            <Text style={{ marginLeft: '8px' }}>{exam?.courseName || "N/A"}</Text>
+          </List.Item>
+          <List.Item>
+            <Text type="secondary">Semester:</Text>
+            <Text style={{ marginLeft: '8px' }}>{exam?.semester || "N/A"}</Text>
+          </List.Item>
+          <List.Item>
+            <Text type="secondary">Year:</Text>
+            <Text style={{ marginLeft: '8px' }}>{exam?.year || "N/A"}</Text>
+          </List.Item>
+          {exam?.versions && exam.versions.length > 0 && (
+            <List.Item>
+              <Text type="secondary">Versions:</Text>
+              <div className="version-tags" style={{ marginLeft: '8px' }}>
+                {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
+              </div>
+            </List.Item>
+          )}
+        </List>
+      </div>
+
+      <Divider style={{ margin: '12px 0' }} />
+
       <div style={{ marginBottom: '8px' }}>
         <Title level={4} style={{ margin: 0 }}>Exam Overview</Title>
       </div>
