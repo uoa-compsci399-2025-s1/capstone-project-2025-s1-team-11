@@ -8,6 +8,8 @@ import MapDisplay from "../components/mapDisplay";
 import ExamSidebar from "../components/ExamSidebar";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { htmlToText } from "../utilities/textUtils.js";
+import EditExamModal from "../components/EditExamModal";
+import { updateExamField } from "../store/exam/examSlice";
 
 const { Title, Text } = Typography;
 
@@ -17,6 +19,14 @@ const Randomiser = () => {
   const questions = useSelector(selectAllQuestionsFlat);
   const { token } = theme.useToken();
   const [currentItemId, setCurrentItemId] = useState(null);
+  const [showEditDetailsModal, setShowEditDetailsModal] = useState(false);
+  const [editDetailsData, setEditDetailsData] = useState({
+    examTitle: '',
+    courseCode: '',
+    courseName: '',
+    semester: '',
+    year: ''
+  });
 
   const [selectedVersion, setSelectedVersion] = useState(exam?.versions?.[0] || '');
   const [showRaw, setShowRaw] = useState(false);
@@ -31,6 +41,27 @@ const Randomiser = () => {
   useEffect(() => {
     setPagination(prev => ({ ...prev, current: 1 }));
   }, [selectedSection]);
+
+  // Update editDetailsData when exam changes
+  useEffect(() => {
+    if (exam) {
+      setEditDetailsData({
+        examTitle: exam.examTitle || '',
+        courseCode: exam.courseCode || '',
+        courseName: exam.courseName || '',
+        semester: exam.semester || '',
+        year: exam.year || ''
+      });
+    }
+  }, [exam]);
+
+  const handleEditDetailsSave = () => {
+    // Update exam fields
+    Object.entries(editDetailsData).forEach(([field, value]) => {
+      dispatch(updateExamField({ field, value }));
+    });
+    setShowEditDetailsModal(false);
+  };
 
   // function to handle shuffling answers for all questions
   const handleShuffleAnswers = () => {
@@ -319,8 +350,18 @@ const Randomiser = () => {
           exam={exam} 
           currentItemId={currentItemId}
           onNavigateToItem={handleNavigateToItem}
+          onEditDetails={() => {
+            setShowEditDetailsModal(true);
+          }}
         />
       </Col>
+      <EditExamModal
+        open={showEditDetailsModal}
+        onCancel={() => setShowEditDetailsModal(false)}
+        onOk={handleEditDetailsSave}
+        editDetailsData={editDetailsData}
+        setEditDetailsData={setEditDetailsData}
+      />
     </Row>
   );
 };

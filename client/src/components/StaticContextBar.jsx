@@ -46,7 +46,7 @@ const StaticContextBar = ({
   const [saveState, setSaveState] = useState('saved'); // 'saved', 'saving', 'unsaved'
   const saveTimeoutRef = useRef(null);
   const [versionCount, setVersionCount] = useState(4);
-  const [isHovered, setIsHovered] = useState(false);
+
   const [fileDropdownOpen, setFileDropdownOpen] = useState(false);
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const contextBarRef = useRef(null);
@@ -219,36 +219,9 @@ const StaticContextBar = ({
     }
   };
 
-  // Hover intent delay for bar expansion
-  const hoverTimeout = useRef(null);
-  const handleMouseEnter = () => {
-    hoverTimeout.current = setTimeout(() => setIsHovered(true), 150);
-  };
-  const handleMouseLeave = () => {
-    clearTimeout(hoverTimeout.current);
-    setTimeout(() => {
-      if (!fileDropdownOpen && !exportDropdownOpen) {
-        setIsHovered(false);
-      }
-    }, 150);
-  };
+  // No hover effects - context bar is always in expanded state
 
-  // Expanded context bar should show if hovered or dropdowns are open
-  const shouldShowContextBar = isHovered || fileDropdownOpen || exportDropdownOpen;
 
-  const openEditDetailsModal = () => {
-    if (!exam) return;
-    setEditDetailsData({
-      examTitle: exam.examTitle || '',
-      courseCode: exam.courseCode || '',
-      courseName: exam.courseName || '',
-      semester: exam.semester || '',
-      year: exam.year || '',
-      versions: exam.versions || [],
-      teleformOptions: exam.teleformOptions || []
-    });
-    setShowEditDetailsModal(true);
-  };
 
   const handleEditDetailsSave = () => {
     dispatch(updateExamField({ field: 'examTitle', value: editDetailsData.examTitle }));
@@ -358,8 +331,6 @@ const StaticContextBar = ({
         <div
             className="context-bar-wrapper"
             ref={contextBarRef}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
         >
           {/* Context Bar Main */}
           <div className="context-bar-main">
@@ -401,7 +372,6 @@ const StaticContextBar = ({
                     trigger={['click']}
                     onOpenChange={(visible) => {
                       setFileDropdownOpen(visible);
-                      setIsHovered(visible);
                     }}
                     open={fileDropdownOpen}
                     getPopupContainer={() => contextBarRef.current}
@@ -565,7 +535,6 @@ const StaticContextBar = ({
                     trigger={['click']}
                     onOpenChange={(visible) => {
                       setExportDropdownOpen(visible);
-                      setIsHovered(visible);
                     }}
                     open={exportDropdownOpen}
                     getPopupContainer={() => contextBarRef.current}
@@ -591,61 +560,6 @@ const StaticContextBar = ({
                 </Tooltip>
                 <span style={{ fontSize: 12 }}>{autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}</span>
               </div>
-            </div>
-          </div>
-
-          {/* Context Bar Expanded (shown on hover or dropdown open) */}
-          <div className={`context-bar-expanded ${shouldShowContextBar ? 'show' : ''}`}>
-            <div style={{ padding: '24px 0px' }}>
-              {exam ? (
-                  <>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "32px", alignItems: "flex-end" }}>
-                      <div>
-                        <div style={{ marginBottom: 4 }}><strong>Course Code:</strong></div>
-                        <div>{exam?.courseCode || "N/A"}</div>
-                      </div>
-                      <div>
-                        <div style={{ marginBottom: 4 }}><strong>Course Name:</strong></div>
-                        <div>{exam?.courseName || "N/A"}</div>
-                      </div>
-                      <div>
-                        <div style={{ marginBottom: 4 }}><strong>Semester:</strong></div>
-                        <div>{exam?.semester || "N/A"}</div>
-                      </div>
-                      <div>
-                        <div style={{ marginBottom: 4 }}><strong>Year:</strong></div>
-                        <div>{exam?.year || "N/A"}</div>
-                      </div>
-                      {exam?.versions && exam.versions.length > 0 && (
-                          <div>
-                            <div style={{ marginBottom: 4 }}><strong>Versions:</strong></div>
-                            <div className="version-tags">
-                              {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
-                            </div>
-                          </div>
-                      )}
-                      <div>
-                        <Button
-                            type="primary"
-                            onClick={() => {
-                              setTimeout(() => message.info("Editing exam details..."), 0);
-                              openEditDetailsModal();
-                            }}
-                            style={{ marginLeft: 16 }}
-                        >
-                          Edit Exam Details
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-              ) : (
-                  <Alert
-                      message="No exam is currently loaded"
-                      description="Create a new exam or open an existing one to begin editing."
-                      type="error"
-                      showIcon
-                  />
-              )}
             </div>
           </div>
 
