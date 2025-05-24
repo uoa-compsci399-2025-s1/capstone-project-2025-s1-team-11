@@ -5,7 +5,6 @@ const { Paragraph } = Typography;
 import { useSelector } from "react-redux";
 import { selectExamData } from "../store/exam/selectors";
 import AnswerControls from "./AnswerControls";
-import { Typography, theme } from "antd";
 import { htmlToText } from "../utilities/textUtils";
 import { DEFAULT_OPTIONS } from '../constants/answerOptions';
 
@@ -77,12 +76,7 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex, s
             </div>
           ))}
         </div>
-        {/* Example */}
-        {mapping.length > 0 && (
-            <Paragraph style={{ margin: "0 0 4px 0", fontStyle: "italic", fontSize: "0.85rem" }}>
-                Example: Original answer <strong>{letters[0]}</strong> is now in position{" "}
-                <strong>{letters[mapping[0]]}</strong> in the student's exam.
-            </Paragraph>
+        
 
         {/* Map-to Column */}
         <div style={{ display: "flex", flexDirection: "column" }}>
