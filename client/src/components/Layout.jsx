@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Breadcrumb, theme, Typography } from 'antd';
+import { Layout, theme, Typography } from 'antd';
 import { Navigation } from "./navigation.jsx";
 import { Link, useLocation } from 'react-router';
 import logo from '../assets/AssesslyLogoSmall.png';
@@ -44,11 +44,6 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
     backgroundColor: isDarkMode ? '#121212' : '#f0f2f5'
   };
 
-  const breadcrumbStyle = {
-    margin: '16px 0',
-    color: isDarkMode ? '#ffffff' : '#000000'
-  };
-
   const contentContainerStyle = {
     padding: 24,
     minHeight: 380,
@@ -74,17 +69,6 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
           children
         ) : (
           <div style={{margin: '0 auto' }}>
-            <Breadcrumb
-              style={breadcrumbStyle}
-              items={[
-                {
-                  title: <Link to="/">Home</Link>,
-                },
-                {
-                  title: <Link to="/builder">MCQ Builder</Link>,
-                },
-              ]}
-            />
             <div style={contentContainerStyle}>
               {children}
             </div>

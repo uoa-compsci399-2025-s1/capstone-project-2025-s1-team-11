@@ -8,6 +8,8 @@ import ExamSidebar from "../components/ExamSidebar.jsx";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { Typography, Button, Row, Col, Tooltip, Collapse, Divider} from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import EditExamModal from "../components/EditExamModal";
+import { updateExamField } from "../store/exam/examSlice";
 //import { exportExamToPdf } from "../services/exportPdf.js";
 
 const { Title, Paragraph, Text } = Typography;
@@ -18,6 +20,35 @@ const Builder = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const coverPage = useSelector((state) => state.exam.coverPage);
     const dispatch = useDispatch();
+    const [showEditDetailsModal, setShowEditDetailsModal] = useState(false);
+    const [editDetailsData, setEditDetailsData] = useState({
+        examTitle: '',
+        courseCode: '',
+        courseName: '',
+        semester: '',
+        year: ''
+    });
+
+    // Update editDetailsData when exam changes
+    React.useEffect(() => {
+        if (exam) {
+            setEditDetailsData({
+                examTitle: exam.examTitle || '',
+                courseCode: exam.courseCode || '',
+                courseName: exam.courseName || '',
+                semester: exam.semester || '',
+                year: exam.year || ''
+            });
+        }
+    }, [exam]);
+
+    const handleEditDetailsSave = () => {
+        // Update exam fields
+        Object.entries(editDetailsData).forEach(([field, value]) => {
+            dispatch(updateExamField({ field, value }));
+        });
+        setShowEditDetailsModal(false);
+    };
 
     // Function to handle sidebar navigation
     const handleNavigateToItem = (itemId, itemType) => {
@@ -129,11 +160,21 @@ const Builder = () => {
                             onNavigateToItem={handleNavigateToItem}
                             collapsed={false}
                             onToggleCollapse={toggleSidebar}
+                            onEditDetails={() => {
+                                setShowEditDetailsModal(true);
+                            }}
                         />
                     </Col>
                 )}
             </Row>
-        </>
+        <EditExamModal
+            open={showEditDetailsModal}
+            onCancel={() => setShowEditDetailsModal(false)}
+            onOk={handleEditDetailsSave}
+            editDetailsData={editDetailsData}
+            setEditDetailsData={setEditDetailsData}
+        />
+    </>
     );
 };
 

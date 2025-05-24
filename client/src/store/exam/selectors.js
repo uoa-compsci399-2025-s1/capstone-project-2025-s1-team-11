@@ -184,7 +184,7 @@ export const selectCorrectAnswerIndices = createSelector(
 
         // Map the original correct indices through the shuffle map
         const shuffledCorrectIndices = originalCorrectIndices
-          .map(originalIndex => shuffleMap.indexOf(originalIndex))
+          .map(originalIndex => shuffleMap[originalIndex])
           .filter(index => index !== -1)
           .sort((a, b) => a - b);
 

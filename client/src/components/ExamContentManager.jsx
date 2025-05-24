@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { clearExamBody } from "../store/exam/examSlice.js";
 import { useFileSystem } from "../hooks/useFileSystem.js";
-import { Button, Alert, Space, Typography, Modal, Input, message, Card, Select } from "antd";
+import { Button, Alert, Space, Typography, Modal, Input, Card, Select } from "antd";
 import { addQuestion, addSection } from "../store/exam/examSlice.js";
+import useMessage from "../hooks/useMessage.js";
 
 const { Paragraph, Text } = Typography;
 
@@ -12,6 +13,7 @@ const ExamContentManager = () => {
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const { importExam } = useFileSystem();
   const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
+  const message = useMessage();
 
   const dispatch = useDispatch();
 

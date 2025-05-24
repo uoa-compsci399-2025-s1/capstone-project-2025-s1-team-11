@@ -27,6 +27,11 @@ const Root = () => {
   );
 };
 
-createRoot(document.getElementById('root')).render(<Root />);
+// Ensure we only create one root
+const rootElement = document.getElementById('root');
+if (!rootElement._reactRoot) {
+  rootElement._reactRoot = createRoot(rootElement);
+}
+rootElement._reactRoot.render(<Root />);
 
 export default Root;
