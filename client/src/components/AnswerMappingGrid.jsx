@@ -1,6 +1,6 @@
 // src/components/AnswerMappingGrid.jsx
 import React from "react";
-import { Typography } from "antd";
+import { Typography, theme } from "antd";
 const { Paragraph } = Typography;
 import { useSelector } from "react-redux";
 import { selectExamData } from "../store/exam/selectors";
