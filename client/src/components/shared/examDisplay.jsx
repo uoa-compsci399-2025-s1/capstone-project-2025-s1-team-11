@@ -16,6 +16,20 @@ import {
   selectQuestionsAndSectionsForTable
 } from "../../store/exam/selectors";
 import { htmlToText } from "../../utilities/textUtils";
+import { InlineMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
+// Helper to render text with inline LaTeX expressions
+const renderTextWithInlineMath = (text) => {
+  if (!text || typeof text !== 'string') return text;
+  const parts = text.split(/(\$[^$]+\$)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('$') && part.endsWith('$')) {
+      const math = part.slice(1, -1);
+      return <InlineMath key={i}>{math}</InlineMath>;
+    }
+    return <span key={i}>{part}</span>;
+  });
+};
 import CompactRichTextEditor from "../editor/CompactRichTextEditor";
 import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
@@ -400,19 +414,18 @@ const ExamDisplay = () => {
       width: 300,
       render: (_, record) => {
         if (!record?.contentFormatted) return null;
-        
         if (record.type === "section") {
           return (
             <div key={`section-content-${record.id}`}>
               <Typography.Paragraph
                 style={{ margin: 0, maxWidth: 280 }}
-                ellipsis={{ 
+                ellipsis={{
                   rows: 3,
                   expandable: true,
                   symbol: 'more'
                 }}
               >
-                {htmlToText(record.contentFormatted)}
+                {renderTextWithInlineMath(htmlToText(record.contentFormatted))}
               </Typography.Paragraph>
             </div>
           );
@@ -421,13 +434,13 @@ const ExamDisplay = () => {
           <Typography.Paragraph
             key={`question-content-${record.id}`}
             style={{ margin: 0, maxWidth: 280 }}
-            ellipsis={{ 
+            ellipsis={{
               rows: 3,
               expandable: true,
               symbol: 'more'
             }}
           >
-            {htmlToText(record.contentFormatted)}
+            {renderTextWithInlineMath(htmlToText(record.contentFormatted))}
           </Typography.Paragraph>
         );
       },
@@ -438,21 +451,19 @@ const ExamDisplay = () => {
       width: 250,
       render: (_, record) => {
         if (record.type !== "question" || !Array.isArray(record.answers)) return null;
-        
         const options = exam?.teleformOptions || DEFAULT_OPTIONS;
-        
         return (
           <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
             {record.answers.map((answer, i) => (
-              <Typography.Paragraph 
-                key={`${record.id}-answer-${i}`} 
+              <Typography.Paragraph
+                key={`${record.id}-answer-${i}`}
                 ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
-                style={{ 
+                style={{
                   margin: '2px 0',
                   color: answer.correct ? '#52c41a' : 'inherit'
                 }}
               >
-                {options[i]}) {htmlToText(answer.contentFormatted)}
+                {options[i]}) {renderTextWithInlineMath(htmlToText(answer.contentFormatted))}
               </Typography.Paragraph>
             ))}
           </div>
