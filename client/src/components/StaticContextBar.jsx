@@ -436,13 +436,6 @@ const StaticContextBar = ({
                         )}
                       </Tag>
                     </Tooltip>
-                    {fileHandle && (
-                        <Tooltip title="Full file path not available due to browser privacy restrictions.">
-                          <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
-                            File: {fileHandle.name || '[unsaved file]'}{fileHandle.kind ? `` : ""}
-                          </Text>
-                        </Tooltip>
-                    )}
                   </>
               )}
             </div>
