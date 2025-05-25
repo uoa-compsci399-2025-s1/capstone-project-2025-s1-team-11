@@ -136,6 +136,10 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
         </div>
         <List size="small">
           <List.Item>
+          <Text type="secondary"> Exam Title:</Text>
+            <Text style={{ marginLeft: '8px' }}>{exam?.examTitle || "Untitled Exam"}</Text>
+          </List.Item>
+          <List.Item>
             <Text type="secondary">Course Name:</Text>
             <Text style={{ marginLeft: '8px' }}>{exam?.courseName || "N/A"}</Text>
           </List.Item>
