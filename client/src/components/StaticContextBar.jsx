@@ -584,7 +584,16 @@ const StaticContextBar = ({
                       style={{ marginRight: 4 }}
                   />
                 </Tooltip>
-                <span style={{ fontSize: 12 }}>{autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}</span>
+                <span
+                  style={{
+                    fontSize: 12,
+                    display: "inline-block",
+                    width: 90, // fixed width to prevent shift when toggling
+                    textAlign: "left"
+                  }}
+                >
+                  {autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}
+                </span>
               </div>
             </div>
           </div>
