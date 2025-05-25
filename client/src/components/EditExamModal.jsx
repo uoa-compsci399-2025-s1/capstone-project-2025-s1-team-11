@@ -34,21 +34,21 @@ const EditExamModal = ({
             }
           />
         </Form.Item>
-        <Form.Item label="Course Code">
-          <Input
-            placeholder="Course Code"
-            value={editDetailsData.courseCode}
-            onChange={(e) =>
-              setEditDetailsData(prev => ({ ...prev, courseCode: e.target.value }))
-            }
-          />
-        </Form.Item>
         <Form.Item label="Course Name">
           <Input
             placeholder="Course Name"
             value={editDetailsData.courseName}
             onChange={(e) =>
               setEditDetailsData(prev => ({ ...prev, courseName: e.target.value }))
+            }
+          />
+        </Form.Item>
+        <Form.Item label="Course Code">
+          <Input
+            placeholder="Course Code"
+            value={editDetailsData.courseCode}
+            onChange={(e) =>
+              setEditDetailsData(prev => ({ ...prev, courseCode: e.target.value }))
             }
           />
         </Form.Item>
