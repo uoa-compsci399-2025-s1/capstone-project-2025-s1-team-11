@@ -468,10 +468,10 @@ function ExamConsole() {
     
     // Split command into parts for traditional command processing
     const parts = trimmedCommand.split(' ');
-    const mainCommand = parts[0].toLowerCase();
+    const mainCommand = parts[0];
     
     try {
-      switch (mainCommand) {
+      switch (mainCommand.toLowerCase()) {
         case 'help':
           showHelp();
           break;

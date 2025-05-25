@@ -3,21 +3,20 @@ import { theme } from "antd";
 import { useSelector } from "react-redux";
 import { markQuestion } from "../../utilities/marker/examMarker";
 import { selectExamData } from "../../store/exam/selectors";
+import { DEFAULT_OPTIONS } from '../../constants/answerOptions';
 
-const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
-
-function decodeAnswerString(answerString) {
+function decodeAnswerString(answerString, optionsLength) {
   const maxQuestions = Math.floor(answerString.length / 2);
-  const matrix = Array.from({ length: 5 }, () => []);
+  const matrix = Array.from({ length: optionsLength }, () => []);
 
   for (let i = 0; i < maxQuestions; i++) {
     const start = i * 2;
     const chunk = answerString.substring(start, start + 2);
     const decimalValue = parseInt(chunk, 10) || 0;
-    const binary = decimalValue.toString(2).padStart(5, '0');
+    const binary = decimalValue.toString(2).padStart(optionsLength, '0');
 
-    for (let j = 0; j < 5; j++) {
-      matrix[j].push(binary[4 - j] === '1'); // bit 0 = A, bit 4 = E
+    for (let j = 0; j < optionsLength; j++) {
+      matrix[j].push(binary[optionsLength - 1 - j] === '1'); // bit 0 = A, bit n-1 = last option
     }
   }
 
@@ -28,12 +27,13 @@ const AnswerGrid = ({ answerString = '', answerKeyString = '' }) => {
   const { token } = theme.useToken();
   const examData = useSelector(selectExamData);
   const options = examData?.teleformOptions || DEFAULT_OPTIONS;
+  const optionsLength = options.length;
   
   //console.log('TeleformOptions from exam:', examData?.teleformOptions);
   //console.log('Options being used in grid:', options);
 
-  const selectedMatrix = decodeAnswerString(answerString);
-  const correctMatrix = answerKeyString ? decodeAnswerString(answerKeyString) : null;
+  const selectedMatrix = decodeAnswerString(answerString, optionsLength);
+  const correctMatrix = answerKeyString ? decodeAnswerString(answerKeyString, optionsLength) : null;
   const maxQuestions = selectedMatrix[0]?.length || correctMatrix?.[0]?.length || 0;
 
   return (

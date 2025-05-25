@@ -7,6 +7,9 @@ import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors"
 import MapDisplay from "../components/mapDisplay";
 import ExamSidebar from "../components/ExamSidebar";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
+import { htmlToText } from "../utilities/textUtils.js";
+import EditExamModal from "../components/EditExamModal";
+import { updateExamField } from "../store/exam/examSlice";
 
 const { Title, Text } = Typography;
 
@@ -16,6 +19,14 @@ const Randomiser = () => {
   const questions = useSelector(selectAllQuestionsFlat);
   const { token } = theme.useToken();
   const [currentItemId, setCurrentItemId] = useState(null);
+  const [showEditDetailsModal, setShowEditDetailsModal] = useState(false);
+  const [editDetailsData, setEditDetailsData] = useState({
+    examTitle: '',
+    courseCode: '',
+    courseName: '',
+    semester: '',
+    year: ''
+  });
 
   const [selectedVersion, setSelectedVersion] = useState(exam?.versions?.[0] || '');
   const [showRaw, setShowRaw] = useState(false);
@@ -30,6 +41,27 @@ const Randomiser = () => {
   useEffect(() => {
     setPagination(prev => ({ ...prev, current: 1 }));
   }, [selectedSection]);
+
+  // Update editDetailsData when exam changes
+  useEffect(() => {
+    if (exam) {
+      setEditDetailsData({
+        examTitle: exam.examTitle || '',
+        courseCode: exam.courseCode || '',
+        courseName: exam.courseName || '',
+        semester: exam.semester || '',
+        year: exam.year || ''
+      });
+    }
+  }, [exam]);
+
+  const handleEditDetailsSave = () => {
+    // Update exam fields
+    Object.entries(editDetailsData).forEach(([field, value]) => {
+      dispatch(updateExamField({ field, value }));
+    });
+    setShowEditDetailsModal(false);
+  };
 
   // function to handle shuffling answers for all questions
   const handleShuffleAnswers = () => {
@@ -70,6 +102,25 @@ const Randomiser = () => {
     (current - 1) * pageSize,
     current * pageSize
   );
+
+  // Helper function to find question location in exam body
+  const findQuestionLocation = (questionId) => {
+    if (!exam?.examBody) return {};
+    
+    for (let examBodyIndex = 0; examBodyIndex < exam.examBody.length; examBodyIndex++) {
+      const item = exam.examBody[examBodyIndex];
+      if (item.type === 'section') {
+        for (let questionsIndex = 0; questionsIndex < item.questions.length; questionsIndex++) {
+          if (item.questions[questionsIndex].id === questionId) {
+            return { examBodyIndex, questionsIndex };
+          }
+        }
+      } else if (item.type === 'question' && item.id === questionId) {
+        return { examBodyIndex };
+      }
+    }
+    return {};
+  };
 
   return (
     <Row gutter={24}>
@@ -248,6 +299,7 @@ const Randomiser = () => {
                     `${options[idx]} → ${options[pos]}`
                   ).join(", ");
                   const rawMap = mapping.join(", ");
+                  const location = findQuestionLocation(question.id);
 
                   return (
                     <Card
@@ -258,33 +310,18 @@ const Randomiser = () => {
                     >
                       {showQuestion && (
                         <Text style={{ display: "block", marginBottom: 8 }}>
-                          {question.contentText}
+                          {htmlToText(question.contentFormatted)}
                         </Text>
                       )}
-                      {showAnswers && question.answers?.length > 0 && mapping && (
-                        <div style={{ marginBottom: 8 }}>
-                          <ul style={{ paddingLeft: "1.5em", marginBottom: 0 }}>
-                            {mapping.map((shuffledIndex, originalIndex) => {
-                              const answer = question.answers?.[shuffledIndex];
-                              if (!answer?.contentText) return null;
-                              return (
-                                <li key={originalIndex}>
-                                  <Text>
-                                    {String.fromCharCode(65 + originalIndex)}. {answer.contentText}
-                                  </Text>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </div>
-                      )}
-
                       {displayMode === "visual" ? (
                         <MapDisplay
                           question={question}
                           selectedVersion={selectedVersion}
                           exam={exam}
                           displayStyle={visualStyle}
+                          examBodyIndex={location.examBodyIndex}
+                          questionsIndex={location.questionsIndex}
+                          showAnswers={showAnswers}
                         />
                       ) : (
                         <Text>
@@ -313,8 +350,18 @@ const Randomiser = () => {
           exam={exam} 
           currentItemId={currentItemId}
           onNavigateToItem={handleNavigateToItem}
+          onEditDetails={() => {
+            setShowEditDetailsModal(true);
+          }}
         />
       </Col>
+      <EditExamModal
+        open={showEditDetailsModal}
+        onCancel={() => setShowEditDetailsModal(false)}
+        onOk={handleEditDetailsSave}
+        editDetailsData={editDetailsData}
+        setEditDetailsData={setEditDetailsData}
+      />
     </Row>
   );
 };
