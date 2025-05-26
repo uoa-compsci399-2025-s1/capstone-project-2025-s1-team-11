@@ -3,7 +3,7 @@ import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip, Tag 
 import { ProfileOutlined, FileTextOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { htmlToText } from '../utilities/textUtils';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) => {
   if (!exam || !exam.examBody || !Array.isArray(exam.examBody)) {
@@ -133,27 +133,37 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
         </div>
         <List size="small">
           <List.Item>
-            <Text type="secondary">Course Code:</Text>
-            <Text style={{ marginLeft: '8px' }}>{exam?.courseCode || "N/A"}</Text>
+            <Paragraph style={{ margin: 0 }}>
+              <Text type="secondary">Course Code:</Text>{' '}
+              <Text>{exam?.courseCode || "N/A"}</Text>
+            </Paragraph>
           </List.Item>
           <List.Item>
-            <Text type="secondary">Course Name:</Text>
-            <Text style={{ marginLeft: '8px' }}>{exam?.courseName || "N/A"}</Text>
+            <Paragraph style={{ margin: 0 }}>
+              <Text type="secondary">Course Name:</Text>{' '}
+              <Text>{exam?.courseName || "N/A"}</Text>
+            </Paragraph>
           </List.Item>
           <List.Item>
-            <Text type="secondary">Semester:</Text>
-            <Text style={{ marginLeft: '8px' }}>{exam?.semester || "N/A"}</Text>
+            <Paragraph style={{ margin: 0 }}>
+              <Text type="secondary">Semester:</Text>{' '}
+              <Text>{exam?.semester || "N/A"}</Text>
+            </Paragraph>
           </List.Item>
           <List.Item>
-            <Text type="secondary">Year:</Text>
-            <Text style={{ marginLeft: '8px' }}>{exam?.year || "N/A"}</Text>
+            <Paragraph style={{ margin: 0 }}>
+              <Text type="secondary">Year:</Text>{' '}
+              <Text>{exam?.year || "N/A"}</Text>
+            </Paragraph>
           </List.Item>
           {exam?.versions && exam.versions.length > 0 && (
             <List.Item>
-              <Text type="secondary">Versions:</Text>
-              <div className="version-tags" style={{ marginLeft: '8px' }}>
-                {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
-              </div>
+              <Paragraph style={{ margin: 0 }}>
+                <Text type="secondary">Versions:</Text>{' '}
+                <span className="version-tags" style={{ marginLeft: 8 }}>
+                  {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
+                </span>
+              </Paragraph>
             </List.Item>
           )}
         </List>
@@ -162,12 +172,12 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
       <Divider style={{ margin: '12px 0' }} />
 
       <div style={{ marginBottom: '8px' }}>
-        <Title level={4} style={{ margin: 0 }}>Exam Overview</Title>
+        <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Exam Overview</Paragraph>
       </div>
       <Divider style={{ margin: '12px 0' }} />
 
       <div className="exam-stats">
-        <Title level={5}>Statistics</Title>
+        <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Statistics</Paragraph>
         <List size="small">
           <List.Item>
             <Badge color="blue" text={`${stats.totalSections} Sections`} />
@@ -183,7 +193,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
 
       <Divider style={{ margin: '12px 0' }} />
 
-      <Title level={5}>Structure</Title>
+      <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Structure</Paragraph>
       <Collapse defaultActiveKey={['0']} ghost items={collapseItems} />
 
       {/* Standalone questions (not in a section) */}
@@ -208,7 +218,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
       <Divider style={{ margin: '12px 0' }} />
 
       <div className="section-distribution">
-        <Title level={5}>Questions by Section</Title>
+        <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Questions by Section</Paragraph>
         <List
           size="small"
           dataSource={stats.questionsPerSection}

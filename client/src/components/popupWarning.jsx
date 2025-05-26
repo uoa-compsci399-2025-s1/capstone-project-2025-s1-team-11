@@ -1,7 +1,8 @@
 // Popup warning component, chromium browsers only!ye
 
 import React from 'react';
-import { Modal, Button } from 'antd';
+import { Modal, Button, Typography } from 'antd';
+const { Paragraph } = Typography;
 
 const PopupWarning = ({ visible, onClose }) => {
   return (
@@ -16,7 +17,9 @@ const PopupWarning = ({ visible, onClose }) => {
       ]}
       centered
     >
-      <p>This web application only works properly in Chromium-based browsers, such as Chrome and Edge.</p>
+      <Paragraph>
+        This web application only works properly in Chromium-based browsers, such as Chrome and Edge.
+      </Paragraph>
     </Modal>
   );
 };

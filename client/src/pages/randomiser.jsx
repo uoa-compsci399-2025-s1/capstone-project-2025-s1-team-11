@@ -1,7 +1,7 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Row, Col} from "antd";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Row, Col, Divider} from "antd";
 import { regenerateShuffleMaps } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/mapDisplay";
@@ -11,7 +11,7 @@ import { htmlToText } from "../utilities/textUtils.js";
 import EditExamModal from "../components/EditExamModal";
 import { updateExamField } from "../store/exam/examSlice";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const Randomiser = () => {
   const dispatch = useDispatch();
@@ -123,11 +123,11 @@ const Randomiser = () => {
   };
 
   return (
+    <>
+      <Typography.Title level={1}>MCQ Randomiser</Typography.Title>
+      <Divider />
     <Row gutter={24}>
       <Col xs={24} lg={18}>
-        <div style={{ padding: "20px" }}>
-          <Title level={2}>Answer Randomiser</Title>
-
           <Card style={{ marginBottom: "20px" }}>
             <Space direction="vertical" size="middle" style={{ width: "100%" }}>
               <Text>
@@ -143,8 +143,8 @@ const Randomiser = () => {
                 borderRadius: "6px",
                 borderLeft: `4px solid ${token.colorPrimary}`
               }}>
-                <div style={{ marginBottom: "8px", fontWeight: "bold" }}>How to read this grid:</div>
-                <p style={{ margin: "0 0 4px 0" }}>
+                <Text strong>How to read this grid:</Text>
+                <Paragraph style={{ marginBottom: 4 }}>
                   <span style={{
                     backgroundColor: token.colorInfoBg,
                     padding: "2px 4px",
@@ -152,8 +152,8 @@ const Randomiser = () => {
                   }}>
                     Row
                   </span> = Original answer position in template. (A, B, C...)
-                </p>
-                <p style={{ margin: "0 0 4px 0" }}>
+                </Paragraph>
+                <Paragraph style={{ marginBottom: 4 }}>
                   <span style={{
                     backgroundColor: token.colorSuccessBg,
                     padding: "2px 4px",
@@ -161,8 +161,8 @@ const Randomiser = () => {
                   }}>
                     Column
                   </span> = Randomised position in student's exam. (A, B, C...)
-                </p>
-                <p style={{ margin: "0 0 8px 0" }}>
+                </Paragraph>
+                <Paragraph style={{ marginBottom: 8 }}>
                   <span style={{
                     backgroundColor: token.colorPrimary,
                     color: token.colorTextLightSolid,
@@ -171,7 +171,7 @@ const Randomiser = () => {
                   }}>
                     Blue checkmarks
                   </span> show where each original answer appears in the randomised exam.
-                </p>
+                </Paragraph>
               </div>
 
               <div style={{
@@ -188,7 +188,7 @@ const Randomiser = () => {
                 }}>
                   <strong>Original Position</strong>
                 </div>
-                <div style={{ fontSize: "1rem" }}>→</div>
+                <Text style={{ fontSize: "1rem" }}>→</Text>
                 <div style={{
                   padding: "4px 8px",
                   backgroundColor: token.colorSuccessBg,
@@ -343,7 +343,7 @@ const Randomiser = () => {
               />
             </Spin>
           </Card>
-        </div>
+
       </Col>
       <Col xs={24} lg={6}>
         <ExamSidebar 
@@ -362,7 +362,8 @@ const Randomiser = () => {
         editDetailsData={editDetailsData}
         setEditDetailsData={setEditDetailsData}
       />
-    </Row>
+      </Row>
+      </>
   );
 };
 

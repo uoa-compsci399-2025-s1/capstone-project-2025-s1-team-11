@@ -1,13 +1,13 @@
 // src/components/AnswerMappingGrid.jsx
 import React from "react";
+import { Typography, theme } from "antd";
 import { useSelector } from "react-redux";
 import { selectExamData } from "../store/exam/selectors";
 import AnswerControls from "./AnswerControls";
-import { Typography, theme } from "antd";
 import { htmlToText } from "../utilities/textUtils";
 import { DEFAULT_OPTIONS } from '../constants/answerOptions';
 
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex, showAnswers }) => {
   const examData = useSelector(selectExamData);
@@ -75,6 +75,7 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex, s
             </div>
           ))}
         </div>
+        
 
         {/* Map-to Column */}
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -166,9 +167,9 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex, s
       </div>
 
       {/* Example text */}
-      <div style={{ marginTop: "12px", fontStyle: "italic", fontSize: "0.85rem" }}>
-        <Text>Example: Original answer <strong>{letters[0]}</strong> is now in position <strong>{letters[mapping[0]]}</strong> in the student's exam.</Text>
-      </div>
+      <Paragraph type="secondary" italic style={{ marginTop: 12, fontSize: "0.85rem" }}>
+        Example: Original answer <strong>{letters[0]}</strong> is now in position <strong>{letters[mapping[0]]}</strong> in the student's exam.
+      </Paragraph>
     </div>
   );
 };
