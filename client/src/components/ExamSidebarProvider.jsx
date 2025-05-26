@@ -35,7 +35,7 @@ const ExamSidebarProvider = ({ children }) => {
     }
   }, [exam]);
 
-  const handleNavigateToItem = useCallback((itemId, itemType) => {
+  const handleNavigateToItem = useCallback((itemId) => {
     setCurrentItemId(itemId);
   }, []);
 

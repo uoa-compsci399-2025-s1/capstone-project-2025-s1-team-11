@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setCoverPage } from "../store/exam/examSlice";
 import { selectExamData } from "../store/exam/selectors.js";
@@ -6,7 +6,6 @@ import ExamDisplay from "../components/shared/examDisplay.jsx";
 import ExamFileManager from "../components/ExamContentManager.jsx";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { Typography, Button, Collapse, Divider} from "antd";
-import { updateExamField } from "../store/exam/examSlice";
 //import { exportExamToPdf } from "../services/exportPdf.js";
 
 const { Title, Paragraph, Text } = Typography;
