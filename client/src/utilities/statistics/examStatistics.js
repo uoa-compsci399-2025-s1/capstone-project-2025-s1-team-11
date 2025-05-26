@@ -9,12 +9,10 @@ import { selectTotalMarks } from '../../store/exam/selectors.js';
 /**
  * Calculates statistics from marked exam results
  * @param {Array} markedResults - Array of marked student results
+ * @param {number} totalExamMarks - Total available marks for the exam
  * @returns {Object} Statistics including summary and per-question stats
  */
-export function calculateStatistics(markedResults) {
-  // Get total available marks from the exam
-  const totalExamMarks = selectTotalMarks(store.getState());
-
+export function calculateStatistics(markedResults, totalExamMarks) {
   const results = {
     summary: {
       totalStudents: 0,

@@ -40,16 +40,16 @@ describe('Marking Key Import Service', () => {
   
   describe('createShuffleMapFromSequence', () => {
     test('should convert option sequence to shuffle map correctly', () => {
-      // Input: "10423" - means 0 is at position 1, 1 is at position 0, etc.
-      // Output: [1,0,4,2,3] - means original 0 goes to position 1, original 1 goes to position 0, etc.
+      // Input: "10423" - means position 0 contains 1, position 1 contains 0, etc.
+      // Output: [1,0,3,4,2] - means position 0 contains 1, position 1 contains 0, etc.
       const result = createShuffleMapFromSequence('10423');
       
-      expect(result).toEqual([1, 0, 4, 2, 3]);
+      expect(result).toEqual([1, 0, 3, 4, 2]);
     });
     
     test('should handle different sequence lengths', () => {
       const result1 = createShuffleMapFromSequence('012');
-      const result2 = createShuffleMapFromSequence('1234');
+      const result2 = createShuffleMapFromSequence('01234');
       
       expect(result1).toEqual([0, 1, 2]);
       expect(result2).toEqual([0, 1, 2, 3, 4]);

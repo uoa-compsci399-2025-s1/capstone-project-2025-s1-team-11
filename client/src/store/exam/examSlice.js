@@ -419,12 +419,14 @@ const examSlice = createSlice({
             
             // Set correct answers for the first version (original)
             if (versionIndex === 0) {
-              // Map the correct indices back through the shuffle map to find original correct answers
+              // The shuffle map represents map[originalIndex] = newIndex
+              // So if position 1 is correct, we need to find which original index maps to position 1
               mappingData.correctAnswerIndices.forEach(correctIndex => {
                 // Find which original answer maps to this correct position
-                const originalIndex = mappingData.shuffleMap.findIndex(idx => idx === correctIndex);
-                if (originalIndex !== -1 && originalIndex < question.answers.length) {
-                  question.answers[originalIndex].correct = true;
+                for (let i = 0; i < mappingData.shuffleMap.length; i++) {
+                  if (mappingData.shuffleMap[i] === correctIndex) {
+                    question.answers[i].correct = true;
+                  }
                 }
               });
             }
