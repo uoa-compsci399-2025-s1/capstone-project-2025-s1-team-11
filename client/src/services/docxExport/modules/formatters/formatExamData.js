@@ -62,7 +62,7 @@ export function formatExamDataForTemplate(examData, version = 1) {
                     item.questions || [],
                     versionToUse,
                     examData.versions,
-                    examData.teleformOptions                    
+                    examData.teleformOptions
                 );
 
                 // Process section content
