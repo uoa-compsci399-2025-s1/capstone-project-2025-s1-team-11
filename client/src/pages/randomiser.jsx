@@ -1,12 +1,13 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider} from "antd";
-import { regenerateShuffleMaps } from "../store/exam/examSlice";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider, message } from "antd";
+import { regenerateShuffleMaps, importMarkingKey } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/mapDisplay";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { htmlToText } from "../utilities/textUtils.js";
+import { importMarkingKeyFile, processMarkingKeyFile } from "../services/markingKeyImportService";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -19,6 +20,7 @@ const Randomiser = () => {
   const [selectedVersion, setSelectedVersion] = useState(exam?.versions?.[0] || '');
   const [showRaw, setShowRaw] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
+  const [isImportingKey, setIsImportingKey] = useState(false);
   const [selectedSection, setSelectedSection] = useState("All");
   const [showQuestion, setShowQuestion] = useState(true);
   const [showAnswers, setShowAnswers] = useState(true);
@@ -44,7 +46,38 @@ const Randomiser = () => {
     }, 600);
   };
 
+  // New function to handle importing marking key
+  const handleImportMarkingKey = async () => {
+    if (!exam) {
+      message.error("No exam data available to import marking key.");
+      return;
+    }
 
+    setIsImportingKey(true);
+    try {
+      // Show file picker
+      const file = await importMarkingKeyFile();
+      
+      if (!file) {
+        message.info("Marking key import cancelled.");
+        setIsImportingKey(false);
+        return;
+      }
+      
+      // Process the file
+      const markingKeyData = await processMarkingKeyFile(file);
+      
+      // Update the exam with the marking key data
+      dispatch(importMarkingKey(markingKeyData));
+      
+      message.success("Marking key imported successfully.");
+    } catch (error) {
+      console.error("Error importing marking key:", error);
+      message.error(`Failed to import marking key: ${error.message}`);
+    } finally {
+      setIsImportingKey(false);
+    }
+  };
 
   // calculate paginated questions
   const filteredQuestions = questions.filter(q =>
@@ -157,13 +190,32 @@ const Randomiser = () => {
               )}
             </Space>
 
-            <div style={{ marginTop: "16px" }}>
+            <div style={{ 
+              marginTop: "16px", 
+              display: "flex", 
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
               <Button
                 type="primary"
                 onClick={handleShuffleAnswers}
+                loading={isShuffling}
                 disabled={!exam}
               >
                 Shuffle All Answers
+              </Button>
+              
+              <Button
+                type="default"
+                onClick={handleImportMarkingKey}
+                loading={isImportingKey}
+                disabled={!exam}
+                style={{
+                  borderColor: token.colorPrimary,
+                  color: token.colorPrimary
+                }}
+              >
+                Import Marking Key
               </Button>
             </div>
           </Card>

@@ -376,6 +376,76 @@ const examSlice = createSlice({
     setFileName: (state, action) => {
       state.fileName = action.payload;
     },
+    importMarkingKey: (state, action) => {
+      if (!state.examData) return;
+      
+      const { versions, questionMappings, markWeights } = action.payload;
+      
+      // Update exam versions if needed
+      if (versions && versions.length > 0) {
+        state.examData.versions = versions;
+      }
+      
+      // Go through each question in the exam and update based on marking key
+      const examBody = state.examData.examBody;
+      if (!examBody) return;
+      
+      // Helper function to update a question
+      const updateQuestionWithMarkingKey = (question, questionNumber) => {
+        // Skip if no mapping for this question
+        if (!questionMappings[questionNumber]) return;
+        
+        // Update marks if available
+        if (markWeights[questionNumber]) {
+          question.marks = markWeights[questionNumber];
+        }
+        
+        // Update shuffle maps and correct answers for each version
+        const answerShuffleMaps = [];
+        const versionCount = versions.length;
+        
+        // Initialize all answers as incorrect
+        question.answers.forEach(answer => {
+          answer.correct = false;
+        });
+        
+        // For each version, create a shuffle map
+        for (let versionIndex = 0; versionIndex < versionCount; versionIndex++) {
+          const versionId = versions[versionIndex];
+          const mappingData = questionMappings[questionNumber][versionId];
+          
+          if (mappingData) {
+            answerShuffleMaps[versionIndex] = mappingData.shuffleMap;
+            
+            // Set correct answers for the first version (original)
+            if (versionIndex === 0) {
+              // Map the correct indices back through the shuffle map to find original correct answers
+              mappingData.correctAnswerIndices.forEach(correctIndex => {
+                // Find which original answer maps to this correct position
+                const originalIndex = mappingData.shuffleMap.findIndex(idx => idx === correctIndex);
+                if (originalIndex !== -1 && originalIndex < question.answers.length) {
+                  question.answers[originalIndex].correct = true;
+                }
+              });
+            }
+          }
+        }
+        
+        // Update the shuffle maps
+        question.answerShuffleMaps = answerShuffleMaps;
+      };
+      
+      // Process each item in exam body
+      examBody.forEach(item => {
+        if (item.type === 'question') {
+          updateQuestionWithMarkingKey(item, item.questionNumber.toString());
+        } else if (item.type === 'section' && item.questions) {
+          item.questions.forEach(question => {
+            updateQuestionWithMarkingKey(question, question.questionNumber.toString());
+          });
+        }
+      });
+    },
   }
 });
 
@@ -405,7 +475,8 @@ export const {
   importExamSuccess,
   importExamFailure,  
   addExamMessage,
-  setFileName
+  setFileName,
+  importMarkingKey
 } = examSlice.actions;
 
 // Export reducer
