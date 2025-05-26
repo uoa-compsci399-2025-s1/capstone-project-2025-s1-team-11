@@ -61,7 +61,8 @@ export function formatExamDataForTemplate(examData, version = 1) {
                 const sectionQuestions = formatQuestionsWithVersion(
                     item.questions || [],
                     versionToUse,
-                    examData.versions
+                    examData.versions,
+                    examData.teleformOptions
                 );
 
                 // Process section content
