@@ -1,6 +1,5 @@
 import { markExams } from '../examMarker';
 import TestExam from './Test.json';
-import { selectQuestionByNumber } from '../../../store/exam/selectors';
 
 // Mock the store module with a factory that doesn't reference external variables
 jest.mock('../../../store/store.js', () => ({

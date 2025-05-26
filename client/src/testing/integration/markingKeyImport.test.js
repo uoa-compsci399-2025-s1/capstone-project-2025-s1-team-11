@@ -2,7 +2,6 @@ import { configureStore } from '@reduxjs/toolkit';
 import examReducer, { initialiseExamState, addQuestion, importMarkingKey } from '../../store/exam/examSlice';
 import { selectExamData, selectAllQuestionsFlat, selectCorrectAnswerIndices } from '../../store/exam/selectors';
 import fs from 'fs';
-import path from 'path';
 import { parseMarkingKeyCSV, processMarkingKeyFile } from '../../services/markingKeyImportService';
 
 // Mock file system for tests
@@ -171,7 +170,7 @@ describe('Marking Key Import Integration', () => {
   
   test('should handle real marking key sample data', async () => {
     // Use fs.readFileSync to read the sample file (mocked)
-    const samplePath = path.join('client', 'src', 'testing', 'data', 'marking_key_sample_111.csv');
+    //const samplePath = path.join('client', 'src', 'testing', 'data', 'marking_key_sample_111.csv');
     const sampleCSV = `VersionID,QuestionID,MarkWeight,OptionSequences,Answer
 1,1,2.5,10423,2
 1,2,2.5,03412,1

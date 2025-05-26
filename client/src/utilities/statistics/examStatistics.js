@@ -1,6 +1,3 @@
-import { store } from '../../store/store.js';
-import { selectTotalMarks } from '../../store/exam/selectors.js';
-
 /**
  * Exam Statistics Utility
  * Handles calculation of exam statistics and metrics

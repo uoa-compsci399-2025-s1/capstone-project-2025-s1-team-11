@@ -94,8 +94,6 @@ function markStudentExam(firstName, lastName, versionId, answerString, markingKe
     throw new Error(`Marking key for version ${versionId} not found.`);
   }
 
-  const examBody = Array.isArray(examData?.examBody) ? examData.examBody : [];
-
   const studentResult = {
     firstName,
     lastName,

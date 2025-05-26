@@ -212,7 +212,7 @@ const ExamDisplay = () => {
   }, [dispatch, exam]);
 
   // Reset modal state helper
-  const resetModalState = () => {
+  const resetModalState = useCallback(() => {
     setModalState({
       visible: false,
       type: "", 
@@ -221,7 +221,7 @@ const ExamDisplay = () => {
       questionsIndex: null,
       isDelete: false,
     });
-  };
+  }, []);
 
   // Edit item handler
   const handleEdit = useCallback((item) => {
@@ -251,10 +251,10 @@ const ExamDisplay = () => {
       questionsIndex: item.questionsIndex,
       isDelete: false,
     });
-  }, [exam]);
+  }, [exam, message]);
 
   // Save edited item
-  const handleSaveEdit = () => {
+  const handleSaveEdit = useCallback(() => {
     const { type, examBodyIndex, questionsIndex } = modalState;
     
     // Use the currentEditorState which has been kept in sync with the editor
@@ -284,7 +284,7 @@ const ExamDisplay = () => {
 
     message.success("Saved changes");
     resetModalState();
-  };
+  }, [currentEditorState, dispatch, modalState, resetModalState, message]);
 
   // Confirm delete item
   const confirmDeleteItem = (examBodyIndex, questionsIndex = null) => {
