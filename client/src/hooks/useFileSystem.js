@@ -6,7 +6,7 @@
  */
 
 import { useDispatch, useSelector } from 'react-redux';
-import {initialiseExamState, clearExamState} from '../store/exam/examSlice';
+import {initialiseExamState, clearExamState, setFileName} from '../store/exam/examSlice';
 import { selectExamData } from '../store/exam/selectors';
 import { loadExamFromFile, saveExamToDisk } from '../services/fileSystemAccess.js';
 import examImportService  from '../services/examImportService.js';
@@ -25,6 +25,7 @@ export function useFileSystem() {
       if (result) {
         dispatch(initialiseExamState(result.exam));
         setFileHandle(result.fileHandle);
+        dispatch(setFileName(result.fileHandle?.name || null));
       }
       return result;
     };
@@ -32,6 +33,7 @@ export function useFileSystem() {
     const createExam = async (exam) => {
         dispatch(initialiseExamState(exam));
         setFileHandle(null);
+        dispatch(setFileName(null));
     };
 
     // Saves the exam and updates the file handle in the global state
@@ -40,6 +42,7 @@ export function useFileSystem() {
           const updatedHandle = await saveExamToDisk(exam, fileHandle);
           if (updatedHandle) {
               setFileHandle(updatedHandle);
+              dispatch(setFileName(updatedHandle?.name || null));
           }
           return updatedHandle;
     };
@@ -65,6 +68,7 @@ export function useFileSystem() {
             // Update the application state with the DTO
             dispatch(importDTOToState(examDTO));
             setFileHandle(null); // reset file handle, this wasn't opened from disk
+            dispatch(setFileName(null));
             
             return true;
         } catch (error) {
@@ -94,6 +98,7 @@ export function useFileSystem() {
       const closeExam = () => {
         dispatch(clearExamState());
         setFileHandle(null);
+        dispatch(setFileName(null));
       };
 
     return { 

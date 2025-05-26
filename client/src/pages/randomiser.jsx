@@ -26,6 +26,7 @@ const Randomiser = () => {
   const [visualStyle, setVisualStyle] = useState("grid");
 
   const [pagination, setPagination] = useState({current: 1, pageSize: 10, });
+
   useEffect(() => {
     setPagination(prev => ({ ...prev, current: 1 }));
   }, [selectedSection]);

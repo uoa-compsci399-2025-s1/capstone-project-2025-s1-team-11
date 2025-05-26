@@ -31,18 +31,18 @@ const CreateExamModal = ({
             onChange={(e) => setNewExamData({ ...newExamData, examTitle: e.target.value })}
           />
         </Form.Item>
-        <Form.Item label="Course Code">
-          <Input
-            placeholder="Course Code"
-            value={newExamData.courseCode}
-            onChange={(e) => setNewExamData({ ...newExamData, courseCode: e.target.value })}
-          />
-        </Form.Item>
         <Form.Item label="Course Name">
           <Input
             placeholder="Course Name"
             value={newExamData.courseName}
             onChange={(e) => setNewExamData({ ...newExamData, courseName: e.target.value })}
+          />
+        </Form.Item>
+        <Form.Item label="Course Code">
+          <Input
+            placeholder="Course Code"
+            value={newExamData.courseCode}
+            onChange={(e) => setNewExamData({ ...newExamData, courseCode: e.target.value })}
           />
         </Form.Item>
 
