@@ -7,9 +7,10 @@ import { parseHtmlContent } from '../contentProcessors/htmlParser.js';
  * Formats exam data from Redux store format to Docxtemplater template format
  * @param {Object} examData - Exam data from Redux store
  * @param {string|number} version - Version number to include in the export
+ * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Object} - Formatted data ready for Docxtemplater
  */
-export function formatExamDataForTemplate(examData, version = 1) {
+export function formatExamDataForTemplate(examData, version = 1, mathRegistry = null) {
     if (!examData) {
         return {};
     }
@@ -61,11 +62,12 @@ export function formatExamDataForTemplate(examData, version = 1) {
                 const sectionQuestions = formatQuestionsWithVersion(
                     item.questions || [],
                     versionToUse,
-                    examData.versions
+                    examData.versions,
+                    mathRegistry
                 );
 
                 // Process section content
-                const sectionContent = processContent(item.contentFormatted || item.contentText || '');
+                const sectionContent = processContent(item.contentFormatted || item.contentText || '', mathRegistry);
 
                 const section = {
                     isSection: true,
@@ -80,7 +82,7 @@ export function formatExamDataForTemplate(examData, version = 1) {
                 formattedExamBody.push(section);
             } else if (item.type === 'question') {
                 // Process standalone question with version-specific answer ordering
-                const formattedQuestion = formatQuestionWithVersion(item, versionToUse, examData.versions);
+                const formattedQuestion = formatQuestionWithVersion(item, versionToUse, examData.versions, mathRegistry);
                 const questionItem = {
                     isSection: false,
                     isQuestion: true,
@@ -106,22 +108,77 @@ export function formatExamDataForTemplate(examData, version = 1) {
 }
 
 /**
+ * Resolve math placeholders with content from math registry
+ * @param {string} content - Content with math placeholders
+ * @param {Object} mathRegistry - Math registry
+ * @returns {string} - Content with resolved math
+ */
+function resolveMathPlaceholders(content, mathRegistry) {
+    console.log('=== RESOLVE MATH PLACEHOLDERS ===');
+    console.log('Input content:', content);
+    console.log('Math registry keys:', Object.keys(mathRegistry));
+    console.log('Content contains [math:', content.includes('[math:'));
+
+
+
+    if (!mathRegistry || Object.keys(mathRegistry).length === 0) {
+        console.log('No math registry, returning original content');
+        console.log('=== END RESOLVE MATH PLACEHOLDERS ===');
+        return content;
+    }
+
+    const result = content.replace(/\[math:([^\]]+)\]/g, (match, mathId) => {
+        console.log(`Processing math placeholder: ${match}, mathId: ${mathId}`);
+        const mathEntry = mathRegistry[mathId];
+        if (mathEntry) {
+            console.log('Math entry originalXml length:', mathEntry.originalXml.length);
+            console.log('Math entry originalXml preview:', mathEntry.originalXml.substring(0, 100));
+
+            const escapedXml = mathEntry.originalXml
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            const replacement = mathEntry.context === 'block'
+                ? `§MATH_OMML§${escapedXml}§/MATH_OMML§`
+                : `§MATH_OMML§${escapedXml}§/MATH_OMML§`;
+
+            console.log('Replacement preview:', replacement.substring(0, 100));
+            return replacement;
+        }
+        console.log(`Math entry not found for ID: ${mathId}`);
+        return match; // Keep original if not found
+    });
+
+    console.log('Output content:', result);
+    console.log('=== END RESOLVE MATH PLACEHOLDERS ===');
+    return result;
+}
+
+/**
  * Process content that may contain HTML formatting
  * @param {string} content - Content string (HTML or plain text)
+ * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Object} - Processed content with text and elements
  */
-function processContent(content) {
+function processContent(content, mathRegistry = {}) {
     if (!content) {
         return { text: '', elements: [] };
     }
 
+    // Resolve math placeholders BEFORE HTML processing
+    let processedContent = content;
+    if (mathRegistry && Object.keys(mathRegistry).length > 0) {
+        processedContent = resolveMathPlaceholders(content, mathRegistry);
+    }
+
     // Check if content contains HTML tags
-    if (/<[^>]+>/.test(content)) {
-        return parseHtmlContent(content);
+    if (/<[^>]+>/.test(processedContent)) {
+        return parseHtmlContent(processedContent);
     }
 
     // Plain text
-    return { text: content, elements: [] };
+    return { text: processedContent, elements: [] };
 }
 
 /**
@@ -129,10 +186,11 @@ function processContent(content) {
  * @param {Array} questions - Array of question objects
  * @param {string|number} version - Version number being exported
  * @param {Array} versionList - List of all versions
+ * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Array} - Formatted questions
  */
-function formatQuestionsWithVersion(questions, version, versionList) {
-    return questions.map(question => formatQuestionWithVersion(question, version, versionList));
+function formatQuestionsWithVersion(questions, version, versionList, mathRegistry) {
+    return questions.map(question => formatQuestionWithVersion(question, version, versionList, mathRegistry));
 }
 
 /**
@@ -140,6 +198,7 @@ function formatQuestionsWithVersion(questions, version, versionList) {
  * @param {Object} question - Question object
  * @param {string|number} version - Version number being exported
  * @param {Array} versionList - List of all versions
+ * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Object} - Formatted question
  */
 /**
@@ -147,9 +206,10 @@ function formatQuestionsWithVersion(questions, version, versionList) {
  * @param {Object} question - Question object
  * @param {string|number} version - Version number being exported
  * @param {Array} versionList - List of all versions
+ * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Object} - Formatted question
  */
-function formatQuestionWithVersion(question, version, versionList) {
+function formatQuestionWithVersion(question, version, versionList, mathRegistry) {
     // Format the mark display
     const markText = question.marks
         ? `[${question.marks} mark${question.marks !== 1 ? 's' : ''}]`
@@ -157,7 +217,8 @@ function formatQuestionWithVersion(question, version, versionList) {
 
     // Process question content
     const questionContent = processContent(
-        question.contentFormatted || question.contentText || ''
+        question.contentFormatted || question.contentText || '',
+        mathRegistry
     );
 
     // Determine which shuffle map to use based on version position in versionList
@@ -190,13 +251,14 @@ function formatQuestionWithVersion(question, version, versionList) {
     if (question.answers && question.answers.length > 0) {
         // Create a temporary array to hold answers in their new positions
         const tempAnswers = new Array(question.answers.length);
-        
+
         // Place each answer in its new position in the temp array
         shuffleMap.forEach((newIndex, originalIndex) => {
             const answer = question.answers[originalIndex];
             if (answer) {
                 const answerContent = processContent(
-                    answer.contentFormatted || answer.contentText || ''
+                    answer.contentFormatted || answer.contentText || '',
+                    mathRegistry
                 );
 
                 // Only include non-empty answers

@@ -6,11 +6,14 @@ import { createExam } from '../../store/exam/examUtils.js';
 import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
 // import { extractPlainText } from './utils/extractPlainText.js';
 
-export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) => {
+export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, documentXml = null) => {
   const body = xmlJson['w:document']?.['w:body'];
   if (!body) {
     throw new Error('Invalid XML structure: missing w:body');
   }
+
+  // Create math registry for this document
+  const mathRegistry = {};
 
   // Extract all blocks from the document body
   const blocks = [
@@ -20,7 +23,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
   ];
 
   // Diagnostic: Log total blocks to understand the content
-//  console.log(`Total document blocks: ${blocks.length}`);
+  console.log(`Total document blocks: ${blocks.length}`);
 
   //const dto = [];
   const dto = createExam();
@@ -51,11 +54,11 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
           currentSection.questions = [];
         }
         currentSection.questions.push(currentQuestion);
-//        console.log(`Added question "${currentQuestion.contentFormatted}" to section`);
+        console.log(`Added question "${currentQuestion.contentFormatted}" to section`);
       } else {
         // Add directly to DTO
         dto.examBody.push(currentQuestion);
-//        console.log(`Added standalone question "${currentQuestion.contentFormatted}"`);
+        console.log(`Added standalone question "${currentQuestion.contentFormatted}"`);
       }
 
       currentQuestion = null;
@@ -74,12 +77,12 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
       // Only add section if it has content
       if (currentSection.contentFormatted && currentSection.contentFormatted.trim() !== '') {
         dto.examBody.push(currentSection);
-//        console.log(`Added section with content: ${currentSection.contentFormatted.substring(0, 30)}...`);
+        console.log(`Added section with content: ${currentSection.contentFormatted.substring(0, 30)}...`);
       } else {
         // If section has no content, move any nested questions to top level
         if (currentSection.questions && currentSection.questions.length > 0) {
           dto.examBody.push(...currentSection.questions);
-//          console.log(`Moved ${currentSection.questions.length} questions from empty section to top level`);
+          console.log(`Moved ${currentSection.questions.length} questions from empty section to top level`);
         }
       }
 
@@ -97,7 +100,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
     // Check if this is a section break
     if (isSectionBreak(block)) {
-//      console.log(`Found section break at block ${i}`);
+      console.log(`Found section break at block ${i}`);
       flushQuestion();
       flushSection();
       afterSectionBreak = true;
@@ -111,23 +114,31 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
     const mathElements = detectMathElements(para);
     const containsMath = mathElements.length > 0;
 
-    // console.log(`Processing block ${i}, has math:`, containsMath);
-    if (containsMath) {
-      // console.log(`Math elements found:`, mathElements.length);
-    }
-
     // Get all runs
     const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
+
+    console.log(`Processing block ${i}, has math:`, containsMath);
+    if (containsMath) {
+      console.log('=== PARAGRAPH WITH MATH ===');
+      console.log('Paragraph keys:', Object.keys(para));
+      console.log('Math elements detected:', mathElements.length);
+      console.log('Number of runs:', runs.length);
+      console.log('First few run keys:', runs.slice(0, 3).map(r => Object.keys(r || {})));
+
+      // Let's also see the actual math element structure
+      console.log('First math element structure:', JSON.stringify(mathElements[0], null, 2));
+    }
 
     // Build content with math handling, passing the parent paragraph for direct math access
     let text = buildContentFormatted(runs, {
       relationships,
       imageData,
-      preserveMath: true
-    }, para);
+      preserveMath: true,
+      mathRegistry
+    }, para, documentXml);
 
-    // console.log(`Block ${i}: type=${block['w:p'] ? 'paragraph' : 'other'}, text="${text}"`,
-    //     text.trim() === '' ? '(EMPTY)' : '');
+    console.log(`Block ${i}: type=${block['w:p'] ? 'paragraph' : 'other'}, text="${text}"`,
+        text.trim() === '' ? '(EMPTY)' : '');
 
     // Handle empty lines
     if (text.trim() === '') {
@@ -135,7 +146,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
       // If we have a current question, end it after an empty line (if it has answers)
       if (currentQuestion && emptyLineCounter >= 1 && currentAnswers.length > 0) {
-//        console.log(`Empty line detected, ending question "${currentQuestion.contentFormatted}"`);
+        console.log(`Empty line detected, ending question "${currentQuestion.contentFormatted}"`);
         flushQuestion();
       }
 
@@ -147,7 +158,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
     // Check if this is a new question
     if (isNewQuestion(text)) {
-      // console.log(`Found question marker: ${text.substring(0, 30)}...`);
+      console.log(`Found question marker: ${text.substring(0, 30)}...`);
       flushQuestion();
 
       // If we've accumulated section content after a section break, create a new section
@@ -160,7 +171,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
         inSection = true;
         sectionContentBlocks = [];
         afterSectionBreak = false;
-//        console.log(`Created new section from accumulated content`);
+        console.log(`Created new section from accumulated content`);
       }
 
       // Extract marks and create new question
@@ -171,8 +182,9 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
         removeMarks: true,
         relationships,
         imageData,
-        preserveMath: true
-      }, para);
+        preserveMath: true,
+        mathRegistry
+      }, para, documentXml);
 
       currentQuestion = {
         type: 'question',
@@ -181,7 +193,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
         answers: []
       };
 
-      // console.log(`Created question with content: ${currentQuestion.contentFormatted.substring(0, 100)}...`);
+      console.log(`Created question with content: ${currentQuestion.contentFormatted.substring(0, 100)}...`);
       continue;
     }
 
@@ -189,7 +201,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
     if (afterSectionBreak && !currentQuestion) {
       if (text.trim() !== '') {
         sectionContentBlocks.push(text);
-//        console.log(`Added to section content: ${text.substring(0, 30)}...`);
+        console.log(`Added to section content: ${text.substring(0, 30)}...`);
       }
       continue;
     }
@@ -199,21 +211,22 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
       const answerText = buildContentFormatted(runs, {
         relationships,
         imageData,
-        preserveMath: true
-      }, para);
+        preserveMath: true,
+        mathRegistry
+      }, para, documentXml);
 
       currentAnswers.push({
         type: 'answer',
         contentFormatted: sanitizeContentFormatted(answerText)
       });
 
-      // console.log(`Added answer with content: ${answerText.substring(0, 50)}...`);
+      console.log(`Added answer with content: ${answerText.substring(0, 50)}...`);
       continue;
     }
 
     // If we have non-question, non-section content, treat as standalone section content
     if (text.trim() !== '' && !currentQuestion && !inSection && !afterSectionBreak) {
-//      console.log(`Found standalone content, creating new section`);
+      console.log(`Found standalone content, creating new section`);
 
       currentSection = {
         type: 'section',
@@ -229,9 +242,18 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
   flushSection();
 
   // Final diagnostic
-//  console.log(`Final DTO has ${dto.examBody.length} top-level items`);
+  console.log(`Final DTO has ${dto.examBody.length} top-level items`);
 
-  return dto;
+  // Add this debug for math registry
+  console.log('=== FINAL MATH REGISTRY ===');
+  console.log('Math Registry entries:', Object.keys(mathRegistry).length);
+  if (Object.keys(mathRegistry).length > 0) {
+    console.log('Sample math registry entry:', Object.values(mathRegistry)[0]);
+    console.log('All math registry keys:', Object.keys(mathRegistry));
+    console.log('Math registry contents:', mathRegistry);
+  }
+
+  return { dto, mathRegistry };
 };
 
 // --- Helper functions ---

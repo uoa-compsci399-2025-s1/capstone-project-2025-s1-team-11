@@ -2,7 +2,7 @@ import { message, Modal } from 'antd';
 import { ExamExportService } from '../services/examExportService';
 import React from 'react';
 
-export const handleExportDocx = async (exam, coverPage) => {
+export const handleExportDocx = async (exam, coverPage, mathRegistry) => {
     try {
         if (!exam) {
             message.error("No exam data available for export");
@@ -34,7 +34,7 @@ export const handleExportDocx = async (exam, coverPage) => {
                 onOk: async () => {
                     // Continue with export
                     message.info("Exporting DOCX versions...");
-                    const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
+                    const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage, mathRegistry);
 
                     if (result.success) {
                         message.success("All exam versions exported successfully");
@@ -53,7 +53,7 @@ export const handleExportDocx = async (exam, coverPage) => {
 
         // Only execute this code if there are no warnings
         message.info("Exporting DOCX versions...");
-        const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage);
+        const result = await ExamExportService.exportAndSaveVersionedExam(exam, coverPage, mathRegistry);
 
         if (result.success) {
             message.success("All exam versions exported successfully");

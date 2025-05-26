@@ -15,9 +15,10 @@ export class ExamExportService {
      *
      * @param {Object} examData - Exam data from Redux store
      * @param {string} format - Export format ('docx', 'text', 'docxtemplater')
+     * @param {Object} mathRegistry - Math registry for resolving math placeholders
      * @returns {Promise<Blob>} - Blob containing the exported document
      */
-    static async exportExam(examData, format = 'docxtemplater') {
+    static async exportExam(examData, format = 'docxtemplater', mathRegistry = null) {
         //console.log(`Starting exam export in ${format} format`);
 
         if (!examData) {
@@ -29,7 +30,7 @@ export class ExamExportService {
         switch (format.toLowerCase()) {
             case 'docxtemplater':
                 // New export method using Docxtemplater
-                result = await exportExamToDocxWithDocxtemplater(examData);
+                result = await exportExamToDocxWithDocxtemplater(examData, 1, mathRegistry);
                 break;
 
             case 'text':
@@ -171,9 +172,10 @@ export class ExamExportService {
      *
      * @param {Object} examData - Complete exam data from Redux store
      * @param {Blob} coverPageBlob - The cover page as a DOCX blob
+     * @param {Object} mathRegistry - Math registry for resolving math placeholders
      * @returns {Promise<Array<{version: string, blob: Blob}>>} - Array of version-blob pairs
      */
-    static async exportVersionedDocx(examData, coverPageBlob) {
+    static async exportVersionedDocx(examData, coverPageBlob, mathRegistry = null) {
         if (!examData || !examData.versions || !examData.versions.length) {
             throw new Error('No exam versions available for export');
         }
@@ -190,7 +192,7 @@ export class ExamExportService {
         // Process each version
         for (const version of examData.versions) {
             // Generate a version-specific body DOCX
-            const bodyBlob = await exportExamToDocxWithDocxtemplater(examData, version);
+            const bodyBlob = await exportExamToDocxWithDocxtemplater(examData, version, mathRegistry);
 
             // Merge the cover page with this body using the docxMerger function
             const mergedBlob = await mergeDocxFiles(coverPageBlob, bodyBlob);
@@ -233,9 +235,10 @@ export class ExamExportService {
      *
      * @param {Object} examData - Exam data from Redux store
      * @param {Blob} coverPageBlob - The cover page as a DOCX blob
+     * @param {Object} mathRegistry - Math registry for resolving math placeholders
      * @returns {Promise<{success: boolean, error?: string, warnings?: string[]}>}
      */
-    static async exportAndSaveVersionedExam(examData, coverPageBlob) {
+    static async exportAndSaveVersionedExam(examData, coverPageBlob, mathRegistry = null) {
         try {
             // Check if exam is ready for versioned export
             const { warnings } = this.checkExamVersionsReady(examData);
@@ -246,7 +249,7 @@ export class ExamExportService {
                 console.warn("Export warnings:", warnings);
             }
 
-            const versionedBlobs = await this.exportVersionedDocx(examData, coverPageBlob);
+            const versionedBlobs = await this.exportVersionedDocx(examData, coverPageBlob, mathRegistry);
             this.saveVersionedFiles(versionedBlobs, examData);
 
             return {

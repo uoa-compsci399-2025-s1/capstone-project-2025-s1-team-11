@@ -30,6 +30,7 @@ const StaticContextBar = ({
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
   const coverPage = useSelector(state => state.exam.coverPage);
+  const mathRegistry = useSelector(state => state.exam.mathRegistry);
   const { fileHandle, createExam, openExam, saveExam, setFileHandle } = useFileSystem();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newExamData, setNewExamData] = useState({
@@ -486,7 +487,7 @@ const StaticContextBar = ({
                           key: 'docx',
                           label: 'Download as DOCX',
                           onClick: async () => {
-                            await handleExportDocx(exam, coverPage);
+                            await handleExportDocx(exam, coverPage, mathRegistry);
                             setExportDropdownOpen(false);
                           }
                         },

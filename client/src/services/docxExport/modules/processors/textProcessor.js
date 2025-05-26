@@ -7,6 +7,7 @@ import { convertLatexToOmml } from '../utils/ommlConverter';
  * @returns {Promise<Blob>} - The processed DOCX with text formatting
  */
 export async function postProcessTextFormatting(docxBlob) {
+
     try {
         // Convert blob to arraybuffer
         const arrayBuffer = await docxBlob.arrayBuffer();
@@ -16,6 +17,10 @@ export async function postProcessTextFormatting(docxBlob) {
 
         // Get the main document
         let docXml = await zip.file('word/document.xml').async('string');
+
+        console.log('=== TEXT PROCESSOR DEBUG ===');
+        console.log('Document contains §MATH_OMML§:', docXml.includes('§MATH_OMML§'));
+        console.log('Count of math markers:', (docXml.match(/§MATH_OMML§/g) || []).length);
 
         // Debug logging
         //console.log("Document contains §CODE§:", docXml.includes('§CODE§'));
@@ -165,6 +170,23 @@ export async function postProcessTextFormatting(docxBlob) {
                       </m:oMathPara>
                     <w:r><w:t xml:space="preserve">`;
                 }
+            },
+            {
+                pattern: /§MATH_OMML§((?:(?!§\/MATH_OMML§)[\s\S])*)§\/MATH_OMML§/g,
+                replacement: (match, ommlXml) => {
+                    console.log('=== OMML REPLACEMENT DEBUG ===');
+                    console.log('Match found:', match.substring(0, 100) + '...');
+                    console.log('OMML XML length:', ommlXml.length);
+                    console.log('OMML starts with:', ommlXml.substring(0, 50));
+
+                    // Insert OMML directly without conversion
+                    const unescapedXml = ommlXml
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&amp;/g, '&');
+
+                    return `</w:t></w:r>${unescapedXml}<w:r><w:t xml:space="preserve">`;
+                }
             }
         ];
 
@@ -180,6 +202,10 @@ export async function postProcessTextFormatting(docxBlob) {
             });
         });
 
+        console.log('=== AFTER REPLACEMENTS ===');
+        console.log('Document still contains §MATH_OMML§:', docXml.includes('§MATH_OMML§'));
+        console.log('Count after replacements:', (docXml.match(/§MATH_OMML§/g) || []).length);
+
         // Ensure that OMML namespace is declared in the document
         if (docXml.includes('<m:oMath>') && !docXml.includes('xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"')) {
             docXml = docXml.replace('<w:document ', '<w:document xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" ');
@@ -187,6 +213,15 @@ export async function postProcessTextFormatting(docxBlob) {
 
         // Clean up any empty text runs that might have been created
         docXml = docXml.replace(/<w:r><w:t[^>]*><\/w:t><\/w:r>/g, '');
+
+        console.log('=== FINAL XML SAMPLE ===');
+        const mathSample = docXml.match(/<m:bar>.*?<\/m:bar>/s);
+        if (mathSample) {
+            console.log('Sample OMML in final XML:', mathSample[0].substring(0, 200) + '...');
+        } else {
+            console.log('No OMML found in final XML!');
+        }
+        console.log('Has math namespace?', docXml.includes('xmlns:m='));
 
         // Update document.xml
         zip.file('word/document.xml', docXml);

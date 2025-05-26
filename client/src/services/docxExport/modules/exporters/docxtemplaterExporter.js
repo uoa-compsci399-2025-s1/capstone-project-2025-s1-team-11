@@ -11,9 +11,10 @@ import { loadTemplate, loadTemplateAlt } from "../loaders/templateLoader.js";
  * @param {Object} examData - The exam data from Redux store
  * @param {ArrayBuffer} templateContent - The template file content as ArrayBuffer
  * @param {string|number} version - Version number to export
+ * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Promise<Blob>} - A blob containing the generated DOCX file
  */
-export async function exportExamWithDocxtemplater(examData, templateContent, version) {
+export async function exportExamWithDocxtemplater(examData, templateContent, version, mathRegistry = null) {
     try {
         if (!examData) {
             throw new Error("No exam data available for export");
@@ -34,7 +35,7 @@ export async function exportExamWithDocxtemplater(examData, templateContent, ver
         const imageModule = createImageModule();
 
         // Format the exam data for the template
-        const formattedData = formatExamDataForTemplate(examData, version);
+        const formattedData = formatExamDataForTemplate(examData, version, mathRegistry);
 
         // Process the formatted data to handle images
         const processedData = processTemplateData(formattedData);
@@ -83,9 +84,10 @@ export async function exportExamWithDocxtemplater(examData, templateContent, ver
  * Main export function that handles the entire process
  * @param {Object} examData - The exam data from Redux store
  * @param {string|number} version - Version number to export
+ * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Promise<Blob>} - A blob containing the generated DOCX file
  */
-export async function exportExamToDocxWithDocxtemplater(examData, version = 1) {
+export async function exportExamToDocxWithDocxtemplater(examData, version = 1, mathRegistry = null) {
     try {
         // Try loading with fetch first
         let templateContent;
@@ -102,7 +104,7 @@ export async function exportExamToDocxWithDocxtemplater(examData, version = 1) {
         }
 
         // Process the template with exam data and version
-        return await exportExamWithDocxtemplater(examData, templateContent, version);
+        return await exportExamWithDocxtemplater(examData, templateContent, version, mathRegistry);
     } catch (error) {
         console.error("Error in DOCX export process:", error);
         throw error;

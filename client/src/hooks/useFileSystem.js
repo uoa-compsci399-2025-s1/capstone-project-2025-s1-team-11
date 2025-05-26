@@ -18,15 +18,15 @@ export function useFileSystem() {
     const dispatch = useDispatch();
     const exam = useSelector(selectExamData);
     const [fileHandle, setFileHandle] = useState(null);
-  
+
     // Opens the exam file and updates the global state
     const openExam = async () => {
-      const result = await loadExamFromFile();
-      if (result) {
-        dispatch(initialiseExamState(result.exam));
-        setFileHandle(result.fileHandle);
-      }
-      return result;
+        const result = await loadExamFromFile();
+        if (result) {
+            dispatch(initialiseExamState(result.exam));
+            setFileHandle(result.fileHandle);
+        }
+        return result;
     };
 
     const createExam = async (exam) => {
@@ -37,11 +37,11 @@ export function useFileSystem() {
     // Saves the exam and updates the file handle in the global state
     const saveExam = async () => {
         if (!exam) return null;
-          const updatedHandle = await saveExamToDisk(exam, fileHandle);
-          if (updatedHandle) {
-              setFileHandle(updatedHandle);
-          }
-          return updatedHandle;
+        const updatedHandle = await saveExamToDisk(exam, fileHandle);
+        if (updatedHandle) {
+            setFileHandle(updatedHandle);
+        }
+        return updatedHandle;
     };
 
     const importExam = async (file, format) => {
@@ -51,21 +51,24 @@ export function useFileSystem() {
             if (!format || format === 'all') {
                 const ext = file.name.split('.').pop().toLowerCase();
                 formatToUse = ext === 'xml' ? 'moodle' : ext === 'docx' ? 'docx' : ext === 'tex' ? 'latex' : null;
-                
+
                 if (!formatToUse) {
                     throw new Error("Unsupported file format. Please use .xml, .docx, or .tex files.");
                 }
             } else if (!['docx', 'moodle', 'latex'].includes(formatToUse)) {
                 throw new Error(`Unsupported format: ${formatToUse}. Supported formats are: docx, moodle, latex.`);
             }
-            
+
             // Process the file using the examImportService to get the DTO
             const examDTO = await examImportService.importExamToDTO(file, formatToUse);
-            
-            // Update the application state with the DTO
-            dispatch(importDTOToState(examDTO));
+
+            // For DOCX imports, also get the math registry
+            const mathRegistry = formatToUse === 'docx' ? examImportService.mathRegistry : null;
+
+            // Update the application state with the DTO and math registry
+            dispatch(importDTOToState(examDTO, mathRegistry));
             setFileHandle(null); // reset file handle, this wasn't opened from disk
-            
+
             return true;
         } catch (error) {
             throw new Error("Error importing exam: " + error.message);
@@ -73,38 +76,38 @@ export function useFileSystem() {
     };
 
     const importFromFileInput = async (file, onError) => {
-      const ext = file.name.split('.').pop().toLowerCase();
-      const format = ext === 'xml' ? 'moodle' : ext === 'docx' ? 'docx' : null;
+        const ext = file.name.split('.').pop().toLowerCase();
+        const format = ext === 'xml' ? 'moodle' : ext === 'docx' ? 'docx' : null;
 
-      if (!format) {
-        onError?.("Unsupported file format");
-        return;
-      }
+        if (!format) {
+            onError?.("Unsupported file format");
+            return;
+        }
 
-      try {
-        await importExam(file, format);
-        return true;
-      } catch (err) {
-        console.error("Import error:", err);
-        onError?.("Error importing exam: " + err.message);
-        return false;
-      }
+        try {
+            await importExam(file, format);
+            return true;
+        } catch (err) {
+            console.error("Import error:", err);
+            onError?.("Error importing exam: " + err.message);
+            return false;
+        }
     };
 
-      const closeExam = () => {
+    const closeExam = () => {
         dispatch(clearExamState());
         setFileHandle(null);
-      };
+    };
 
-    return { 
-      exam, 
-      fileHandle, 
-      setFileHandle,
-      openExam, 
-      createExam, 
-      saveExam, 
-      importExam, 
-      closeExam, 
-      importFromFileInput 
+    return {
+        exam,
+        fileHandle,
+        setFileHandle,
+        openExam,
+        createExam,
+        saveExam,
+        importExam,
+        closeExam,
+        importFromFileInput
     };
 }
