@@ -423,7 +423,19 @@ const StaticContextBar = ({
               {exam && (
                   <>
                     <Tooltip title={`File: ${examTitle}`}>
-                      <Tag color={statusColours[saveState] || "default"} style={{ marginLeft: 8 }}>
+                      <Tag
+                        color={statusColours[saveState] || "default"}
+                        style={{
+                          marginLeft: 8,
+                          width: 140,
+                          textAlign: 'center',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'none',
+                          overflow: 'hidden'
+                        }}
+                      >
                         {saveState === 'saved'
                             ? (
                                 lastSavedTime
@@ -436,32 +448,46 @@ const StaticContextBar = ({
                         )}
                       </Tag>
                     </Tooltip>
-                    {fileHandle && (
-                        <Tooltip title="Full file path not available due to browser privacy restrictions.">
-                          <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
-                            File: {fileHandle.name || '[unsaved file]'}{fileHandle.kind ? `` : ""}
-                          </Text>
-                        </Tooltip>
-                    )}
                   </>
               )}
             </div>
             {/* Exam title and file name */}
-            <div className="editable-title-wrapper" style={{ marginLeft: "12", display: "flex", alignItems: "center" }}>
+            <div
+              className="editable-title-wrapper"
+              style={{
+                flex: 1,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                overflow: "hidden",
+                padding: "0 12px"
+              }}
+            >
               {exam ? (
-                  <>
-                    <Text strong style={{ marginRight: 8 }}>
-                      {`${exam?.courseName || "Unknown Course"} ${exam?.courseCode || ""}: ${exam?.examTitle || "Untitled Exam"}`}
+                <>
+                  <Text
+                    strong
+                    style={{
+                      marginRight: 8,
+                      textAlign: "center",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      maxWidth: "100%",
+                      fontSize: `${(exam?.examTitle?.length || 0) + (exam?.courseName?.length || 0) + (exam?.courseCode?.length || 0) > 50 ? '14px' : '16px'}`
+                    }}
+                  >
+                    {`${exam?.courseName || "Unknown Course"} ${exam?.courseCode || ""}: ${exam?.examTitle || "Untitled Exam"}`}
+                  </Text>
+                  {/* Inline warning if key fields are missing */}
+                  {(!exam?.examTitle || !exam?.courseCode) && (
+                    <Text className="context-warning" type="warning" style={{ marginLeft: 12 }}>
+                      Missing required exam details
                     </Text>
-                    {/* Inline warning if key fields are missing */}
-                    {(!exam?.examTitle || !exam?.courseCode) && (
-                        <Text className="context-warning" type="warning" style={{ marginLeft: 12 }}>
-                          Missing required exam details
-                        </Text>
-                    )}
-                  </>
+                  )}
+                </>
               ) : (
-                  <Text type="danger" strong>No exam uploaded</Text>
+                <Text type="danger" strong>No exam uploaded</Text>
               )}
             </div>
             {/* Right side: Save and Export buttons */}
@@ -558,7 +584,16 @@ const StaticContextBar = ({
                       style={{ marginRight: 4 }}
                   />
                 </Tooltip>
-                <Text style={{ fontSize: 12 }}>{autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}</Text>
+                <span
+                  style={{
+                    fontSize: 12,
+                    display: "inline-block",
+                    width: 90, // fixed width to prevent shift when toggling
+                    textAlign: "left"
+                  }}
+                >
+                  {autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}
+                </span>
               </div>
             </div>
           </div>

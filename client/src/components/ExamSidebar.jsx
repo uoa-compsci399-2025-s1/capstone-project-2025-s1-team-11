@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip, Tag } from 'antd';
 import { ProfileOutlined, FileTextOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { htmlToText } from '../utilities/textUtils';
@@ -6,6 +7,8 @@ import { htmlToText } from '../utilities/textUtils';
 const { Title, Text, Paragraph } = Typography;
 
 const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) => {
+  const fileName = useSelector((state) => state.exam.fileName);
+
   if (!exam || !exam.examBody || !Array.isArray(exam.examBody)) {
     return (
       <Card className="exam-sidebar">
@@ -133,10 +136,8 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
         </div>
         <List size="small">
           <List.Item>
-            <Paragraph style={{ margin: 0 }}>
-              <Text type="secondary">Course Code:</Text>{' '}
-              <Text>{exam?.courseCode || "N/A"}</Text>
-            </Paragraph>
+          <Text type="secondary"> Exam Title:</Text>
+            <Text style={{ marginLeft: '8px' }}>{exam?.examTitle || "Untitled Exam"}</Text>
           </List.Item>
           <List.Item>
             <Paragraph style={{ margin: 0 }}>
@@ -145,10 +146,13 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
             </Paragraph>
           </List.Item>
           <List.Item>
-            <Paragraph style={{ margin: 0 }}>
-              <Text type="secondary">Semester:</Text>{' '}
-              <Text>{exam?.semester || "N/A"}</Text>
-            </Paragraph>
+            <Text type="secondary">Course Code:</Text>
+            <Text style={{ marginLeft: '8px' }}>{exam?.courseCode || "N/A"}</Text>
+          </List.Item>
+          <List.Item>
+            <Text type="secondary">Semester:</Text>
+            <Text style={{ marginLeft: '8px' }}>{exam?.semester || "N/A"}</Text>
+
           </List.Item>
           <List.Item>
             <Paragraph style={{ margin: 0 }}>
@@ -166,6 +170,14 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
               </Paragraph>
             </List.Item>
           )}
+          <List.Item>
+            <Text type="secondary">File:</Text>
+            <Tooltip title="Full file path not available due to browser privacy restrictions.">
+              <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
+                {fileName || '[unsaved file]'}
+              </Text>
+            </Tooltip>
+          </List.Item>
         </List>
       </div>
 

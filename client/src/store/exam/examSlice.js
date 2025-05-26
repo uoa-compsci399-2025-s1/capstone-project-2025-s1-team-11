@@ -27,6 +27,7 @@ const initialState = {
   coverPage: null,
   isLoading: false,
   error: null,
+  fileName: null,
   messages: [],
 };
 const generateId = (() => {
@@ -369,7 +370,10 @@ const examSlice = createSlice({
     },
     addExamMessage: (state, action) => {
       state.messages.push(action.payload);
-    }
+    },
+    setFileName: (state, action) => {
+      state.fileName = action.payload;
+    },
   }
 });
 
@@ -398,7 +402,8 @@ export const {
   importExamStart,
   importExamSuccess,
   importExamFailure,  
-  addExamMessage
+  addExamMessage,
+  setFileName
 } = examSlice.actions;
 
 // Export reducer
