@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Button, Tooltip, Row, Col } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { selectExamData } from '../store/exam/selectors';
-import { updateExamField } from '../store/exam/examSlice';
+import { handleExamDetailsSave } from '../services/examEditService';
 import ExamSidebar from './ExamSidebar';
 import EditExamModal from './EditExamModal';
 
@@ -44,10 +44,7 @@ const ExamSidebarProvider = ({ children }) => {
   }, []);
 
   const handleEditDetailsSave = useCallback(() => {
-    Object.entries(editDetailsData).forEach(([field, value]) => {
-      dispatch(updateExamField({ field, value }));
-    });
-    setShowEditDetailsModal(false);
+    handleExamDetailsSave(editDetailsData, dispatch, () => setShowEditDetailsModal(false));
   }, [editDetailsData, dispatch]);
 
   const handleEditDetails = useCallback(() => {

@@ -267,6 +267,8 @@ const examSlice = createSlice({
     setTeleformOptions: (state, action) => {
       // Payload should be an array of option identifiers 'i.' or 'a)' etc. 
       if (!state.examData) { return; }
+      console.log("setTeleformOptions", action.payload);
+      console.log("state.examData.teleformOptions", state.examData.teleformOptions);
       state.examData.teleformOptions = action.payload;
       normaliseAnswersPerTeleformOptions(state.examData);
     },
