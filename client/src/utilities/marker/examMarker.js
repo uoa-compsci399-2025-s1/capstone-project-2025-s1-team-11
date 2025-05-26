@@ -1,6 +1,7 @@
 import {readTeleform} from "./teleformReader.js";
 import { setResults, setLoading, setError } from '../../store/exam/examResultsSlice.js';
 import { store } from '../../store/store.js';
+import { selectQuestionByNumber } from '../../store/exam/selectors.js';
 
 /**
  * Processes teleform scan data and marks students' exams
@@ -85,6 +86,7 @@ export function markExams(examData, teleformData, markingKey) {
  * @returns {Object} Student's results
  */
 function markStudentExam(firstName, lastName, versionId, answerString, markingKey, examData, studentId) {
+  
   const versionKey = markingKey[versionId];
   if (!versionKey) {
     //console.log(`versionId: ${versionId}`);
@@ -122,12 +124,10 @@ function markStudentExam(firstName, lastName, versionId, answerString, markingKe
   studentAnswers.forEach((studentAnswer, index) => {
     const correctAnswer = correctAnswers[index] || 0;
     
-    // Find the corresponding question in examBody
-    const examQuestion = examBody.find(
-      q => q?.type === 'question' && q?.questionNumber === (index + 1)
-    );
+    // Find the corresponding question using the selector
+    const examQuestion = selectQuestionByNumber(store.getState(), index + 1);
     
-    const maxMarks = examQuestion?.marks ?? 0; // Default to 1 mark if not specified
+    const maxMarks = examQuestion?.marks ?? 0; // Default to 0 mark if not specified
     const { isCorrect, marks: earnedMarks } = markQuestion(correctAnswer, studentAnswer, maxMarks);
 
     // Find the corresponding option text for both answers

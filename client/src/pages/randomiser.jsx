@@ -17,7 +17,7 @@ const Randomiser = () => {
   const questions = useSelector(selectAllQuestionsFlat);
   const { token } = theme.useToken();
 
-  const [selectedVersion, setSelectedVersion] = useState(exam?.versions?.[0] || '');
+  const [selectedVersion, setSelectedVersion] = useState('');
   const [showRaw, setShowRaw] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
   const [isImportingKey, setIsImportingKey] = useState(false);
@@ -28,6 +28,15 @@ const Randomiser = () => {
   const [visualStyle, setVisualStyle] = useState("grid");
 
   const [pagination, setPagination] = useState({current: 1, pageSize: 10, });
+
+  // Update selectedVersion when exam changes
+  useEffect(() => {
+    if (exam?.versions?.length > 0) {
+      setSelectedVersion(exam.versions[0]);
+    } else {
+      setSelectedVersion('');
+    }
+  }, [exam]);
 
   useEffect(() => {
     setPagination(prev => ({ ...prev, current: 1 }));

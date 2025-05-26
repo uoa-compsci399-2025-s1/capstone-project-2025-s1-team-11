@@ -74,3 +74,7 @@ export const htmlToText = (html) => {
     .replace(/\n\n\n+/g, '\n\n') // Replace 3+ consecutive newlines with 2
     .trim();
 }; 
+
+export const normaliseVersionId = (str) => {
+  return str.replace(/^0+/, '') || '0';
+};
