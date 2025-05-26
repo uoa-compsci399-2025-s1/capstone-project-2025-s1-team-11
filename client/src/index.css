@@ -16,6 +16,7 @@
   --content-bg: #ffffff;
   --header-bg: #ffffff;
   --footer-bg: #ffffff;
+  --context-bar-height: 56px;
 }
 
 /* dark theme stuff */
@@ -240,10 +241,11 @@ button:focus-visible {
 /* Sidebar */
 .exam-sidebar {
   position: sticky;
-  top: 20px;
+  top: calc(var(--context-bar-height) + 60px);
   height: calc(100vh - 180px);
   overflow-y: auto;
   transition: all 0.3s;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 .exam-sidebar::-webkit-scrollbar {
