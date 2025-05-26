@@ -1,13 +1,14 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider, message } from "antd";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider } from "antd";
 import { regenerateShuffleMaps, importMarkingKey } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/mapDisplay";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { htmlToText } from "../utilities/textUtils.js";
 import { importMarkingKeyFile, processMarkingKeyFile } from "../services/markingKeyImportService";
+import useMessage from "../hooks/useMessage.js";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -16,6 +17,7 @@ const Randomiser = () => {
   const exam = useSelector(selectExamData);
   const questions = useSelector(selectAllQuestionsFlat);
   const { token } = theme.useToken();
+  const message = useMessage();
 
   const [selectedVersion, setSelectedVersion] = useState('');
   const [showRaw, setShowRaw] = useState(false);

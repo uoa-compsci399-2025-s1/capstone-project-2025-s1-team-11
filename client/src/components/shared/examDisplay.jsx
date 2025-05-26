@@ -1,7 +1,7 @@
 //examDisplay.jsx
 
 import React, { useState, useMemo, useCallback, Suspense } from "react";
-import { Button, Typography, Modal, Input, message, Table } from "antd";
+import { Button, Typography, Modal, Input, Table } from "antd";
 const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -22,6 +22,7 @@ import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 //import { arrayMove } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
+import useMessage from "../../hooks/useMessage.js";
 
 const { TextArea } = Input;
 
@@ -158,6 +159,7 @@ const ExamDisplay = () => {
   const exam = useSelector(selectExamData);
   const tableData = useSelector(selectQuestionsAndSectionsForTable);
   const dispatch = useDispatch();
+  const message = useMessage();
 
   const [modalState, setModalState] = useState({
     visible: false,
