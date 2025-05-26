@@ -16,6 +16,7 @@
   --content-bg: #ffffff;
   --header-bg: #ffffff;
   --footer-bg: #ffffff;
+  --context-bar-height: 56px;
 }
 
 /* dark theme stuff */
@@ -97,13 +98,14 @@ button:focus-visible {
 /* Static Context Bar */
 .context-bar-wrapper {
   position: sticky;
-  top: 0;
+  top: 16px;
   margin: 16px auto;
+  margin-bottom: 48px;
+  padding: 10px;
   background: var(--header-bg);
   color: var(--text-color);
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  padding: 12px 24px;
   transition: all 0.25s ease;
   z-index: 1000;
   width: 100%;
@@ -130,7 +132,7 @@ button:focus-visible {
   column-gap: 20px;
   row-gap: 12px;
   flex-wrap: wrap;
-  padding: 4px 0;
+  padding: 16px 12px;
   justify-content: space-between;
   align-items: center;
 }
@@ -239,10 +241,11 @@ button:focus-visible {
 /* Sidebar */
 .exam-sidebar {
   position: sticky;
-  top: 20px;
+  top: calc(var(--context-bar-height) + 60px);
   height: calc(100vh - 180px);
   overflow-y: auto;
   transition: all 0.3s;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 .exam-sidebar::-webkit-scrollbar {

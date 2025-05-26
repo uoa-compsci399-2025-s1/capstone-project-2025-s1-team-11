@@ -1,7 +1,8 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Row, Col, Divider} from "antd";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Row, Col, Divider, Tooltip } from "antd";
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { regenerateShuffleMaps } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/mapDisplay";
@@ -38,6 +39,8 @@ const Randomiser = () => {
   const [visualStyle, setVisualStyle] = useState("grid");
 
   const [pagination, setPagination] = useState({current: 1, pageSize: 10, });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   useEffect(() => {
     setPagination(prev => ({ ...prev, current: 1 }));
   }, [selectedSection]);
@@ -126,8 +129,19 @@ const Randomiser = () => {
     <>
       <Typography.Title level={1}>MCQ Randomiser</Typography.Title>
       <Divider />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+        <Tooltip title={sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}>
+          <Button
+            type="default"
+            icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            {sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
+          </Button>
+        </Tooltip>
+      </div>
     <Row gutter={24}>
-      <Col xs={24} lg={18}>
+      <Col xs={24} xl={sidebarCollapsed ? 24 : 18} style={{ transition: 'width 0.3s' }}>
           <Card style={{ marginBottom: "20px" }}>
             <Space direction="vertical" size="middle" style={{ width: "100%" }}>
               <Text>
@@ -345,16 +359,20 @@ const Randomiser = () => {
           </Card>
 
       </Col>
-      <Col xs={24} lg={6}>
-        <ExamSidebar 
-          exam={exam} 
-          currentItemId={currentItemId}
-          onNavigateToItem={handleNavigateToItem}
-          onEditDetails={() => {
-            setShowEditDetailsModal(true);
-          }}
-        />
-      </Col>
+      {!sidebarCollapsed && (
+        <Col xs={24} xl={6}>
+          <ExamSidebar
+            exam={exam}
+            currentItemId={currentItemId}
+            onNavigateToItem={handleNavigateToItem}
+            onEditDetails={() => {
+              setShowEditDetailsModal(true);
+            }}
+            collapsed={false}
+            onToggleCollapse={() => setSidebarCollapsed(true)}
+          />
+        </Col>
+      )}
       <EditExamModal
         open={showEditDetailsModal}
         onCancel={() => setShowEditDetailsModal(false)}

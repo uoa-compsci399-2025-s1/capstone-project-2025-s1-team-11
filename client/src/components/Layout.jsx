@@ -58,13 +58,13 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
         <Navigation isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}/>
       </Header>
 
-      {["/", "/builder", "/randomiser", "/marker", "/console"].includes(location.pathname) && (
-        <div style={{ padding: '0 48px' }}>
-          <StaticContextBar />
-        </div>
-      )}
-
       <Content style={contentStyle}>
+        
+        {["/", "/builder", "/randomiser", "/marker", "/console"].includes(location.pathname) && (
+          <div className="context-bar-wrapper" style={{padding: '0'}}>
+            <StaticContextBar />
+          </div>
+        )}
         {isPlainPage ? (
           children
         ) : (
