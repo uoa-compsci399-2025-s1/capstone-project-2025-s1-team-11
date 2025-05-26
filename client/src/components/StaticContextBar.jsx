@@ -18,7 +18,7 @@ import useMessage from "../hooks/useMessage.js";
 // Import saveExamToDisk directly for use after creating a new exam
 import { saveExamToDisk } from '../services/fileSystemAccess.js';
 
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 const StaticContextBar = ({
                             examTitle = "Untitled Exam",

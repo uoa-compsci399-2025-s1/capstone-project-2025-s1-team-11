@@ -2,6 +2,8 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { selectExamData } from "../store/exam/selectors";
+import { Typography } from "antd";
+const { Text } = Typography;
 
 const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
 
@@ -24,9 +26,9 @@ const AnswerMappingVisual = ({ mapping }) => {
             key={originalIndex}
             style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "1rem" }}
           >
-            <span>{from}</span>
-            <span style={{ fontSize: "1.2rem" }}>→</span>
-            <span>{to}</span>
+            <Text>{from}</Text>
+            <Text style={{ fontSize: "1.2rem" }}>→</Text>
+            <Text>{to}</Text>
           </div>
         );
       })}
