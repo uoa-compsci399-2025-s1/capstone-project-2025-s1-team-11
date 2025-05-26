@@ -4,6 +4,7 @@ import { Navigation } from "./navigation.jsx";
 import { Link, useLocation } from 'react-router';
 import logo from '../assets/AssesslyLogoSmall.png';
 import StaticContextBar from './StaticContextBar';
+import ExamSidebarProvider from './ExamSidebarProvider';
 
 const { Header, Content, Footer } = Layout;
 const { Paragraph } = Typography;
@@ -70,7 +71,13 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
         ) : (
           <div style={{margin: '0 auto' }}>
             <div style={contentContainerStyle}>
-              {children}
+              {["/builder", "/randomiser", "/marker", "/console"].includes(location.pathname) ? (
+                <ExamSidebarProvider>
+                  {children}
+                </ExamSidebarProvider>
+              ) : (
+                children
+              )}
             </div>
           </div>
         )}
