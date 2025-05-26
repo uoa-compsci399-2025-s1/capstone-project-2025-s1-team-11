@@ -61,7 +61,8 @@ export function formatExamDataForTemplate(examData, version = 1) {
                 const sectionQuestions = formatQuestionsWithVersion(
                     item.questions || [],
                     versionToUse,
-                    examData.versions
+                    examData.versions,
+                    examData.teleformOptions
                 );
 
                 // Process section content
@@ -80,7 +81,7 @@ export function formatExamDataForTemplate(examData, version = 1) {
                 formattedExamBody.push(section);
             } else if (item.type === 'question') {
                 // Process standalone question with version-specific answer ordering
-                const formattedQuestion = formatQuestionWithVersion(item, versionToUse, examData.versions);
+                const formattedQuestion = formatQuestionWithVersion(item, versionToUse, examData.versions, examData.teleformOptions);
                 const questionItem = {
                     isSection: false,
                     isQuestion: true,
@@ -129,10 +130,11 @@ function processContent(content) {
  * @param {Array} questions - Array of question objects
  * @param {string|number} version - Version number being exported
  * @param {Array} versionList - List of all versions
+ * @param {Array} optionLabels - List of option labels
  * @returns {Array} - Formatted questions
  */
-function formatQuestionsWithVersion(questions, version, versionList) {
-    return questions.map(question => formatQuestionWithVersion(question, version, versionList));
+function formatQuestionsWithVersion(questions, version, versionList, optionLabels) {
+    return questions.map(question => formatQuestionWithVersion(question, version, versionList, optionLabels));
 }
 
 /**
@@ -140,16 +142,10 @@ function formatQuestionsWithVersion(questions, version, versionList) {
  * @param {Object} question - Question object
  * @param {string|number} version - Version number being exported
  * @param {Array} versionList - List of all versions
+ * @param {Array} optionLabels - List of option labels
  * @returns {Object} - Formatted question
  */
-/**
- * Format a single question for template use, with version-specific answer ordering
- * @param {Object} question - Question object
- * @param {string|number} version - Version number being exported
- * @param {Array} versionList - List of all versions
- * @returns {Object} - Formatted question
- */
-function formatQuestionWithVersion(question, version, versionList) {
+function formatQuestionWithVersion(question, version, versionList, optionLabels) {
     // Format the mark display
     const markText = question.marks
         ? `[${question.marks} mark${question.marks !== 1 ? 's' : ''}]`
@@ -202,7 +198,8 @@ function formatQuestionWithVersion(question, version, versionList) {
                 // Only include non-empty answers
                 if (answerContent.text.trim()) {
                     // Use letters for answer labels (A, B, C, etc.)
-                    const label = String.fromCharCode(65 + newIndex);
+                    //const label = String.fromCharCode(65 + newIndex);
+                    const label = optionLabels[newIndex];
                     tempAnswers[newIndex] = {
                         label: label,
                         text: answerContent.text,

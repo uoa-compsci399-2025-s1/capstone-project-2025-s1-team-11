@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, Modal } from 'antd';
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
-import { updateExamField } from "../store/exam/examSlice";
-import { setExamVersions, setTeleformOptions } from "../store/exam/examSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { selectExamData } from '../store/exam/selectors.js';
@@ -17,6 +15,7 @@ import '../index.css';
 import useMessage from "../hooks/useMessage.js";
 // Import saveExamToDisk directly for use after creating a new exam
 import { saveExamToDisk } from '../services/fileSystemAccess.js';
+import { handleExamDetailsSave } from '../services/examEditService';
 
 const { Text, Paragraph } = Typography;
 
@@ -132,18 +131,18 @@ const StaticContextBar = ({
 
   const handleCreateModalOk = () => {
     const examData = {
-      answerOptions: parseInt(newExamData.answerOptions) || 4,
+      // answerOptions: parseInt(newExamData.answerOptions) || 4,
       examTitle: newExamData.examTitle || "Untitled Exam",
       courseCode: newExamData.courseCode || "",
       courseName: newExamData.courseName || "",
       semester: newExamData.semester || "",
       year: newExamData.year || "",
-      examBody: [],
-      appendix: {},
-      metadata:
-          newExamData.metadataKey && newExamData.metadataValue
-              ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
-              : []
+      // examBody: [],
+      // appendix: {},
+      // metadata:
+      //     newExamData.metadataKey && newExamData.metadataValue
+      //         ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
+      //         : []
     };
 
     // Parse versions if defined and non-empty
@@ -224,28 +223,10 @@ const StaticContextBar = ({
 
 
   const handleEditDetailsSave = () => {
-    dispatch(updateExamField({ field: 'examTitle', value: editDetailsData.examTitle }));
-    dispatch(updateExamField({ field: 'courseCode', value: editDetailsData.courseCode }));
-    dispatch(updateExamField({ field: 'courseName', value: editDetailsData.courseName }));
-    dispatch(updateExamField({ field: 'semester', value: editDetailsData.semester }));
-    dispatch(updateExamField({ field: 'year', value: editDetailsData.year }));
-    
-    // Set exam versions from editDetailsData.versions if available
-    const versionsArray = typeof editDetailsData.versions === 'string'
-        ? editDetailsData.versions.split(',').map(v => v.trim())
-        : editDetailsData.versions;
-    dispatch(setExamVersions(versionsArray));
-
-    // Set teleform options if available
-    const teleformOptionsArray = typeof editDetailsData.teleformOptions === 'string'
-        ? editDetailsData.teleformOptions.split(',').map(o => o.trim())
-        : editDetailsData.teleformOptions;
-    if (teleformOptionsArray) {
-      dispatch(setTeleformOptions(teleformOptionsArray));
-    }
-
-    setShowEditDetailsModal(false);
-    setTimeout(() => message.success("Exam details updated."), 0);
+    handleExamDetailsSave(editDetailsData, dispatch, () => {
+        setShowEditDetailsModal(false);
+        setTimeout(() => message.success("Exam details updated."), 0);
+    });
   };
 
   // Removed DOM event listeners for mouseenter/mouseleave on dropdown refs.
@@ -262,6 +243,7 @@ const StaticContextBar = ({
       });
     }
   }, [exam]);
+  
   // Auto-save effect: save after 2 seconds of inactivity when exam changes.
   useEffect(() => {
     if (!autoSaveEnabled) return;
