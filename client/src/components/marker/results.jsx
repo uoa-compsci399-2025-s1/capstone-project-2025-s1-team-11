@@ -1,4 +1,5 @@
 import {Button, Col, Divider, Empty, Progress, Radio, Row, Statistic, Typography, Tabs, Select, Space} from "antd";
+const { Title, Text, Paragraph } = Typography;
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import React, {useState, useEffect } from "react";
 import QuestionStats from "./QuestionStats.jsx";
@@ -53,7 +54,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
         <Empty 
           description={
             <div>
-              <p>No results available. Mark exams to see results here.</p>
+              <Paragraph>No results available. Mark exams to see results here.</Paragraph>
             </div>
           }
         />
@@ -185,12 +186,12 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
       label: 'Student Results',
       children: (
         <div className="results-preview" style={{ padding: 16, maxHeight: 600, overflow: "auto" }}>
-          <h4>Preview: {resultsData.length} students</h4>
+          <Title level={4}>Preview: {resultsData.length} students</Title>
           {resultsData.slice(0, 100).map((result, index) => (
             <div key={index} className="student-result" style={{ marginBottom: 12, padding: 8, borderRadius: 4 }}>
-              <h5>{result.lastName || "Unknown"}, {result.firstName || "Student"} ({result.studentId || "N/A"})</h5>
-              <p>Version: {result.versionNumber || result.versionId || "N/A"}</p>
-              <p>Score: {result.totalMarks !== undefined ? result.totalMarks : "?"}/{result.maxMarks !== undefined ? result.maxMarks : "?"}</p>
+              <Text strong>{result.lastName || "Unknown"}, {result.firstName || "Student"} ({result.studentId || "N/A"})</Text>
+              <Paragraph>Version: {result.versionNumber || result.versionId || "N/A"}</Paragraph>
+              <Paragraph>Score: {result.totalMarks !== undefined ? result.totalMarks : "?"}/{result.maxMarks !== undefined ? result.maxMarks : "?"}</Paragraph>
               <details>
                 <summary>View Details</summary>
                 <pre>{generateResultOutput(result, examData)}</pre>
@@ -211,11 +212,11 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
 
   return (
     <>
-      <Typography.Title level={3}>Results & Analytics</Typography.Title>
-      <p>
+      <Title level={3}>Results & Analytics</Title>
+      <Paragraph>
         This is the results dashboard. It summarises overall performance statistics and provides detailed insights regarding student responses,
         question-level performance and analysis. You can also export your results for further review.
-      </p>
+      </Paragraph>
 
       {/* Export format selection */}
       <Radio.Group

@@ -18,7 +18,7 @@ import useMessage from "../hooks/useMessage.js";
 // Import saveExamToDisk directly for use after creating a new exam
 import { saveExamToDisk } from '../services/fileSystemAccess.js';
 
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 const StaticContextBar = ({
                             examTitle = "Untitled Exam",
@@ -558,7 +558,7 @@ const StaticContextBar = ({
                       style={{ marginRight: 4 }}
                   />
                 </Tooltip>
-                <span style={{ fontSize: 12 }}>{autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}</span>
+                <Text style={{ fontSize: 12 }}>{autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}</Text>
               </div>
             </div>
           </div>
