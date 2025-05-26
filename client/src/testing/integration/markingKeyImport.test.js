@@ -170,7 +170,6 @@ describe('Marking Key Import Integration', () => {
   
   test('should handle real marking key sample data', async () => {
     // Use fs.readFileSync to read the sample file (mocked)
-    //const samplePath = path.join('client', 'src', 'testing', 'data', 'marking_key_sample_111.csv');
     const sampleCSV = `VersionID,QuestionID,MarkWeight,OptionSequences,Answer
 1,1,2.5,10423,2
 1,2,2.5,03412,1
