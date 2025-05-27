@@ -1,10 +1,10 @@
 import React from 'react';
 import { Layout, theme, Typography } from 'antd';
-import { Navigation } from "./navigation.jsx";
+import { Navigation } from "./shared/navigation.jsx";
 import { Link, useLocation } from 'react-router';
 import logo from '../assets/AssesslyLogoSmall.png';
-import StaticContextBar from './StaticContextBar';
-import ExamSidebarProvider from './ExamSidebarProvider';
+import StaticContextBar from './shared/StaticContextBar.jsx';
+import ExamSidebarProvider from './shared/ExamSidebarProvider.jsx';
 
 const { Header, Content, Footer } = Layout;
 const { Paragraph } = Typography;

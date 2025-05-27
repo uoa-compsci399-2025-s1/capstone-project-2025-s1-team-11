@@ -3,19 +3,19 @@ import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spi
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from "react-redux";
-import { useFileSystem } from "../hooks/useFileSystem.js";
-import { selectExamData } from '../store/exam/selectors.js';
-import { useHistory } from '../hooks/useHistory';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import CreateExamModal from './CreateExamModal';
-import EditExamModal from './EditExamModal';
+import { useFileSystem } from "../../hooks/useFileSystem.js";
+import { selectExamData } from '../../store/exam/selectors.js';
+import { useHistory } from '../../hooks/useHistory.js';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts.js';
+import CreateExamModal from './CreateExamModal.jsx';
+import EditExamModal from './EditExamModal.jsx';
 //import { exportExamToPdf } from "../services/exportPdf";
-import { handleExportDocx } from '../utilities/UIUtils';
-import '../index.css';
-import useMessage from "../hooks/useMessage.js";
+import { handleExportDocx } from '../../utilities/UIUtils.jsx';
+import '../../index.css';
+import useMessage from "../../hooks/useMessage.js";
 // Import saveExamToDisk directly for use after creating a new exam
-import { saveExamToDisk } from '../services/fileSystemAccess.js';
-import { handleExamDetailsSave } from '../services/examEditService';
+import { saveExamToDisk } from '../../services/fileSystemAccess.js';
+import { handleExamDetailsSave } from '../../services/examEditService.js';
 
 const { Text, Paragraph } = Typography;
 

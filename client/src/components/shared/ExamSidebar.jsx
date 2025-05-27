@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip, Tag } from 'antd';
 import { ProfileOutlined, FileTextOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
-import { htmlToText } from '../utilities/textUtils';
+import { htmlToText } from '../../utilities/textUtils';
 
 const { Title, Text, Paragraph } = Typography;
 

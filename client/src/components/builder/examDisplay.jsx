@@ -11,70 +11,22 @@ import {
   updateSection,
   moveQuestion,
   moveSection,
-} from "../../store/exam/examSlice";
+} from "../../store/exam/examSlice.js";
 import { 
   selectExamData, 
   selectQuestionsAndSectionsForTable
-} from "../../store/exam/selectors";
-import { htmlToText } from "../../utilities/textUtils";
-import CompactRichTextEditor from "../editor/CompactRichTextEditor";
+} from "../../store/exam/selectors.js";
+import { htmlToText } from "../../utilities/textUtils.js";
+import RichTextEditor from "../editor/RichTextEditor.jsx";
+import { QuestionEditorContainer } from "./QuestionEditor.jsx";
 import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 //import { arrayMove } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 import useMessage from "../../hooks/useMessage.js";
+import { DEFAULT_OPTIONS } from '../../constants/answerOptions';
 
 const { TextArea } = Input;
-
-const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
-
-// Memoized Question Editor Component
-const QuestionEditor = React.memo(({ content, onChange }) => {
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <CompactRichTextEditor
-        key="question-editor"
-        content={content}
-        onChange={onChange}
-        placeholder="Question Text"
-      />
-    </div>
-  );
-});
-
-// Memoized Answer Editor Component
-const AnswerEditor = React.memo(({ answer, index, onChange }) => {
-  const handleChange = useCallback((html) => {
-    onChange(html, index);
-  }, [onChange, index]);
-
-  return (
-    <div style={{ marginBottom: 8 }}>
-      <CompactRichTextEditor
-        key={`answer-editor-${index}`}
-        content={answer.contentFormatted}
-        onChange={handleChange}
-        placeholder={`Answer ${String(1 + index)}`}
-      />
-    </div>
-  );
-});
-
-// Lazy loaded answer editors container
-const AnswerEditorsContainer = React.memo(({ answers, onAnswerChange }) => {
-  return (
-    <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 8 }}>
-      {answers.map((answer, index) => (
-        <AnswerEditor
-          key={`${answer.id || index}`}
-          answer={answer}
-          index={index}
-          onChange={onAnswerChange}
-        />
-      ))}
-    </div>
-  );
-});
 
 // New component for the modal editor
 const ExamItemEditor = React.memo(({ modalState, onSave }) => {
@@ -85,20 +37,6 @@ const ExamItemEditor = React.memo(({ modalState, onSave }) => {
       ...prev,
       contentFormatted: html
     }));
-  }, []);
-
-  const handleAnswerContentChange = useCallback((html, index) => {
-    setItemState(prev => {
-      const updatedAnswers = [...prev.answers];
-      updatedAnswers[index] = {
-        ...updatedAnswers[index],
-        contentFormatted: html
-      };
-      return {
-        ...prev,
-        answers: updatedAnswers
-      };
-    });
   }, []);
 
   const handleSectionTitleChange = useCallback((e) => {
@@ -124,7 +62,7 @@ const ExamItemEditor = React.memo(({ modalState, onSave }) => {
           style={{ marginBottom: 8 }}
         />
         <div style={{ marginBottom: 16 }}>
-          <CompactRichTextEditor
+          <RichTextEditor
             key="section-editor"
             content={itemState?.contentFormatted}
             onChange={handleQuestionContentChange}
@@ -137,18 +75,12 @@ const ExamItemEditor = React.memo(({ modalState, onSave }) => {
 
   if (modalState.type === "question") {
     return (
-      <>
-        <QuestionEditor
-          content={itemState?.contentFormatted}
-          onChange={handleQuestionContentChange}
-        />
-        <Suspense fallback={<div>Loading answer editors...</div>}>
-          <AnswerEditorsContainer
-            answers={itemState?.answers || []}
-            onAnswerChange={handleAnswerContentChange}
-          />
-        </Suspense>
-      </>
+      <QuestionEditorContainer 
+        item={itemState}
+        onSave={onSave}
+        examBodyIndex={modalState.examBodyIndex}
+        questionsIndex={modalState.questionsIndex}
+      />
     );
   }
 

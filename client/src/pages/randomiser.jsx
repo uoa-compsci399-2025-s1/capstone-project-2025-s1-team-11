@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider } from "antd";
 import { regenerateShuffleMaps, importMarkingKey } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
-import MapDisplay from "../components/mapDisplay";
+import MapDisplay from "../components/randomiser/mapDisplay";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { htmlToText } from "../utilities/textUtils.js";
 import { importMarkingKeyFile, processMarkingKeyFile } from "../services/markingKeyImportService";
@@ -24,8 +24,9 @@ const Randomiser = () => {
   const [isShuffling, setIsShuffling] = useState(false);
   const [isImportingKey, setIsImportingKey] = useState(false);
   const [selectedSection, setSelectedSection] = useState("All");
-  const [showQuestion, setShowQuestion] = useState(true);
+  const [showQuestion, setShowQuestion] = useState(false);
   const [showAnswers, setShowAnswers] = useState(true);
+  const [showControls, setShowControls] = useState(false);
   const [displayMode, setDisplayMode] = useState("visual");
   const [visualStyle, setVisualStyle] = useState("grid");
 
@@ -284,6 +285,10 @@ const Randomiser = () => {
                   <Text strong>Show Answers:</Text>
                   <Switch checked={showAnswers} onChange={setShowAnswers} />
                 </Space>
+                <Space>
+                  <Text strong>All-Version Controls:</Text>
+                  <Switch checked={showControls} onChange={setShowControls} />
+                </Space>
               </Space>
             </div>
 
@@ -336,6 +341,7 @@ const Randomiser = () => {
                           examBodyIndex={location.examBodyIndex}
                           questionsIndex={location.questionsIndex}
                           showAnswers={showAnswers}
+                          showControls={showControls}
                         />
                       ) : (
                         <Text>

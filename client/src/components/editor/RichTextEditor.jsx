@@ -97,6 +97,40 @@ const CustomIndentExtension = Extension.create({
 const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Enter content...'
   const { token } = theme.useToken();
   
+  // Add custom styles for the editor
+  useEffect(() => {
+    const styleId = 'rich-text-editor-styles';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        .rich-text-editor-toolbar {
+          background-color: #f0f0f0;
+          border-bottom: 1px solid #d9d9d9;
+          padding: 4px;
+          border-top-left-radius: 2px;
+          border-top-right-radius: 2px;
+        }
+        .ProseMirror {
+          min-height: 34px;
+          padding: 8px 12px !important;
+          margin: 0 !important;
+        }
+        .ProseMirror p {
+          margin: 0;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    return () => {
+      const styleElement = document.getElementById(styleId);
+      if (styleElement) {
+        document.head.removeChild(styleElement);
+      }
+    };
+  }, []);
+  
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -181,7 +215,7 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
       attributes: {
         class: 'compact-editor-content',
         spellcheck: 'false',
-        style: 'outline: none !important; padding: 0 !important; margin: 0 !important;'
+        style: 'outline: none !important; margin: 0 !important;'
       },
       parseOptions: {
         preserveWhitespace: true
@@ -321,19 +355,20 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
         styles={{ 
           body: { 
             padding: 0,
+          },
+          header: {
+            minHeight: 'auto',
+            padding: 0
           }
         }}
+        bodyStyle={{ padding: 0 }}
       >
         <div style={{ 
           display: 'flex',
           flexDirection: 'column',
           height: '100%'
         }}>
-          <div style={{ 
-            padding: '2px', 
-            borderBottom: `1px solid ${token.colorBorder}`, 
-            background: token.colorBgElevated 
-          }}>
+          <div className="rich-text-editor-toolbar">
             <Tooltip title="Bold">
               <Button
                 type="text"
@@ -467,8 +502,8 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
           <EditorContent 
             editor={editor} 
             style={{ 
-              padding: '0 6px',
-              minHeight: '4px',
+              padding: 0,
+              minHeight: '34px',
               background: token.colorBgContainer,
               outline: 'none',
               position: 'relative'
