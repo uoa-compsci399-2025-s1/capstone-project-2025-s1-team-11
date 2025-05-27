@@ -9,7 +9,7 @@ export function generateResultOutput(studentResult, examData, includeFeedback = 
   let output = examData.courseCode || "COURSE CODE MISSING\n";
   output += `AUID: ${studentResult.studentId}\n`;
   output += `Name: ${studentResult.lastName.padEnd(12)} ${studentResult.firstName.padEnd(8)}\n`;
-  output += `Version: ${studentResult.versionNumber}\n`;
+  output += `Version: ${studentResult.versionId}\n`;
   output += "--------------------------------------------------------------------------\n";
 
   studentResult.questions.forEach(q => {
