@@ -1,15 +1,26 @@
-import {Button, Col, Divider, Empty, Progress, Radio, Row, Statistic, Typography, Tabs, Select, Space} from "antd";
+import {
+  Col,
+  Divider,
+  Empty,
+  Row,
+  Statistic,
+  Typography,
+  Tabs,
+  Select,
+  Space,
+} from "antd";
 const { Title, Text, Paragraph } = Typography;
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import React, {useState, useEffect } from "react";
 import QuestionStats from "./QuestionStats.jsx";
 import StudentReport from "./StudentReport.jsx";
+
 // import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js";
 import {generateResultOutput} from "../../utilities/marker/outputFormatter.js";
 import {calculateStatistics} from "../../utilities/statistics/examStatistics.js";
 import ExportResults from "./exportResults.jsx";
 
-export const Results = ({setExportFormat, exportFormat, resultsData, handleExportResults, examData}) => {
+export const Results = ({resultsData, examData}) => {
   //console.log("Results component received:", resultsData);
   
   // Always define hooks at the top level, never conditionally
@@ -228,7 +239,6 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
       <Tabs 
         activeKey={activeTab} 
         onChange={(key) => {
-          //console.log("Tab changing to:", key);
           setActiveTab(key);
         }}
         destroyOnHidden={true}
