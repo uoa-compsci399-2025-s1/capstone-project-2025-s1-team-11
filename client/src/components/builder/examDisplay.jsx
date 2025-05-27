@@ -475,7 +475,7 @@ const ExamDisplay = () => {
       {/* Modal with extracted editor component */}
       <Modal
         open={modalState.visible}
-        title={modalState.isDelete ? 'Confirm Delete' : `Edit ${modalState.type}`}
+        title={modalState.isDelete ? 'Confirm Delete' : `Edit ${modalState.type === 'question' ? 'Question' : 'Section'}`}
         onCancel={resetModalState}
         onOk={modalState.isDelete ? executeDeleteItem : handleSaveEdit}
         width={800}

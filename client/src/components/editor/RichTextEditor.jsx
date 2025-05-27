@@ -105,8 +105,8 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
       style.id = styleId;
       style.textContent = `
         .rich-text-editor-toolbar {
-          background-color: #f0f0f0;
-          border-bottom: 1px solid #d9d9d9;
+          background-color: ${token.colorFillSecondary};
+          border-bottom: 1px solid ${token.colorBorderSecondary};
           padding: 4px;
           border-top-left-radius: 2px;
           border-top-right-radius: 2px;
@@ -115,6 +115,8 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
           min-height: 34px;
           padding: 8px 12px !important;
           margin: 0 !important;
+          color: ${token.colorText};
+          background-color: ${token.colorBgContainer};
         }
         .ProseMirror p {
           margin: 0;
@@ -129,7 +131,7 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
         document.head.removeChild(styleElement);
       }
     };
-  }, []);
+  }, [token]);
   
   const editor = useEditor({
     extensions: [
@@ -359,9 +361,17 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
           header: {
             minHeight: 'auto',
             padding: 0
+          },
+          'ant-card': {
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.02)',
+            transition: 'all 0.25s ease'
           }
         }}
         bodyStyle={{ padding: 0 }}
+        style={{
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.02)',
+          transition: 'all 0.25s ease'
+        }}
       >
         <div style={{ 
           display: 'flex',

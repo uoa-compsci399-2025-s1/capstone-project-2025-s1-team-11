@@ -158,7 +158,7 @@ const AnswerEditorsContainer = React.memo(({
           <Text strong>Correct</Text>
         </Col>
         <Col style={{ width: '120px', textAlign: 'center' }}>
-          <Text strong>Map to</Text>
+          <Text strong>Set Position</Text>
         </Col>
       </Row>
       {answers.map((answer, index) => (
