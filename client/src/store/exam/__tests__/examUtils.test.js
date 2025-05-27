@@ -10,7 +10,9 @@ import {
   createSection,
   createQuestion,
   createAnswer,
-  createExamComponent
+  createExamComponent,
+  needsMigration,
+  migrateExam
 } from '../examUtils';
 
 describe('Exam Utility Functions', () => {
@@ -136,5 +138,68 @@ describe('Exam Utility Functions', () => {
     expect(section.questions).toHaveLength(2);
     expect(section.questions[0].type).toBe('question');
     expect(section.questions[1].type).toBe('question');
+  });
+});
+
+describe('Exam Versioning', () => {
+  test('new exams should have current schema version', () => {
+    const exam = createExam();
+    expect(exam.schemaVersion).toBeDefined();
+    expect(exam.schemaVersion).toBe('1.0.0');
+  });
+
+  test('should detect when migration is needed', () => {
+    // Legacy exam without version
+    const legacyExam = {
+      type: 'exam',
+      examTitle: 'Old Exam',
+      examBody: []
+    };
+    expect(needsMigration(legacyExam)).toBe(true);
+
+    // Current version exam
+    const currentExam = createExam();
+    expect(needsMigration(currentExam)).toBe(false);
+
+    // Future version exam (hypothetical)
+    const futureExam = {
+      ...createExam(),
+      schemaVersion: '2.0.0'
+    };
+    expect(needsMigration(futureExam)).toBe(true);
+  });
+
+  test('should migrate legacy exam format', () => {
+    const legacyExam = {
+      type: 'exam',
+      examTitle: 'Legacy Exam',
+      examBody: null // Invalid examBody
+    };
+
+    const migratedExam = migrateExam(legacyExam);
+
+    // Check that version was added
+    expect(migratedExam.schemaVersion).toBe('1.0.0');
+
+    // Check that required fields were added
+    expect(migratedExam.teleformOptions).toEqual(['a', 'b', 'c', 'd', 'e']);
+    expect(Array.isArray(migratedExam.examBody)).toBe(true);
+    expect(migratedExam.examBody).toEqual([]);
+
+    // Check that original fields were preserved
+    expect(migratedExam.type).toBe('exam');
+    expect(migratedExam.examTitle).toBe('Legacy Exam');
+  });
+
+  test('should not modify current version exams', () => {
+    const currentExam = createExam({
+      examTitle: 'Current Exam',
+      customField: 'value'
+    });
+
+    const migratedExam = migrateExam(currentExam);
+
+    // Should be the same object
+    expect(migratedExam).toEqual(currentExam);
   });
 });

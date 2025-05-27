@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip, Tag } from 'antd';
 import { ProfileOutlined, FileTextOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { htmlToText } from '../../utilities/textUtils';
@@ -57,6 +58,8 @@ const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToIt
 });
 
 const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) => {
+  const fileName = useSelector((state) => state.exam.fileName);
+
   if (!exam || !exam.examBody || !Array.isArray(exam.examBody)) {
     return (
       <Card className="exam-sidebar">
@@ -210,6 +213,14 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
               </Paragraph>
             </List.Item>
           )}
+          <List.Item>
+            <Text type="secondary">File:</Text>
+            <Tooltip title="Full file path not available due to browser privacy restrictions.">
+              <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
+                {fileName || '[unsaved file]'}
+              </Text>
+            </Tooltip>
+          </List.Item>
         </List>
       </div>
 

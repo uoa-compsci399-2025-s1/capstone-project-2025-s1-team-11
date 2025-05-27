@@ -5,11 +5,13 @@
  * Do not use this module to import an exam. Use the hook.
  */
 
+import { needsMigration, migrateExam } from '../store/exam/examUtils';
+
 /**
  * Opens a file picker and reads an exam from a JSON file.
  * Returns an object with the file handle and the parsed Exam instance.
+ * If the exam schema is outdated, it will be automatically migrated.
  */
-
 export async function loadExamFromFile() {
     try {
       const [fileHandle] = await window.showOpenFilePicker({
@@ -24,7 +26,14 @@ export async function loadExamFromFile() {
   
       const file = await fileHandle.getFile();
       const text = await file.text();
-      const exam = JSON.parse(text);
+      let exam = JSON.parse(text);
+  
+      // Check if exam needs migration
+      if (needsMigration(exam)) {
+        console.log('Migrating exam from older schema version...');
+        exam = migrateExam(exam);
+      }
+  
       return { exam, fileHandle};
     } catch (err) {
       console.error("File open cancelled or failed:", err);
