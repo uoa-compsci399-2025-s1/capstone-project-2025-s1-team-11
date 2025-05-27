@@ -6,9 +6,10 @@
 /**
  * Calculates statistics from marked exam results
  * @param {Array} markedResults - Array of marked student results
+ * @param {number} totalExamMarks - Total available marks for the exam
  * @returns {Object} Statistics including summary and per-question stats
  */
-export function calculateStatistics(markedResults) {
+export function calculateStatistics(markedResults, totalExamMarks) {
   const results = {
     summary: {
       totalStudents: 0,
@@ -22,8 +23,8 @@ export function calculateStatistics(markedResults) {
 
   // Process each student's results
   markedResults.forEach(studentResult => {
-    // Calculate percentage score for this student
-    const percentageScore = (studentResult.totalMarks / studentResult.maxMarks) * 100;
+    // Calculate percentage score for this student using total exam marks
+    const percentageScore = (studentResult.totalMarks / totalExamMarks) * 100;
 
     // Update summary statistics
     results.summary.totalStudents++;
@@ -99,22 +100,32 @@ export function calculateStatistics(markedResults) {
   });
 
   const scoreDistribution = (() => {
-    // Calculate percentage scores
+    // Calculate percentage scores using total exam marks
     const scores = markedResults.map(student => 
-      (student.totalMarks / student.maxMarks) * 100
+      (student.totalMarks / totalExamMarks) * 100
     );
     
     // Use fixed 10% bins
     const binWidth = 10;
     const numBins = 10; // 0-10, 10-20, ..., 90-100
     
-    // Create bins
+    // Create bins using standard binning rule: lower < score <= upper
     return Array.from({ length: numBins }, (_, idx) => {
       const lower = idx * binWidth;
       const upper = lower + binWidth;
       const count = scores.filter(score => 
-        score >= lower && (idx === numBins - 1 ? score <= upper : score < upper)
+        score > lower && score <= upper
       ).length;
+      
+      // Special handling for scores of exactly 0 - include in first bin
+      if (idx === 0) {
+        const zeroScores = scores.filter(score => score === 0).length;
+        return {
+          range: `${lower}-${upper}%`,
+          count: count + zeroScores,
+        };
+      }
+      
       return {
         range: `${lower}-${upper}%`,
         count: count,

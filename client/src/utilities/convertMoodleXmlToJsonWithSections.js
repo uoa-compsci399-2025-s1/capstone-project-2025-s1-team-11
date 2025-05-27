@@ -3,7 +3,13 @@ export function convertMoodleXmlDTOToJsonWithSections(moodleXmlDTO) {
     const examBody = [];
     let currentSection = null;
     
-    moodleXmlDTO.questions.forEach((question) => {
+    // Filter out category questions and only process actual questions
+    //const actualQuestions = moodleXmlDTO.questions.filter(question => question.type !== 'category');
+    
+    // Filter out category questions and only process actual questions
+    const actualQuestions = moodleXmlDTO.questions.filter(question => question.type !== 'category');
+
+    actualQuestions.forEach((question) => {
         // Check if this is a section header question
         if (question.type === 'description') {
             // Create new section
@@ -16,7 +22,7 @@ export function convertMoodleXmlDTOToJsonWithSections(moodleXmlDTO) {
                 questions: []
             };
             examBody.push(currentSection);
-        } else if (currentSection) {
+        } else if (question.type === 'multichoice') {
             // Extract marks from question text if present
             let marks = 1;
             const marksMatch = question.questionText.match(/\[(\d+)\s*marks?\]/i);
@@ -37,6 +43,30 @@ export function convertMoodleXmlDTOToJsonWithSections(moodleXmlDTO) {
                     contentFormatted: answer.text,
                     contentText: answer.text.replace(/<[^>]*>/g, '').trim(), // Strip HTML tags for plain text
                     format: 'HTML',
+                    correct: answer.fraction > 0
+                }))
+            });
+        } else {
+            // If no current section, create a question directly in the exam body
+            let marks = 1;
+            const marksMatch = question.questionText.match(/\[(\d+)\s*marks?\]/i);
+            if (marksMatch) {
+                marks = parseInt(marksMatch[1]);
+            }
+
+            examBody.push({
+                type: 'question',
+                contentFormatted: question.questionText,
+                contentText: question.questionText.replace(/<[^>]*>/g, '').trim(), // Strip HTML tags for plain text
+                format: 'HTML',
+                pageBreakAfter: false,
+                marks: marks,
+                answers: question.answers.map((answer) => ({
+                    type: 'answer',
+                    contentFormatted: answer.text,
+                    contentText: answer.text.replace(/<[^>]*>/g, '').trim(), // Strip HTML tags for plain text
+                    format: 'HTML',
+                    correct: answer.fraction > 0
                 }))
             });
         }
