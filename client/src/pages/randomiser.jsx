@@ -286,7 +286,7 @@ const Randomiser = () => {
                   <Switch checked={showAnswers} onChange={setShowAnswers} />
                 </Space>
                 <Space>
-                  <Text strong>All-Version Controls:</Text>
+                  <Text strong>Answer Controls:</Text>
                   <Switch checked={showControls} onChange={setShowControls} />
                 </Space>
               </Space>

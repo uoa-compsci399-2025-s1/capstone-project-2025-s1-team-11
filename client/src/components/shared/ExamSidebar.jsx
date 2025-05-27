@@ -130,7 +130,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
       label: (
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <span>
-            <ProfileOutlined /> {section.sectionNumber || section.sectionTitle}
+            <ProfileOutlined /> {section.sectionTitle || section.sectionNumber}
           </span>
           <Badge count={section.questions.length} style={{ backgroundColor: '#52c41a' }} />
         </div>

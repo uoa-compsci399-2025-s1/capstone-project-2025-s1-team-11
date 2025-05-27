@@ -236,9 +236,10 @@ const examSlice = createSlice({
     },
 
     removeQuestion: (state, action) => {
-      // Payload should be examBodyIndex of section to remove
-      if (!state.examData.examBody) { return; }
-      removeQuestionHelper(state.examData.examBody, action.payload);
+      // Payload should be an object with examBodyIndex and questionsIndex
+      if (!state.examData?.examBody) { return; }
+      const { examBodyIndex, questionsIndex } = action.payload;
+      removeQuestionHelper(state.examData.examBody, { examBodyIndex, questionsIndex });
       renumberQuestions(state.examData.examBody);
     },
 

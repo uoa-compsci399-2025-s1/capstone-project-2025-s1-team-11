@@ -242,12 +242,18 @@ const ExamDisplay = () => {
     const entry = exam?.examBody?.[examBodyIndex];
 
     if (questionsIndex !== null && questionsIndex !== undefined) {
+      // Delete question from section
       dispatch(removeQuestion({ examBodyIndex, questionsIndex }));
     } else if (entry?.type === "section") {
+      // Delete section
       dispatch(removeSection(examBodyIndex));
+    } else {
+      // Delete standalone question
+      dispatch(removeQuestion({ examBodyIndex }));
     }
 
     setModalState({ visible: false, type: '', item: null, isDelete: false });
+    message.success('Item deleted successfully');
   };
 
   // Memoize the columns configuration with exam as a dependency
@@ -324,7 +330,7 @@ const ExamDisplay = () => {
       ellipsis: true,
       render: (_, record) => {
         if (record.type === "section") {
-          return record.sectionNumber || record.sectionTitle;
+          return  record.sectionTitle || record.sectionNumber;
         }
         return record.sectionNumber;
       },
