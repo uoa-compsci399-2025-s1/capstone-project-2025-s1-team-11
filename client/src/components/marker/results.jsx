@@ -7,6 +7,8 @@ import StudentReport from "./StudentReport.jsx";
 // import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js";
 import {generateResultOutput} from "../../utilities/marker/outputFormatter.js";
 import {calculateStatistics} from "../../utilities/statistics/examStatistics.js";
+import { selectTotalMarks } from "../../store/exam/selectors.js";
+import { useSelector } from "react-redux";
 
 export const Results = ({setExportFormat, exportFormat, resultsData, handleExportResults, examData}) => {
   //console.log("Results component received:", resultsData);
@@ -17,6 +19,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
   const [questionStats, setQuestionStats] = useState({});
   const [hasValidData, setHasValidData] = useState(false);
   const [statistics, setStatistics] = useState(null);
+  const totalExamMarks = useSelector(selectTotalMarks);
 
   // Get the selected student data
   const selectedStudent = React.useMemo(() => {
@@ -35,7 +38,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
     setHasValidData(true);
 
     // Calculate statistics using the examStatistics utility
-    const stats = calculateStatistics(resultsData);
+    const stats = calculateStatistics(resultsData, totalExamMarks);
     setStatistics(stats);
     setQuestionStats(stats.questionStats);
 
@@ -45,7 +48,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
       //console.log("First student data:", firstStudent);
       setSelectedStudentId(firstStudent.studentId);
     }
-  }, [resultsData]);
+  }, [resultsData, totalExamMarks]);
 
   // Validate resultsData
   if (!hasValidData) {

@@ -1,8 +1,12 @@
 import { markExams } from '../examMarker';
 import TestExam from './Test.json';
 
+// Mock the store module with a factory that doesn't reference external variables
 jest.mock('../../../store/store.js', () => ({
-  store: { dispatch: jest.fn() }
+  store: {
+    getState: jest.fn(),
+    dispatch: jest.fn()
+  }
 }));
 
 jest.mock('../teleformReader.js', () => ({
@@ -10,6 +14,7 @@ jest.mock('../teleformReader.js', () => ({
 }));
 
 import { readTeleform } from '../teleformReader';
+import { store } from '../../../store/store';
 
 const baseExam = { ...TestExam };
 baseExam.examBody = baseExam.examBody.filter(e => e.type === 'question').slice(0, 3);
@@ -104,6 +109,10 @@ const testCases = [
 ];
 
 describe('markExams edge cases', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   testCases.forEach(({ name, answerString, markingKey, expectedMarks, examOverride }) => {
     it(name, () => {
       readTeleform.mockReturnValue([
@@ -116,7 +125,15 @@ describe('markExams edge cases', () => {
         }
       ]);
 
-      const exam = examOverride || baseExam;
+      const exam = examOverride || TestExam;
+      
+      // Mock the store state with the correct exam data
+      store.getState.mockReturnValue({
+        exam: {
+          examData: exam
+        }
+      });
+
       const result = markExams(exam, 'teleform', markingKey);
       const total = result.all[0]?.totalMarks || 0;
       expect(total).toBe(expectedMarks);
