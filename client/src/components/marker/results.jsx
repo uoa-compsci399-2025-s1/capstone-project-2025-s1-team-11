@@ -7,6 +7,7 @@ import StudentReport from "./StudentReport.jsx";
 // import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js";
 import {generateResultOutput} from "../../utilities/marker/outputFormatter.js";
 import {calculateStatistics} from "../../utilities/statistics/examStatistics.js";
+import ExportResults from "./exportResults.jsx";
 
 export const Results = ({setExportFormat, exportFormat, resultsData, handleExportResults, examData}) => {
   //console.log("Results component received:", resultsData);
