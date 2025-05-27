@@ -1,7 +1,7 @@
 // src/pages/Marker.jsx
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Typography, Button, Input, Divider } from "antd";
+import { Typography, Button, Divider } from "antd";
 import { useSelector } from "react-redux";
 import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
 import { markExams } from "../utilities/marker/examMarker.js";
