@@ -16,8 +16,6 @@ const QuestionEditor = React.memo(({
   onQuestionChange 
 }) => {
   const dispatch = useDispatch();
-  const exam = useSelector(selectExamData);
-  const options = exam?.teleformOptions || DEFAULT_OPTIONS;
 
   const handleQuestionContentChange = useCallback((html) => {
     onQuestionChange(html);
@@ -66,13 +64,10 @@ const AnswerEditor = React.memo(({
   answer, 
   index, 
   onChange, 
-  examBodyIndex, 
-  questionsIndex,
   question,
   onCorrectChange,
   onMapToChange
 }) => {
-  const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
   const options = exam?.teleformOptions || DEFAULT_OPTIONS;
 
@@ -188,12 +183,6 @@ const QuestionEditorContainer = ({ item, onSave, examBodyIndex, questionsIndex }
   const [itemState, setItemState] = useState(item);
   const dispatch = useDispatch();
   
-  // Memoize our update function to avoid unnecessary re-renders
-  const updateLocalState = useCallback((updatedState) => {
-    setItemState(updatedState);
-    onSave(updatedState); // Keep parent component's state in sync
-  }, [onSave]);
-
   const handleQuestionContentChange = useCallback((html) => {
     setItemState(prev => ({
       ...prev,

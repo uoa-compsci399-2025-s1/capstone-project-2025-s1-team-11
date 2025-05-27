@@ -198,3 +198,6 @@ export const selectCorrectAnswerIndices = createSelector(
     return result;
   }
 );
+
+// Teleform data selectors
+export const selectTeleformData = (state) => state.teleform.teleformData;

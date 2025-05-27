@@ -6,16 +6,20 @@ import { useSelector } from "react-redux";
 import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
 import { markExams } from "../utilities/marker/examMarker.js";
 import DataReview from "../components/marker/dataReview.jsx";
-import {Results} from "../components/marker/results.jsx"
-import {teleformReader} from "../components/marker/teleformReader.jsx";
-import {selectCorrectAnswerIndices, selectExamData} from "../store/exam/selectors.js";
+import { Results } from "../components/marker/results.jsx"
+import TeleformReader from "../components/marker/teleformReader.jsx";
+import {
+  selectCorrectAnswerIndices, 
+  selectExamData,
+  selectTeleformData
+} from "../store/exam/selectors.js";
 import useMessage from "../hooks/useMessage.js";
 
 const Marker = () => {
   const message = useMessage();
   const examData = useSelector(selectExamData);
   const examAnswers = useSelector(selectCorrectAnswerIndices);
-  const [teleformData, setTeleformData] = useState("");
+  const teleformData = useSelector(selectTeleformData);
   const [markingKey, setMarkingKey] = useState(null);
   const [resultsData, setResultsData] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -67,10 +71,6 @@ const Marker = () => {
     }
   }, [teleformData, markingKey, currentExamData, message]);
 
-  const handleTeleformDataChange = (e) => {
-    setTeleformData(e.target.value);
-  };
-
   const renderContent = () => {
     //console.log("Current step:", currentStep);
     //console.log("Results data:", resultsData);
@@ -79,7 +79,7 @@ const Marker = () => {
       case 0:
         return <DataReview examData={currentExamData} markingKey={markingKey} />;
       case 1:
-        return teleformReader({teleformData, markingKey, handleTeleformDataChange});
+        return <TeleformReader markingKey={markingKey} />;
       case 2:
         // Make sure we're passing valid data to the Results component
         if (!resultsData || !resultsData.all || !Array.isArray(resultsData.all)) {
