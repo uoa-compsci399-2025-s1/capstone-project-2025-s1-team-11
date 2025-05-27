@@ -218,21 +218,11 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
         question-level performance and analysis. You can also export your results for further review.
       </Paragraph>
 
-      {/* Export format selection */}
-      <Radio.Group
-        onChange={(e) => setExportFormat(e.target.value)}
-        value={exportFormat}
-        style={{ marginBottom: 16 }}
-      >
-        <Radio value="json">JSON Format</Radio>
-        <Radio value="text">Text Format (Legacy Style)</Radio>
-      </Radio.Group>
+      <ExportResults
+        resultsData = {resultsData}
+        currentExamData = {examData}
+      />
 
-      <div style={{ marginBottom: 16 }}>
-        <Button type="primary" onClick={handleExportResults} style={{ marginRight: 16 }}>
-          Export Results
-        </Button>
-      </div>
 
       <Tabs 
         activeKey={activeTab} 
