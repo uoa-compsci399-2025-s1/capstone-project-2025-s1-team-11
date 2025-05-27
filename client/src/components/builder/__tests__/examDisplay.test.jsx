@@ -58,7 +58,7 @@ jest.mock('antd', () => {
         mockMessage.error(...args);
       }
     },
-    Modal: ({ children, onOk, onCancel, title, destroyOnClose, destroyOnHidden, width, ...props }) => (
+    Modal: ({ children, onOk, onCancel, title, ...props }) => (
       <div role="dialog" {...props}>
         <div>{title}</div>
         {children}
@@ -98,7 +98,7 @@ jest.mock('antd', () => {
       Text: ({ children, type, ...props }) => (
         <span className={type ? `ant-typography-${type}` : ''} {...props}>{children}</span>
       ),
-      Paragraph: ({ children, ellipsis, ...props }) => <p {...props}>{children}</p>
+      Paragraph: ({ children, ...props }) => <p {...props}>{children}</p>
     }
   };
 });
