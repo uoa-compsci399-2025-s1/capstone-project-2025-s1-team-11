@@ -1,7 +1,7 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider } from "antd";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider, Tooltip } from "antd";
 import { regenerateShuffleMaps, importMarkingKey } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/randomiser/mapDisplay";
@@ -287,7 +287,9 @@ const Randomiser = () => {
                 </Space>
                 <Space>
                   <Text strong>Answer Controls:</Text>
-                  <Switch checked={showControls} onChange={setShowControls} />
+                  <Tooltip title="These controls apply to all versions">
+                    <Switch checked={showControls} onChange={setShowControls} />
+                  </Tooltip>
                 </Space>
               </Space>
             </div>
