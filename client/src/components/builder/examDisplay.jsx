@@ -1,7 +1,7 @@
 //examDisplay.jsx
 
 import React, { useState, useMemo, useCallback, Suspense } from "react";
-import { Button, Typography, Modal, Input, Table } from "antd";
+import { Button, Typography, Modal, Input, Table, Tooltip } from "antd";
 const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -85,6 +85,30 @@ const ExamItemEditor = React.memo(({ modalState, onSave }) => {
   }
 
   return null;
+});
+
+const ContentRenderer = React.memo(({ record }) => {
+  const textContent = useMemo(() => {
+    try {
+      return htmlToText(record.contentFormatted);
+    } catch (error) {
+      console.error('Error converting HTML to text:', error);
+      return 'Error rendering content';
+    }
+  }, [record.contentFormatted]);
+
+  return (
+    <Paragraph
+      style={{ margin: 0, maxWidth: 280 }}
+      ellipsis={{ 
+        rows: 3,
+        expandable: true,
+        symbol: 'more'
+      }}
+    >
+      {textContent}
+    </Paragraph>
+  );
 });
 
 const ExamDisplay = () => {
@@ -256,7 +280,10 @@ const ExamDisplay = () => {
     message.success('Item deleted successfully');
   };
 
-  // Memoize the columns configuration with exam as a dependency
+  // Memoize the table data with a stable reference
+  const memoizedTableData = useMemo(() => tableData || [], [tableData]);
+
+  // Memoize the columns configuration
   const columns = useMemo(() => [
     {
       title: "Actions",
@@ -330,7 +357,7 @@ const ExamDisplay = () => {
       ellipsis: true,
       render: (_, record) => {
         if (record.type === "section") {
-          return  record.sectionTitle || record.sectionNumber;
+          return record.sectionTitle || record.sectionNumber;
         }
         return record.sectionNumber;
       },
@@ -342,35 +369,12 @@ const ExamDisplay = () => {
       render: (_, record) => {
         if (!record?.contentFormatted) return null;
         
-        if (record.type === "section") {
-          return (
-            <div key={`section-content-${record.id}`}>
-              <Paragraph
-                style={{ margin: 0, maxWidth: 280 }}
-                ellipsis={{ 
-                  rows: 3,
-                  expandable: true,
-                  symbol: 'more'
-                }}
-              >
-                {htmlToText(record.contentFormatted)}
-              </Paragraph>
-            </div>
-          );
+        try {
+          return <ContentRenderer record={record} />;
+        } catch (error) {
+          console.error('Error rendering content:', error);
+          return <div>Error rendering content</div>;
         }
-        return (
-          <Paragraph
-            key={`question-content-${record.id}`}
-            style={{ margin: 0, maxWidth: 280 }}
-            ellipsis={{ 
-              rows: 3,
-              expandable: true,
-              symbol: 'more'
-            }}
-          >
-            {htmlToText(record.contentFormatted)}
-          </Paragraph>
-        );
       },
     },
     {
@@ -409,9 +413,6 @@ const ExamDisplay = () => {
     },
   ], [exam, handleEdit, handleMove]); // Added handleEdit and handleMove to dependencies
 
-  // Memoize the table data
-  const memoizedTableData = useMemo(() => tableData || [], [tableData]);
-
   if (!exam || !Array.isArray(exam.examBody)) {
     return <div>Please open an exam or create a new file.</div>;
   }
@@ -419,7 +420,7 @@ const ExamDisplay = () => {
   return (
     <div>
       <div style={{ marginBottom: 16 }}>
-       <Title level={3}>{exam.examTitle}</Title>
+        <Title level={3}>{exam.examTitle}</Title>
         {(exam.courseCode || exam.courseName || exam.semester || exam.year) && (
           <Text type="secondary">
             {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
@@ -464,6 +465,7 @@ const ExamDisplay = () => {
         }}
       >
         <Table
+          key="exam-table"
           rowKey="id" 
           columns={columns}
           dataSource={memoizedTableData}
