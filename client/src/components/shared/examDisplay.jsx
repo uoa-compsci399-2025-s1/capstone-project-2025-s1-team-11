@@ -23,21 +23,33 @@ const renderTextWithLatex = (text) => {
   if (!text || typeof text !== 'string') return text;
   
   // First split by display math ($$...$$)
-  const displayParts = text.split(/(\$\$[^$]+\$\$)/g);
+  const displayParts = text.split(/(\$\$[^$]+\$\$)/gs);
   
   return displayParts.map((part, i) => {
     if (part.startsWith('$$') && part.endsWith('$$')) {
       // This is display math
       const math = part.slice(2, -2);
-      return <BlockMath key={`display-${i}`}>{math}</BlockMath>;
+      // Check if this is a display math block (multiple lines or contains display math commands)
+      const isDisplayMath = math.includes('\n') || 
+                           math.includes('\\begin{align}') || 
+                           math.includes('\\begin{equation}') ||
+                           math.includes('\\sum') ||
+                           math.includes('\\int') ||
+                           math.includes('\\prod');
+      
+      if (isDisplayMath) {
+        return <BlockMath key={`display-${i}`}>{math}</BlockMath>;
+      } else {
+        return <InlineMath key={`inline-${i}`}>{math}</InlineMath>;
+      }
     }
     
-    // For non-display parts, split by inline math ($$...$$)
-    const inlineParts = part.split(/(\$\$[^$]+\$\$)/g);
+    // For non-display parts, split by inline math ($...$)
+    const inlineParts = part.split(/(\$[^$]+\$)/g);
     return inlineParts.map((inlinePart, j) => {
-      if (inlinePart.startsWith('$$') && inlinePart.endsWith('$$')) {
+      if (inlinePart.startsWith('$') && inlinePart.endsWith('$')) {
         // This is inline math
-        const math = inlinePart.slice(2, -2);
+        const math = inlinePart.slice(1, -1);
         return <InlineMath key={`inline-${i}-${j}`}>{math}</InlineMath>;
       }
       return <span key={`text-${i}-${j}`}>{inlinePart}</span>;
