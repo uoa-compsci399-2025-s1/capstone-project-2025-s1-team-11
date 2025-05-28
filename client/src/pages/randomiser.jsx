@@ -3,11 +3,11 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider, Tooltip } from "antd";
 import { regenerateShuffleMaps, importMarkingKey } from "../store/exam/examSlice";
-import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
+import { selectExamData, selectAllQuestionsFlat, selectCorrectAnswerIndices } from "../store/exam/selectors";
 import MapDisplay from "../components/randomiser/mapDisplay";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { htmlToText } from "../utilities/textUtils.js";
-import { importMarkingKeyFile, processMarkingKeyFile } from "../services/markingKeyImportService";
+import { importMarkingKeyFile, processMarkingKeyFile, exportMarkingKeyToXLSX } from "../services/markingKeyXlsxService";
 import useMessage from "../hooks/useMessage.js";
 
 const { Title, Text, Paragraph } = Typography;
@@ -16,6 +16,7 @@ const Randomiser = () => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
   const questions = useSelector(selectAllQuestionsFlat);
+  const correctAnswers = useSelector(selectCorrectAnswerIndices);
   const { token } = theme.useToken();
   const message = useMessage();
 
@@ -56,6 +57,53 @@ const Randomiser = () => {
       dispatch(regenerateShuffleMaps());
       setIsShuffling(false);
     }, 600);
+  };
+
+  // New function to handle exporting marking key
+  const handleExportMarkingKey = () => {
+    if (!exam || !correctAnswers) {
+      message.error("No exam data available to export marking key.");
+      return;
+    }
+
+    try {
+      const markingKeyData = {
+        versions: exam.versions,
+        questionMappings: {},
+        markWeights: {}
+      };
+
+      // Prepare data for export
+      questions.forEach(question => {
+        markingKeyData.questionMappings[question.questionNumber] = {};
+        markingKeyData.markWeights[question.questionNumber] = question.marks;
+
+        exam.versions.forEach(versionId => {
+          markingKeyData.questionMappings[question.questionNumber][versionId] = {
+            shuffleMap: question.answerShuffleMaps[exam.versions.indexOf(versionId)],
+            correctAnswerIndices: correctAnswers[versionId][question.questionNumber] || []
+          };
+        });
+      });
+
+      // Generate XLSX file
+      const blob = exportMarkingKeyToXLSX(markingKeyData);
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${exam.courseCode || 'exam'}_marking_key.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      message.success("Marking key exported successfully.");
+    } catch (error) {
+      console.error("Error exporting marking key:", error);
+      message.error(`Failed to export marking key: ${error.message}`);
+    }
   };
 
   // New function to handle importing marking key
@@ -228,6 +276,13 @@ const Randomiser = () => {
                 }}
               >
                 Import Marking Key
+              </Button>
+
+              <Button
+                onClick={handleExportMarkingKey}
+                disabled={!exam || !correctAnswers}
+              >
+                Export Marking Key
               </Button>
             </div>
           </Card>
