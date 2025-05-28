@@ -107,13 +107,13 @@ function transformQuestionsAndSections(items) {
       // Transform section
       const sectionNumber = examBody.length + 1;
       const sectionId = `s${sectionNumber}`;
-      const sectionTitle = item.title || `Section ${sectionNumber}`;
+      // const sectionTitle = item.title || `Section ${sectionNumber}`;
       
       const section = {
         type: 'section',
         contentFormatted: latexToHtml(item.content),
         format: 'HTML',
-        sectionTitle: sectionTitle,
+        // sectionTitle: sectionTitle,
         id: sectionId,
         questions: []
       };
