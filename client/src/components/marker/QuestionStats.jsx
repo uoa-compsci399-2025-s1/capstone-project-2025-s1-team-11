@@ -105,6 +105,10 @@ const QuestionStats = ({ results, examData }) => {
       key: 'correctAnswer',
       width: 150,
       render: (text, record) => {
+        // Don't show correct answer in combined view as it's misleading
+        if (selectedVersion === 'combined') {
+          return <Tag color="warning">Varies by version</Tag>;
+        }
         return <span>{record.correctAnswerLetter}</span>;
       },
     },
@@ -204,7 +208,16 @@ const QuestionStats = ({ results, examData }) => {
             Difficulty: {getDifficultyTag(stats.difficultyLevel || 'Unknown')}
           </Typography.Title>
           <Typography.Text>
-            Correct Answer: {bitmaskToOptionLetters(parseInt(stats.correctAnswer || '0', 10))}
+            {selectedVersion === 'combined' ? (
+              <Alert 
+                message="Correct answer varies by version" 
+                type="warning" 
+                showIcon 
+                style={{ marginBottom: 8, marginTop: 8 }}
+              />
+            ) : (
+              <>Correct Answer: {bitmaskToOptionLetters(parseInt(stats.correctAnswer || '0', 10))}</>
+            )}
           </Typography.Text>
           <Typography.Text style={{ display: 'block', marginTop: 10 }}>
             Correct: {stats.correctCount || 0} ({stats.correctPercentage || '0.0'}%) 
