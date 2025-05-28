@@ -168,26 +168,42 @@ export const Results = ({resultsData, examData}) => {
       label: 'Student Reports',
       children: (
         <Space direction="vertical" style={{ width: '100%' }}>
-          <Select
-            style={{ width: 400 }}
-            placeholder="Search or select a student"
-            value={selectedStudentId}
-            showSearch
-            optionFilterProp="label"
-            filterOption={(input, option) => 
-              (option?.label?.toLowerCase() ?? '').includes(input.toLowerCase())
-            }
-            notFoundContent="No students found"
-            allowClear
-            onChange={(value) => {
-              //console.log("Selecting student with ID:", value);
-              setSelectedStudentId(value);
-            }}
-            options={resultsData.map((student) => ({
-              value: student.studentId,
-              label: `${student.firstName} ${student.lastName} (${student.studentId}) - ${student.totalMarks !== undefined ? `${student.totalMarks}/${student.maxMarks}` : "N/A"}`
-            }))}
-          />
+          <div>
+            <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+              Search by name or student ID:
+            </Typography.Text>
+            <Select
+              style={{ width: 400 }}
+              placeholder="Search or select a student"
+              value={selectedStudentId}
+              showSearch
+              optionFilterProp="label"
+              filterOption={(input, option) => {
+                // Get the student ID from the option
+                const studentId = option.value.toString();
+                const label = option.label.toLowerCase();
+                const searchTerm = input.toLowerCase();
+                
+                // Check if search directly matches the student ID
+                if (studentId.includes(searchTerm)) {
+                  return true;
+                }
+                
+                // Fall back to searching in the full label
+                return label.includes(searchTerm);
+              }}
+              notFoundContent="No students found"
+              allowClear
+              onChange={(value) => {
+                //console.log("Selecting student with ID:", value);
+                setSelectedStudentId(value);
+              }}
+              options={resultsData.map((student) => ({
+                value: student.studentId,
+                label: `${student.firstName} ${student.lastName} (${student.studentId}) - ${student.totalMarks !== undefined ? `${student.totalMarks}/${student.maxMarks}` : "N/A"}`
+              }))}
+            />
+          </div>
 
           {selectedStudent ? (
             <StudentReport 
