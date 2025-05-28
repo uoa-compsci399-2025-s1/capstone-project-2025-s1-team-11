@@ -28,6 +28,10 @@ export function latexToHtml(latex) {
   html = html.replace(/\\&/g, '&amp;');
   html = html.replace(/\\#/g, '#');
   html = html.replace(/\\_/g, '_');
+  // Handle escaped dollar signs (currency): replace \\$ with a literal dollar sign
+  html = html.replace(/\\\$/g, '$');
+  // Handle escaped percent signs (for percentages): replace \\% with %
+  html = html.replace(/\\%/g, '%');
   
   // Remove LaTeX label commands
   html = html.replace(/\\label\{[^}]*\}/g, '');

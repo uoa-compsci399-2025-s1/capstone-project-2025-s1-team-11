@@ -45,9 +45,10 @@ const renderTextWithLatex = (text) => {
     }
     
     // For non-display parts, split by inline math ($...$)
-    const inlineParts = part.split(/(\$[^$]+\$)/g);
+    // Make sure not to match escaped dollar signs \$ (currency symbols)
+    const inlineParts = part.split(/(?<!\\\$)(\$[^$]+?\$)(?!\$)/g);
     return inlineParts.map((inlinePart, j) => {
-      if (inlinePart.startsWith('$') && inlinePart.endsWith('$')) {
+      if (inlinePart.startsWith('$') && inlinePart.endsWith('$') && !inlinePart.startsWith('\\$')) {
         // This is inline math
         const math = inlinePart.slice(1, -1);
         return <InlineMath key={`inline-${i}-${j}`}>{math}</InlineMath>;
