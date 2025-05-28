@@ -405,16 +405,27 @@ const Randomiser = () => {
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <Select
-                value={selectedSection}
-                onChange={setSelectedSection}
-                style={{ width: 180 }}
-              >
-                <Select.Option value="All">All Sections</Select.Option>
-                {[...new Set(questions.map(q => q.section))].filter(Boolean).map(section => (
-                  <Select.Option key={section} value={section}>{section}</Select.Option>
-                ))}
-              </Select>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Select
+                  value={selectedSection}
+                  onChange={setSelectedSection}
+                  style={{ width: 180 }}
+                >
+                  <Select.Option value="All">All Sections</Select.Option>
+                  {[...new Set(questions.map(q => q.section))].filter(Boolean).map(section => (
+                    <Select.Option key={section} value={section}>{section}</Select.Option>
+                  ))}
+                </Select>
+
+                <Pagination
+                  current={pagination.current}
+                  pageSize={pagination.pageSize}
+                  total={filteredQuestions.length}
+                  onChange={(page) => setPagination(prev => ({ ...prev, current: page }))}
+                  size="small"
+                  showSizeChanger={false}
+                />
+              </div>
             </div>
 
             <Spin spinning={isShuffling}>
@@ -465,14 +476,15 @@ const Randomiser = () => {
                 })}
               </div>
               <EmptyExam/>
-              <Pagination
-                current={pagination.current}
-                pageSize={pagination.pageSize}
-                total={filteredQuestions.length}
-                onChange={(page) => setPagination(prev => ({ ...prev, current: page }))}
-                style={{ marginTop: 16, textAlign: "center" }}
-                showSizeChanger={false}
-              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                <Pagination
+                  current={pagination.current}
+                  pageSize={pagination.pageSize}
+                  total={filteredQuestions.length}
+                  onChange={(page) => setPagination(prev => ({ ...prev, current: page }))}
+                  showSizeChanger={false}
+                />
+              </div>
             </Spin>
           </Card>
       </>

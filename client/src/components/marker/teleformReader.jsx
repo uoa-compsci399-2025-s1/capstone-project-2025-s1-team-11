@@ -11,7 +11,7 @@ const { TextArea } = Input;
 const { Title } = Typography;
 
 // Convert to named function component with PascalCase naming convention
-const TeleformReader = ({ markingKey }) => {
+const TeleformReader = ({ markingKey, navigationButtons }) => {
   const dispatch = useDispatch();
   const teleformData = useSelector(selectTeleformData);
   
@@ -45,7 +45,10 @@ const TeleformReader = ({ markingKey }) => {
 
   return (
     <div>
-      <Title level={4}>Teleform Data</Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Title level={2} style={{ margin: 0 }}>Teleform Data</Title>
+        {navigationButtons}
+      </div>
       
       <Space style={{ marginBottom: 16 }}>
         <Upload

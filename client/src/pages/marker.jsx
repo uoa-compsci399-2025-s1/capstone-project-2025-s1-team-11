@@ -75,11 +75,22 @@ const Marker = () => {
     //console.log("Current step:", currentStep);
     //console.log("Results data:", resultsData);
     
+    const navigationButtons = (
+      <div>
+        <Button onClick={prev} disabled={currentStep === 0} style={{ marginRight: 8 }}>
+          Back
+        </Button>
+        <Button type="primary" onClick={next} disabled={currentStep === 2}>
+          Next
+        </Button>
+      </div>
+    );
+
     switch (currentStep) {
       case 0:
-        return <DataReview examData={currentExamData} markingKey={markingKey} />;
+        return <DataReview examData={currentExamData} markingKey={markingKey} navigationButtons={navigationButtons} />;
       case 1:
-        return <TeleformReader markingKey={markingKey} />;
+        return <TeleformReader markingKey={markingKey} navigationButtons={navigationButtons} />;
       case 2:
         // Make sure we're passing valid data to the Results component
         if (!resultsData || !resultsData.all || !Array.isArray(resultsData.all)) {
@@ -91,11 +102,11 @@ const Marker = () => {
               markingKey={markingKey}
               setResultsData={(data) => setResultsData({ all: data })}
               setExamData={setLocalExamData}
+              navigationButtons={navigationButtons}
             />
           );
         }
         
-        //console.log("Passing to Results component:", resultsData.all);
         return (
           <Results
             resultsData={resultsData.all}
@@ -104,6 +115,7 @@ const Marker = () => {
             markingKey={markingKey}
             setResultsData={(data) => setResultsData({ all: data })}
             setExamData={setLocalExamData}
+            navigationButtons={navigationButtons}
           />
         );
       default:
@@ -138,7 +150,7 @@ const Marker = () => {
 
       <Divider />
       
-      <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Button onClick={prev} disabled={currentStep === 0} style={{ marginRight: 8 }}>
           Back
         </Button>
