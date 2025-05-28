@@ -1,3 +1,20 @@
+/**
+ * Convert MoodleXML math delimiters to standard $$ format
+ * @param {string} text - Text containing MoodleXML math delimiters
+ * @returns {string} Text with standardized math delimiters
+ */
+function convertMathDelimiters(text) {
+    if (!text) return text;
+    
+    // Convert \(...\) to $$...$$
+    text = text.replace(/\\\((.*?)\\\)/g, '$$$1$$');
+    
+    // Convert \[...\] to $$...$$
+    text = text.replace(/\\\[(.*?)\\\]/g, '$$$1$$');
+    
+    return text;
+}
+
 export function convertMoodleXmlDTOToJsonWithSections(moodleXmlDTO) {
     // Group questions by section (assuming first question in each section has a section title)
     const examBody = [];
@@ -9,7 +26,7 @@ export function convertMoodleXmlDTOToJsonWithSections(moodleXmlDTO) {
             // Create new section
             currentSection = {
                 type: 'section',
-                contentFormatted: question.questionText,
+                contentFormatted: convertMathDelimiters(question.questionText),
                 contentText: question.questionText.replace(/<[^>]*>/g, '').trim(), // Strip HTML tags for plain text
                 format: 'HTML',
                 sectionTitle: question.name,
@@ -27,14 +44,14 @@ export function convertMoodleXmlDTOToJsonWithSections(moodleXmlDTO) {
             // Add question to current section
             examBody.push({
                 type: 'question',
-                contentFormatted: question.questionText,
+                contentFormatted: convertMathDelimiters(question.questionText),
                 contentText: question.questionText.replace(/<[^>]*>/g, '').trim(), // Strip HTML tags for plain text
                 format: 'HTML',
                 pageBreakAfter: false,
                 marks: marks,
                 answers: question.answers.map((answer) => ({
                     type: 'answer',
-                    contentFormatted: answer.text,
+                    contentFormatted: convertMathDelimiters(answer.text),
                     contentText: answer.text.replace(/<[^>]*>/g, '').trim(), // Strip HTML tags for plain text
                     format: 'HTML',
                 }))

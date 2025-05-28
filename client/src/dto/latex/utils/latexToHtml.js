@@ -73,7 +73,7 @@ function replaceMathExpressions(text) {
   
   // Handle display math ($$...$$)
   result = result.replace(/\$\$(.*?)\$\$/g, (match, formula) => {
-    return `<div class="math-display">$${cleanMathFormula(formula)}$</div>`;
+    return `<div class="math-display">$$${cleanMathFormula(formula)}$$</div>`;
   });
   
   // Handle specific problems with fractions in math
@@ -85,19 +85,19 @@ function replaceMathExpressions(text) {
   // Ensure proper log rendering for bases
   result = result.replace(/\\log_([0-9]+)/g, '\\log_{$1}');
   
-  // Handle inline math ($...$)
-  result = result.replace(/\$(.*?)\$/g, (match, formula) => {
-    return `<span class="math-inline">$${cleanMathFormula(formula)}$</span>`;
+  // Handle inline math ($$...$$)
+  result = result.replace(/\$\$(.*?)\$\$/g, (match, formula) => {
+    return `<span class="math-inline">$$${cleanMathFormula(formula)}$$</span>`;
   });
   
   // Replace \[ \] display math
   result = result.replace(/\\\[(.*?)\\\]/g, (match, formula) => {
-    return `<div class="math-display">$${cleanMathFormula(formula)}$</div>`;
+    return `<div class="math-display">$$${cleanMathFormula(formula)}$$</div>`;
   });
   
   // Replace \( \) inline math
   result = result.replace(/\\\((.*?)\\\)/g, (match, formula) => {
-    return `<span class="math-inline">$${cleanMathFormula(formula)}$</span>`;
+    return `<span class="math-inline">$$${cleanMathFormula(formula)}$$</span>`;
   });
   
   // Process math-related commands like \frac, \sqrt, etc.
