@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  teleformData: localStorage.getItem('teleformData') || '',
+  teleformData: '',
 };
 
 export const teleformSlice = createSlice({
@@ -10,12 +10,9 @@ export const teleformSlice = createSlice({
   reducers: {
     setTeleformData: (state, action) => {
       state.teleformData = action.payload;
-      // Save to localStorage for persistence across sessions
-      localStorage.setItem('teleformData', action.payload);
     },
     clearTeleformData: (state) => {
       state.teleformData = '';
-      localStorage.removeItem('teleformData');
     },
   },
 });

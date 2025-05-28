@@ -114,7 +114,9 @@ export const importDTOToState = (examDTO) => async (dispatch, getState) => {
       //console.log(`examData: ${JSON.stringify(examData)}`);
     } else {
       Object.keys(examDTO).forEach(key => {
-        if (key !== 'examBody' && examData[key] && examDTO[key] && examData[key] != examDTO[key]) {
+        if (key !== 'examBody' && examData[key] && examDTO[key] && 
+            examDTO[key] !== null && examDTO[key] !== undefined && examDTO[key] !== '' && 
+            examData[key] != examDTO[key]) {
           dispatch(updateExamField({
             field: key,
             value: examDTO[key]
