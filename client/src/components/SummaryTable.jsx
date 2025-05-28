@@ -10,37 +10,58 @@ const { Paragraph, Title } = Typography;
 const SummaryTable = () => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
-  const tableData = Array.isArray(exam?.examBody) ? exam.examBody.flatMap((entry, examBodyIndex) => {
-    if (entry.type === "section" && Array.isArray(entry.questions)) {
-      return entry.questions.map((q, questionsIndex) => ({
-        ...q,
-        examBodyIndex,
-        questionsIndex
-      }));
-    } else if (entry.type !== "section") {
+  const tableData = useMemo(() => {
+    if (!Array.isArray(exam?.examBody)) return [];
+    return exam.examBody.flatMap((entry, examBodyIndex) => {
+      if (!entry || !entry.type) return [];
+      if (entry.type === "section" && Array.isArray(entry.questions)) {
+        return entry.questions.map((q, questionsIndex) => ({
+          ...q,
+          examBodyIndex,
+          questionsIndex
+        }));
+      }
       return [{
         ...entry,
         examBodyIndex,
         questionsIndex: null
       }];
-    }
-    return [];
-  }) : [];
+    });
+  }, [exam]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [showOnlyFlagged, setShowOnlyFlagged] = useState(false);
 
   const processedQuestions = useMemo(() => {
     return (tableData || []).filter(item => item?.type !== "section").map(item => {
+      const flags = [];
       const answers = Array.isArray(item.answers) ? item.answers : [];
       const hasEmptyAnswer = answers.some(a => !(a?.contentFormatted || "").trim());
+      const answerTexts = answers.map(a => htmlToText(a.contentFormatted || "").trim().toLowerCase());
+      const seen = new Set();
+      const hasDuplicateAnswers = answerTexts.some(text => {
+        if (seen.has(text)) return true;
+        seen.add(text);
+        return false;
+      });
+      if (hasDuplicateAnswers) flags.push("Duplicate answers");
       const question = htmlToText(item.contentFormatted || "");
       const isEmptyQuestion = !question.trim();
+      if (!isEmptyQuestion && question.trim().length < 10) {
+        flags.push("Short question");
+      }
       const marks = item.marks ?? 0;
 
-      const flags = [];
       if (isEmptyQuestion) flags.push("Empty question");
       if (hasEmptyAnswer) flags.push("Empty answer");
       if (marks === 0) flags.push("No marks given");
+      if (answers.filter(a => a.correct).length === 0) flags.push("No correct answer");
+      const correctCount = answers.filter(a => a.correct).length;
+      if (correctCount === answers.length && answers.length > 0) {
+        flags.push("All answers correct");
+      } else if (correctCount > 1) {
+        flags.push("Multiple correct answers");
+      }
+      if (answers.length < 2 || answers.length > 5) flags.push("No options");
 
       return {
         ...item,
@@ -160,6 +181,12 @@ const SummaryTable = () => {
             if (flag === 'Empty question') color = 'red';
             else if (flag === 'Empty answer') color = 'volcano';
             else if (flag === 'No marks given') color = 'purple';
+            else if (flag === 'No correct answer') color = 'orange';
+            else if (flag === 'Multiple correct answers') color = 'geekblue';
+            else if (flag === 'All answers correct') color = 'geekblue';
+            else if (flag === 'No options') color = 'magenta';
+            else if (flag === 'Duplicate answers') color = 'cyan';
+            else if (flag === 'Short question') color = 'gold';
             return <Tag color={color} key={flag}>{flag}</Tag>;
           })}
         </Space>
