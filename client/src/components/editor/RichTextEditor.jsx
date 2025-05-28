@@ -367,7 +367,6 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
             transition: 'all 0.25s ease'
           }
         }}
-        bodyStyle={{ padding: 0 }}
         style={{
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.02)',
           transition: 'all 0.25s ease'

@@ -27,6 +27,8 @@ const ExamContentManager = () => {
     if (success) {
       setShowSuccessAlert(true);
       setError("");
+      // Reset the file input value so the same file can be selected again
+      event.target.value = '';
     }
   };
 
