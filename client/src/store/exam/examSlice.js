@@ -20,6 +20,7 @@ import {
   renumberSections,
   normaliseAnswersToLength,
   normaliseAnswersPerTeleformOptions,
+  createMinimalExamFromMarkingKey,
 } from './examHelpers';
 
 const initialState = {
@@ -378,10 +379,21 @@ const examSlice = createSlice({
       state.fileName = action.payload;
     },
     importMarkingKey: (state, action) => {
-      if (!state.examData) return;
-      
       const { versions, questionMappings, markWeights } = action.payload;
       
+      // If no exam exists, create a minimal exam structure
+      if (!state.examData) {
+        state.examData = createMinimalExamFromMarkingKey(
+          action.payload,
+          createExam,
+          createQuestion,
+          createAnswer,
+          generateId
+        );
+        return;
+      }
+      
+      // Original code for when exam exists
       // Update exam versions if needed
       if (versions && versions.length > 0) {
         state.examData.versions = versions;

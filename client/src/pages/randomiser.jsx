@@ -1,9 +1,9 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider, Tooltip } from "antd";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider, Tooltip, Modal } from "antd";
 import { regenerateShuffleMaps, importMarkingKey } from "../store/exam/examSlice";
-import { selectExamData, selectAllQuestionsFlat, selectCorrectAnswerIndices } from "../store/exam/selectors";
+import { selectExamData, selectAllQuestionsFlat, selectCorrectAnswerIndices, selectQuestionCount } from "../store/exam/selectors";
 import MapDisplay from "../components/randomiser/mapDisplay";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { htmlToText } from "../utilities/textUtils.js";
@@ -17,6 +17,7 @@ const Randomiser = () => {
   const exam = useSelector(selectExamData);
   const questions = useSelector(selectAllQuestionsFlat);
   const correctAnswers = useSelector(selectCorrectAnswerIndices);
+  const questionCount = useSelector(selectQuestionCount);
   const { token } = theme.useToken();
   const message = useMessage();
 
@@ -108,11 +109,6 @@ const Randomiser = () => {
 
   // New function to handle importing marking key
   const handleImportMarkingKey = async () => {
-    if (!exam) {
-      message.error("No exam data available to import marking key.");
-      return;
-    }
-
     setIsImportingKey(true);
     try {
       // Show file picker
@@ -126,10 +122,69 @@ const Randomiser = () => {
       
       // Process the file
       const markingKeyData = await processMarkingKeyFile(file);
+      const markingKeyQuestionCount = Object.keys(markingKeyData.questionMappings).length;
+
+      // Case 1: No exam loaded or empty exam body
+      if (!exam || !exam.examBody || exam.examBody.length === 0) {
+        const shouldCreate = await new Promise(resolve => {
+          Modal.confirm({
+            title: 'Create New Exam',
+            content: 'No exam content loaded - do you want to create a blank exam to use this marking key?',
+            okText: 'Create',
+            cancelText: 'Cancel',
+            onOk: () => resolve(true),
+            onCancel: () => resolve(false),
+          });
+        });
+
+        if (!shouldCreate) {
+          setIsImportingKey(false);
+          return;
+        }
+      }
+      // Case 2: Question count mismatch
+      else if (markingKeyQuestionCount !== questionCount) {
+        await new Promise(resolve => {
+          Modal.error({
+            title: 'Question Count Mismatch',
+            content: `Warning: marking key length (${markingKeyQuestionCount}) does not match exam length (${questionCount}). Adjust exam or marking key and re-try.`,
+            onOk: () => resolve(),
+          });
+        });
+        setIsImportingKey(false);
+        return;
+      }
+      // Case 3: Check for mark value differences
+      else {
+        let marksChanged = false;
+        questions.forEach(question => {
+          const keyWeight = markingKeyData.markWeights[question.questionNumber];
+          if (keyWeight && keyWeight !== question.marks) {
+            marksChanged = true;
+          }
+        });
+
+        if (marksChanged) {
+          const shouldReplace = await new Promise(resolve => {
+            Modal.confirm({
+              title: 'Mark Values Differ',
+              content: 'Mark values in marking key differ from current exam data. Would you like to replace marks from key or keep existing exam values?',
+              okText: 'Replace',
+              cancelText: 'Keep Existing',
+              onOk: () => resolve(true),
+              onCancel: () => resolve(false),
+            });
+          });
+
+          // If keeping existing marks, remove the markWeights from the marking key data
+          if (!shouldReplace) {
+            markingKeyData.markWeights = {};
+          }
+        }
+      }
       
-      // Update the exam with the marking key data
+      // Apply the marking key
       dispatch(importMarkingKey(markingKeyData));
-      
       message.success("Marking key imported successfully.");
     } catch (error) {
       console.error("Error importing marking key:", error);
@@ -265,25 +320,25 @@ const Randomiser = () => {
                 Shuffle All Answers
               </Button>
               
-              <Button
-                type="default"
-                onClick={handleImportMarkingKey}
-                loading={isImportingKey}
-                disabled={!exam}
-                style={{
-                  borderColor: token.colorPrimary,
-                  color: token.colorPrimary
-                }}
-              >
-                Import Marking Key
-              </Button>
-
-              <Button
-                onClick={handleExportMarkingKey}
-                disabled={!exam || !correctAnswers}
-              >
-                Export Marking Key
-              </Button>
+              <Space>
+                <Button
+                  type="default"
+                  onClick={handleImportMarkingKey}
+                  loading={isImportingKey}
+                  style={{
+                    borderColor: token.colorPrimary,
+                    color: token.colorPrimary
+                  }}
+                >
+                  Import Marking Key
+                </Button>
+                <Button
+                  onClick={handleExportMarkingKey}
+                  disabled={!exam || !correctAnswers}
+                >
+                  Export Marking Key
+                </Button>
+              </Space>
             </div>
           </Card>
 
