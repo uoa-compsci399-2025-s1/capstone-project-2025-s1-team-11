@@ -1,4 +1,3 @@
-import { createExam } from '../../store/exam/examUtils.js';
 import { latexToHtml } from './utils/latexToHtml.js';
 
 /**
@@ -7,90 +6,92 @@ import { latexToHtml } from './utils/latexToHtml.js';
  * @returns {Object} - The transformed DTO ready to be used by the application
  */
 export function transformLatexToDto(parsedStructure) {
-  // Extract document type from document class
-  const isExam = parsedStructure.documentClass.name === 'exam';
   
   // Create a base exam object with enhanced metadata
-  const dto = createExam({
-    examTitle: parsedStructure.metadata.examTitle || (isExam ? 'Exam' : 'Document'),
-    courseCode: parsedStructure.metadata.courseCode || '',
-    courseName: parsedStructure.metadata.courseName || '',
-    semester: parsedStructure.metadata.semester || '',
-    year: parsedStructure.metadata.year || new Date().getFullYear().toString()
-  });
+  const dto = {
+    type: 'exam',
+    examBody: []
+  };
+
+  // Only add metadata fields that have actual values
+  if (parsedStructure.metadata.examTitle?.trim()) dto.examTitle = parsedStructure.metadata.examTitle;
+  if (parsedStructure.metadata.courseCode?.trim()) dto.courseCode = parsedStructure.metadata.courseCode;
+  if (parsedStructure.metadata.courseName?.trim()) dto.courseName = parsedStructure.metadata.courseName;
+  if (parsedStructure.metadata.semester?.trim()) dto.semester = parsedStructure.metadata.semester;
+  if (parsedStructure.metadata.year?.trim()) dto.year = parsedStructure.metadata.year;
 
   // Generate cover page from metadata
-  dto.coverPage = createCoverPage(parsedStructure.metadata);
+  //dto.coverPage = createCoverPage(parsedStructure.metadata);
   
   // Process questions and sections
   dto.examBody = transformQuestionsAndSections(parsedStructure.questions);
   
   // Add any custom metadata from the LaTeX preamble
-  if (parsedStructure.preamble) {
-    const extractedMetadata = extractMetadataFromPreamble(parsedStructure.preamble);
-    if (extractedMetadata.length > 0) {
-      dto.metadata = extractedMetadata;
-    }
-  }
+  // if (parsedStructure.preamble) {
+  //   const extractedMetadata = extractMetadataFromPreamble(parsedStructure.preamble);
+  //   if (extractedMetadata.length > 0) {
+  //     dto.metadata = extractedMetadata;
+  //   }
+  // }
   
   return dto;
 }
 
-/**
- * Create a cover page component from metadata
- * @param {Object} metadata - The metadata from the parsed LaTeX
- * @returns {Object} - A cover page component
- */
-function createCoverPage(metadata) {
-  const timeAllowed = metadata.timeAllowed || 'TWO hours';
+// /**
+//  * Create a cover page component from metadata
+//  * @param {Object} metadata - The metadata from the parsed LaTeX
+//  * @returns {Object} - A cover page component
+//  */
+// function createCoverPage(metadata) {
+//   const timeAllowed = metadata.timeAllowed || 'TWO hours';
   
-  const html = `<center>
-    <p><strong style='font-size: 20px;'>${metadata.institution || 'INSTITUTION'}</strong></p>
-    <p><strong style='font-size: 12px;'>${metadata.semester} SEMESTER ${metadata.year}</strong></p>
-    <p><strong style='font-size: 12px;'>Campus: ${metadata.campus || 'City'}</strong></p>
-    <p><strong style='font-size: 12px;'>${metadata.courseName}</strong></p>
-    <p><strong style='font-size: 12px;'>${metadata.examTitle}</strong></p>
-    <p><strong style='font-size: 12px;'>(Time Allowed: ${timeAllowed})</strong></p>
-  </center>`;
+//   const html = `<center>
+//     <p><strong style='font-size: 20px;'>${metadata.institution || 'INSTITUTION'}</strong></p>
+//     <p><strong style='font-size: 12px;'>${metadata.semester} SEMESTER ${metadata.year}</strong></p>
+//     <p><strong style='font-size: 12px;'>Campus: ${metadata.campus || 'City'}</strong></p>
+//     <p><strong style='font-size: 12px;'>${metadata.courseName}</strong></p>
+//     <p><strong style='font-size: 12px;'>${metadata.examTitle}</strong></p>
+//     <p><strong style='font-size: 12px;'>(Time Allowed: ${timeAllowed})</strong></p>
+//   </center>`;
   
-  return {
-    type: 'content',
-    contentFormatted: html,
-    format: 'HTML',
-    contentText: `${metadata.institution || 'INSTITUTION'} ${metadata.semester} SEMESTER ${metadata.year} Campus: ${metadata.campus || 'City'} ${metadata.courseName} ${metadata.examTitle} (Time Allowed: ${timeAllowed})`
-  };
-}
+//   return {
+//     type: 'content',
+//     contentFormatted: html,
+//     format: 'HTML',
+//     contentText: `${metadata.institution || 'INSTITUTION'} ${metadata.semester} SEMESTER ${metadata.year} Campus: ${metadata.campus || 'City'} ${metadata.courseName} ${metadata.examTitle} (Time Allowed: ${timeAllowed})`
+//   };
+// }
 
-/**
- * Extract metadata from LaTeX preamble
- * @param {string} preamble - The LaTeX preamble
- * @returns {Array} - Array of metadata objects {key, value}
- */
-function extractMetadataFromPreamble(preamble) {
-  const metadata = [];
+// /**
+//  * Extract metadata from LaTeX preamble
+//  * @param {string} preamble - The LaTeX preamble
+//  * @returns {Array} - Array of metadata objects {key, value}
+//  */
+// function extractMetadataFromPreamble(preamble) {
+//   const metadata = [];
   
-  // Extract \newcommand definitions as potential metadata
-  const commandRegex = /\\newcommand{\\([^}]+)}{([^}]*)}/g;
-  let match;
+//   // Extract \newcommand definitions as potential metadata
+//   const commandRegex = /\\newcommand{\\([^}]+)}{([^}]*)}/g;
+//   let match;
   
-  while ((match = commandRegex.exec(preamble)) !== null) {
-    metadata.push({
-      key: match[1],
-      value: match[2]
-    });
-  }
+//   while ((match = commandRegex.exec(preamble)) !== null) {
+//     metadata.push({
+//       key: match[1],
+//       value: match[2]
+//     });
+//   }
   
-  // Look for common metadata in comments
-  const commentRegex = /%\s*([^:]+):\s*(.+)$/gm;
-  while ((match = commentRegex.exec(preamble)) !== null) {
-    metadata.push({
-      key: match[1].trim(),
-      value: match[2].trim()
-    });
-  }
+//   // Look for common metadata in comments
+//   const commentRegex = /%\s*([^:]+):\s*(.+)$/gm;
+//   while ((match = commentRegex.exec(preamble)) !== null) {
+//     metadata.push({
+//       key: match[1].trim(),
+//       value: match[2].trim()
+//     });
+//   }
   
-  return metadata;
-}
+//   return metadata;
+// }
 
 /**
  * Transform questions and sections from the parsed structure to DTO format
@@ -112,9 +113,7 @@ function transformQuestionsAndSections(items) {
         type: 'section',
         contentFormatted: latexToHtml(item.content),
         format: 'HTML',
-        contentText: stripLatex(item.content),
         sectionTitle: sectionTitle,
-        sectionNumber: sectionNumber,
         id: sectionId,
         questions: []
       };
