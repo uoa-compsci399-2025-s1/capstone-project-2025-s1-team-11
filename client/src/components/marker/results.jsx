@@ -169,20 +169,25 @@ export const Results = ({resultsData, examData}) => {
       children: (
         <Space direction="vertical" style={{ width: '100%' }}>
           <Select
-            style={{ width: 300 }}
-            placeholder="Select a student"
+            style={{ width: 400 }}
+            placeholder="Search or select a student"
             value={selectedStudentId}
+            showSearch
+            optionFilterProp="label"
+            filterOption={(input, option) => 
+              (option?.label?.toLowerCase() ?? '').includes(input.toLowerCase())
+            }
+            notFoundContent="No students found"
+            allowClear
             onChange={(value) => {
               //console.log("Selecting student with ID:", value);
               setSelectedStudentId(value);
             }}
-          >
-            {resultsData.map((student) => (
-              <Select.Option key={student.studentId} value={student.studentId}>
-                {student.firstName} {student.lastName} ({student.studentId})
-              </Select.Option>
-            ))}
-          </Select>
+            options={resultsData.map((student) => ({
+              value: student.studentId,
+              label: `${student.firstName} ${student.lastName} (${student.studentId}) - ${student.totalMarks !== undefined ? `${student.totalMarks}/${student.maxMarks}` : "N/A"}`
+            }))}
+          />
 
           {selectedStudent ? (
             <StudentReport 
