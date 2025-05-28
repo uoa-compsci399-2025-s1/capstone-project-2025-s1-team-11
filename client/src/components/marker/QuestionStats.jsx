@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Card, Table, Typography, Progress, Radio, Tag, Tooltip, theme } from 'antd';
+import { Card, Table, Typography, Progress, Radio, Tag, Tooltip, theme, Select, Space, Alert } from 'antd';
 import { BarChartOutlined, PieChartOutlined } from '@ant-design/icons';
+
+const { Option } = Select;
 
 /**
  * Component to display detailed statistics for each question
@@ -8,6 +10,7 @@ import { BarChartOutlined, PieChartOutlined } from '@ant-design/icons';
 const QuestionStats = ({ results, examData }) => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [viewMode, setViewMode] = useState('table');
+  const [selectedVersion, setSelectedVersion] = useState('combined');
   const { token } = theme.useToken();  // Get access to the theme tokens
 
   // If no results or no question stats, show nothing
@@ -15,7 +18,15 @@ const QuestionStats = ({ results, examData }) => {
     return <Typography.Text>No question statistics available.</Typography.Text>;
   }
 
-  const questionStats = results.questionStats;
+  // Get version information
+  const versionList = results.versionList || [];
+  const versions = results.versions || {};
+  
+  // Choose the appropriate question stats based on the selected version
+  const questionStats = selectedVersion === 'combined' 
+    ? results.questionStats 
+    : (versions[selectedVersion]?.questionStats || {});
+  
   const questionNumbers = Object.keys(questionStats).map(Number).sort((a, b) => a - b);
   
   // Get teleform options
@@ -62,10 +73,6 @@ const QuestionStats = ({ results, examData }) => {
     ];
   };
   
-
-  
-
-  
   // Generate the difficulty tag
   const getDifficultyTag = (difficultyLevel) => {
     const colorMap = {
@@ -76,7 +83,6 @@ const QuestionStats = ({ results, examData }) => {
     
     return <Tag color={colorMap[difficultyLevel] || 'default'}>{difficultyLevel}</Tag>;
   };
-  
   
   // The questions table
   const columns = [
@@ -110,13 +116,24 @@ const QuestionStats = ({ results, examData }) => {
       render: (text) => <Progress percent={parseFloat(text || 0)} size="small" strokeColor="#52c41a" success={{ percent: 0 }} />,
     },
     {
-      title: 'Answer Distribution',
+      title: selectedVersion === 'combined' ? 'Total Correct' : 'Answer Distribution',
       key: 'distribution',
       render: (_, record) => {
         const histData = generateHistogramData(record.questionNumber);
         
         if (histData.length === 0 || histData.every(item => item.value === 0)) {
           return <Typography.Text type="secondary">No data</Typography.Text>;
+        }
+        
+        // For combined view, only show correct/incorrect count instead of full distribution
+        if (selectedVersion === 'combined') {
+          const stats = questionStats[record.questionNumber];
+          return (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Tag color="success">{stats.correctCount} correct</Tag>
+              <Tag color="error">{stats.incorrectCount} incorrect</Tag>
+            </div>
+          );
         }
         
         const max = Math.max(...histData.map(d => d.value));
@@ -197,29 +214,67 @@ const QuestionStats = ({ results, examData }) => {
         </div>
         
         <Typography.Title level={5}>Answer Distribution</Typography.Title>
-        <div style={{ marginTop: 20 }}>
-          {histData.map((item, index) => (
-            <div key={index} style={{ marginBottom: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <div style={{ width: 40, marginRight: 10 }}>
-                  <Typography.Text strong>{item.option}</Typography.Text>
+        {selectedVersion === 'combined' ? (
+          <Alert 
+            message="Answer distribution is not shown in combined view as it may be misleading due to different answer mappings across versions." 
+            type="info" 
+            showIcon 
+            style={{ marginBottom: 16 }}
+          />
+        ) : (
+          <div style={{ marginTop: 20 }}>
+            {histData.map((item, index) => (
+              <div key={index} style={{ marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{ width: 40, marginRight: 10 }}>
+                    <Typography.Text strong>{item.option}</Typography.Text>
+                  </div>
+                  <Progress 
+                    percent={(item.value / (stats.totalAnswers || 1)) * 100} 
+                    format={() => `${item.value} (${((item.value / (stats.totalAnswers || 1)) * 100).toFixed(1)}%)`}
+                    strokeColor={item.isCorrect ? '#52c41a' : undefined}
+                  />
                 </div>
-                <Progress 
-                  percent={(item.value / (stats.totalAnswers || 1)) * 100} 
-                  format={() => `${item.value} (${((item.value / (stats.totalAnswers || 1)) * 100).toFixed(1)}%)`}
-                  strokeColor={item.isCorrect ? '#52c41a' : undefined}
-                />
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </Card>
+    );
+  };
+  
+  // Version selector component
+  const renderVersionSelector = () => {
+    return (
+      <Space style={{ marginBottom: 16 }}>
+        <Typography.Text strong>Version:</Typography.Text>
+        <Select 
+          value={selectedVersion} 
+          onChange={setSelectedVersion}
+          style={{ width: 150 }}
+        >
+          <Option value="combined">Combined (All)</Option>
+          {versionList.map(version => (
+            <Option key={version} value={version}>Version {version}</Option>
+          ))}
+        </Select>
+        
+        {selectedVersion === 'combined' && (
+          <Alert 
+            message="Combined view shows aggregate statistics. For answer distributions, select a specific version." 
+            type="info" 
+            showIcon 
+          />
+        )}
+      </Space>
     );
   };
   
   return (
     <div style={{ marginTop: 20 }}>
       <Typography.Title level={4}>Question Analysis</Typography.Title>
+      
+      {renderVersionSelector()}
       
       <div style={{ display: 'flex', marginBottom: 16 }}>
         <Radio.Group

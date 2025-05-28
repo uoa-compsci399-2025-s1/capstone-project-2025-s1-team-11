@@ -18,13 +18,33 @@ export function calculateStatistics(markedResults, totalExamMarks) {
       lowestMark: Infinity,
       passRate: 0
     },
-    questionStats: {}
+    questionStats: {},
+    // New: Track versions for filtering
+    versions: {},
+    versionList: []
   };
+
+  // First pass: collect all unique versions
+  const uniqueVersions = new Set();
+  markedResults.forEach(studentResult => {
+    if (studentResult.versionId) {
+      uniqueVersions.add(studentResult.versionId);
+    }
+  });
+  
+  // Initialize per-version statistics
+  results.versionList = Array.from(uniqueVersions);
+  results.versionList.forEach(versionId => {
+    results.versions[versionId] = {
+      questionStats: {}
+    };
+  });
 
   // Process each student's results
   markedResults.forEach(studentResult => {
     // Calculate percentage score for this student using total exam marks
     const percentageScore = (studentResult.totalMarks / totalExamMarks) * 100;
+    const versionId = studentResult.versionId;
 
     // Update summary statistics
     results.summary.totalStudents++;
@@ -41,7 +61,7 @@ export function calculateStatistics(markedResults, totalExamMarks) {
     studentResult.questions.forEach(question => {
       const qNum = question.questionNumber;
       
-      // initialise question stats if not already done
+      // Initialize combined stats if not already done
       if (!results.questionStats[qNum]) {
         results.questionStats[qNum] = {
           totalAnswers: 0,
@@ -59,16 +79,43 @@ export function calculateStatistics(markedResults, totalExamMarks) {
         };
       }
       
-      // Increment counters
+      // Initialize version-specific stats if not already done
+      if (versionId && !results.versions[versionId].questionStats[qNum]) {
+        results.versions[versionId].questionStats[qNum] = {
+          totalAnswers: 0,
+          correctCount: 0,
+          incorrectCount: 0,
+          answerFrequency: {
+            "01": 0, // Option A
+            "02": 0, // Option B
+            "04": 0, // Option C
+            "08": 0, // Option D
+            "16": 0  // Option E
+          },
+          difficultyLevel: '',
+          correctAnswer: question.correctAnswer
+        };
+      }
+      
+      // Increment combined counters
       results.questionStats[qNum].totalAnswers++;
       if (question.isCorrect) {
         results.questionStats[qNum].correctCount++;
       } else {
         results.questionStats[qNum].incorrectCount++;
       }
-      
-      // Increment answer frequency
       results.questionStats[qNum].answerFrequency[question.studentAnswer]++;
+      
+      // Increment version-specific counters
+      if (versionId) {
+        results.versions[versionId].questionStats[qNum].totalAnswers++;
+        if (question.isCorrect) {
+          results.versions[versionId].questionStats[qNum].correctCount++;
+        } else {
+          results.versions[versionId].questionStats[qNum].incorrectCount++;
+        }
+        results.versions[versionId].questionStats[qNum].answerFrequency[question.studentAnswer]++;
+      }
     });
   });
 
@@ -83,7 +130,7 @@ export function calculateStatistics(markedResults, totalExamMarks) {
     results.summary.lowestMark = 0;
   }
   
-  // Calculate difficulty levels for each question
+  // Calculate difficulty levels for each question (combined view)
   Object.keys(results.questionStats).forEach(qNum => {
     const stats = results.questionStats[qNum];
     const correctPercentage = (stats.correctCount / stats.totalAnswers) * 100;
@@ -97,6 +144,24 @@ export function calculateStatistics(markedResults, totalExamMarks) {
     }
     
     stats.correctPercentage = correctPercentage.toFixed(1);
+  });
+  
+  // Calculate difficulty levels for each question (per version)
+  results.versionList.forEach(versionId => {
+    Object.keys(results.versions[versionId].questionStats).forEach(qNum => {
+      const stats = results.versions[versionId].questionStats[qNum];
+      const correctPercentage = (stats.correctCount / stats.totalAnswers) * 100;
+      
+      if (correctPercentage >= 80) {
+        stats.difficultyLevel = 'Easy';
+      } else if (correctPercentage >= 40) {
+        stats.difficultyLevel = 'Medium';
+      } else {
+        stats.difficultyLevel = 'Hard';
+      }
+      
+      stats.correctPercentage = correctPercentage.toFixed(1);
+    });
   });
 
   const scoreDistribution = (() => {
@@ -156,6 +221,8 @@ export function formatStatistics(statistics) {
       ...statistics.summary,
       averageMark: statistics.summary.averageMark.toFixed(1)
     },
-    questionStats: statistics.questionStats
+    questionStats: statistics.questionStats,
+    versions: statistics.versions,
+    versionList: statistics.versionList
   };
 } 

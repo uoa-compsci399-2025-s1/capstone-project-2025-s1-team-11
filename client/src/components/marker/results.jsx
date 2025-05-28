@@ -155,7 +155,9 @@ export const Results = ({resultsData, examData}) => {
         <QuestionStats 
           results={{ 
             all: resultsData,
-            questionStats
+            questionStats,
+            versions: statistics?.versions || {},
+            versionList: statistics?.versionList || []
           }}
           examData={examData}
         />
