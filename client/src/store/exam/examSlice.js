@@ -361,14 +361,14 @@ const examSlice = createSlice({
     },
 
     importExamStart: (state) => {
-      state.loading = true;
+      state.isLoading = true;
       state.error = null;
     },
     importExamSuccess: (state) => {
-      state.loading = false;
+      state.isLoading = false;
     },
     importExamFailure: (state, action) => {
-      state.loading = false;
+      state.isLoading = false;
       state.error = action.payload;
     },
     addExamMessage: (state, action) => {
