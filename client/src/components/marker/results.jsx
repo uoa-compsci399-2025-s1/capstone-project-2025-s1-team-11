@@ -247,7 +247,7 @@ export const Results = ({resultsData, examData, navigationButtons}) => {
         onChange={(key) => {
           setActiveTab(key);
         }}
-        destroyOnHidden={true}
+        destroyInactiveTabPane={true}
         items={tabItems}
       />
     </>
