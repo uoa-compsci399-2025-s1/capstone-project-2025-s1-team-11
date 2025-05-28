@@ -58,7 +58,6 @@ export function transformLatexToDto(parsedStructure) {
 //     type: 'content',
 //     contentFormatted: html,
 //     format: 'HTML',
-//     contentText: `${metadata.institution || 'INSTITUTION'} ${metadata.semester} SEMESTER ${metadata.year} Campus: ${metadata.campus || 'City'} ${metadata.courseName} ${metadata.examTitle} (Time Allowed: ${timeAllowed})`
 //   };
 // }
 
@@ -149,7 +148,6 @@ function transformQuestion(question, questionNumber, sectionId = null) {
   
   // Format the question content as HTML
   const contentFormatted = latexToHtml(question.content);
-  const contentText = stripLatex(question.content);
   
   // Transform answers
   const answers = question.answers.map((answer, index) => transformAnswer(answer, questionId, index));
@@ -167,7 +165,6 @@ function transformQuestion(question, questionNumber, sectionId = null) {
       type: 'answer',
       contentFormatted: '',
       format: 'HTML',
-      contentText: '',
       correct: false,
       id: `${questionId}a${answers.length + 1}`
     });
@@ -178,7 +175,6 @@ function transformQuestion(question, questionNumber, sectionId = null) {
     type: 'question',
     contentFormatted,
     format: 'HTML',
-    contentText,
     marks: question.marks || 1,
     questionNumber,
     id: questionId,
@@ -203,38 +199,36 @@ function transformQuestion(question, questionNumber, sectionId = null) {
 function transformAnswer(answer, questionId, index) {
   // Format the answer content as HTML
   const contentFormatted = latexToHtml(answer.content);
-  const contentText = stripLatex(answer.content);
   
   return {
     type: 'answer',
     contentFormatted,
     format: 'HTML',
-    contentText,
     correct: answer.correct || false,
     id: `${questionId}a${index + 1}`
   };
 }
 
-/**
- * Simple function to strip LaTeX commands for plain text representation
- * @param {String} latex - LaTeX content
- * @returns {String} - Plain text representation
- */
-function stripLatex(latex) {
-  if (!latex) return '';
+// /**
+//  * Simple function to strip LaTeX commands for plain text representation
+//  * @param {String} latex - LaTeX content
+//  * @returns {String} - Plain text representation
+//  */
+// function stripLatex(latex) {
+//   if (!latex) return '';
   
-  // Remove LaTeX commands and environments
-  return latex
-    .replace(/\\begin\{[^}]*\}|\\end\{[^}]*\}/g, '') // Remove environment markers
-    .replace(/\\label\{[^}]*\}/g, '') // Remove labels
-    .replace(/\\ref\{[^}]*\}/g, '') // Remove references
-    .replace(/\\cite\{[^}]*\}/g, '') // Remove citations
-    .replace(/\\\w+(\[.*?\])?(\{.*?\})?/g, '$2') // Replace commands with their content
-    .replace(/\$\$(.*?)\$\$|\$(.*?)\$/g, '$1$2') // Extract math content
-    .replace(/\{|\}/g, '') // Remove braces
-    .replace(/\\['"]/g, '') // Remove escaped quotes
-    .replace(/\\%/g, '%') // Replace escaped percent
-    .replace(/\\\\/g, ' ') // Replace double backslash with space
-    .replace(/\s+/g, ' ') // Normalize whitespace
-    .trim();
-} 
+//   // Remove LaTeX commands and environments
+//   return latex
+//     .replace(/\\begin\{[^}]*\}|\\end\{[^}]*\}/g, '') // Remove environment markers
+//     .replace(/\\label\{[^}]*\}/g, '') // Remove labels
+//     .replace(/\\ref\{[^}]*\}/g, '') // Remove references
+//     .replace(/\\cite\{[^}]*\}/g, '') // Remove citations
+//     .replace(/\\\w+(\[.*?\])?(\{.*?\})?/g, '$2') // Replace commands with their content
+//     .replace(/\$\$(.*?)\$\$|\$(.*?)\$/g, '$1$2') // Extract math content
+//     .replace(/\{|\}/g, '') // Remove braces
+//     .replace(/\\['"]/g, '') // Remove escaped quotes
+//     .replace(/\\%/g, '%') // Replace escaped percent
+//     .replace(/\\\\/g, ' ') // Replace double backslash with space
+//     .replace(/\s+/g, ' ') // Normalize whitespace
+//     .trim();
+// } 

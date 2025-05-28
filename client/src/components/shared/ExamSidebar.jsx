@@ -103,7 +103,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
         questions: item.questions?.map((q, qIndex) => ({
           id: q.id,
           type: 'question',
-          text: htmlToText(q.contentFormatted || q.contentText || ''),
+          text: htmlToText(q.contentFormatted || ''),
           marks: q.marks || 1,
           sectionIndex: index,
           questionIndex: qIndex
@@ -118,7 +118,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
       examStructure.push({
         id: item.id,
         type: 'question',
-        text: htmlToText(item.contentFormatted || item.contentText || ''),
+        text: htmlToText(item.contentFormatted || ''),
         marks: item.marks || 1,
         index
       });
