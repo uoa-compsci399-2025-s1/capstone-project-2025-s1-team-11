@@ -69,7 +69,7 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
 
       <Content style={contentStyle}>
         
-        {["/", "/builder", "/randomiser", "/marker", "/console"].includes(location.pathname) && (
+        {["/builder", "/randomiser", "/marker", "/console"].includes(location.pathname) && (
           <div className="context-bar-wrapper" style={{padding: '0'}}>
             <StaticContextBar />
           </div>
