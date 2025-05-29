@@ -246,12 +246,12 @@ const StaticContextBar = ({
     }
   }, [exam]);
   
-  // Auto-save effect: save after 2 seconds of inactivity when exam or teleform data changes.
+  // Auto-save effect: save after 2 seconds of inactivity when exam or teleform changes.
   useEffect(() => {
     if (!autoSaveEnabled) return;
     if (!exam) return;
     
-    // Mark as unsaved when exam or teleform data changes
+    // Mark as unsaved when exam or teleform changes
     setSaveState('unsaved');
     
     // Clear any previous debounce
