@@ -45,8 +45,8 @@ function preprocessLatexMath(htmlString) {
         return `<math-display data-latex="${encodeURIComponent(content)}"></math-display>`;
     });
 
-    // Replace inline math expressions $ ... $ with custom element
-    htmlString = htmlString.replace(/\$(.*?)\$/g, (match, content) => {
+    // Replace inline math expressions $$ ... $$ with custom element
+    htmlString = htmlString.replace(/\$\$(.*?)\$\$/g, (match, content) => {
         return `<math-inline data-latex="${encodeURIComponent(content)}"></math-inline>`;
     });
 

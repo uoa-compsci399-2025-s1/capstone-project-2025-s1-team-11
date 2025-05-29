@@ -17,18 +17,45 @@ import {
   selectQuestionsAndSectionsForTable
 } from "../../store/exam/selectors";
 import { htmlToText } from "../../utilities/textUtils";
-import { InlineMath } from 'react-katex';
+import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
-// Helper to render text with inline LaTeX expressions
-const renderTextWithInlineMath = (text) => {
+// Helper to render text with LaTeX expressions
+const renderTextWithLatex = (text) => {
   if (!text || typeof text !== 'string') return text;
-  const parts = text.split(/(\$[^$]+\$)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('$') && part.endsWith('$')) {
-      const math = part.slice(1, -1);
-      return <InlineMath key={i}>{math}</InlineMath>;
+  
+  // First split by display math ($$...$$)
+  const displayParts = text.split(/(\$\$[^$]+\$\$)/gs);
+  
+  return displayParts.map((part, i) => {
+    if (part.startsWith('$$') && part.endsWith('$$')) {
+      // This is display math
+      const math = part.slice(2, -2);
+      // Check if this is a display math block (multiple lines or contains display math commands)
+      const isDisplayMath = math.includes('\n') || 
+                           math.includes('\\begin{align}') || 
+                           math.includes('\\begin{equation}') ||
+                           math.includes('\\sum') ||
+                           math.includes('\\int') ||
+                           math.includes('\\prod');
+      
+      if (isDisplayMath) {
+        return <BlockMath key={`display-${i}`}>{math}</BlockMath>;
+      } else {
+        return <InlineMath key={`inline-${i}`}>{math}</InlineMath>;
+      }
     }
-    return <span key={i}>{part}</span>;
+    
+    // For non-display parts, split by inline math ($...$)
+    // Make sure not to match escaped dollar signs \$ (currency symbols)
+    const inlineParts = part.split(/(?<!\\\$)(\$[^$]+?\$)(?!\$)/g);
+    return inlineParts.map((inlinePart, j) => {
+      if (inlinePart.startsWith('$') && inlinePart.endsWith('$') && !inlinePart.startsWith('\\$')) {
+        // This is inline math
+        const math = inlinePart.slice(1, -1);
+        return <InlineMath key={`inline-${i}-${j}`}>{math}</InlineMath>;
+      }
+      return <span key={`text-${i}-${j}`}>{inlinePart}</span>;
+    });
   });
 };
 import CompactRichTextEditor from "../editor/CompactRichTextEditor";
@@ -428,7 +455,7 @@ const ExamDisplay = () => {
                   symbol: 'more'
                 }}
               >
-                {renderTextWithInlineMath(htmlToText(record.contentFormatted))}
+                {renderTextWithLatex(htmlToText(record.contentFormatted))}
               </Paragraph>
             </div>
           );
@@ -443,7 +470,7 @@ const ExamDisplay = () => {
               symbol: 'more'
             }}
           >
-            {renderTextWithInlineMath(htmlToText(record.contentFormatted))}
+            {renderTextWithLatex(htmlToText(record.contentFormatted))}
           </Paragraph>
         );
       },
@@ -466,7 +493,7 @@ const ExamDisplay = () => {
                   color: answer.correct ? '#52c41a' : 'inherit'
                 }}
               >
-                {options[i]}) {renderTextWithInlineMath(htmlToText(answer.contentFormatted))}
+                {options[i]}) {renderTextWithLatex(htmlToText(answer.contentFormatted))}
               </Paragraph>
             ))}
           </div>
