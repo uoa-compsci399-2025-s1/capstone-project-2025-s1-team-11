@@ -1,7 +1,7 @@
 //examDisplay.jsx
 
 import React, { useState, useMemo, useCallback, Suspense } from "react";
-import { Button, Typography, Modal, Input, Table, Dropdown, Menu } from "antd";
+import { Button, Typography, Modal, Input, Table, Select } from "antd";
 const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -20,7 +20,8 @@ import { htmlToText } from "../../utilities/textUtils";
 import CompactRichTextEditor from "../editor/CompactRichTextEditor";
 import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
-//import { arrayMove } from "@dnd-kit/sortable";
+import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 import useMessage from "../../hooks/useMessage.js";
 
@@ -77,7 +78,7 @@ const AnswerEditorsContainer = React.memo(({ answers, onAnswerChange }) => {
 });
 
 // New component for the modal editor
-const ExamItemEditor = React.memo(({ modalState, onSave }) => {
+const ExamItemEditor = React.memo(({ modalState, onSave, exam }) => {
   const [itemState, setItemState] = useState(modalState.item);
 
   const handleQuestionContentChange = useCallback((html) => {
@@ -108,9 +109,41 @@ const ExamItemEditor = React.memo(({ modalState, onSave }) => {
     }));
   }, []);
 
-  // Pass the current state up to parent when modal confirms
+  const handleSectionSelectionChange = useCallback((selectedSectionIndex) => {
+    setItemState(prev => ({
+      ...prev,
+      targetSectionIndex: selectedSectionIndex
+    }));
+  }, []);
+
+  const availableSections = useMemo(() => {
+    if (!exam?.examBody) return [];
+    
+    const sections = [{ value: 'standalone', label: 'Standalone Question (No Section)' }];
+    
+    exam.examBody.forEach((item, index) => {
+      if (item.type === 'section') {
+        sections.push({
+          value: index,
+          label: item.sectionTitle || `Section ${item.sectionNumber || index + 1}`
+        });
+      }
+    });
+    
+    return sections;
+  }, [exam]);
+
+  const currentSectionIndex = useMemo(() => {
+    if (modalState.type !== 'question') return null;
+    
+    if (modalState.questionsIndex !== undefined) {
+      return modalState.examBodyIndex;
+    }
+    
+    return 'standalone';
+  }, [modalState]);
+
   React.useEffect(() => {
-    // Update the parent's reference to the current state
     onSave(itemState);
   }, [itemState, onSave]);
 
@@ -138,6 +171,17 @@ const ExamItemEditor = React.memo(({ modalState, onSave }) => {
   if (modalState.type === "question") {
     return (
       <>
+        <div style={{ marginBottom: 16 }}>
+          <Text strong>Section:</Text>
+          <Select
+            value={itemState?.targetSectionIndex !== undefined ? itemState.targetSectionIndex : currentSectionIndex}
+            onChange={handleSectionSelectionChange}
+            options={availableSections}
+            style={{ width: '100%', marginTop: 4 }}
+            placeholder="Select section for this question"
+          />
+        </div>
+        
         <QuestionEditor
           content={itemState?.contentFormatted}
           onChange={handleQuestionContentChange}
@@ -170,7 +214,6 @@ const ExamDisplay = () => {
     isDelete: false,
   });
 
-  // Track the current editor state
   const [currentEditorState, setCurrentEditorState] = useState(null);
 
   const pointerSensor = useSensor(PointerSensor);
@@ -178,171 +221,39 @@ const ExamDisplay = () => {
   const sensors = useSensors(pointerSensor, keyboardSensor);
 
   const handleMove = useCallback((direction, examBodyIndex, questionsIndex = null) => {
-    if (examBodyIndex === undefined || !exam?.examBody) {
-      message.error("Cannot move item: invalid exam data");
-      return;
-    }
+    if (examBodyIndex === undefined) return;
 
-    // Validate examBodyIndex is within bounds
-    if (examBodyIndex < 0 || examBodyIndex >= exam.examBody.length) {
-      message.error("Cannot move item: invalid position");
-      return;
-    }
-
-    try {
-      // For questions within a section - move within that section only
-      if (questionsIndex !== null && questionsIndex !== undefined) {
-        const section = exam.examBody[examBodyIndex];
-        
-        if (!section || section.type !== 'section' || !Array.isArray(section.questions)) {
-          message.error("Cannot move question: section not found or invalid");
-          return;
-        }
-        
-        const newIndex = questionsIndex + direction;
-        
-        // Check bounds for questions within section
-        if (newIndex < 0 || newIndex >= section.questions.length) {
-          message.warning(`Cannot move question ${direction > 0 ? 'down' : 'up'}: already at ${direction > 0 ? 'bottom' : 'top'} of section`);
-          return;
-        }
-        
-        dispatch(moveQuestion({
-          source: { examBodyIndex, questionsIndex },
-          destination: { examBodyIndex, questionsIndex: newIndex },
-        }));
-        message.success("Question moved within section");
-      } 
-      // For sections or standalone questions at exam body level
-      else {
-        const newIndex = examBodyIndex + direction;
-        
-        // Check bounds for exam body items
-        if (newIndex < 0 || newIndex >= exam.examBody.length) {
-          message.warning(`Cannot move ${direction > 0 ? 'down' : 'up'}: already at ${direction > 0 ? 'bottom' : 'top'} of exam`);
-          return;
-        }
-        
-        const currentItem = exam.examBody[examBodyIndex];
-        if (!currentItem) {
-          message.error("Cannot move item: item not found");
-          return;
-        }
-        
-        const isSection = currentItem?.type?.toLowerCase() === 'section';
-        
-        if (isSection) {
-          dispatch(moveSection({ sourceIndex: examBodyIndex, destIndex: newIndex }));
-          message.success("Section moved");
-        } else {
-          dispatch(moveQuestion({
-            source: { examBodyIndex },
-            destination: { examBodyIndex: newIndex },
-          }));
-          message.success("Question moved");
-        }
-      }
-    } catch (error) {
-      console.error("Error moving item:", error);
-      message.error("Failed to move item. Please try again.");
-    }
-  }, [dispatch, exam, message]);
-
-  // Handle moving question out of section (make it standalone)
-  const handleMoveOutOfSection = useCallback((examBodyIndex, questionsIndex) => {
-    if (!exam?.examBody || examBodyIndex === undefined || questionsIndex === undefined) {
-      message.error("Cannot move question out of section: invalid data");
-      return;
-    }
-
-    try {
-      // Move question from section to exam body level (at the end)
+    if (questionsIndex !== null && questionsIndex !== undefined) {
+      const newIndex = questionsIndex + direction;
+      
+      const section = exam.examBody[examBodyIndex];
+      if (newIndex < 0 || newIndex >= (section?.questions?.length || 0)) return;
+      
       dispatch(moveQuestion({
         source: { examBodyIndex, questionsIndex },
-        destination: { examBodyIndex: exam.examBody.length }, // Move to end of exam body
+        destination: { examBodyIndex, questionsIndex: newIndex },
       }));
-      message.success("Question moved out of section");
-    } catch (error) {
-      console.error("Error moving question out of section:", error);
-      message.error("Failed to move question out of section");
-    }
-  }, [dispatch, exam, message]);
-
-  // Handle moving standalone question into a section
-  const handleMoveIntoSection = useCallback((questionExamBodyIndex, targetSectionIndex) => {
-    if (!exam?.examBody || questionExamBodyIndex === undefined || targetSectionIndex === undefined) {
-      message.error("Cannot move question into section: invalid data");
-      return;
-    }
-
-    const targetSection = exam.examBody[targetSectionIndex];
-    if (!targetSection || targetSection.type !== 'section') {
-      message.error("Target is not a valid section");
-      return;
-    }
-
-    try {
-      // Move question into section (at the end of section's questions)
-      const questionsLength = targetSection.questions?.length || 0;
-      dispatch(moveQuestion({
-        source: { examBodyIndex: questionExamBodyIndex },
-        destination: { examBodyIndex: targetSectionIndex, questionsIndex: questionsLength },
-      }));
-      message.success("Question moved into section");
-    } catch (error) {
-      console.error("Error moving question into section:", error);
-      message.error("Failed to move question into section");
-    }
-  }, [dispatch, exam, message]);
-
-  // Helper function to check if item can move up within its container
-  const canMoveUp = useCallback((record) => {
-    if (!exam?.examBody || !record || record.examBodyIndex === undefined) {
-      return false;
-    }
-    
-    // For questions within a section
-    if (record.questionsIndex !== undefined) {
-      return record.questionsIndex > 0;
-    }
-    
-    // For sections or standalone questions
-    return record.examBodyIndex > 0;
-  }, [exam]);
-
-  // Helper function to check if item can move down within its container
-  const canMoveDown = useCallback((record) => {
-    if (!exam?.examBody || !record || record.examBodyIndex === undefined) {
-      return false;
-    }
-    
-    // For questions within a section
-    if (record.questionsIndex !== undefined) {
-      const section = exam.examBody[record.examBodyIndex];
-      if (!section || section.type !== 'section' || !Array.isArray(section.questions)) {
-        return false;
+    } 
+    else {
+      const newIndex = examBodyIndex + direction;
+      
+      if (newIndex < 0 || newIndex >= exam.examBody.length) return;
+      
+      const examBody = exam.examBody;
+      const currentItem = examBody[examBodyIndex];
+      const isSection = currentItem?.type?.toLowerCase() === 'section';
+      
+      if (isSection) {
+        dispatch(moveSection({ sourceIndex: examBodyIndex, destIndex: newIndex }));
+      } else {
+        dispatch(moveQuestion({
+          source: { examBodyIndex },
+          destination: { examBodyIndex: newIndex },
+        }));
       }
-      return record.questionsIndex < section.questions.length - 1;
     }
-    
-    // For sections or standalone questions
-    return record.examBodyIndex < exam.examBody.length - 1;
-  }, [exam]);
+  }, [dispatch, exam]);
 
-  // Helper to get available sections for moving questions into
-  const getAvailableSections = useCallback(() => {
-    if (!exam?.examBody) return [];
-    
-    return exam.examBody
-      .map((item, index) => ({ item, index }))
-      .filter(({ item }) => item.type === 'section')
-      .map(({ item, index }) => ({
-        value: index,
-        label: item.sectionTitle || `Section ${item.sectionNumber || index + 1}`
-      }));
-  }, [exam]);
-
-  // Reset modal state helper
   const resetModalState = useCallback(() => {
     setModalState({
       visible: false,
@@ -354,9 +265,7 @@ const ExamDisplay = () => {
     });
   }, []);
 
-  // Edit item handler
   const handleEdit = useCallback((item) => {
-    // Get the actual item from the exam data
     let actualItem;
     if (item.type === 'section') {
       actualItem = exam.examBody[item.examBodyIndex];
@@ -384,11 +293,9 @@ const ExamDisplay = () => {
     });
   }, [exam, message]);
 
-  // Save edited item
   const handleSaveEdit = useCallback(() => {
     const { type, examBodyIndex, questionsIndex } = modalState;
     
-    // Use the currentEditorState which has been kept in sync with the editor
     if (!currentEditorState) return;
 
     if (type === "section") {
@@ -399,7 +306,13 @@ const ExamDisplay = () => {
           contentFormatted: currentEditorState.contentFormatted
         }
       }));
+      message.success("Section updated");
     } else if (type === "question") {
+      const currentSectionIndex = questionsIndex !== undefined ? examBodyIndex : 'standalone';
+      const targetSectionIndex = currentEditorState.targetSectionIndex !== undefined 
+        ? currentEditorState.targetSectionIndex 
+        : currentSectionIndex;
+
       dispatch(updateQuestion({
         location: {
           examBodyIndex,
@@ -411,11 +324,36 @@ const ExamDisplay = () => {
           answers: currentEditorState.answers
         }
       }));
+
+      if (targetSectionIndex !== currentSectionIndex) {
+        const source = {
+          examBodyIndex,
+          ...(questionsIndex !== undefined && { questionsIndex })
+        };
+
+        let destination;
+        if (targetSectionIndex === 'standalone') {
+          // Move to standalone (end of exam body)
+          destination = { examBodyIndex: exam.examBody.length };
+        } else {
+          // Move to specific section (end of that section's questions)
+          const targetSection = exam.examBody[targetSectionIndex];
+          const questionsLength = targetSection?.questions?.length || 0;
+          destination = { 
+            examBodyIndex: targetSectionIndex, 
+            questionsIndex: questionsLength 
+          };
+        }
+
+        dispatch(moveQuestion({ source, destination }));
+        message.success("Question updated and moved to new section");
+      } else {
+        message.success("Question updated");
+      }
     }
 
-    message.success("Saved changes");
     resetModalState();
-  }, [currentEditorState, dispatch, modalState, resetModalState, message]);
+  }, [currentEditorState, dispatch, modalState, resetModalState, message, exam]);
 
   // Confirm delete item
   const confirmDeleteItem = (examBodyIndex, questionsIndex = null) => {
@@ -449,61 +387,18 @@ const ExamDisplay = () => {
     setModalState({ visible: false, type: '', item: null, isDelete: false });
   };
 
-  // Memoize the columns configuration with exam as a dependency
   const columns = useMemo(() => [
     {
       title: "Actions",
       key: "actions-column",
       fixed: 'left',
-      width: 160,
+      width: 140,
       render: (_, record) => {
-        if (!exam?.examBody || !Array.isArray(exam.examBody) || exam.examBody.length === 0) {
-          return null;
-        }
-
-        const availableSections = getAvailableSections();
-        const isQuestion = record.type === 'question';
-        const isInSection = record.questionsIndex !== undefined;
-        const isStandaloneQuestion = isQuestion && !isInSection;
-
-        // Create cross-boundary movement menu
-        const crossBoundaryMenuItems = [];
-
-        if (isInSection) {
-          // Question is in a section - can move out
-          crossBoundaryMenuItems.push({
-            key: 'move-out',
-            label: 'Move Out of Section',
-            onClick: () => handleMoveOutOfSection(record.examBodyIndex, record.questionsIndex)
-          });
-        }
-
-        if (isStandaloneQuestion && availableSections.length > 0) {
-          // Standalone question - can move into sections
-          crossBoundaryMenuItems.push({
-            key: 'move-into-header',
-            label: 'Move Into Section:',
-            disabled: true,
-            style: { fontWeight: 'bold' }
-          });
-          
-          availableSections.forEach(section => {
-            crossBoundaryMenuItems.push({
-              key: `move-into-${section.value}`,
-              label: `→ ${section.label}`,
-              onClick: () => handleMoveIntoSection(record.examBodyIndex, section.value)
-            });
-          });
-        }
-
-        const crossBoundaryMenu = crossBoundaryMenuItems.length > 0 ? (
-          <Menu items={crossBoundaryMenuItems} />
-        ) : null;
+        if (!exam?.examBody) return null;
         
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            {/* First row: Edit and Up/Down */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <Button size="small" onClick={() => handleEdit(record)}>
                 Edit
               </Button>
@@ -511,43 +406,36 @@ const ExamDisplay = () => {
                 <Button
                   size="small"
                   onClick={() => handleMove(-1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
-                  disabled={!canMoveUp(record)}
+                  disabled={
+                    (record.questionsIndex !== undefined && record.questionsIndex === 0) || 
+                    (record.questionsIndex === undefined && record.examBodyIndex === 0)
+                  }
                   style={{ marginRight: 4 }}
-                  title={canMoveUp(record) ? "Move up within container" : "Cannot move up"}
                 >
                   ↑
                 </Button>
                 <Button
                   size="small"
                   onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
-                  disabled={!canMoveDown(record)}
-                  title={canMoveDown(record) ? "Move down within container" : "Cannot move down"}
+                  disabled={
+                    !exam.examBody?.[record.examBodyIndex] ||
+                    (record.questionsIndex !== undefined && 
+                     record.questionsIndex === (exam.examBody[record.examBodyIndex]?.questions?.length - 1)) || 
+                    (record.questionsIndex === undefined && record.examBodyIndex === (exam.examBody.length - 1))
+                  }
                 >
                   ↓
                 </Button>
               </div>
             </div>
-
-            {/* Second row: Cross-boundary movement and Delete */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              {crossBoundaryMenu ? (
-                <Dropdown overlay={crossBoundaryMenu} trigger={['click']} placement="bottomLeft">
-                  <Button size="small">
-                    Move 
-                  </Button>
-                </Dropdown>
-              ) : (
-                <div style={{ width: '60px' }}></div> // Spacer
-              )}
-              
-              <Button
-                size="small"
-                danger
-                onClick={() => confirmDeleteItem(record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
-              >
-                Delete
-              </Button>
-            </div>
+            <Button
+              size="small"
+              danger
+              onClick={() => confirmDeleteItem(record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
+              style={{ width: '100%' }}
+            >
+              Delete
+            </Button>
           </div>
         );
       },
@@ -557,13 +445,28 @@ const ExamDisplay = () => {
       dataIndex: "questionNumber",
       key: "question-number-column",
       width: 100,
+      render: (questionNumber, record) => {
+        if (record.type === "section") {
+          return (
+            <Text>
+              Section {record.sectionNumber || ''}
+            </Text>
+          );
+        }
+        return questionNumber;
+      },
     },
     {
       title: "Type",
       dataIndex: "type",
       key: "type-column",
       width: 100,
-      render: (type) => type === 'section' ? 'Section' : 'Question'
+      render: (type, record) => {
+        if (type === 'section') {
+          return <Text>Section</Text>;
+        }
+        return 'Question';
+      }
     },
     {
       title: "Section ID",
@@ -572,9 +475,15 @@ const ExamDisplay = () => {
       ellipsis: true,
       render: (_, record) => {
         if (record.type === "section") {
-          return record.sectionNumber || record.sectionTitle;
+          return (
+            <Text>
+              {record.sectionTitle}
+            </Text>
+          );
         }
-        return record.sectionNumber;
+        return record.sectionNumber ? `Section ${record.sectionNumber}` : (
+          <Text type="secondary" italic>Standalone</Text>
+        );
       },
     },
     {
@@ -584,13 +493,18 @@ const ExamDisplay = () => {
       render: (_, record) => {
         if (!record?.contentFormatted) return null;
         
-        if (record.type === "section") {
+        const isSection = record.type === "section";
+        
+        if (isSection) {
           return (
             <div key={`section-content-${record.id}`}>
+              <div style={{ marginBottom: 4 }}>
+                {record.sectionTitle}
+              </div>
               <Paragraph
                 style={{ margin: 0, maxWidth: 280 }}
                 ellipsis={{ 
-                  rows: 3,
+                  rows: 2,
                   expandable: true,
                   symbol: 'more'
                 }}
@@ -600,6 +514,7 @@ const ExamDisplay = () => {
             </div>
           );
         }
+        
         return (
           <Paragraph
             key={`question-content-${record.id}`}
@@ -649,7 +564,7 @@ const ExamDisplay = () => {
       width: 80,
       render: (marks, record) => record.type === "question" ? marks : null,
     },
-  ], [exam, handleEdit, handleMove, canMoveUp, canMoveDown, getAvailableSections, handleMoveOutOfSection, handleMoveIntoSection]);
+  ], [exam, handleEdit, handleMove]); // Added handleEdit and handleMove to dependencies
 
   // Memoize the table data
   const memoizedTableData = useMemo(() => tableData || [], [tableData]);
@@ -702,7 +617,7 @@ const ExamDisplay = () => {
             }));
           }
           
-          message.success("Reordered");
+          message.success("Reordered via drag-and-drop");
         }}
       >
         <Table
@@ -730,6 +645,7 @@ const ExamDisplay = () => {
             modalState={modalState}
             onSave={setCurrentEditorState}
             onCancel={resetModalState}
+            exam={exam}
           />
         )}
       </Modal>
