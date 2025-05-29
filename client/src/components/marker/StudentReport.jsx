@@ -90,7 +90,7 @@ const StudentReport = ({ student, questionStats, examData }) => {
   return (
     <Card title={`Exam Results for ${firstName} ${lastName}`} style={{ marginBottom: 20 }}>
       <div style={{ textAlign: 'center', marginBottom: 20 }}>
-        <Title level={4}>{examData?.title || 'Untitled Exam'}</Title>
+        <Title level={4}>{examData?.examTitle || 'Untitled Exam'}</Title>
         <Text strong>{examData?.courseCode || ''}</Text>
       </div>
       
