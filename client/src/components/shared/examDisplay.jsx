@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo, useCallback, Suspense } from "react";
 import { Button, Typography, Modal, Input, Table } from "antd";
+import ExamPreview from "../exam/ExamPreview";
+import { Tabs, Divider } from "antd";
 const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -459,10 +461,14 @@ const ExamDisplay = () => {
     return <div>Please open an exam or create a new file.</div>;
   }
 
+  // Tab state for editor/preview
+  const [activeTab, setActiveTab] = useState("editor");
+  const handleTabChange = (key) => setActiveTab(key);
+
   return (
     <div>
       <div style={{ marginBottom: 16 }}>
-       <Title level={3}>{exam.examTitle}</Title>
+        <Title level={3}>{exam.examTitle}</Title>
         {(exam.courseCode || exam.courseName || exam.semester || exam.year) && (
           <Text type="secondary">
             {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
@@ -471,51 +477,73 @@ const ExamDisplay = () => {
         )}
       </div>
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        dropAnimation={{ duration: 250, easing: 'ease' }}
-        modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-        onDragStart={() => {}}
-        onDragEnd={({ active, over }) => {
-          if (!over || active.id === over.id) return;
-          
-          const activeItem = tableData.find(i => i.id === active.id);
-          const overItem = tableData.find(i => i.id === over.id);
-          
-          if (!activeItem || !overItem) return;
-          
-          if (activeItem.type === "section") {
-            dispatch(moveSection({
-              sourceIndex: activeItem.examBodyIndex,
-              destIndex: overItem.examBodyIndex
-            }));
-          } else {
-            dispatch(moveQuestion({
-              source: { 
-                examBodyIndex: activeItem.examBodyIndex,
-                questionsIndex: activeItem.questionsIndex
-              },
-              destination: { 
-                examBodyIndex: overItem.examBodyIndex,
-                questionsIndex: overItem.questionsIndex
-              }
-            }));
-          }
-          
-          message.success("Reordered");
-        }}
-      >
-        <Table
-          rowKey="id" 
-          columns={columns}
-          dataSource={memoizedTableData}
-          pagination={{ pageSize: 10 }}
-          scroll={{ x: "max-content" }}
-        />
-      </DndContext>
+      <Divider />
 
-      {/* Modal with extracted editor component */}
+      <Tabs
+        activeKey={activeTab}
+        onChange={handleTabChange}
+        items={[
+          {
+            key: "editor",
+            label: "Editor",
+            children: (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                dropAnimation={{ duration: 250, easing: 'ease' }}
+                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+                onDragStart={() => {}}
+                onDragEnd={({ active, over }) => {
+                  if (!over || active.id === over.id) return;
+
+                  const activeItem = tableData.find(i => i.id === active.id);
+                  const overItem = tableData.find(i => i.id === over.id);
+
+                  if (!activeItem || !overItem) return;
+
+                  if (activeItem.type === "section") {
+                    dispatch(moveSection({
+                      sourceIndex: activeItem.examBodyIndex,
+                      destIndex: overItem.examBodyIndex
+                    }));
+                  } else {
+                    dispatch(moveQuestion({
+                      source: {
+                        examBodyIndex: activeItem.examBodyIndex,
+                        questionsIndex: activeItem.questionsIndex
+                      },
+                      destination: {
+                        examBodyIndex: overItem.examBodyIndex,
+                        questionsIndex: overItem.questionsIndex
+                      }
+                    }));
+                  }
+
+                  message.success("Reordered");
+                }}
+              >
+                <Table
+                  rowKey="id"
+                  columns={columns}
+                  dataSource={memoizedTableData}
+                  pagination={{ pageSize: 10 }}
+                  scroll={{ x: "max-content" }}
+                />
+              </DndContext>
+            )
+          },
+          {
+            key: "preview",
+            label: "Preview",
+            children: (
+              <div style={{ marginTop: '24px' }}>
+                <ExamPreview />
+              </div>
+            )
+          }
+        ]}
+      />
+
       <Modal
         open={modalState.visible}
         title={modalState.isDelete ? 'Confirm Delete' : `Edit ${modalState.type}`}
