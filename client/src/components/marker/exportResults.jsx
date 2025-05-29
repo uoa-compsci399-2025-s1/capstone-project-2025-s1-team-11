@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Card, Checkbox, message, Radio, Space } from "antd";
+import {Button, Card, Checkbox, Divider, message, Radio, Space} from "antd";
 import { generateResultOutput } from "../../utilities/marker/outputFormatter.js";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -81,7 +81,7 @@ const ExportResults = ({ resultsData, currentExamData }) => {
         <Button type="primary" onClick={handleExportStudentFiles} icon={<DownloadOutlined />}>
           Export Student Results
         </Button>
-
+        <Divider type="vertical" />
         <Button type="primary" onClick={handleExportMarksCsv} icon={<DownloadOutlined />}>
           Export Mark Summary (CSV)
         </Button>
