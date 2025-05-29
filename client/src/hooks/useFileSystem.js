@@ -17,6 +17,7 @@ export function useFileSystem() {
     //Check changes...
     const dispatch = useDispatch();
     const exam = useSelector(selectExamData);
+    const coverPage = useSelector(state => state.exam.coverPage);
     const [fileHandle, setFileHandle] = useState(null);
   
     // Opens the exam file and updates the global state
@@ -39,12 +40,19 @@ export function useFileSystem() {
     // Saves the exam and updates the file handle in the global state
     const saveExam = async () => {
         if (!exam) return null;
-          const updatedHandle = await saveExamToDisk(exam, fileHandle);
-          if (updatedHandle) {
-              setFileHandle(updatedHandle);
-              dispatch(setFileName(updatedHandle?.name || null));
-          }
-          return updatedHandle;
+        
+        // Combine exam data with cover page for complete save
+        const completeExamData = {
+            ...exam,
+            coverPage: coverPage || null
+        };
+        
+        const updatedHandle = await saveExamToDisk(completeExamData, fileHandle);
+        if (updatedHandle) {
+            setFileHandle(updatedHandle);
+            dispatch(setFileName(updatedHandle?.name || null));
+        }
+        return updatedHandle;
     };
 
     const importExam = async (file, format) => {

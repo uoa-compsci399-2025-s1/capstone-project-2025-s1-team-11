@@ -19,11 +19,40 @@ const Builder = () => {
         document.getElementById("cover-upload").click();
     };
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         const file = e.target.files?.[0];
         if (file) {
-            //console.log("Dispatching file:", file.name);
-            dispatch(setCoverPage(file));
+            try {
+                // Read the file as ArrayBuffer
+                const arrayBuffer = await file.arrayBuffer();
+                
+                // Convert ArrayBuffer to base64 for serialization (in chunks to avoid call stack overflow)
+                const uint8Array = new Uint8Array(arrayBuffer);
+                let binaryString = '';
+                const chunkSize = 0x8000; // 32KB chunks
+                
+                for (let i = 0; i < uint8Array.length; i += chunkSize) {
+                    const chunk = uint8Array.subarray(i, i + chunkSize);
+                    binaryString += String.fromCharCode(...chunk);
+                }
+                
+                const base64String = btoa(binaryString);
+                
+                // Create a serializable cover page object
+                const coverPageData = {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    lastModified: file.lastModified,
+                    content: base64String // Store as base64 string for serialization
+                };
+                
+                //console.log("Dispatching processed cover page:", coverPageData.name);
+                dispatch(setCoverPage(coverPageData));
+            } catch (error) {
+                console.error("Error processing cover page file:", error);
+                // Could add user notification here
+            }
         }
     };
 
