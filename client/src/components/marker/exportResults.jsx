@@ -1,20 +1,20 @@
 import React, { useState } from "react";
-import { Button, Card, Checkbox, message, Radio } from "antd";
+import { Button, Card, Checkbox, message, Radio, Space } from "antd";
 import { generateResultOutput } from "../../utilities/marker/outputFormatter.js";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import {DownloadOutlined} from "@ant-design/icons";
 
 const ExportResults = ({ resultsData, currentExamData }) => {
   const [exportFormat, setExportFormat] = useState("text");
   const [includeFeedback, setIncludeFeedback] = useState(true);
+  const courseCode = currentExamData?.courseCode || "exam";
 
-  const handleExportResults = async () => {
+  const handleExportStudentFiles = async () => {
     if (!Array.isArray(resultsData) || resultsData.length === 0) {
       message.error("No valid results available to export.");
       return;
     }
-
-    const courseCode = currentExamData?.courseCode || "exam";
 
     if (exportFormat === "json") {
       const filename = `${courseCode}_student_results.json`;
@@ -43,6 +43,20 @@ const ExportResults = ({ resultsData, currentExamData }) => {
     }
   };
 
+  const handleExportMarksCsv = () => {
+    if (!Array.isArray(resultsData) || resultsData.length === 0) {
+      message.error("No valid results available to export.");
+      return;
+    }
+
+    const header = "AUID,Total Marks";
+    const rows = resultsData.map(res => `${res.studentId},${res.totalMarks}`);
+    const content = [header, ...rows].join("\n");
+    const blob = new Blob([content], { type: "text/csv" });
+    saveAs(blob, `${courseCode}_marks.csv`);
+    message.success("Marks CSV exported.");
+  };
+
   return (
     <Card>
       <Radio.Group
@@ -63,9 +77,15 @@ const ExportResults = ({ resultsData, currentExamData }) => {
         Include Results Feedback
       </Checkbox>
 
-      <Button type="primary" onClick={handleExportResults}>
-        Export Student Results
-      </Button>
+      <Space>
+        <Button type="primary" onClick={handleExportStudentFiles} icon={<DownloadOutlined />}>
+          Export Student Results
+        </Button>
+
+        <Button type="primary" onClick={handleExportMarksCsv} icon={<DownloadOutlined />}>
+          Export Mark Summary (CSV)
+        </Button>
+      </Space>
     </Card>
   );
 };
