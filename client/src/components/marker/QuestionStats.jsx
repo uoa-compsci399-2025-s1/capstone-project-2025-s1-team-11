@@ -107,7 +107,7 @@ const QuestionStats = ({ results, examData }) => {
       render: (text, record) => {
         // Don't show correct answer in combined view as it's misleading
         if (selectedVersion === 'combined') {
-          return <Tag color="warning">Varies by version</Tag>;
+          return <Tag color="default">Varies by version</Tag>;
         }
         return <span>{record.correctAnswerLetter}</span>;
       },
