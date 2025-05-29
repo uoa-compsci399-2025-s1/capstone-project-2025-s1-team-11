@@ -19,35 +19,32 @@ import {
 import { htmlToText } from "../../utilities/textUtils";
 import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
-// Helper to render text with LaTeX expressions
+// Helper to determine if math should be display style
+const isDisplayMath = (math) =>
+  /\n|\\begin\{(align|equation)\}|\\(sum|int|prod)/.test(math);
+// Helper to render text with LaTeX expressions (supports $$...$$ for both inline and block math,)
 const renderTextWithLatex = (text) => {
   if (!text || typeof text !== 'string') return text;
-  
-  // First split by display math ($$...$$)
+
+  // Split on all `$$...$$` math blocks (could be display or inline; type is decided below)
   const displayParts = text.split(/(\$\$[^$]+\$\$)/gs);
-  
+
   return displayParts.map((part, i) => {
     if (part.startsWith('$$') && part.endsWith('$$')) {
-      // This is display math
-      const math = part.slice(2, -2);
-      // Check if this is a display math block (multiple lines or contains display math commands)
-      const isDisplayMath = math.includes('\n') || 
-                           math.includes('\\begin{align}') || 
-                           math.includes('\\begin{equation}') ||
-                           math.includes('\\sum') ||
-                           math.includes('\\int') ||
-                           math.includes('\\prod');
-      
-      if (isDisplayMath) {
-        return <BlockMath key={`display-${i}`}>{math}</BlockMath>;
+      const mathFromDisplayBlock = part.slice(2, -2);
+      const isDisplay = isDisplayMath(mathFromDisplayBlock);
+
+      if (isDisplay) {
+        return <BlockMath key={`display-${i}`}>{mathFromDisplayBlock}</BlockMath>;
       } else {
-        return <InlineMath key={`inline-${i}`}>{math}</InlineMath>;
+        return <InlineMath key={`inline-${i}`}>{mathFromDisplayBlock}</InlineMath>;
       }
     }
-    
+
     // For non-display parts, split by inline math ($...$)
     // Make sure not to match escaped dollar signs \$ (currency symbols)
     const inlineParts = part.split(/(?<!\\\$)(\$[^$]+?\$)(?!\$)/g);
+
     return inlineParts.map((inlinePart, j) => {
       if (inlinePart.startsWith('$') && inlinePart.endsWith('$') && !inlinePart.startsWith('\\$')) {
         // This is inline math
