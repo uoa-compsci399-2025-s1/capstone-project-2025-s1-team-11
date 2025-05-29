@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 /**
  * Opens a file picker and reads a marking key from an XLSX file.
@@ -34,16 +34,27 @@ export async function importMarkingKeyFile() {
  * @param {ArrayBuffer} xlsxContent - Raw XLSX content as ArrayBuffer
  * @returns {Object} Parsed marking key data
  */
-export function parseMarkingKeyXLSX(xlsxContent) {
-  // Read the XLSX file
-  const workbook = XLSX.read(xlsxContent, { type: 'array' });
+export async function parseMarkingKeyXLSX(xlsxContent) {
+  // Read the XLSX file using ExcelJS
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(xlsxContent);
   
   // Get the first sheet
-  const firstSheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[firstSheetName];
+  const worksheet = workbook.getWorksheet(1);
   
-  // Convert to JSON
-  const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+  if (!worksheet) {
+    throw new Error("XLSX file does not contain any worksheets");
+  }
+  
+  // Convert to array format
+  const rows = [];
+  worksheet.eachRow((row) => {
+    const rowData = [];
+    row.eachCell((cell, colNumber) => {
+      rowData[colNumber - 1] = cell.value;
+    });
+    rows.push(rowData);
+  });
   
   if (rows.length <= 1) {
     throw new Error("XLSX file does not contain data rows");
@@ -109,7 +120,7 @@ export function parseMarkingKeyXLSX(xlsxContent) {
 export async function processMarkingKeyFile(file) {
   try {
     const buffer = await file.arrayBuffer();
-    const parsedData = parseMarkingKeyXLSX(buffer);
+    const parsedData = await parseMarkingKeyXLSX(buffer);
     
     const result = {
       versions: parsedData.versions,
@@ -157,9 +168,9 @@ export async function processMarkingKeyFile(file) {
  * Export marking key data to XLSX format
  * 
  * @param {Object} markingKeyData - The marking key data to export
- * @returns {Blob} XLSX file as a Blob
+ * @returns {Promise<Blob>} XLSX file as a Blob
  */
-export function exportMarkingKeyToXLSX(markingKeyData) {
+export async function exportMarkingKeyToXLSX(markingKeyData) {
   const rows = [
     ['VersionID', 'QuestionID', 'MarkWeight', 'OptionSequences', 'Answer']
   ];
@@ -197,13 +208,17 @@ export function exportMarkingKeyToXLSX(markingKeyData) {
   // Add sorted rows to the final array
   rows.push(...dataRows);
 
-  // Create workbook and worksheet
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  XLSX.utils.book_append_sheet(wb, ws, "Marking Key");
+  // Create workbook and worksheet using ExcelJS
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Marking Key");
+  
+  // Add data to worksheet
+  rows.forEach((row) => {
+    worksheet.addRow(row);
+  });
 
   // Generate XLSX file
-  const xlsxBuffer = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+  const xlsxBuffer = await workbook.xlsx.writeBuffer();
   return new Blob([xlsxBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 }
 

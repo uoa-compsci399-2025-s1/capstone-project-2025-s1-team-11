@@ -61,20 +61,21 @@ const Randomiser = () => {
   };
 
   // New function to handle exporting marking key
-  const handleExportMarkingKey = () => {
-    if (!exam || !correctAnswers) {
-      message.error("No exam data available to export marking key.");
-      return;
-    }
-
+  const handleExportMarkingKey = async () => {
     try {
+      // Check if there are questions to export
+      if (!questions || questions.length === 0) {
+        message.error("No questions to export.");
+        return;
+      }
+
+      // Build the marking key data structure
       const markingKeyData = {
-        versions: exam.versions,
+        versions: exam.versions || [],
         questionMappings: {},
         markWeights: {}
       };
 
-      // Prepare data for export
       questions.forEach(question => {
         markingKeyData.questionMappings[question.questionNumber] = {};
         markingKeyData.markWeights[question.questionNumber] = question.marks;
@@ -88,7 +89,7 @@ const Randomiser = () => {
       });
 
       // Generate XLSX file
-      const blob = exportMarkingKeyToXLSX(markingKeyData);
+      const blob = await exportMarkingKeyToXLSX(markingKeyData);
       
       // Create download link
       const url = URL.createObjectURL(blob);
