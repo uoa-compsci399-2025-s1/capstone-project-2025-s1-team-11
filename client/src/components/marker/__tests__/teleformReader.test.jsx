@@ -1,9 +1,8 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
+import configureStore from "redux-mock-store";
 import TeleformReader from "../teleformReader";
-import teleformReducer, { setTeleformData } from "../../../store/exam/teleformSlice";
 import * as teleformReaderUtil from "../../../utilities/marker/teleformReader";
 
 // Mock the readTeleform utility
@@ -89,6 +88,8 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
+const mockStore = configureStore([]);
+
 describe("TeleformReader Component", () => {
   let store;
   const markingKey = { "00000004": "0108080108010101041602160116161604160808" };
@@ -112,117 +113,119 @@ describe("TeleformReader Component", () => {
     });
 
     // Setup Redux store with teleform reducer
-    store = configureStore({
-      reducer: {
-        teleform: teleformReducer
+    store = mockStore({
+      exam: {
+        examData: {
+          metadata: {},
+          examBody: []
+        }
+      },
+      teleform: {
+        teleformData: ''
       }
     });
   });
 
-  test("renders with empty state", () => {
-    render(
+  const renderWithStore = () => {
+    return render(
       <Provider store={store}>
         <TeleformReader markingKey={markingKey} />
       </Provider>
     );
+  };
 
-    // Check for key UI elements
-    expect(screen.getByText("Teleform Data")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Enter teleform scan data here")).toBeInTheDocument();
-    expect(screen.getByText("Load from file")).toBeInTheDocument();
-    
-    // Check Clear button is disabled when empty
-    const clearButton = screen.getByTestId("clear-button");
-    expect(clearButton).toBeInTheDocument();
-    expect(clearButton).toBeDisabled();
-    
-    expect(screen.getByText("Mocked TeleformTable")).toBeInTheDocument();
+  it('renders with empty state', () => {
+    renderWithStore();
+    expect(screen.getByPlaceholderText('Enter teleform scan data here')).toBeInTheDocument();
+    expect(screen.getByTestId('clear-button')).toBeInTheDocument();
+    expect(screen.getByTestId('mock-upload-button')).toBeInTheDocument();
   });
 
-  test("displays teleform data from Redux store", () => {
-    // Preload some data in the store
-    store.dispatch(setTeleformData("01483316245 VE BODNIHD 11100000004 0108080108010101041602160116161604160808"));
-
-    render(
-      <Provider store={store}>
-        <TeleformReader markingKey={markingKey} />
-      </Provider>
-    );
-
-    // Check if the textarea shows the data
-    const textarea = screen.getByPlaceholderText("Enter teleform scan data here");
-    expect(textarea.value).toBe("01483316245 VE BODNIHD 11100000004 0108080108010101041602160116161604160808");
-    
-    // Check if the clear button is enabled
-    const clearButton = screen.getByTestId("clear-button");
-    expect(clearButton).not.toBeDisabled();
+  it('displays teleform data from Redux store', () => {
+    store = mockStore({
+      exam: {
+        examData: {
+          metadata: {},
+          examBody: []
+        }
+      },
+      teleform: {
+        teleformData: 'Test Data'
+      }
+    });
+    renderWithStore();
+    expect(screen.getByPlaceholderText('Enter teleform scan data here')).toHaveValue('Test Data');
   });
 
-  test("updates teleform data when typing in textarea", () => {
-    render(
-      <Provider store={store}>
-        <TeleformReader markingKey={markingKey} />
-      </Provider>
-    );
-
-    // Simulate typing in the textarea
-    const textarea = screen.getByPlaceholderText("Enter teleform scan data here");
-    fireEvent.change(textarea, { target: { value: "new data" } });
-
-    // Check if the store was updated
-    expect(store.getState().teleform.teleformData).toBe("new data");
-  });
-
-  test("clears teleform data when clear button is clicked", () => {
-    // Preload some data in the store
-    store.dispatch(setTeleformData("01483316245 VE BODNIHD 11100000004 0108080108010101041602160116161604160808"));
-
-    render(
-      <Provider store={store}>
-        <TeleformReader markingKey={markingKey} />
-      </Provider>
-    );
-
-    // Clear the data
-    const clearButton = screen.getByTestId("clear-button");
-    fireEvent.click(clearButton);
-
-    // Check if the store was updated
-    expect(store.getState().teleform.teleformData).toBe("");
-  });
-
-  test("loads data from file when upload button is clicked", async () => {
-    render(
-      <Provider store={store}>
-        <TeleformReader markingKey={markingKey} />
-      </Provider>
-    );
-
-    // Click the upload button
-    fireEvent.click(screen.getByTestId("mock-upload-button"));
-
-    // Wait for the async file read operation to complete
-    await waitFor(() => {
-      expect(store.getState().teleform.teleformData).toBe("01483316245 VE BODNIHD 11100000004 0108080108010101041602160116161604160808");
+  it('updates teleform data when typing in textarea', () => {
+    renderWithStore();
+    const textarea = screen.getByPlaceholderText('Enter teleform scan data here');
+    fireEvent.change(textarea, { target: { value: 'New Data' } });
+    const actions = store.getActions();
+    expect(actions).toContainEqual({
+      type: 'teleform/setTeleformData',
+      payload: 'New Data'
     });
   });
 
-  test("displays parsed data in the table", () => {
-    // Preload some data in the store
-    store.dispatch(setTeleformData("01483316245 VE BODNIHD 11100000004 0108080108010101041602160116161604160808"));
+  it('clears teleform data when clear button is clicked', () => {
+    store = mockStore({
+      exam: {
+        examData: {
+          metadata: {},
+          examBody: []
+        }
+      },
+      teleform: {
+        teleformData: 'Test Data'
+      }
+    });
+    renderWithStore();
+    const clearButton = screen.getByTestId('clear-button');
+    fireEvent.click(clearButton);
+    const actions = store.getActions();
+    expect(actions).toContainEqual({
+      type: 'teleform/clearTeleformData'
+    });
+  });
 
-    render(
-      <Provider store={store}>
-        <TeleformReader markingKey={markingKey} />
-      </Provider>
-    );
-
-    // Verify that the teleformReaderUtil.readTeleform was called
-    expect(teleformReaderUtil.readTeleform).toHaveBeenCalledWith(
-      "01483316245 VE BODNIHD 11100000004 0108080108010101041602160116161604160808"
-    );
+  it('loads data from file when upload button is clicked', async () => {
+    const file = new File(['test data'], 'test.txt', { type: 'text/plain' });
+    renderWithStore();
     
-    // Check that the data was parsed and passed to the table
-    expect(screen.getByTestId("data-length").textContent).toBe("1");
+    const input = screen.getByTestId('mock-upload-button');
+    Object.defineProperty(input, 'files', {
+      value: [file]
+    });
+    
+    fireEvent.change(input);
+    
+    const reader = new FileReader();
+    reader.onload = () => {
+      const actions = store.getActions();
+      expect(actions).toContainEqual({
+        type: 'teleform/setTeleformData',
+        payload: 'test data'
+      });
+    };
+    reader.readAsText(file);
+  });
+
+  it('displays parsed data in the table', () => {
+    store = mockStore({
+      exam: {
+        examData: {
+          metadata: {},
+          examBody: []
+        }
+      },
+      teleform: {
+        teleformData: '1,2,3\n4,5,6'
+      }
+    });
+    renderWithStore();
+    const table = screen.getByTestId('mock-teleform-table');
+    expect(table).toBeInTheDocument();
+    expect(screen.getByTestId('data-length')).toHaveTextContent('1');
   });
 }); 

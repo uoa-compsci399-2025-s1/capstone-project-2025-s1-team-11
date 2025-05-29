@@ -98,16 +98,23 @@ const ContentRenderer = React.memo(({ record }) => {
   }, [record.contentFormatted]);
 
   return (
-    <Paragraph
-      style={{ margin: 0, maxWidth: 280 }}
-      ellipsis={{ 
-        rows: 3,
-        expandable: true,
-        symbol: 'more'
-      }}
-    >
-      {textContent}
-    </Paragraph>
+    <div style={{ 
+      margin: 0, 
+      maxWidth: 280,
+      maxHeight: '4.5em',
+      overflow: 'hidden',
+      position: 'relative'
+    }}>
+      <div style={{
+        display: '-webkit-box',
+        WebkitLineClamp: 3,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+      }}>
+        {textContent}
+      </div>
+    </div>
   );
 });
 
@@ -389,16 +396,20 @@ const ExamDisplay = () => {
         return (
           <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
             {record.answers.map((answer, i) => (
-              <Paragraph 
-                key={`${record.id}-answer-${i}`} 
-                ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
+              <div 
+                key={`${record.id}-answer-${i}`}
                 style={{ 
                   margin: '2px 0',
-                  color: answer.correct ? '#52c41a' : 'inherit'
+                  color: answer.correct ? '#52c41a' : 'inherit',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
                 }}
               >
                 {options[i]}) {htmlToText(answer.contentFormatted)}
-              </Paragraph>
+              </div>
             ))}
           </div>
         );
@@ -481,7 +492,7 @@ const ExamDisplay = () => {
         onCancel={resetModalState}
         onOk={modalState.isDelete ? executeDeleteItem : handleSaveEdit}
         width={800}
-        destroyOnClose={true}
+        destroyOnHidden={true}
       >
         {modalState.isDelete ? (
           <Paragraph>Are you sure you want to delete this item?</Paragraph>

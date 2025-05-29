@@ -7,8 +7,6 @@
 
 import { useDispatch, useSelector } from 'react-redux';
 import {initialiseExamState, clearExamState, setFileName} from '../store/exam/examSlice';
-import { selectExamData } from '../store/exam/selectors';
-import { selectTeleformData } from '../store/exam/selectors';
 import { loadExamFromFile, saveExamToDisk } from '../services/fileSystemAccess.js';
 import examImportService  from '../services/examImportService.js';
 import { importDTOToState } from '../services/examImportService.js';
