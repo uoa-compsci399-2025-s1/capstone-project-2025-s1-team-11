@@ -1,5 +1,7 @@
 // src/pages/ExamFileManager.jsx
 import React from "react";
+import { Typography } from "antd";
+const { Title, Paragraph } = Typography;
 import homePageImage from "../assets/homePageImage.jpg";
 
 const Home = () => {
@@ -44,9 +46,9 @@ const Home = () => {
                     }}
                 >
                     <h1 style={{ margin: 0, fontSize: "3rem" }}>Welcome to Assessly, by Cache Converters.</h1>
-                    <p style={{ marginTop: "1rem", fontSize: "1.2rem" }}>
-                        Simplify Exam Creation, Marking, and Analysis - All on One Platform.
-                    </p>
+                    <Paragraph style={{ marginTop: "1rem", fontSize: "1.2rem" }}>
+                        Simplify Exam Creation, Marking, and Analysis – All on One Platform.
+                    </Paragraph>
                 </div>
                 <div 
                     className="arrow"

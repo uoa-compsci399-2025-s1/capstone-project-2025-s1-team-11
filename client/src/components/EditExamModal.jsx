@@ -34,21 +34,21 @@ const EditExamModal = ({
             }
           />
         </Form.Item>
-        <Form.Item label="Course Code">
-          <Input
-            placeholder="Course Code"
-            value={editDetailsData.courseCode}
-            onChange={(e) =>
-              setEditDetailsData(prev => ({ ...prev, courseCode: e.target.value }))
-            }
-          />
-        </Form.Item>
         <Form.Item label="Course Name">
           <Input
             placeholder="Course Name"
             value={editDetailsData.courseName}
             onChange={(e) =>
               setEditDetailsData(prev => ({ ...prev, courseName: e.target.value }))
+            }
+          />
+        </Form.Item>
+        <Form.Item label="Course Code">
+          <Input
+            placeholder="Course Code"
+            value={editDetailsData.courseCode}
+            onChange={(e) =>
+              setEditDetailsData(prev => ({ ...prev, courseCode: e.target.value }))
             }
           />
         </Form.Item>
@@ -85,7 +85,7 @@ const EditExamModal = ({
         </Form.Item>
         <Form.Item label="Teleform Options (comma-separated, optional)">
           <Input
-            placeholder="e.g., a,b,c"
+            placeholder="e.g., A, B, C, D, E"
             value={editDetailsData.teleformOptions || ''}
             onChange={(e) =>
               setEditDetailsData(prev => ({

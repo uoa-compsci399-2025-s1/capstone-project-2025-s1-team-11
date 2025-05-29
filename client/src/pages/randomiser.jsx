@@ -1,36 +1,28 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Row, Col} from "antd";
-import { regenerateShuffleMaps } from "../store/exam/examSlice";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider } from "antd";
+import { regenerateShuffleMaps, importMarkingKey } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/mapDisplay";
-import ExamSidebar from "../components/ExamSidebar";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { htmlToText } from "../utilities/textUtils.js";
-import EditExamModal from "../components/EditExamModal";
-import { updateExamField } from "../store/exam/examSlice";
+import { importMarkingKeyFile, processMarkingKeyFile } from "../services/markingKeyImportService";
+import useMessage from "../hooks/useMessage.js";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const Randomiser = () => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
   const questions = useSelector(selectAllQuestionsFlat);
   const { token } = theme.useToken();
-  const [currentItemId, setCurrentItemId] = useState(null);
-  const [showEditDetailsModal, setShowEditDetailsModal] = useState(false);
-  const [editDetailsData, setEditDetailsData] = useState({
-    examTitle: '',
-    courseCode: '',
-    courseName: '',
-    semester: '',
-    year: ''
-  });
+  const message = useMessage();
 
-  const [selectedVersion, setSelectedVersion] = useState(exam?.versions?.[0] || '');
+  const [selectedVersion, setSelectedVersion] = useState('');
   const [showRaw, setShowRaw] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
+  const [isImportingKey, setIsImportingKey] = useState(false);
   const [selectedSection, setSelectedSection] = useState("All");
   const [showQuestion, setShowQuestion] = useState(true);
   const [showAnswers, setShowAnswers] = useState(true);
@@ -38,30 +30,19 @@ const Randomiser = () => {
   const [visualStyle, setVisualStyle] = useState("grid");
 
   const [pagination, setPagination] = useState({current: 1, pageSize: 10, });
-  useEffect(() => {
-    setPagination(prev => ({ ...prev, current: 1 }));
-  }, [selectedSection]);
 
-  // Update editDetailsData when exam changes
+  // Update selectedVersion when exam changes
   useEffect(() => {
-    if (exam) {
-      setEditDetailsData({
-        examTitle: exam.examTitle || '',
-        courseCode: exam.courseCode || '',
-        courseName: exam.courseName || '',
-        semester: exam.semester || '',
-        year: exam.year || ''
-      });
+    if (exam?.versions?.length > 0) {
+      setSelectedVersion(exam.versions[0]);
+    } else {
+      setSelectedVersion('');
     }
   }, [exam]);
 
-  const handleEditDetailsSave = () => {
-    // Update exam fields
-    Object.entries(editDetailsData).forEach(([field, value]) => {
-      dispatch(updateExamField({ field, value }));
-    });
-    setShowEditDetailsModal(false);
-  };
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, current: 1 }));
+  }, [selectedSection]);
 
   // function to handle shuffling answers for all questions
   const handleShuffleAnswers = () => {
@@ -76,20 +57,36 @@ const Randomiser = () => {
     }, 600);
   };
 
-  // Handle navigation from sidebar
-  const handleNavigateToItem = (itemId, itemType) => {
-    setCurrentItemId(itemId);
-    // Find the section that contains this item and select it
-    if (itemType === 'question') {
-      const question = questions.find(q => q.id === itemId);
-      if (question) {
-        setSelectedSection(question.section || "All");
+  // New function to handle importing marking key
+  const handleImportMarkingKey = async () => {
+    if (!exam) {
+      message.error("No exam data available to import marking key.");
+      return;
+    }
+
+    setIsImportingKey(true);
+    try {
+      // Show file picker
+      const file = await importMarkingKeyFile();
+      
+      if (!file) {
+        message.info("Marking key import cancelled.");
+        setIsImportingKey(false);
+        return;
       }
-    } else if (itemType === 'section') {
-      const section = exam.examBody.find(item => item.id === itemId);
-      if (section) {
-        setSelectedSection(section.sectionTitle || "All");
-      }
+      
+      // Process the file
+      const markingKeyData = await processMarkingKeyFile(file);
+      
+      // Update the exam with the marking key data
+      dispatch(importMarkingKey(markingKeyData));
+      
+      message.success("Marking key imported successfully.");
+    } catch (error) {
+      console.error("Error importing marking key:", error);
+      message.error(`Failed to import marking key: ${error.message}`);
+    } finally {
+      setIsImportingKey(false);
     }
   };
 
@@ -123,11 +120,9 @@ const Randomiser = () => {
   };
 
   return (
-    <Row gutter={24}>
-      <Col xs={24} lg={18}>
-        <div style={{ padding: "20px" }}>
-          <Title level={2}>Answer Randomiser</Title>
-
+    <>
+      <Typography.Title level={1}>MCQ Randomiser</Typography.Title>
+      <Divider />
           <Card style={{ marginBottom: "20px" }}>
             <Space direction="vertical" size="middle" style={{ width: "100%" }}>
               <Text>
@@ -143,8 +138,8 @@ const Randomiser = () => {
                 borderRadius: "6px",
                 borderLeft: `4px solid ${token.colorPrimary}`
               }}>
-                <div style={{ marginBottom: "8px", fontWeight: "bold" }}>How to read this grid:</div>
-                <p style={{ margin: "0 0 4px 0" }}>
+                <Text strong>How to read this grid:</Text>
+                <Paragraph style={{ marginBottom: 4 }}>
                   <span style={{
                     backgroundColor: token.colorInfoBg,
                     padding: "2px 4px",
@@ -152,8 +147,8 @@ const Randomiser = () => {
                   }}>
                     Row
                   </span> = Original answer position in template. (A, B, C...)
-                </p>
-                <p style={{ margin: "0 0 4px 0" }}>
+                </Paragraph>
+                <Paragraph style={{ marginBottom: 4 }}>
                   <span style={{
                     backgroundColor: token.colorSuccessBg,
                     padding: "2px 4px",
@@ -161,8 +156,8 @@ const Randomiser = () => {
                   }}>
                     Column
                   </span> = Randomised position in student's exam. (A, B, C...)
-                </p>
-                <p style={{ margin: "0 0 8px 0" }}>
+                </Paragraph>
+                <Paragraph style={{ marginBottom: 8 }}>
                   <span style={{
                     backgroundColor: token.colorPrimary,
                     color: token.colorTextLightSolid,
@@ -171,7 +166,7 @@ const Randomiser = () => {
                   }}>
                     Blue checkmarks
                   </span> show where each original answer appears in the randomised exam.
-                </p>
+                </Paragraph>
               </div>
 
               <div style={{
@@ -188,7 +183,7 @@ const Randomiser = () => {
                 }}>
                   <strong>Original Position</strong>
                 </div>
-                <div style={{ fontSize: "1rem" }}>→</div>
+                <Text style={{ fontSize: "1rem" }}>→</Text>
                 <div style={{
                   padding: "4px 8px",
                   backgroundColor: token.colorSuccessBg,
@@ -206,13 +201,32 @@ const Randomiser = () => {
               )}
             </Space>
 
-            <div style={{ marginTop: "16px" }}>
+            <div style={{ 
+              marginTop: "16px", 
+              display: "flex", 
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
               <Button
                 type="primary"
                 onClick={handleShuffleAnswers}
+                loading={isShuffling}
                 disabled={!exam}
               >
                 Shuffle All Answers
+              </Button>
+              
+              <Button
+                type="default"
+                onClick={handleImportMarkingKey}
+                loading={isImportingKey}
+                disabled={!exam}
+                style={{
+                  borderColor: token.colorPrimary,
+                  color: token.colorPrimary
+                }}
+              >
+                Import Marking Key
               </Button>
             </div>
           </Card>
@@ -343,26 +357,7 @@ const Randomiser = () => {
               />
             </Spin>
           </Card>
-        </div>
-      </Col>
-      <Col xs={24} lg={6}>
-        <ExamSidebar 
-          exam={exam} 
-          currentItemId={currentItemId}
-          onNavigateToItem={handleNavigateToItem}
-          onEditDetails={() => {
-            setShowEditDetailsModal(true);
-          }}
-        />
-      </Col>
-      <EditExamModal
-        open={showEditDetailsModal}
-        onCancel={() => setShowEditDetailsModal(false)}
-        onOk={handleEditDetailsSave}
-        editDetailsData={editDetailsData}
-        setEditDetailsData={setEditDetailsData}
-      />
-    </Row>
+      </>
   );
 };
 

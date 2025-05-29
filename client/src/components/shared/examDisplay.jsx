@@ -1,7 +1,8 @@
 //examDisplay.jsx
 
 import React, { useState, useMemo, useCallback, Suspense } from "react";
-import { Button, Typography, Modal, Input, message, Table } from "antd";
+import { Button, Typography, Modal, Input, Table } from "antd";
+const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
   removeQuestion,
@@ -35,6 +36,7 @@ import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 //import { arrayMove } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
+import useMessage from "../../hooks/useMessage.js";
 
 const { TextArea } = Input;
 
@@ -171,6 +173,7 @@ const ExamDisplay = () => {
   const exam = useSelector(selectExamData);
   const tableData = useSelector(selectQuestionsAndSectionsForTable);
   const dispatch = useDispatch();
+  const message = useMessage();
 
   const [modalState, setModalState] = useState({
     visible: false,
@@ -223,7 +226,7 @@ const ExamDisplay = () => {
   }, [dispatch, exam]);
 
   // Reset modal state helper
-  const resetModalState = () => {
+  const resetModalState = useCallback(() => {
     setModalState({
       visible: false,
       type: "", 
@@ -232,7 +235,7 @@ const ExamDisplay = () => {
       questionsIndex: null,
       isDelete: false,
     });
-  };
+  }, []);
 
   // Edit item handler
   const handleEdit = useCallback((item) => {
@@ -262,10 +265,10 @@ const ExamDisplay = () => {
       questionsIndex: item.questionsIndex,
       isDelete: false,
     });
-  }, [exam]);
+  }, [exam, message]);
 
   // Save edited item
-  const handleSaveEdit = () => {
+  const handleSaveEdit = useCallback(() => {
     const { type, examBodyIndex, questionsIndex } = modalState;
     
     // Use the currentEditorState which has been kept in sync with the editor
@@ -295,7 +298,7 @@ const ExamDisplay = () => {
 
     message.success("Saved changes");
     resetModalState();
-  };
+  }, [currentEditorState, dispatch, modalState, resetModalState, message]);
 
   // Confirm delete item
   const confirmDeleteItem = (examBodyIndex, questionsIndex = null) => {
@@ -417,7 +420,7 @@ const ExamDisplay = () => {
         if (record.type === "section") {
           return (
             <div key={`section-content-${record.id}`}>
-              <Typography.Paragraph
+              <Paragraph
                 style={{ margin: 0, maxWidth: 280 }}
                 ellipsis={{
                   rows: 3,
@@ -426,12 +429,12 @@ const ExamDisplay = () => {
                 }}
               >
                 {renderTextWithInlineMath(htmlToText(record.contentFormatted))}
-              </Typography.Paragraph>
+              </Paragraph>
             </div>
           );
         }
         return (
-          <Typography.Paragraph
+          <Paragraph
             key={`question-content-${record.id}`}
             style={{ margin: 0, maxWidth: 280 }}
             ellipsis={{
@@ -441,7 +444,7 @@ const ExamDisplay = () => {
             }}
           >
             {renderTextWithInlineMath(htmlToText(record.contentFormatted))}
-          </Typography.Paragraph>
+          </Paragraph>
         );
       },
     },
@@ -455,7 +458,7 @@ const ExamDisplay = () => {
         return (
           <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
             {record.answers.map((answer, i) => (
-              <Typography.Paragraph
+              <Paragraph
                 key={`${record.id}-answer-${i}`}
                 ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
                 style={{
@@ -464,7 +467,7 @@ const ExamDisplay = () => {
                 }}
               >
                 {options[i]}) {renderTextWithInlineMath(htmlToText(answer.contentFormatted))}
-              </Typography.Paragraph>
+              </Paragraph>
             ))}
           </div>
         );
@@ -489,12 +492,12 @@ const ExamDisplay = () => {
   return (
     <div>
       <div style={{ marginBottom: 16 }}>
-        <Typography.Title level={3}>{exam.examTitle}</Typography.Title>
+       <Title level={3}>{exam.examTitle}</Title>
         {(exam.courseCode || exam.courseName || exam.semester || exam.year) && (
-          <Typography.Text type="secondary">
+          <Text type="secondary">
             {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
             {exam.semester} {exam.year}
-          </Typography.Text>
+          </Text>
         )}
       </div>
 
@@ -552,7 +555,7 @@ const ExamDisplay = () => {
         destroyOnHidden={true}
       >
         {modalState.isDelete ? (
-          <p>Are you sure you want to delete this item?</p>
+          <Paragraph>Are you sure you want to delete this item?</Paragraph>
         ) : (
           <ExamItemEditor
             modalState={modalState}

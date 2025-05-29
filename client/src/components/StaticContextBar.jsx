@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, Modal } from 'antd';
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
-import { updateExamField } from "../store/exam/examSlice";
-import { setExamVersions, setTeleformOptions } from "../store/exam/examSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useFileSystem } from "../hooks/useFileSystem.js";
 import { selectExamData } from '../store/exam/selectors.js';
@@ -17,8 +15,9 @@ import '../index.css';
 import useMessage from "../hooks/useMessage.js";
 // Import saveExamToDisk directly for use after creating a new exam
 import { saveExamToDisk } from '../services/fileSystemAccess.js';
+import { handleExamDetailsSave } from '../services/examEditService';
 
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 const StaticContextBar = ({
                             examTitle = "Untitled Exam",
@@ -132,18 +131,18 @@ const StaticContextBar = ({
 
   const handleCreateModalOk = () => {
     const examData = {
-      answerOptions: parseInt(newExamData.answerOptions) || 4,
+      // answerOptions: parseInt(newExamData.answerOptions) || 4,
       examTitle: newExamData.examTitle || "Untitled Exam",
       courseCode: newExamData.courseCode || "",
       courseName: newExamData.courseName || "",
       semester: newExamData.semester || "",
       year: newExamData.year || "",
-      examBody: [],
-      appendix: {},
-      metadata:
-          newExamData.metadataKey && newExamData.metadataValue
-              ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
-              : []
+      // examBody: [],
+      // appendix: {},
+      // metadata:
+      //     newExamData.metadataKey && newExamData.metadataValue
+      //         ? [{ key: newExamData.metadataKey, value: newExamData.metadataValue }]
+      //         : []
     };
 
     // Parse versions if defined and non-empty
@@ -224,28 +223,10 @@ const StaticContextBar = ({
 
 
   const handleEditDetailsSave = () => {
-    dispatch(updateExamField({ field: 'examTitle', value: editDetailsData.examTitle }));
-    dispatch(updateExamField({ field: 'courseCode', value: editDetailsData.courseCode }));
-    dispatch(updateExamField({ field: 'courseName', value: editDetailsData.courseName }));
-    dispatch(updateExamField({ field: 'semester', value: editDetailsData.semester }));
-    dispatch(updateExamField({ field: 'year', value: editDetailsData.year }));
-    
-    // Set exam versions from editDetailsData.versions if available
-    const versionsArray = typeof editDetailsData.versions === 'string'
-        ? editDetailsData.versions.split(',').map(v => v.trim())
-        : editDetailsData.versions;
-    dispatch(setExamVersions(versionsArray));
-
-    // Set teleform options if available
-    const teleformOptionsArray = typeof editDetailsData.teleformOptions === 'string'
-        ? editDetailsData.teleformOptions.split(',').map(o => o.trim())
-        : editDetailsData.teleformOptions;
-    if (teleformOptionsArray) {
-      dispatch(setTeleformOptions(teleformOptionsArray));
-    }
-
-    setShowEditDetailsModal(false);
-    setTimeout(() => message.success("Exam details updated."), 0);
+    handleExamDetailsSave(editDetailsData, dispatch, () => {
+        setShowEditDetailsModal(false);
+        setTimeout(() => message.success("Exam details updated."), 0);
+    });
   };
 
   // Removed DOM event listeners for mouseenter/mouseleave on dropdown refs.
@@ -262,6 +243,7 @@ const StaticContextBar = ({
       });
     }
   }, [exam]);
+  
   // Auto-save effect: save after 2 seconds of inactivity when exam changes.
   useEffect(() => {
     if (!autoSaveEnabled) return;
@@ -423,7 +405,19 @@ const StaticContextBar = ({
               {exam && (
                   <>
                     <Tooltip title={`File: ${examTitle}`}>
-                      <Tag color={statusColours[saveState] || "default"} style={{ marginLeft: 8 }}>
+                      <Tag
+                        color={statusColours[saveState] || "default"}
+                        style={{
+                          marginLeft: 8,
+                          width: 140,
+                          textAlign: 'center',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'none',
+                          overflow: 'hidden'
+                        }}
+                      >
                         {saveState === 'saved'
                             ? (
                                 lastSavedTime
@@ -436,32 +430,46 @@ const StaticContextBar = ({
                         )}
                       </Tag>
                     </Tooltip>
-                    {fileHandle && (
-                        <Tooltip title="Full file path not available due to browser privacy restrictions.">
-                          <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
-                            File: {fileHandle.name || '[unsaved file]'}{fileHandle.kind ? `` : ""}
-                          </Text>
-                        </Tooltip>
-                    )}
                   </>
               )}
             </div>
             {/* Exam title and file name */}
-            <div className="editable-title-wrapper" style={{ marginLeft: "12", display: "flex", alignItems: "center" }}>
+            <div
+              className="editable-title-wrapper"
+              style={{
+                flex: 1,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                overflow: "hidden",
+                padding: "0 12px"
+              }}
+            >
               {exam ? (
-                  <>
-                    <Text strong style={{ marginRight: 8 }}>
-                      {`${exam?.courseName || "Unknown Course"} ${exam?.courseCode || ""}: ${exam?.examTitle || "Untitled Exam"}`}
+                <>
+                  <Text
+                    strong
+                    style={{
+                      marginRight: 8,
+                      textAlign: "center",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      maxWidth: "100%",
+                      fontSize: `${(exam?.examTitle?.length || 0) + (exam?.courseName?.length || 0) + (exam?.courseCode?.length || 0) > 50 ? '14px' : '16px'}`
+                    }}
+                  >
+                    {`${exam?.courseName || "Unknown Course"} ${exam?.courseCode || ""}: ${exam?.examTitle || "Untitled Exam"}`}
+                  </Text>
+                  {/* Inline warning if key fields are missing */}
+                  {(!exam?.examTitle || !exam?.courseCode) && (
+                    <Text className="context-warning" type="warning" style={{ marginLeft: 12 }}>
+                      Missing required exam details
                     </Text>
-                    {/* Inline warning if key fields are missing */}
-                    {(!exam?.examTitle || !exam?.courseCode) && (
-                        <Text className="context-warning" type="warning" style={{ marginLeft: 12 }}>
-                          Missing required exam details
-                        </Text>
-                    )}
-                  </>
+                  )}
+                </>
               ) : (
-                  <Text type="danger" strong>No exam uploaded</Text>
+                <Text type="danger" strong>No exam uploaded</Text>
               )}
             </div>
             {/* Right side: Save and Export buttons */}
@@ -558,7 +566,16 @@ const StaticContextBar = ({
                       style={{ marginRight: 4 }}
                   />
                 </Tooltip>
-                <span style={{ fontSize: 12 }}>{autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}</span>
+                <span
+                  style={{
+                    fontSize: 12,
+                    display: "inline-block",
+                    width: 90, // fixed width to prevent shift when toggling
+                    textAlign: "left"
+                  }}
+                >
+                  {autoSaveEnabled ? "Auto-save ON" : "Auto-save OFF"}
+                </span>
               </div>
             </div>
           </div>

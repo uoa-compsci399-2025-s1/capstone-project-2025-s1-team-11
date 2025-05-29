@@ -1,11 +1,13 @@
 import React from 'react';
-import { Layout, theme } from 'antd';
+import { Layout, theme, Typography } from 'antd';
 import { Navigation } from "./navigation.jsx";
 import { Link, useLocation } from 'react-router';
 import logo from '../assets/AssesslyLogoSmall.png';
 import StaticContextBar from './StaticContextBar';
+import ExamSidebarProvider from './ExamSidebarProvider';
 
 const { Header, Content, Footer } = Layout;
+const { Paragraph } = Typography;
 
 const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   const location = useLocation();
@@ -57,26 +59,34 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
         <Navigation isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}/>
       </Header>
 
-      {["/", "/builder", "/randomiser", "/marker", "/console"].includes(location.pathname) && (
-        <div style={{ padding: '0 48px' }}>
-          <StaticContextBar />
-        </div>
-      )}
-
       <Content style={contentStyle}>
+        
+        {["/", "/builder", "/randomiser", "/marker", "/console"].includes(location.pathname) && (
+          <div className="context-bar-wrapper" style={{padding: '0'}}>
+            <StaticContextBar />
+          </div>
+        )}
         {isPlainPage ? (
           children
         ) : (
           <div style={{margin: '0 auto' }}>
             <div style={contentContainerStyle}>
-              {children}
+              {["/builder", "/randomiser", "/marker", "/console"].includes(location.pathname) ? (
+                <ExamSidebarProvider>
+                  {children}
+                </ExamSidebarProvider>
+              ) : (
+                children
+              )}
             </div>
           </div>
         )}
       </Content>
 
       <Footer style={footerStyle}>
-        University of Auckland | {new Date().getFullYear()} | Created by Team 11 (Cache Converters)
+        <Paragraph style={{ textAlign: 'center', margin: 0 }}>
+          University of Auckland | {new Date().getFullYear()} | Created by Team 11 (Cache Converters)
+        </Paragraph>
       </Footer>
     </Layout>
   );

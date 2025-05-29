@@ -6,6 +6,8 @@ import { Button, Alert, Space, Typography, Modal, Input, Card, Select } from "an
 import { addQuestion, addSection } from "../store/exam/examSlice.js";
 import useMessage from "../hooks/useMessage.js";
 
+const { Paragraph, Text } = Typography;
+
 const ExamContentManager = () => {
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
@@ -53,7 +55,7 @@ const ExamContentManager = () => {
     <Card>
       {/* <Typography.Title level={3}>File Manager</Typography.Title> */}
       {/* <Alert message="Some of this is moved/moving to the static context menu..." type="info" showIcon/> */}
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <Text type="danger">{error}</Text>}
         {showSuccessAlert && (
           <Alert
             message="Success"
@@ -114,7 +116,7 @@ const ExamContentManager = () => {
         okText="Yes, clear it"
         cancelText="Cancel"
       >
-        <p>This action cannot be undone.</p>
+        <Paragraph>This action cannot be undone.</Paragraph>
       </Modal>
     </Card>
   );

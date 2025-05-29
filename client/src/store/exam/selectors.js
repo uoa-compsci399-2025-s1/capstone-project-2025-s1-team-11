@@ -1,5 +1,6 @@
 // selectors.js
 import { createSelector } from "@reduxjs/toolkit";
+import { normaliseVersionId } from "../../utilities/textUtils";
 
 // Root selector
 export const selectExamState = (state) => state.exam;
@@ -164,7 +165,8 @@ export const selectCorrectAnswerIndices = createSelector(
 
     // initialise result structure for each version
     examData.versions.forEach(versionId => {
-      result[versionId] = {};
+      const normalisedVersionId = normaliseVersionId(versionId);
+      result[normalisedVersionId] = {};
     });
 
     // For each question
@@ -188,7 +190,8 @@ export const selectCorrectAnswerIndices = createSelector(
           .filter(index => index !== -1)
           .sort((a, b) => a - b);
 
-        result[versionId][questionNumber] = shuffledCorrectIndices;
+        const normalisedVersionId = normaliseVersionId(versionId);
+        result[normalisedVersionId][questionNumber] = shuffledCorrectIndices;
       });
     });
 

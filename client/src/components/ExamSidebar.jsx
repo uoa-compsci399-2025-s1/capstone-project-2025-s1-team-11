@@ -3,7 +3,58 @@ import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip, Tag 
 import { ProfileOutlined, FileTextOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { htmlToText } from '../utilities/textUtils';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
+
+// Memoized QuestionItem component to prevent unnecessary re-renders
+const QuestionItem = React.memo(({ question, qIndex, currentItemId, onNavigateToItem }) => {
+  return (
+    <List.Item
+      key={question.id}
+      className={currentItemId === question.id ? 'highlighted-item' : ''}
+      onClick={() => onNavigateToItem(question.id, 'question')}
+      style={{ cursor: 'pointer' }}
+    >
+      <div style={{ width: '100%' }}>
+        <Paragraph
+          ellipsis={{
+            rows: 1,
+            tooltip: question.text
+          }}
+          style={{ margin: 0, maxWidth: '90%' }}
+        >
+          Q{qIndex + 1}: {question.text}
+        </Paragraph>
+      </div>
+      <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
+    </List.Item>
+  );
+});
+
+// Memoized standalone question item component
+const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToItem }) => {
+  return (
+    <List.Item
+      className={currentItemId === item.id ? 'highlighted-item' : ''}
+      onClick={() => onNavigateToItem(item.id, 'question')}
+      style={{ cursor: 'pointer', padding: '8px' }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{ flex: 1, marginRight: '8px' }}>
+          <Paragraph
+            ellipsis={{
+              rows: 1,
+              tooltip: item.text
+            }}
+            style={{ margin: 0 }}
+          >
+            <FileTextOutlined /> {item.text}
+          </Paragraph>
+        </div>
+        <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
+      </div>
+    </List.Item>
+  );
+});
 
 const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) => {
   if (!exam || !exam.examBody || !Array.isArray(exam.examBody)) {
@@ -100,19 +151,12 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
           size="small"
           dataSource={section.questions}
           renderItem={(question, qIndex) => (
-            <List.Item
-              key={question.id}
-              className={currentItemId === question.id ? 'highlighted-item' : ''}
-              onClick={() => onNavigateToItem(question.id, 'question')}
-              style={{ cursor: 'pointer' }}
-            >
-              <Tooltip title={question.text}>
-                <Text style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  Q{qIndex + 1}: {question.text}
-                </Text>
-              </Tooltip>
-              <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
-            </List.Item>
+            <QuestionItem
+              question={question}
+              qIndex={qIndex}
+              currentItemId={currentItemId}
+              onNavigateToItem={onNavigateToItem}
+            />
           )}
         />
       )
@@ -133,27 +177,37 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
         </div>
         <List size="small">
           <List.Item>
-            <Text type="secondary">Course Code:</Text>
-            <Text style={{ marginLeft: '8px' }}>{exam?.courseCode || "N/A"}</Text>
+            <Paragraph style={{ margin: 0 }}>
+              <Text type="secondary">Course Code:</Text>{' '}
+              <Text>{exam?.courseCode || "N/A"}</Text>
+            </Paragraph>
           </List.Item>
           <List.Item>
-            <Text type="secondary">Course Name:</Text>
-            <Text style={{ marginLeft: '8px' }}>{exam?.courseName || "N/A"}</Text>
+            <Paragraph style={{ margin: 0 }}>
+              <Text type="secondary">Course Name:</Text>{' '}
+              <Text>{exam?.courseName || "N/A"}</Text>
+            </Paragraph>
           </List.Item>
           <List.Item>
-            <Text type="secondary">Semester:</Text>
-            <Text style={{ marginLeft: '8px' }}>{exam?.semester || "N/A"}</Text>
+            <Paragraph style={{ margin: 0 }}>
+              <Text type="secondary">Semester:</Text>{' '}
+              <Text>{exam?.semester || "N/A"}</Text>
+            </Paragraph>
           </List.Item>
           <List.Item>
-            <Text type="secondary">Year:</Text>
-            <Text style={{ marginLeft: '8px' }}>{exam?.year || "N/A"}</Text>
+            <Paragraph style={{ margin: 0 }}>
+              <Text type="secondary">Year:</Text>{' '}
+              <Text>{exam?.year || "N/A"}</Text>
+            </Paragraph>
           </List.Item>
           {exam?.versions && exam.versions.length > 0 && (
             <List.Item>
-              <Text type="secondary">Versions:</Text>
-              <div className="version-tags" style={{ marginLeft: '8px' }}>
-                {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
-              </div>
+              <Paragraph style={{ margin: 0 }}>
+                <Text type="secondary">Versions:</Text>{' '}
+                <span className="version-tags" style={{ marginLeft: 8 }}>
+                  {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
+                </span>
+              </Paragraph>
             </List.Item>
           )}
         </List>
@@ -162,12 +216,12 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
       <Divider style={{ margin: '12px 0' }} />
 
       <div style={{ marginBottom: '8px' }}>
-        <Title level={4} style={{ margin: 0 }}>Exam Overview</Title>
+        <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Exam Overview</Paragraph>
       </div>
       <Divider style={{ margin: '12px 0' }} />
 
       <div className="exam-stats">
-        <Title level={5}>Statistics</Title>
+        <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Statistics</Paragraph>
         <List size="small">
           <List.Item>
             <Badge color="blue" text={`${stats.totalSections} Sections`} />
@@ -183,32 +237,23 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
 
       <Divider style={{ margin: '12px 0' }} />
 
-      <Title level={5}>Structure</Title>
+      <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Structure</Paragraph>
       <Collapse defaultActiveKey={['0']} ghost items={collapseItems} />
 
       {/* Standalone questions (not in a section) */}
       {examStructure.filter(item => item.type === 'question').map((item, index) => (
-        <List.Item
+        <StandaloneQuestionItem
           key={index}
-          className={currentItemId === item.id ? 'highlighted-item' : ''}
-          onClick={() => onNavigateToItem(item.id, 'question')}
-          style={{ cursor: 'pointer', padding: '8px' }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-            <Tooltip title={item.text}>
-              <Text style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                <FileTextOutlined /> {item.text}
-              </Text>
-            </Tooltip>
-            <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
-          </div>
-        </List.Item>
+          item={item}
+          currentItemId={currentItemId}
+          onNavigateToItem={onNavigateToItem}
+        />
       ))}
 
       <Divider style={{ margin: '12px 0' }} />
 
       <div className="section-distribution">
-        <Title level={5}>Questions by Section</Title>
+        <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Questions by Section</Paragraph>
         <List
           size="small"
           dataSource={stats.questionsPerSection}

@@ -1,11 +1,10 @@
 // src/pages/Marker.jsx
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Typography, Button, Input, Divider } from "antd";
+import { Typography, Button, Divider } from "antd";
 import { useSelector } from "react-redux";
 import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
 import { markExams } from "../utilities/marker/examMarker.js";
-import { generateResultOutput } from "../utilities/marker/outputFormatter.js";
 import DataReview from "../components/marker/dataReview.jsx";
 import {Results} from "../components/marker/results.jsx"
 import {teleformReader} from "../components/marker/teleformReader.jsx";
@@ -19,7 +18,6 @@ const Marker = () => {
   const [teleformData, setTeleformData] = useState("");
   const [markingKey, setMarkingKey] = useState(null);
   const [resultsData, setResultsData] = useState(null);
-  const [exportFormat, setExportFormat] = useState("json");
   const [currentStep, setCurrentStep] = useState(0);
   // Add state for exam data that can be updated by the Results component
   const [localExamData, setLocalExamData] = useState(null);
@@ -73,43 +71,6 @@ const Marker = () => {
     setTeleformData(e.target.value);
   };
 
-  const handleExportResults = () => {
-    if (!resultsData || !resultsData.all || resultsData.all.length === 0) {
-      message.error("No results available to export.");
-      return;
-    }
-    
-    let content, filename, type;
-    
-    if (exportFormat === "json") {
-      content = JSON.stringify(resultsData.all, null, 2);
-      filename = `${currentExamData.courseCode || 'exam'}_results.json`;
-      type = "application/json";
-    } else {
-      // Text format (similar to legacy output)
-      content = resultsData.all.map(res => generateResultOutput(res, currentExamData)).join('\n\n');
-      filename = `${currentExamData.courseCode || 'exam'}_results.txt`;
-      type = "text/plain";
-    }
-    
-    try {
-      const blob = new Blob([content], { type });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      message.success("Results exported successfully.");
-    } catch (error) {
-      console.error("Export failed:", error);
-      message.error("Failed to export results.");
-    }
-  };
-
   const renderContent = () => {
     //console.log("Current step:", currentStep);
     //console.log("Results data:", resultsData);
@@ -124,10 +85,7 @@ const Marker = () => {
         if (!resultsData || !resultsData.all || !Array.isArray(resultsData.all)) {
           return (
             <Results
-              setExportFormat={setExportFormat}
-              exportFormat={exportFormat}
               resultsData={[]}
-              handleExportResults={handleExportResults}
               examData={currentExamData}
               teleformData={teleformData}
               markingKey={markingKey}
@@ -140,10 +98,7 @@ const Marker = () => {
         //console.log("Passing to Results component:", resultsData.all);
         return (
           <Results
-            setExportFormat={setExportFormat}
-            exportFormat={exportFormat}
             resultsData={resultsData.all}
-            handleExportResults={handleExportResults}
             examData={currentExamData}
             teleformData={teleformData}
             markingKey={markingKey}
@@ -173,8 +128,8 @@ const Marker = () => {
   };
 
   return (
-    <>
-      <Typography.Title>MCQ Auto-Marker</Typography.Title>
+      <>
+      <Typography.Title level={1}>MCQ Auto-Marker</Typography.Title>
       <Divider />
       
       <div style={{ margin: "24px 0" }}>
