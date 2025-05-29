@@ -122,6 +122,27 @@ export const Results = ({resultsData, examData}) => {
                 precision={1}
               />
             </Col>
+            <Col span={6}>
+              <Statistic 
+                title="Min Marks" 
+                value={statistics?.summary?.lowestRawMark || 0}
+                suffix=" marks"
+              />
+            </Col>
+            <Col span={6}>
+              <Statistic 
+                title="Max Marks" 
+                value={statistics?.summary?.highestRawMark || 0}
+                suffix=" marks"
+              />
+            </Col>
+            <Col span={6}>
+              <Statistic 
+                title="Total Marks" 
+                value={statistics?.summary?.totalMarksAvailable || 0}
+                suffix=" marks"
+              />
+            </Col>
           </Row>
 
           <Divider />

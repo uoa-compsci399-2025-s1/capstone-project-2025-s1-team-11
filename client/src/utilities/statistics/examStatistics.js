@@ -16,7 +16,10 @@ export function calculateStatistics(markedResults, totalExamMarks) {
       averageMark: 0,
       highestMark: 0,
       lowestMark: Infinity,
-      passRate: 0
+      passRate: 0,
+      highestRawMark: 0,
+      lowestRawMark: Infinity,
+      totalMarksAvailable: totalExamMarks
     },
     questionStats: {},
     // New: Track versions for filtering
@@ -44,6 +47,7 @@ export function calculateStatistics(markedResults, totalExamMarks) {
   markedResults.forEach(studentResult => {
     // Calculate percentage score for this student using total exam marks
     const percentageScore = (studentResult.totalMarks / totalExamMarks) * 100;
+    const rawMarks = studentResult.totalMarks || 0;
     const versionId = studentResult.versionId;
 
     // Update summary statistics
@@ -51,6 +55,10 @@ export function calculateStatistics(markedResults, totalExamMarks) {
     results.summary.averageMark += percentageScore;
     results.summary.highestMark = Math.max(results.summary.highestMark, percentageScore);
     results.summary.lowestMark = Math.min(results.summary.lowestMark, percentageScore);
+    
+    // Update raw marks tracking
+    results.summary.highestRawMark = Math.max(results.summary.highestRawMark, rawMarks);
+    results.summary.lowestRawMark = Math.min(results.summary.lowestRawMark, rawMarks);
 
     // Count passing students (>=50%)
     if (percentageScore >= 50) {
@@ -129,6 +137,9 @@ export function calculateStatistics(markedResults, totalExamMarks) {
   if (results.summary.lowestMark === Infinity) {
     results.summary.lowestMark = 0;
   }
+  if (results.summary.lowestRawMark === Infinity) {
+    results.summary.lowestRawMark = 0;
+  }
   
   // Calculate difficulty levels for each question (combined view)
   Object.keys(results.questionStats).forEach(qNum => {
@@ -204,6 +215,9 @@ export function calculateStatistics(markedResults, totalExamMarks) {
     passRate: results.summary.passRate.toFixed(1),
     highestMark: results.summary.highestMark.toFixed(1),
     lowestMark: results.summary.lowestMark.toFixed(1),
+    highestRawMark: results.summary.highestRawMark,
+    lowestRawMark: results.summary.lowestRawMark,
+    totalMarksAvailable: results.summary.totalMarksAvailable,
     scoreDistribution: scoreDistribution
   };
 
