@@ -1,7 +1,7 @@
 //examDisplay.jsx
 
 import React, { useState, useMemo, useCallback, Suspense } from "react";
-import { Button, Typography, Modal, Input, Table } from "antd";
+import { Button, Typography, Modal, Input, Table, Dropdown, Menu } from "antd";
 const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -178,38 +178,169 @@ const ExamDisplay = () => {
   const sensors = useSensors(pointerSensor, keyboardSensor);
 
   const handleMove = useCallback((direction, examBodyIndex, questionsIndex = null) => {
-    if (examBodyIndex === undefined) return;
+    if (examBodyIndex === undefined || !exam?.examBody) {
+      message.error("Cannot move item: invalid exam data");
+      return;
+    }
 
-    if (questionsIndex !== null && questionsIndex !== undefined) {
-      const newIndex = questionsIndex + direction;
-      
-      const section = exam.examBody[examBodyIndex];
-      if (newIndex < 0 || newIndex >= (section?.questions?.length || 0)) return;
-      
+    // Validate examBodyIndex is within bounds
+    if (examBodyIndex < 0 || examBodyIndex >= exam.examBody.length) {
+      message.error("Cannot move item: invalid position");
+      return;
+    }
+
+    try {
+      // For questions within a section - move within that section only
+      if (questionsIndex !== null && questionsIndex !== undefined) {
+        const section = exam.examBody[examBodyIndex];
+        
+        if (!section || section.type !== 'section' || !Array.isArray(section.questions)) {
+          message.error("Cannot move question: section not found or invalid");
+          return;
+        }
+        
+        const newIndex = questionsIndex + direction;
+        
+        // Check bounds for questions within section
+        if (newIndex < 0 || newIndex >= section.questions.length) {
+          message.warning(`Cannot move question ${direction > 0 ? 'down' : 'up'}: already at ${direction > 0 ? 'bottom' : 'top'} of section`);
+          return;
+        }
+        
+        dispatch(moveQuestion({
+          source: { examBodyIndex, questionsIndex },
+          destination: { examBodyIndex, questionsIndex: newIndex },
+        }));
+        message.success("Question moved within section");
+      } 
+      // For sections or standalone questions at exam body level
+      else {
+        const newIndex = examBodyIndex + direction;
+        
+        // Check bounds for exam body items
+        if (newIndex < 0 || newIndex >= exam.examBody.length) {
+          message.warning(`Cannot move ${direction > 0 ? 'down' : 'up'}: already at ${direction > 0 ? 'bottom' : 'top'} of exam`);
+          return;
+        }
+        
+        const currentItem = exam.examBody[examBodyIndex];
+        if (!currentItem) {
+          message.error("Cannot move item: item not found");
+          return;
+        }
+        
+        const isSection = currentItem?.type?.toLowerCase() === 'section';
+        
+        if (isSection) {
+          dispatch(moveSection({ sourceIndex: examBodyIndex, destIndex: newIndex }));
+          message.success("Section moved");
+        } else {
+          dispatch(moveQuestion({
+            source: { examBodyIndex },
+            destination: { examBodyIndex: newIndex },
+          }));
+          message.success("Question moved");
+        }
+      }
+    } catch (error) {
+      console.error("Error moving item:", error);
+      message.error("Failed to move item. Please try again.");
+    }
+  }, [dispatch, exam, message]);
+
+  // Handle moving question out of section (make it standalone)
+  const handleMoveOutOfSection = useCallback((examBodyIndex, questionsIndex) => {
+    if (!exam?.examBody || examBodyIndex === undefined || questionsIndex === undefined) {
+      message.error("Cannot move question out of section: invalid data");
+      return;
+    }
+
+    try {
+      // Move question from section to exam body level (at the end)
       dispatch(moveQuestion({
         source: { examBodyIndex, questionsIndex },
-        destination: { examBodyIndex, questionsIndex: newIndex },
+        destination: { examBodyIndex: exam.examBody.length }, // Move to end of exam body
       }));
-    } 
-    else {
-      const newIndex = examBodyIndex + direction;
-      
-      if (newIndex < 0 || newIndex >= exam.examBody.length) return;
-      
-      const examBody = exam.examBody;
-      const currentItem = examBody[examBodyIndex];
-      const isSection = currentItem?.type?.toLowerCase() === 'section';
-      
-      if (isSection) {
-        dispatch(moveSection({ sourceIndex: examBodyIndex, destIndex: newIndex }));
-      } else {
-        dispatch(moveQuestion({
-          source: { examBodyIndex },
-          destination: { examBodyIndex: newIndex },
-        }));
-      }
+      message.success("Question moved out of section");
+    } catch (error) {
+      console.error("Error moving question out of section:", error);
+      message.error("Failed to move question out of section");
     }
-  }, [dispatch, exam]);
+  }, [dispatch, exam, message]);
+
+  // Handle moving standalone question into a section
+  const handleMoveIntoSection = useCallback((questionExamBodyIndex, targetSectionIndex) => {
+    if (!exam?.examBody || questionExamBodyIndex === undefined || targetSectionIndex === undefined) {
+      message.error("Cannot move question into section: invalid data");
+      return;
+    }
+
+    const targetSection = exam.examBody[targetSectionIndex];
+    if (!targetSection || targetSection.type !== 'section') {
+      message.error("Target is not a valid section");
+      return;
+    }
+
+    try {
+      // Move question into section (at the end of section's questions)
+      const questionsLength = targetSection.questions?.length || 0;
+      dispatch(moveQuestion({
+        source: { examBodyIndex: questionExamBodyIndex },
+        destination: { examBodyIndex: targetSectionIndex, questionsIndex: questionsLength },
+      }));
+      message.success("Question moved into section");
+    } catch (error) {
+      console.error("Error moving question into section:", error);
+      message.error("Failed to move question into section");
+    }
+  }, [dispatch, exam, message]);
+
+  // Helper function to check if item can move up within its container
+  const canMoveUp = useCallback((record) => {
+    if (!exam?.examBody || !record || record.examBodyIndex === undefined) {
+      return false;
+    }
+    
+    // For questions within a section
+    if (record.questionsIndex !== undefined) {
+      return record.questionsIndex > 0;
+    }
+    
+    // For sections or standalone questions
+    return record.examBodyIndex > 0;
+  }, [exam]);
+
+  // Helper function to check if item can move down within its container
+  const canMoveDown = useCallback((record) => {
+    if (!exam?.examBody || !record || record.examBodyIndex === undefined) {
+      return false;
+    }
+    
+    // For questions within a section
+    if (record.questionsIndex !== undefined) {
+      const section = exam.examBody[record.examBodyIndex];
+      if (!section || section.type !== 'section' || !Array.isArray(section.questions)) {
+        return false;
+      }
+      return record.questionsIndex < section.questions.length - 1;
+    }
+    
+    // For sections or standalone questions
+    return record.examBodyIndex < exam.examBody.length - 1;
+  }, [exam]);
+
+  // Helper to get available sections for moving questions into
+  const getAvailableSections = useCallback(() => {
+    if (!exam?.examBody) return [];
+    
+    return exam.examBody
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => item.type === 'section')
+      .map(({ item, index }) => ({
+        value: index,
+        label: item.sectionTitle || `Section ${item.sectionNumber || index + 1}`
+      }));
+  }, [exam]);
 
   // Reset modal state helper
   const resetModalState = useCallback(() => {
@@ -324,13 +455,55 @@ const ExamDisplay = () => {
       title: "Actions",
       key: "actions-column",
       fixed: 'left',
-      width: 140,
+      width: 160,
       render: (_, record) => {
-        if (!exam?.examBody) return null;
+        if (!exam?.examBody || !Array.isArray(exam.examBody) || exam.examBody.length === 0) {
+          return null;
+        }
+
+        const availableSections = getAvailableSections();
+        const isQuestion = record.type === 'question';
+        const isInSection = record.questionsIndex !== undefined;
+        const isStandaloneQuestion = isQuestion && !isInSection;
+
+        // Create cross-boundary movement menu
+        const crossBoundaryMenuItems = [];
+
+        if (isInSection) {
+          // Question is in a section - can move out
+          crossBoundaryMenuItems.push({
+            key: 'move-out',
+            label: 'Move Out of Section',
+            onClick: () => handleMoveOutOfSection(record.examBodyIndex, record.questionsIndex)
+          });
+        }
+
+        if (isStandaloneQuestion && availableSections.length > 0) {
+          // Standalone question - can move into sections
+          crossBoundaryMenuItems.push({
+            key: 'move-into-header',
+            label: 'Move Into Section:',
+            disabled: true,
+            style: { fontWeight: 'bold' }
+          });
+          
+          availableSections.forEach(section => {
+            crossBoundaryMenuItems.push({
+              key: `move-into-${section.value}`,
+              label: `→ ${section.label}`,
+              onClick: () => handleMoveIntoSection(record.examBodyIndex, section.value)
+            });
+          });
+        }
+
+        const crossBoundaryMenu = crossBoundaryMenuItems.length > 0 ? (
+          <Menu items={crossBoundaryMenuItems} />
+        ) : null;
         
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {/* First row: Edit and Up/Down */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Button size="small" onClick={() => handleEdit(record)}>
                 Edit
               </Button>
@@ -338,36 +511,43 @@ const ExamDisplay = () => {
                 <Button
                   size="small"
                   onClick={() => handleMove(-1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
-                  disabled={
-                    (record.questionsIndex !== undefined && record.questionsIndex === 0) || 
-                    (record.questionsIndex === undefined && record.examBodyIndex === 0)
-                  }
+                  disabled={!canMoveUp(record)}
                   style={{ marginRight: 4 }}
+                  title={canMoveUp(record) ? "Move up within container" : "Cannot move up"}
                 >
                   ↑
                 </Button>
                 <Button
                   size="small"
                   onClick={() => handleMove(1, record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
-                  disabled={
-                    !exam.examBody?.[record.examBodyIndex] ||
-                    (record.questionsIndex !== undefined && 
-                     record.questionsIndex === (exam.examBody[record.examBodyIndex]?.questions?.length - 1)) || 
-                    (record.questionsIndex === undefined && record.examBodyIndex === (exam.examBody.length - 1))
-                  }
+                  disabled={!canMoveDown(record)}
+                  title={canMoveDown(record) ? "Move down within container" : "Cannot move down"}
                 >
                   ↓
                 </Button>
               </div>
             </div>
-            <Button
-              size="small"
-              danger
-              onClick={() => confirmDeleteItem(record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
-              style={{ width: '100%' }}
-            >
-              Delete
-            </Button>
+
+            {/* Second row: Cross-boundary movement and Delete */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {crossBoundaryMenu ? (
+                <Dropdown overlay={crossBoundaryMenu} trigger={['click']} placement="bottomLeft">
+                  <Button size="small">
+                    Move 
+                  </Button>
+                </Dropdown>
+              ) : (
+                <div style={{ width: '60px' }}></div> // Spacer
+              )}
+              
+              <Button
+                size="small"
+                danger
+                onClick={() => confirmDeleteItem(record.examBodyIndex, record.questionsIndex !== undefined ? record.questionsIndex : null)}
+              >
+                Delete
+              </Button>
+            </div>
           </div>
         );
       },
@@ -469,7 +649,7 @@ const ExamDisplay = () => {
       width: 80,
       render: (marks, record) => record.type === "question" ? marks : null,
     },
-  ], [exam, handleEdit, handleMove]); // Added handleEdit and handleMove to dependencies
+  ], [exam, handleEdit, handleMove, canMoveUp, canMoveDown, getAvailableSections, handleMoveOutOfSection, handleMoveIntoSection]);
 
   // Memoize the table data
   const memoizedTableData = useMemo(() => tableData || [], [tableData]);
