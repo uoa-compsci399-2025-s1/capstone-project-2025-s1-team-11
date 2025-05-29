@@ -5,6 +5,7 @@ import { FileOutlined, ExportOutlined, SaveOutlined, UndoOutlined, RedoOutlined 
 import { useDispatch, useSelector } from "react-redux";
 import { useFileSystem } from "../../hooks/useFileSystem.js";
 import { selectExamData } from '../../store/exam/selectors.js';
+import { selectTeleformData } from '../../store/exam/selectors.js';
 import { useHistory } from '../../hooks/useHistory.js';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts.js';
 import CreateExamModal from './CreateExamModal.jsx';
@@ -28,6 +29,7 @@ const StaticContextBar = ({
                           }) => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
+  const teleformData = useSelector(selectTeleformData);
   const coverPage = useSelector(state => state.exam.coverPage);
   const { fileHandle, createExam, openExam, saveExam, setFileHandle } = useFileSystem();
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -244,12 +246,12 @@ const StaticContextBar = ({
     }
   }, [exam]);
   
-  // Auto-save effect: save after 2 seconds of inactivity when exam changes.
+  // Auto-save effect: save after 2 seconds of inactivity when exam or teleform data changes.
   useEffect(() => {
     if (!autoSaveEnabled) return;
     if (!exam) return;
     
-    // Mark as unsaved when exam changes
+    // Mark as unsaved when exam or teleform data changes
     setSaveState('unsaved');
     
     // Clear any previous debounce
@@ -290,7 +292,7 @@ const StaticContextBar = ({
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exam, autoSaveEnabled]);
+  }, [exam, teleformData, autoSaveEnabled]);
 
   // Add keyboard shortcuts
   useKeyboardShortcuts({

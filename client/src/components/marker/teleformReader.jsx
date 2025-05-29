@@ -3,9 +3,10 @@ import { Input, Typography, Button, Space, Upload, message } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { readTeleform } from "../../utilities/marker/teleformReader.js";
 import TeleformTable from "./TeleformTable";
-import { UploadOutlined, ClearOutlined } from "@ant-design/icons";
+import { UploadOutlined, ClearOutlined, SaveOutlined } from "@ant-design/icons";
 import { setTeleformData, clearTeleformData } from "../../store/exam/teleformSlice";
 import { selectTeleformData } from "../../store/exam/selectors";
+import { selectExamData } from "../../store/exam/selectors";
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -14,6 +15,7 @@ const { Title } = Typography;
 const TeleformReader = ({ markingKey, navigationButtons }) => {
   const dispatch = useDispatch();
   const teleformData = useSelector(selectTeleformData);
+  const examData = useSelector(selectExamData);
   
   let parsedData = [];
   try {
@@ -43,6 +45,24 @@ const TeleformReader = ({ markingKey, navigationButtons }) => {
     return false; // Prevent default upload behavior
   };
 
+  const handleSaveToFile = () => {
+    if (!teleformData) {
+      message.error("No teleform data to save");
+      return;
+    }
+
+    const blob = new Blob([teleformData], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${examData?.courseCode || 'exam'}_teleform_data.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    message.success("Teleform data saved successfully");
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -58,6 +78,14 @@ const TeleformReader = ({ markingKey, navigationButtons }) => {
         >
           <Button icon={<UploadOutlined />}>Load from file</Button>
         </Upload>
+
+        <Button 
+          icon={<SaveOutlined />}
+          onClick={handleSaveToFile}
+          disabled={!teleformData}
+        >
+          Save to file
+        </Button>
         
         <Button 
           icon={<ClearOutlined />} 
