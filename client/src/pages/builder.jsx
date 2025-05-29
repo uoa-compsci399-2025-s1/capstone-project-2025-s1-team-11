@@ -5,7 +5,10 @@ import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/shared/examDisplay.jsx";
 import ExamFileManager from "../components/ExamContentManager.jsx";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
-import { Typography, Button, Collapse, Divider} from "antd";
+import ExamSidebar from "../components/ExamSidebar.jsx";
+import ExamPreview from "../components/exam/ExamPreview";
+import { Typography, Button, Row, Col, Tooltip, Collapse, Divider, Tabs } from "antd";
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 //import { exportExamToPdf } from "../services/exportPdf.js";
 
 const { Title, Paragraph, Text } = Typography;
@@ -27,6 +30,36 @@ const Builder = () => {
         }
     };
 
+    const handleTabChange = (key) => {
+        setActiveTab(key);
+    };
+
+    const coverPageItems = [
+        {
+            key: '1',
+            label: 'Cover Page',
+            children: (
+                <div style={{ padding: '16px 0' }}>
+                    <Typography.Title level={3}>Cover Page</Typography.Title>
+                    <Button type="default" style={{ marginBottom: 12 }} onClick={handleUploadClick}>
+                        Upload Cover Page
+                    </Button>
+                    <input
+                        id="cover-upload"
+                        type="file"
+                        accept=".docx"
+                        style={{ display: "none" }}
+                        onChange={handleFileChange}
+                    />
+                    {coverPage && (
+                        <p style={{ marginBottom: 24, color: "green" }}>
+                            Cover page uploaded: {coverPage.name}
+                        </p>
+                    )}
+                </div>
+            ),
+        }
+    ];
 
     return (
         <>
