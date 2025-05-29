@@ -17,44 +17,6 @@ import {
   selectQuestionsAndSectionsForTable
 } from "../../store/exam/selectors";
 import { htmlToText } from "../../utilities/textUtils";
-import { InlineMath, BlockMath } from 'react-katex';
-import 'katex/dist/katex.min.css';
-// Helper to determine if math should be display style
-const isDisplayMath = (math) =>
-  /\n|\\begin\{(align|equation)\}|\\(sum|int|prod)/.test(math);
-// Helper to render text with LaTeX expressions (supports $$...$$ for both inline and block math,)
-const renderTextWithLatex = (text) => {
-  if (!text || typeof text !== 'string') return text;
-
-  // Split on all `$$...$$` math blocks (could be display or inline; type is decided below)
-  const displayParts = text.split(/(\$\$[^$]+\$\$)/gs);
-
-  return displayParts.map((part, i) => {
-    if (part.startsWith('$$') && part.endsWith('$$')) {
-      const mathFromDisplayBlock = part.slice(2, -2);
-      const isDisplay = isDisplayMath(mathFromDisplayBlock);
-
-      if (isDisplay) {
-        return <BlockMath key={`display-${i}`}>{mathFromDisplayBlock}</BlockMath>;
-      } else {
-        return <InlineMath key={`inline-${i}`}>{mathFromDisplayBlock}</InlineMath>;
-      }
-    }
-
-    // For non-display parts, split by inline math ($...$)
-    // Make sure not to match escaped dollar signs \$ (currency symbols)
-    const inlineParts = part.split(/(?<!\\\$)(\$[^$]+?\$)(?!\$)/g);
-
-    return inlineParts.map((inlinePart, j) => {
-      if (inlinePart.startsWith('$') && inlinePart.endsWith('$') && !inlinePart.startsWith('\\$')) {
-        // This is inline math
-        const math = inlinePart.slice(1, -1);
-        return <InlineMath key={`inline-${i}-${j}`}>{math}</InlineMath>;
-      }
-      return <span key={`text-${i}-${j}`}>{inlinePart}</span>;
-    });
-  });
-};
 import CompactRichTextEditor from "../editor/CompactRichTextEditor";
 import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
@@ -441,34 +403,18 @@ const ExamDisplay = () => {
       width: 300,
       render: (_, record) => {
         if (!record?.contentFormatted) return null;
-        if (record.type === "section") {
-          return (
-            <div key={`section-content-${record.id}`}>
-              <Paragraph
-                style={{ margin: 0, maxWidth: 280 }}
-                ellipsis={{
-                  rows: 3,
-                  expandable: true,
-                  symbol: 'more'
-                }}
-              >
-                {renderTextWithLatex(htmlToText(record.contentFormatted))}
-              </Paragraph>
-            </div>
-          );
-        }
         return (
-          <Paragraph
-            key={`question-content-${record.id}`}
-            style={{ margin: 0, maxWidth: 280 }}
-            ellipsis={{
-              rows: 3,
-              expandable: true,
-              symbol: 'more'
+          <div
+            style={{
+              maxWidth: 280,
+              maxHeight: 96,
+              overflowY: 'auto',
+              paddingRight: 4,
+              lineHeight: 1.6
             }}
           >
-            {renderTextWithLatex(htmlToText(record.contentFormatted))}
-          </Paragraph>
+            {htmlToText(record.contentFormatted)}
+          </div>
         );
       },
     },
@@ -480,18 +426,18 @@ const ExamDisplay = () => {
         if (record.type !== "question" || !Array.isArray(record.answers)) return null;
         const options = exam?.teleformOptions || DEFAULT_OPTIONS;
         return (
-          <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+          <div style={{ maxHeight: 100, overflowY: 'auto', paddingRight: 4 }}>
             {record.answers.map((answer, i) => (
-              <Paragraph
+              <div
                 key={`${record.id}-answer-${i}`}
-                ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
                 style={{
                   margin: '2px 0',
-                  color: answer.correct ? '#52c41a' : 'inherit'
+                  color: answer.correct ? '#52c41a' : 'inherit',
+                  lineHeight: 1.6
                 }}
               >
-                {options[i]}) {renderTextWithLatex(htmlToText(answer.contentFormatted))}
-              </Paragraph>
+                {options[i]}) {htmlToText(answer.contentFormatted)}
+              </div>
             ))}
           </div>
         );
