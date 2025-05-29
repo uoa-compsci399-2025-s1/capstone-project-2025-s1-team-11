@@ -12,7 +12,6 @@ const ExamContentManager = () => {
   const [error, setError] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const { importExam } = useFileSystem();
-  const [selectedFormat, setSelectedFormat] = useState('all'); // Default is 'all'
   const message = useMessage();
 
   const dispatch = useDispatch();
@@ -23,29 +22,10 @@ const ExamContentManager = () => {
     const selectedFile = event.target.files[0];
     if (!selectedFile) return;
 
-    const success = await importExam(selectedFile, selectedFormat);
+    const success = await importExam(selectedFile, 'all');
     if (success) {
       setShowSuccessAlert(true);
       setError("");
-    }
-  };
-
-  const handleFormatChange = (value) => {
-    setSelectedFormat(value);
-  };
-
-  // Determine the acceptable file extensions based on selected format
-  const getAcceptExtension = () => {
-    switch (selectedFormat) {
-      case 'moodle':
-        return '.xml';
-      case 'docx':
-        return '.docx';
-      case 'latex':
-        return '.tex';
-      case 'all':
-      default:
-        return '.xml,.docx,.tex'; // Show all supported formats
     }
   };
 
@@ -86,18 +66,12 @@ const ExamContentManager = () => {
                 Import Exam
                 <input
                   type="file"
-                  accept={getAcceptExtension()} // Dynamically set based on selected format
+                  accept=".xml,.docx,.tex"
                   onChange={handleImportExam}
                   style={{ display: "none" }}
                 />
               </label>
             </Button>
-            <Select defaultValue="all" onChange={handleFormatChange} style={{ marginRight: 0 }}>
-              <Select.Option value="all">All Files</Select.Option>
-              <Select.Option value="moodle">Moodle XML</Select.Option>
-              <Select.Option value="docx">DOCX</Select.Option>
-              <Select.Option value="latex">LaTeX</Select.Option>
-            </Select>
             <Button danger onClick={() => setIsClearModalVisible(true)} type="primary">
               Clear Exam Content
             </Button>
