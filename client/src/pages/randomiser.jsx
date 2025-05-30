@@ -1,7 +1,7 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider, Tooltip, Modal } from "antd";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider, Tooltip, Modal, App as AntApp } from "antd";
 import { regenerateShuffleMaps, importMarkingKey } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat, selectCorrectAnswerIndices, selectQuestionCount } from "../store/exam/selectors";
 import MapDisplay from "../components/randomiser/mapDisplay";
@@ -20,6 +20,7 @@ const Randomiser = () => {
   const questionCount = useSelector(selectQuestionCount);
   const { token } = theme.useToken();
   const message = useMessage();
+  const { modal } = AntApp.useApp();
 
   const [selectedVersion, setSelectedVersion] = useState('');
   const [showRaw, setShowRaw] = useState(false);
@@ -128,7 +129,7 @@ const Randomiser = () => {
       // Case 1: No exam loaded or empty exam body
       if (!exam || !exam.examBody || exam.examBody.length === 0) {
         const shouldCreate = await new Promise(resolve => {
-          Modal.confirm({
+          modal.confirm({
             title: 'Create New Exam',
             content: 'No exam content loaded - do you want to create a blank exam to use this marking key?',
             okText: 'Create',
@@ -146,7 +147,7 @@ const Randomiser = () => {
       // Case 2: Question count mismatch
       else if (markingKeyQuestionCount !== questionCount) {
         await new Promise(resolve => {
-          Modal.error({
+          modal.error({
             title: 'Question Count Mismatch',
             content: `Warning: marking key length (${markingKeyQuestionCount}) does not match exam length (${questionCount}). Adjust exam or marking key and re-try.`,
             onOk: () => resolve(),
@@ -167,7 +168,7 @@ const Randomiser = () => {
 
         if (marksChanged) {
           const shouldReplace = await new Promise(resolve => {
-            Modal.confirm({
+            modal.confirm({
               title: 'Mark Values Differ',
               content: 'Mark values in marking key differ from current exam data. Would you like to replace marks from key or keep existing exam values?',
               okText: 'Replace',

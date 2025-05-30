@@ -51,26 +51,22 @@ export function useFileSystem() {
     };
 
     const importExam = async (file) => {
-        try {
-            const ext = file.name.split('.').pop().toLowerCase();
-            const formatToUse = ext === 'xml' ? 'moodle' : ext === 'docx' ? 'docx' : ext === 'tex' ? 'latex' : null;
-            if (!formatToUse) {
-                throw new Error("Unsupported file format. Please use .xml, .docx, or .tex files.");
-            }
-            
-            // Process the file using the examImportService to get the DTO
-            const examDTO = await examImportService.importExamToDTO(file, formatToUse);
-            
-            // Update the application state with the DTO
-            dispatch(importDTOToState(examDTO));
-            dispatch(setTeleformData('')); // Clear any existing teleform data
-            setFileHandle(null); // reset file handle, this wasn't opened from disk
-            dispatch(setFileName(null));
-            
-            return true;
-        } catch (error) {
-            throw error; // Don't wrap the error here, let the caller handle it
-        }
+      const ext = file.name.split('.').pop().toLowerCase();
+      const formatToUse = ext === 'xml' ? 'moodle' : ext === 'docx' ? 'docx' : ext === 'tex' ? 'latex' : null;
+      if (!formatToUse) {
+          throw new Error("Unsupported file format. Please use .xml, .docx, or .tex files.");
+      }
+      
+      // Process the file using the examImportService to get the DTO
+      const examDTO = await examImportService.importExamToDTO(file, formatToUse);
+      
+      // Update the application state with the DTO
+      dispatch(importDTOToState(examDTO));
+      dispatch(setTeleformData('')); // Clear any existing teleform data
+      setFileHandle(null); // reset file handle, this wasn't opened from disk
+      dispatch(setFileName(null));
+      
+      return true;
     };
 
     const importFromFileInput = async (file, onError) => {
