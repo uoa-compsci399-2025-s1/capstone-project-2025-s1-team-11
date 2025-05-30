@@ -1,14 +1,28 @@
-import {Button, Col, Divider, Empty, Progress, Radio, Row, Statistic, Typography, Tabs, Select, Space} from "antd";
+import {
+  Col,
+  Divider,
+  Empty,
+  Row,
+  Statistic,
+  Typography,
+  Tabs,
+  Select,
+  Space,
+} from "antd";
 const { Title, Text, Paragraph } = Typography;
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import React, {useState, useEffect } from "react";
 import QuestionStats from "./QuestionStats.jsx";
 import StudentReport from "./StudentReport.jsx";
+
 // import {updateCorrectAnswerAndRemark} from "../../utilities/marker/examMarker.js";
 import {generateResultOutput} from "../../utilities/marker/outputFormatter.js";
 import {calculateStatistics} from "../../utilities/statistics/examStatistics.js";
+import { selectTotalMarks } from "../../store/exam/selectors.js";
+import { useSelector } from "react-redux";
+import ExportResults from "./exportResults.jsx";
 
-export const Results = ({setExportFormat, exportFormat, resultsData, handleExportResults, examData}) => {
+export const Results = ({resultsData, examData}) => {
   //console.log("Results component received:", resultsData);
   
   // Always define hooks at the top level, never conditionally
@@ -17,6 +31,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
   const [questionStats, setQuestionStats] = useState({});
   const [hasValidData, setHasValidData] = useState(false);
   const [statistics, setStatistics] = useState(null);
+  const totalExamMarks = useSelector(selectTotalMarks);
 
   // Get the selected student data
   const selectedStudent = React.useMemo(() => {
@@ -35,7 +50,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
     setHasValidData(true);
 
     // Calculate statistics using the examStatistics utility
-    const stats = calculateStatistics(resultsData);
+    const stats = calculateStatistics(resultsData, totalExamMarks);
     setStatistics(stats);
     setQuestionStats(stats.questionStats);
 
@@ -45,7 +60,7 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
       //console.log("First student data:", firstStudent);
       setSelectedStudentId(firstStudent.studentId);
     }
-  }, [resultsData]);
+  }, [resultsData, totalExamMarks]);
 
   // Validate resultsData
   if (!hasValidData) {
@@ -218,26 +233,15 @@ export const Results = ({setExportFormat, exportFormat, resultsData, handleExpor
         question-level performance and analysis. You can also export your results for further review.
       </Paragraph>
 
-      {/* Export format selection */}
-      <Radio.Group
-        onChange={(e) => setExportFormat(e.target.value)}
-        value={exportFormat}
-        style={{ marginBottom: 16 }}
-      >
-        <Radio value="json">JSON Format</Radio>
-        <Radio value="text">Text Format (Legacy Style)</Radio>
-      </Radio.Group>
+      <ExportResults
+        resultsData = {resultsData}
+        currentExamData = {examData}
+      />
 
-      <div style={{ marginBottom: 16 }}>
-        <Button type="primary" onClick={handleExportResults} style={{ marginRight: 16 }}>
-          Export Results
-        </Button>
-      </div>
 
       <Tabs 
         activeKey={activeTab} 
         onChange={(key) => {
-          //console.log("Tab changing to:", key);
           setActiveTab(key);
         }}
         destroyOnHidden={true}

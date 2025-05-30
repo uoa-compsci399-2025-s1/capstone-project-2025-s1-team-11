@@ -1,16 +1,14 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Row, Col, Divider, Tooltip } from "antd";
-import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-import { regenerateShuffleMaps } from "../store/exam/examSlice";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider } from "antd";
+import { regenerateShuffleMaps, importMarkingKey } from "../store/exam/examSlice";
 import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
 import MapDisplay from "../components/mapDisplay";
-import ExamSidebar from "../components/ExamSidebar";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { htmlToText } from "../utilities/textUtils.js";
-import EditExamModal from "../components/EditExamModal";
-import { updateExamField } from "../store/exam/examSlice";
+import { importMarkingKeyFile, processMarkingKeyFile } from "../services/markingKeyImportService";
+import useMessage from "../hooks/useMessage.js";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -19,19 +17,12 @@ const Randomiser = () => {
   const exam = useSelector(selectExamData);
   const questions = useSelector(selectAllQuestionsFlat);
   const { token } = theme.useToken();
-  const [currentItemId, setCurrentItemId] = useState(null);
-  const [showEditDetailsModal, setShowEditDetailsModal] = useState(false);
-  const [editDetailsData, setEditDetailsData] = useState({
-    examTitle: '',
-    courseCode: '',
-    courseName: '',
-    semester: '',
-    year: ''
-  });
+  const message = useMessage();
 
-  const [selectedVersion, setSelectedVersion] = useState(exam?.versions?.[0] || '');
+  const [selectedVersion, setSelectedVersion] = useState('');
   const [showRaw, setShowRaw] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
+  const [isImportingKey, setIsImportingKey] = useState(false);
   const [selectedSection, setSelectedSection] = useState("All");
   const [showQuestion, setShowQuestion] = useState(true);
   const [showAnswers, setShowAnswers] = useState(true);
@@ -39,32 +30,19 @@ const Randomiser = () => {
   const [visualStyle, setVisualStyle] = useState("grid");
 
   const [pagination, setPagination] = useState({current: 1, pageSize: 10, });
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Update selectedVersion when exam changes
+  useEffect(() => {
+    if (exam?.versions?.length > 0) {
+      setSelectedVersion(exam.versions[0]);
+    } else {
+      setSelectedVersion('');
+    }
+  }, [exam]);
 
   useEffect(() => {
     setPagination(prev => ({ ...prev, current: 1 }));
   }, [selectedSection]);
-
-  // Update editDetailsData when exam changes
-  useEffect(() => {
-    if (exam) {
-      setEditDetailsData({
-        examTitle: exam.examTitle || '',
-        courseCode: exam.courseCode || '',
-        courseName: exam.courseName || '',
-        semester: exam.semester || '',
-        year: exam.year || ''
-      });
-    }
-  }, [exam]);
-
-  const handleEditDetailsSave = () => {
-    // Update exam fields
-    Object.entries(editDetailsData).forEach(([field, value]) => {
-      dispatch(updateExamField({ field, value }));
-    });
-    setShowEditDetailsModal(false);
-  };
 
   // function to handle shuffling answers for all questions
   const handleShuffleAnswers = () => {
@@ -79,20 +57,36 @@ const Randomiser = () => {
     }, 600);
   };
 
-  // Handle navigation from sidebar
-  const handleNavigateToItem = (itemId, itemType) => {
-    setCurrentItemId(itemId);
-    // Find the section that contains this item and select it
-    if (itemType === 'question') {
-      const question = questions.find(q => q.id === itemId);
-      if (question) {
-        setSelectedSection(question.section || "All");
+  // New function to handle importing marking key
+  const handleImportMarkingKey = async () => {
+    if (!exam) {
+      message.error("No exam data available to import marking key.");
+      return;
+    }
+
+    setIsImportingKey(true);
+    try {
+      // Show file picker
+      const file = await importMarkingKeyFile();
+      
+      if (!file) {
+        message.info("Marking key import cancelled.");
+        setIsImportingKey(false);
+        return;
       }
-    } else if (itemType === 'section') {
-      const section = exam.examBody.find(item => item.id === itemId);
-      if (section) {
-        setSelectedSection(section.sectionTitle || "All");
-      }
+      
+      // Process the file
+      const markingKeyData = await processMarkingKeyFile(file);
+      
+      // Update the exam with the marking key data
+      dispatch(importMarkingKey(markingKeyData));
+      
+      message.success("Marking key imported successfully.");
+    } catch (error) {
+      console.error("Error importing marking key:", error);
+      message.error(`Failed to import marking key: ${error.message}`);
+    } finally {
+      setIsImportingKey(false);
     }
   };
 
@@ -129,19 +123,6 @@ const Randomiser = () => {
     <>
       <Typography.Title level={1}>MCQ Randomiser</Typography.Title>
       <Divider />
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-        <Tooltip title={sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}>
-          <Button
-            type="default"
-            icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          >
-            {sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
-          </Button>
-        </Tooltip>
-      </div>
-    <Row gutter={24}>
-      <Col xs={24} xl={sidebarCollapsed ? 24 : 18} style={{ transition: 'width 0.3s' }}>
           <Card style={{ marginBottom: "20px" }}>
             <Space direction="vertical" size="middle" style={{ width: "100%" }}>
               <Text>
@@ -220,13 +201,32 @@ const Randomiser = () => {
               )}
             </Space>
 
-            <div style={{ marginTop: "16px" }}>
+            <div style={{ 
+              marginTop: "16px", 
+              display: "flex", 
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
               <Button
                 type="primary"
                 onClick={handleShuffleAnswers}
+                loading={isShuffling}
                 disabled={!exam}
               >
                 Shuffle All Answers
+              </Button>
+              
+              <Button
+                type="default"
+                onClick={handleImportMarkingKey}
+                loading={isImportingKey}
+                disabled={!exam}
+                style={{
+                  borderColor: token.colorPrimary,
+                  color: token.colorPrimary
+                }}
+              >
+                Import Marking Key
               </Button>
             </div>
           </Card>
@@ -357,30 +357,6 @@ const Randomiser = () => {
               />
             </Spin>
           </Card>
-
-      </Col>
-      {!sidebarCollapsed && (
-        <Col xs={24} xl={6}>
-          <ExamSidebar
-            exam={exam}
-            currentItemId={currentItemId}
-            onNavigateToItem={handleNavigateToItem}
-            onEditDetails={() => {
-              setShowEditDetailsModal(true);
-            }}
-            collapsed={false}
-            onToggleCollapse={() => setSidebarCollapsed(true)}
-          />
-        </Col>
-      )}
-      <EditExamModal
-        open={showEditDetailsModal}
-        onCancel={() => setShowEditDetailsModal(false)}
-        onOk={handleEditDetailsSave}
-        editDetailsData={editDetailsData}
-        setEditDetailsData={setEditDetailsData}
-      />
-      </Row>
       </>
   );
 };

@@ -1,67 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setCoverPage } from "../store/exam/examSlice";
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/shared/examDisplay.jsx";
 import ExamFileManager from "../components/ExamContentManager.jsx";
-import ExamSidebar from "../components/ExamSidebar.jsx";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
-import { Typography, Button, Row, Col, Tooltip, Collapse, Divider} from "antd";
-import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-import EditExamModal from "../components/EditExamModal";
-import { updateExamField } from "../store/exam/examSlice";
+import { Typography, Button, Collapse, Divider} from "antd";
 //import { exportExamToPdf } from "../services/exportPdf.js";
 
 const { Title, Paragraph, Text } = Typography;
 
 const Builder = () => {
     const exam = useSelector(selectExamData);
-    const [currentItemId, setCurrentItemId] = useState(null);
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const coverPage = useSelector((state) => state.exam.coverPage);
     const dispatch = useDispatch();
-    const [showEditDetailsModal, setShowEditDetailsModal] = useState(false);
-    const [editDetailsData, setEditDetailsData] = useState({
-        examTitle: '',
-        courseCode: '',
-        courseName: '',
-        semester: '',
-        year: ''
-    });
-
-    // Update editDetailsData when exam changes
-    React.useEffect(() => {
-        if (exam) {
-            setEditDetailsData({
-                examTitle: exam.examTitle || '',
-                courseCode: exam.courseCode || '',
-                courseName: exam.courseName || '',
-                semester: exam.semester || '',
-                year: exam.year || ''
-            });
-        }
-    }, [exam]);
-
-    const handleEditDetailsSave = () => {
-        // Update exam fields
-        Object.entries(editDetailsData).forEach(([field, value]) => {
-            dispatch(updateExamField({ field, value }));
-        });
-        setShowEditDetailsModal(false);
-    };
-
-    // Function to handle sidebar navigation
-    const handleNavigateToItem = (itemId, itemType) => {
-        setCurrentItemId(itemId);
-        if (itemType) {
-            // Do something?
-        }
-    };
-
-    // Function to toggle sidebar visibility
-    const toggleSidebar = () => {
-        setSidebarCollapsed(!sidebarCollapsed);
-    };
 
     const handleUploadClick = () => {
         document.getElementById("cover-upload").click();
@@ -76,105 +28,45 @@ const Builder = () => {
     };
 
 
-
-    const coverPageItems = [
-        {
-            key: '1',
-            label: 'Cover Page',
-            children: (
-                <div style={{ padding: '16px 0' }}>
-                    <Title level={3}>Cover Page</Title>
-                    <Button type="default" style={{ marginBottom: 12 }} onClick={handleUploadClick}>
-                        Upload Cover Page
-                    </Button>
-                    <input
-                        id="cover-upload"
-                        type="file"
-                        accept=".docx"
-                        style={{ display: "none" }}
-                        onChange={handleFileChange}
-                    />
-                    {coverPage && (
-                        <Paragraph style={{ marginBottom: 24, color: "green" }}>
-                            Cover page uploaded: {coverPage.name}
-                        </Paragraph>
-                    )}
-                </div>
-            ),
-        }
-    ];
-
     return (
         <>
             <Title level={1}>MCQ Builder</Title>
             <Divider />
-            <div style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                marginBottom: 16
-            }}>
-                <Tooltip title={sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}>
-                    <Button
-                        type="default"
-                        icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                        onClick={toggleSidebar}
-                    >
-                        {sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
-                    </Button>
-                </Tooltip>
-            </div>
 
-            <Row gutter={24}>
-                <Col xs={24} xl={sidebarCollapsed ? 24 : 18} style={{ transition: 'width 0.3s' }}>
-
-                    {/* Cover Page Section */}
-                    <Collapse
-                        defaultActiveKey={[]}
-                        items={coverPageItems}
-                        style={{ marginTop: '16px' }}
-                    />
-
-                    <Divider />
-
-                    {/* MCQ Exam Questions Section */}
-                    <div style={{ marginTop: '24px' }}>
-                        <Title level={3}>MCQ Exam Questions</Title>
-                        {exam?
-                        <ExamDisplay
-                            exam={exam}
-                            currentItemId={currentItemId}
-                            setCurrentItemId={setCurrentItemId}
+            <div>
+                        <Typography.Title level={3}>Cover Page</Typography.Title>
+                        <Button type="default" style={{ marginBottom: 12 }} onClick={handleUploadClick}>
+                            Upload Cover Page
+                        </Button>
+                        <input
+                            id="cover-upload"
+                            type="file"
+                            accept=".docx"
+                            style={{ display: "none" }}
+                            onChange={handleFileChange}
                         />
-                        : <EmptyExam />}
-                        <ExamFileManager />
+                        {coverPage && (
+                            <p style={{ marginBottom: 24, color: "green" }}>
+                                Cover page uploaded: {coverPage.name}
+                            </p>
+                        )}
                     </div>
 
-                    <Divider />
+            <Divider />
 
-                </Col>
-                {!sidebarCollapsed && (
-                    <Col xs={6} style={{ transition: 'width 0.3s' }}>
-                        <ExamSidebar
-                            exam={exam}
-                            currentItemId={currentItemId}
-                            onNavigateToItem={handleNavigateToItem}
-                            collapsed={false}
-                            onToggleCollapse={toggleSidebar}
-                            onEditDetails={() => {
-                                setShowEditDetailsModal(true);
-                            }}
-                        />
-                    </Col>
-                )}
-            </Row>
-        <EditExamModal
-            open={showEditDetailsModal}
-            onCancel={() => setShowEditDetailsModal(false)}
-            onOk={handleEditDetailsSave}
-            editDetailsData={editDetailsData}
-            setEditDetailsData={setEditDetailsData}
-        />
-    </>
+            {/* MCQ Exam Questions Section */}
+            <div style={{ marginTop: '24px' }}>
+                <Title level={3}>Questions</Title>
+                {exam?
+                <ExamDisplay
+                    exam={exam}
+                />
+                : <EmptyExam />}
+                <ExamFileManager />
+            </div>
+
+            <Divider />
+        </>
     );
 };
 

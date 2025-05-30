@@ -4,7 +4,8 @@ import TestExam from './Test.json';
 // Mock Redux actions
 jest.mock('../../../store/store.js', () => ({
   store: {
-    dispatch: jest.fn()
+    dispatch: jest.fn(),
+    getState: jest.fn()
   }
 }));
 
@@ -13,10 +14,16 @@ jest.mock('../teleformReader.js', () => ({
 }));
 
 import { readTeleform } from '../teleformReader';
+import { store } from '../../../store/store';
 
 describe('markExams', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    store.getState.mockReturnValue({
+      exam: {
+        examData: TestExam
+      }
+    });
   });
 
   it('marks student answers correctly and calculates summary stats', () => {

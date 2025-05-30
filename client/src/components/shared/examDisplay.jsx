@@ -1,7 +1,7 @@
 //examDisplay.jsx
 
 import React, { useState, useMemo, useCallback, Suspense } from "react";
-import { Button, Typography, Modal, Input, message, Table } from "antd";
+import { Button, Typography, Modal, Input, Table } from "antd";
 const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -22,6 +22,7 @@ import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 //import { arrayMove } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
+import useMessage from "../../hooks/useMessage.js";
 
 const { TextArea } = Input;
 
@@ -158,6 +159,7 @@ const ExamDisplay = () => {
   const exam = useSelector(selectExamData);
   const tableData = useSelector(selectQuestionsAndSectionsForTable);
   const dispatch = useDispatch();
+  const message = useMessage();
 
   const [modalState, setModalState] = useState({
     visible: false,
@@ -210,7 +212,7 @@ const ExamDisplay = () => {
   }, [dispatch, exam]);
 
   // Reset modal state helper
-  const resetModalState = () => {
+  const resetModalState = useCallback(() => {
     setModalState({
       visible: false,
       type: "", 
@@ -219,7 +221,7 @@ const ExamDisplay = () => {
       questionsIndex: null,
       isDelete: false,
     });
-  };
+  }, []);
 
   // Edit item handler
   const handleEdit = useCallback((item) => {
@@ -249,10 +251,10 @@ const ExamDisplay = () => {
       questionsIndex: item.questionsIndex,
       isDelete: false,
     });
-  }, [exam]);
+  }, [exam, message]);
 
   // Save edited item
-  const handleSaveEdit = () => {
+  const handleSaveEdit = useCallback(() => {
     const { type, examBodyIndex, questionsIndex } = modalState;
     
     // Use the currentEditorState which has been kept in sync with the editor
@@ -282,7 +284,7 @@ const ExamDisplay = () => {
 
     message.success("Saved changes");
     resetModalState();
-  };
+  }, [currentEditorState, dispatch, modalState, resetModalState, message]);
 
   // Confirm delete item
   const confirmDeleteItem = (examBodyIndex, questionsIndex = null) => {

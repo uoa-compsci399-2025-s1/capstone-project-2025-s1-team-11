@@ -62,8 +62,9 @@ export function formatExamDataForTemplate(examData, version = 1, mathRegistry = 
                 const sectionQuestions = formatQuestionsWithVersion(
                     item.questions || [],
                     versionToUse,
+                    mathRegistry,
                     examData.versions,
-                    mathRegistry
+                    examData.teleformOptions
                 );
 
                 // Process section content
@@ -82,7 +83,7 @@ export function formatExamDataForTemplate(examData, version = 1, mathRegistry = 
                 formattedExamBody.push(section);
             } else if (item.type === 'question') {
                 // Process standalone question with version-specific answer ordering
-                const formattedQuestion = formatQuestionWithVersion(item, versionToUse, examData.versions, mathRegistry);
+                const formattedQuestion = formatQuestionWithVersion(item, versionToUse, examData.versions, examData.teleformOptions);
                 const questionItem = {
                     isSection: false,
                     isQuestion: true,
@@ -186,11 +187,12 @@ function processContent(content, mathRegistry = {}) {
  * @param {Array} questions - Array of question objects
  * @param {string|number} version - Version number being exported
  * @param {Array} versionList - List of all versions
+ * @param {Array} optionLabels - List of option labels
  * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Array} - Formatted questions
  */
-function formatQuestionsWithVersion(questions, version, versionList, mathRegistry) {
-    return questions.map(question => formatQuestionWithVersion(question, version, versionList, mathRegistry));
+function formatQuestionsWithVersion(questions, version, versionList, optionLabels) {
+    return questions.map(question => formatQuestionWithVersion(question, version, versionList, optionLabels));
 }
 
 /**
@@ -199,8 +201,10 @@ function formatQuestionsWithVersion(questions, version, versionList, mathRegistr
  * @param {string|number} version - Version number being exported
  * @param {Array} versionList - List of all versions
  * @param {Object} mathRegistry - Math registry for resolving math placeholders
+ * @param {Array} optionLabels - List of option labels
  * @returns {Object} - Formatted question
  */
+function formatQuestionWithVersion(question, version, versionList, optionLabels) {
 /**
  * Format a single question for template use, with version-specific answer ordering
  * @param {Object} question - Question object
@@ -251,6 +255,8 @@ function formatQuestionWithVersion(question, version, versionList, mathRegistry)
     if (question.answers && question.answers.length > 0) {
         // Create a temporary array to hold answers in their new positions
         const tempAnswers = new Array(question.answers.length);
+        console.log("optionLabels", optionLabels);
+        console.log("shuffleMap", shuffleMap);
 
         // Place each answer in its new position in the temp array
         shuffleMap.forEach((newIndex, originalIndex) => {
@@ -264,7 +270,8 @@ function formatQuestionWithVersion(question, version, versionList, mathRegistry)
                 // Only include non-empty answers
                 if (answerContent.text.trim()) {
                     // Use letters for answer labels (A, B, C, etc.)
-                    const label = String.fromCharCode(65 + newIndex);
+                    //const label = String.fromCharCode(65 + newIndex);
+                    const label = optionLabels[newIndex];
                     tempAnswers[newIndex] = {
                         label: label,
                         text: answerContent.text,

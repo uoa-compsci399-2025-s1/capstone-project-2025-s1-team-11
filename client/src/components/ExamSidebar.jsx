@@ -5,6 +5,57 @@ import { htmlToText } from '../utilities/textUtils';
 
 const { Title, Text, Paragraph } = Typography;
 
+// Memoized QuestionItem component to prevent unnecessary re-renders
+const QuestionItem = React.memo(({ question, qIndex, currentItemId, onNavigateToItem }) => {
+  return (
+    <List.Item
+      key={question.id}
+      className={currentItemId === question.id ? 'highlighted-item' : ''}
+      onClick={() => onNavigateToItem(question.id, 'question')}
+      style={{ cursor: 'pointer' }}
+    >
+      <div style={{ width: '100%' }}>
+        <Paragraph
+          ellipsis={{
+            rows: 1,
+            tooltip: question.text
+          }}
+          style={{ margin: 0, maxWidth: '90%' }}
+        >
+          Q{qIndex + 1}: {question.text}
+        </Paragraph>
+      </div>
+      <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
+    </List.Item>
+  );
+});
+
+// Memoized standalone question item component
+const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToItem }) => {
+  return (
+    <List.Item
+      className={currentItemId === item.id ? 'highlighted-item' : ''}
+      onClick={() => onNavigateToItem(item.id, 'question')}
+      style={{ cursor: 'pointer', padding: '8px' }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{ flex: 1, marginRight: '8px' }}>
+          <Paragraph
+            ellipsis={{
+              rows: 1,
+              tooltip: item.text
+            }}
+            style={{ margin: 0 }}
+          >
+            <FileTextOutlined /> {item.text}
+          </Paragraph>
+        </div>
+        <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
+      </div>
+    </List.Item>
+  );
+});
+
 const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) => {
   if (!exam || !exam.examBody || !Array.isArray(exam.examBody)) {
     return (
@@ -100,19 +151,12 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
           size="small"
           dataSource={section.questions}
           renderItem={(question, qIndex) => (
-            <List.Item
-              key={question.id}
-              className={currentItemId === question.id ? 'highlighted-item' : ''}
-              onClick={() => onNavigateToItem(question.id, 'question')}
-              style={{ cursor: 'pointer' }}
-            >
-              <Tooltip title={question.text}>
-                <Text style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  Q{qIndex + 1}: {question.text}
-                </Text>
-              </Tooltip>
-              <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
-            </List.Item>
+            <QuestionItem
+              question={question}
+              qIndex={qIndex}
+              currentItemId={currentItemId}
+              onNavigateToItem={onNavigateToItem}
+            />
           )}
         />
       )
@@ -198,21 +242,12 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
 
       {/* Standalone questions (not in a section) */}
       {examStructure.filter(item => item.type === 'question').map((item, index) => (
-        <List.Item
+        <StandaloneQuestionItem
           key={index}
-          className={currentItemId === item.id ? 'highlighted-item' : ''}
-          onClick={() => onNavigateToItem(item.id, 'question')}
-          style={{ cursor: 'pointer', padding: '8px' }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-            <Tooltip title={item.text}>
-              <Text style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                <FileTextOutlined /> {item.text}
-              </Text>
-            </Tooltip>
-            <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
-          </div>
-        </List.Item>
+          item={item}
+          currentItemId={currentItemId}
+          onNavigateToItem={onNavigateToItem}
+        />
       ))}
 
       <Divider style={{ margin: '12px 0' }} />

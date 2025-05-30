@@ -6,7 +6,7 @@
  */
 
 import { useDispatch, useSelector } from 'react-redux';
-import {initialiseExamState, clearExamState} from '../store/exam/examSlice';
+import {initialiseExamState, clearExamState, setFileName} from '../store/exam/examSlice';
 import { selectExamData } from '../store/exam/selectors';
 import { loadExamFromFile, saveExamToDisk } from '../services/fileSystemAccess.js';
 import examImportService  from '../services/examImportService.js';
@@ -21,27 +21,30 @@ export function useFileSystem() {
 
     // Opens the exam file and updates the global state
     const openExam = async () => {
-        const result = await loadExamFromFile();
-        if (result) {
-            dispatch(initialiseExamState(result.exam));
-            setFileHandle(result.fileHandle);
-        }
-        return result;
+      const result = await loadExamFromFile();
+      if (result) {
+        dispatch(initialiseExamState(result.exam));
+        setFileHandle(result.fileHandle);
+        dispatch(setFileName(result.fileHandle?.name || null));
+      }
+      return result;
     };
 
     const createExam = async (exam) => {
         dispatch(initialiseExamState(exam));
         setFileHandle(null);
+        dispatch(setFileName(null));
     };
 
     // Saves the exam and updates the file handle in the global state
     const saveExam = async () => {
         if (!exam) return null;
-        const updatedHandle = await saveExamToDisk(exam, fileHandle);
-        if (updatedHandle) {
-            setFileHandle(updatedHandle);
-        }
-        return updatedHandle;
+          const updatedHandle = await saveExamToDisk(exam, fileHandle);
+          if (updatedHandle) {
+              setFileHandle(updatedHandle);
+              dispatch(setFileName(updatedHandle?.name || null));
+          }
+          return updatedHandle;
     };
 
     const importExam = async (file, format) => {
@@ -68,6 +71,7 @@ export function useFileSystem() {
             // Update the application state with the DTO and math registry
             dispatch(importDTOToState(examDTO, mathRegistry));
             setFileHandle(null); // reset file handle, this wasn't opened from disk
+            dispatch(setFileName(null));
 
             return true;
         } catch (error) {
@@ -97,7 +101,8 @@ export function useFileSystem() {
     const closeExam = () => {
         dispatch(clearExamState());
         setFileHandle(null);
-    };
+        dispatch(setFileName(null));
+      };
 
     return {
         exam,
