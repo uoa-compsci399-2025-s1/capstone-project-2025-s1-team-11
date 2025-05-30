@@ -33,7 +33,7 @@ const QuestionItem = React.memo(({ question, qIndex, currentItemId, onNavigateTo
             whiteSpace: 'nowrap'
           }}
         >
-          Q{qIndex + 1}: {question.text}
+          Q{question.questionNumber}: {question.text}
         </div>
       </Tooltip>
       <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
@@ -49,7 +49,7 @@ const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToIt
       onClick={() => onNavigateToItem(item.id, 'question')}
       style={{ cursor: 'pointer', padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
     >
-      <Tooltip title={item.text} placement="topLeft" mouseEnterDelay={0.5}>
+      <Tooltip title={item.text} placement="topLeft" mouseEnterDelay={0.2}>
         <div
           style={{ 
             margin: 0,
@@ -61,7 +61,7 @@ const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToIt
             whiteSpace: 'nowrap'
           }}
         >
-          <FileTextOutlined /> {item.text}
+          Q{item.questionNumber}: {item.text}
         </div>
       </Tooltip>
       <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
@@ -110,7 +110,7 @@ const SortableQuestionItem = ({ question, qIndex, currentItemId, onNavigateToIte
           width: '100%'
         }}
       >
-        <Tooltip title={question.text} placement="topLeft" mouseEnterDelay={0.5}>
+        <Tooltip title={question.text} placement="topLeft" mouseEnterDelay={0.2}>
           <div
             style={{ 
               margin: 0, 
@@ -122,7 +122,7 @@ const SortableQuestionItem = ({ question, qIndex, currentItemId, onNavigateToIte
               whiteSpace: 'nowrap'
             }}
           >
-            Q{qIndex + 1}: {question.text}
+            Q{question.questionNumber}: {question.text}
           </div>
         </Tooltip>
         <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
@@ -170,7 +170,7 @@ const SortableStandaloneQuestionItem = ({ item, currentItemId, onNavigateToItem 
           width: '100%'
         }}
       >
-        <Tooltip title={item.text} placement="topLeft" mouseEnterDelay={0.5}>
+        <Tooltip title={item.text} placement="topLeft" mouseEnterDelay={0.2}>
           <div
             style={{ 
               margin: 0,
@@ -182,7 +182,7 @@ const SortableStandaloneQuestionItem = ({ item, currentItemId, onNavigateToItem 
               whiteSpace: 'nowrap'
             }}
           >
-            <FileTextOutlined /> {item.text}
+            Q{item.questionNumber}: {item.text}
           </div>
         </Tooltip>
         <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
@@ -284,6 +284,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
           type: 'question',
           text: htmlToText(q.contentFormatted || q.contentText || ''),
           marks: q.marks || 1,
+          questionNumber: q.questionNumber,
           sectionIndex: index,
           questionIndex: qIndex
         })) || []
@@ -299,6 +300,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
         type: 'question',
         text: htmlToText(item.contentFormatted || item.contentText || ''),
         marks: item.marks || 1,
+        questionNumber: item.questionNumber,
         index
       });
     }
