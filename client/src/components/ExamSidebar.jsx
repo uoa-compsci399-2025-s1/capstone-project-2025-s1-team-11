@@ -7,7 +7,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { useDispatch } from 'react-redux';
-import { moveQuestion, moveSection } from '../store/exam/examSlice';
+import { moveQuestion } from '../store/exam/examSlice';
 import useMessage from '../hooks/useMessage';
 
 const { Title, Text, Paragraph } = Typography;
@@ -22,15 +22,18 @@ const QuestionItem = React.memo(({ question, qIndex, currentItemId, onNavigateTo
       style={{ cursor: 'pointer' }}
     >
       <div style={{ width: '100%' }}>
-        <Paragraph
-          ellipsis={{
-            rows: 1,
-            tooltip: question.text
+        <div
+          title={question.text}
+          style={{ 
+            margin: 0, 
+            maxWidth: '90%',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
           }}
-          style={{ margin: 0, maxWidth: '90%' }}
         >
           Q{qIndex + 1}: {question.text}
-        </Paragraph>
+        </div>
       </div>
       <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
     </List.Item>
@@ -47,15 +50,17 @@ const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToIt
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
         <div style={{ flex: 1, marginRight: '8px' }}>
-          <Paragraph
-            ellipsis={{
-              rows: 1,
-              tooltip: item.text
+          <div
+            title={item.text}
+            style={{ 
+              margin: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
             }}
-            style={{ margin: 0 }}
           >
             <FileTextOutlined /> {item.text}
-          </Paragraph>
+          </div>
         </div>
         <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
       </div>
@@ -104,15 +109,18 @@ const SortableQuestionItem = ({ question, qIndex, currentItemId, onNavigateToIte
         }}
       >
         <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Paragraph
-            ellipsis={{
-              rows: 1,
-              tooltip: question.text
+          <div
+            title={question.text}
+            style={{ 
+              margin: 0, 
+              maxWidth: '70%',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
             }}
-            style={{ margin: 0, maxWidth: '70%' }}
           >
             Q{qIndex + 1}: {question.text}
-          </Paragraph>
+          </div>
           <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
         </div>
       </List.Item>
@@ -160,15 +168,17 @@ const SortableStandaloneQuestionItem = ({ item, currentItemId, onNavigateToItem 
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
           <div style={{ flex: 1, marginRight: '8px' }}>
-            <Paragraph
-              ellipsis={{
-                rows: 1,
-                tooltip: item.text
+            <div
+              title={item.text}
+              style={{ 
+                margin: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
               }}
-              style={{ margin: 0 }}
             >
               <FileTextOutlined /> {item.text}
-            </Paragraph>
+            </div>
           </div>
           <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
         </div>
@@ -450,11 +460,17 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
               renderItem={(section) => (
                 <List.Item>
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                    <Tooltip title={section.sectionTitle}>
-                      <Text style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {section.sectionNumber || section.sectionTitle}
-                      </Text>
-                    </Tooltip>
+                    <div 
+                      title={section.sectionTitle}
+                      style={{ 
+                        width: '100%', 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis', 
+                        whiteSpace: 'nowrap' 
+                      }}
+                    >
+                      {section.sectionNumber || section.sectionTitle}
+                    </div>
                     <div>
                       <Badge count={section.count} style={{ backgroundColor: '#52c41a', marginRight: '8px' }} />
                       <Badge count={`${section.marks}m`} style={{ backgroundColor: '#1890ff' }} />

@@ -20,7 +20,7 @@ import { htmlToText } from "../../utilities/textUtils";
 import CompactRichTextEditor from "../editor/CompactRichTextEditor";
 import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { SortableContext } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 import useMessage from "../../hooks/useMessage.js";
@@ -461,7 +461,7 @@ const ExamDisplay = () => {
       dataIndex: "type",
       key: "type-column",
       width: 100,
-      render: (type, record) => {
+      render: (type, _) => {
         if (type === 'section') {
           return <Text>Section</Text>;
         }
