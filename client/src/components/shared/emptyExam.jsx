@@ -1,15 +1,10 @@
-import {Empty, Spin} from "antd";
+import {Empty} from "antd";
 import React from "react";
 import { useSelector } from "react-redux";
 import { selectExamData } from "../../store/exam/selectors.js";
 
 export const EmptyExam = () => {
     const exam = useSelector(selectExamData);
-    const isLoading = useSelector(state => state.exam.isLoading);
-    
-    if (isLoading) {
-        return <Spin size="large" tip="Importing exam..." />;
-    }
     
     return (
         !exam ? (
