@@ -115,26 +115,13 @@ export function formatExamDataForTemplate(examData, version = 1, mathRegistry = 
  * @returns {string} - Content with resolved math
  */
 function resolveMathPlaceholders(content, mathRegistry) {
-    console.log('=== RESOLVE MATH PLACEHOLDERS ===');
-    console.log('Input content:', content);
-    console.log('Math registry keys:', Object.keys(mathRegistry));
-    console.log('Content contains [math:', content.includes('[math:'));
-
-
-
     if (!mathRegistry || Object.keys(mathRegistry).length === 0) {
-        console.log('No math registry, returning original content');
-        console.log('=== END RESOLVE MATH PLACEHOLDERS ===');
         return content;
     }
 
     const result = content.replace(/\[math:([^\]]+)\]/g, (match, mathId) => {
-        console.log(`Processing math placeholder: ${match}, mathId: ${mathId}`);
         const mathEntry = mathRegistry[mathId];
         if (mathEntry) {
-            console.log('Math entry originalXml length:', mathEntry.originalXml.length);
-            console.log('Math entry originalXml preview:', mathEntry.originalXml.substring(0, 100));
-
             const escapedXml = mathEntry.originalXml
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
@@ -144,15 +131,11 @@ function resolveMathPlaceholders(content, mathRegistry) {
                 ? `§MATH_OMML§${escapedXml}§/MATH_OMML§`
                 : `§MATH_OMML§${escapedXml}§/MATH_OMML§`;
 
-            console.log('Replacement preview:', replacement.substring(0, 100));
             return replacement;
         }
-        console.log(`Math entry not found for ID: ${mathId}`);
         return match; // Keep original if not found
     });
 
-    console.log('Output content:', result);
-    console.log('=== END RESOLVE MATH PLACEHOLDERS ===');
     return result;
 }
 
@@ -230,14 +213,10 @@ function formatQuestionWithVersion(question, version, versionList, optionLabels,
         }
     }
 
-    //console.log("Version:", version, "Position in list:", versionIndex);
-
     // Get the appropriate shuffle map for this version
     // Note: shuffleMap.[original index] = new index
 
     const shuffleMap = question.answerShuffleMaps?.[versionIndex] || [...Array(question.answers?.length || 0).keys()];
-
-    //console.log("Using shuffle map:", shuffleMap);
 
     // Format answers using the appropriate shuffle map for this version
     const formattedAnswers = [];
@@ -246,8 +225,6 @@ function formatQuestionWithVersion(question, version, versionList, optionLabels,
     if (question.answers && question.answers.length > 0) {
         // Create a temporary array to hold answers in their new positions
         const tempAnswers = new Array(question.answers.length);
-        console.log("optionLabels", optionLabels);
-        console.log("shuffleMap", shuffleMap);
 
         // Place each answer in its new position in the temp array
         shuffleMap.forEach((newIndex, originalIndex) => {

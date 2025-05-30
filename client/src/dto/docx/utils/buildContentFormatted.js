@@ -51,14 +51,7 @@ export const detectMathElements = (para) => {
  * @returns {string} - XML string representation
  */
 function serializeOmmlToXml(ommlElement) {
-
-    console.log('=== SERIALIZE OMML DEBUG ===');
-    console.log('Input element type:', typeof ommlElement);
-    console.log('Input element keys:', Object.keys(ommlElement));
-    console.log('Sample element structure:', JSON.stringify(ommlElement).substring(0, 200));
-
     if (!ommlElement || typeof ommlElement !== 'object') {
-        console.log('Invalid element, returning empty');
         return '';
     }
 
@@ -114,10 +107,7 @@ function serializeOmmlToXml(ommlElement) {
         return '';
     };
 
-
     const result = convertObjectToXml(ommlElement);
-    console.log('Serialization result:', result.substring(0, 100));
-    console.log('=== END SERIALIZE OMML DEBUG ===');
     return result;
 }
 
@@ -133,7 +123,6 @@ function extractParagraphXml(documentXml, para) {
     // Try to find paragraph ID in the para object
     const paraId = para['@_w14:paraId'] || para['@_w:paraId'];
     if (!paraId) {
-        console.log('No paragraph ID found, cannot extract XML');
         return null;
     }
 
@@ -145,7 +134,6 @@ function extractParagraphXml(documentXml, para) {
         return `<w:p${match[0].substring(4)}`; // Include the full paragraph with attributes
     }
 
-    console.log(`Could not find paragraph with ID ${paraId} in XML`);
     return null;
 }
 
@@ -177,7 +165,6 @@ function parseParagraphChildrenFromXml(paragraphXml) {
         });
     }
 
-    console.log(`Parsed ${children.length} children from paragraph XML`);
     return children;
 }
 
@@ -199,27 +186,18 @@ function processSequentialParagraphContent(para, documentXml, options = {}) {
 
     if (!para) return '';
 
-    console.log('=== SEQUENTIAL PARAGRAPH PROCESSING ===');
-    console.log('Paragraph keys:', Object.keys(para));
-
     // Try to get the original paragraph XML for correct ordering
     let orderedChildren = [];
 
     if (documentXml) {
         const paragraphXml = extractParagraphXml(documentXml, para);
         if (paragraphXml) {
-            console.log('Successfully extracted paragraph XML, parsing children...');
             orderedChildren = parseParagraphChildrenFromXml(paragraphXml);
-            console.log('=== XML CHILDREN ORDER DEBUG ===');
-            orderedChildren.forEach((child, index) => {
-                console.log(`Child ${index}: type=${child.type}, xml preview:`, child.xml.substring(0, 100));
-            });
         }
     }
 
     // Fallback: if we can't get XML order, use the original JSON-based approach
     if (orderedChildren.length === 0) {
-        console.log('Falling back to JSON-based processing');
         return processParagraphFromJson(para, options);
     }
 
@@ -320,16 +298,13 @@ function processSequentialParagraphContent(para, documentXml, options = {}) {
 
     // Process each child in XML order
     for (const child of orderedChildren) {
-        console.log(`Processing child type: ${child.type}`);
         if (child.type === 'w:r' && runIndex < runs.length) {
             // Use raw text extraction to preserve original spacing
             const runText = extractRawTextFromRun(runs[runIndex]);
-            console.log(`Run ${runIndex} text: "${runText}" (length: ${runText.length})`);
             result += runText;
             runIndex++;
 
         } else if (child.type === 'm:oMath' && mathIndex < mathElements.length && preserveMath) {
-            console.log(`  Math element found at position ${child.position}`);
             // Process inline math element
             const mathElement = mathElements[mathIndex];
             const simpleHash = Math.abs(JSON.stringify(mathElement.element).split('').reduce((a, b) => {
@@ -346,7 +321,6 @@ function processSequentialParagraphContent(para, documentXml, options = {}) {
                 placeholder: `[math]`
             };
 
-            console.log(`Inserted math ${mathIndex} at correct XML position: ${mathElement.isBlockMath ? 'block' : 'inline'}`);
             result += `[math:${mathId}]`;
             mathIndex++;
 
@@ -366,15 +340,11 @@ function processSequentialParagraphContent(para, documentXml, options = {}) {
                 placeholder: `[math]`
             };
 
-            console.log(`Inserted block math ${mathIndex} at correct XML position`);
             result += `[math:${mathId}]`;
             mathIndex++;
         }
         // Skip other element types like w:proofErr for now
     }
-
-    console.log('Sequential processing result:', JSON.stringify(result));
-    console.log('=== END SEQUENTIAL PARAGRAPH PROCESSING ===');
 
     return result;
 }
@@ -392,8 +362,6 @@ function processParagraphFromJson(para, options = {}) {
         preserveMath = true,
         mathRegistry = {}
     } = options;
-
-    console.log('Using fallback JSON processing');
 
     // Get text runs and process them
     const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
@@ -437,11 +405,6 @@ function processParagraphFromJson(para, options = {}) {
  * @returns {string} Formatted content string
  */
 export const buildContentFormatted = (runs, options = {}, parentPara = null, documentXml = null) => {
-    console.log('=== BUILD CONTENT FORMATTED DEBUG ===');
-    console.log('parentPara provided:', !!parentPara);
-    console.log('documentXml provided:', !!documentXml);
-    console.log('documentXml length:', documentXml?.length);
-
     const {
         removeMarks = false,
         relationships = {},
@@ -450,42 +413,23 @@ export const buildContentFormatted = (runs, options = {}, parentPara = null, doc
         mathRegistry = {}
     } = options;
 
-    console.log('=== BUILD CONTENT FORMATTED ===');
-    console.log('Number of runs to process:', runs ? runs.length : 0);
-    console.log('Preserve math:', preserveMath);
-    console.log('Parent para has math?', parentPara ? (detectMathElements(parentPara).length > 0) : false);
-    console.log('Has document XML?', !!documentXml);
-
     let content;
 
     // If we have a parent paragraph and need to preserve math, use sequential processing
     if (parentPara && preserveMath) {
-        console.log('Using sequential paragraph processing for proper math positioning');
         content = processSequentialParagraphContent(parentPara, documentXml, options);
     } else {
-        console.log('Using standard run processing - reasons:', {
-            noParentPara: !parentPara,
-            mathPreservationDisabled: !preserveMath
-        });
         content = extractPlainText(runs, { relationships, imageData });
     }
-
-    console.log('Content after processing:', JSON.stringify(content));
 
     // Remove marks pattern if requested
     if (removeMarks) {
         const beforeMarks = content;
         content = content.replace(/^\[\d+(?:\.\d+)?\s*marks?\]\s*/i, '');
-        if (beforeMarks !== content) {
-            console.log('Removed marks pattern, new content:', JSON.stringify(content));
-        }
     }
 
     // Process multiple br tags to preserve spacing
     content = content.replace(/<br>/g, '<br>');
-
-    console.log('Final content:', JSON.stringify(content));
-    console.log('=== END BUILD CONTENT FORMATTED ===');
 
     return content;
 };

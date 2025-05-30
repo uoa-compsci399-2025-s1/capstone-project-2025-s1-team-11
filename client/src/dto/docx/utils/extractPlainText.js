@@ -3,8 +3,6 @@ export const extractPlainText = (runs, options = {}) => {
 
   const { imageData = {} } = options;
 
-  console.log('Extract plain text processing', runs.length, 'runs');
-
   let result = '';
   let lastRunEndedWithSpace = false;
   let lastRunWasLineBreak = false; // Track if the last run was a line break
@@ -13,8 +11,6 @@ export const extractPlainText = (runs, options = {}) => {
   for (let i = 0; i < runs.length; i++) {
     const r = runs[i];
     if (!r) continue;
-
-    console.log(`Processing run ${i}:`, Object.keys(r));
 
     // Check for text formatting
     let isBold = false;
@@ -133,8 +129,6 @@ export const extractPlainText = (runs, options = {}) => {
       }
     }
 
-    console.log(`Run ${i} text content: "${textContent}"`);
-
     // Skip empty text content
     if (textContent === undefined || textContent === null) {
       continue;
@@ -182,8 +176,6 @@ export const extractPlainText = (runs, options = {}) => {
 
   // Keep subscripts and superscripts together with their base text
   result = result.replace(/(\w+)\s+<(sub|sup)>(\w+)<\/(sub|sup)>/g, '$1<$2>$3</$4>');
-
-  console.log('Extract plain text result:', JSON.stringify(result));
 
   return result.trim();
 };

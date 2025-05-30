@@ -11,9 +11,6 @@ import { transformXmlToDto } from './transformXmlToDto.js';
 export async function parseDocx(file) {
     try {
         const { documentXml, relationships, imageData } = await extractDocumentXml(file);
-        console.log('=== DOCX PARSER DEBUG ===');
-        console.log('documentXml length:', documentXml?.length);
-        console.log('documentXml starts with:', documentXml?.substring(0, 100));
 
         // Parse XML to JSON
         const parsedXml = parseXmlToJson(documentXml);
