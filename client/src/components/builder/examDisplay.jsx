@@ -19,7 +19,6 @@ import {
 import { htmlToText } from "../../utilities/textUtils.js";
 import RichTextEditor from "../editor/RichTextEditor.jsx";
 import { QuestionEditorContainer } from "./QuestionEditor.jsx";
-import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 //import { arrayMove } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
