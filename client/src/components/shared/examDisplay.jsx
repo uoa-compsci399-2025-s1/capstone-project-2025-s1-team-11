@@ -29,7 +29,6 @@ const { TextArea } = Input;
 
 const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
 
-// Memoized Question Editor Component
 const QuestionEditor = React.memo(({ content, onChange }) => {
   return (
     <div style={{ marginBottom: 16 }}>
@@ -43,7 +42,6 @@ const QuestionEditor = React.memo(({ content, onChange }) => {
   );
 });
 
-// Memoized Answer Editor Component
 const AnswerEditor = React.memo(({ answer, index, onChange }) => {
   const handleChange = useCallback((html) => {
     onChange(html, index);
@@ -61,7 +59,6 @@ const AnswerEditor = React.memo(({ answer, index, onChange }) => {
   );
 });
 
-// Lazy loaded answer editors container
 const AnswerEditorsContainer = React.memo(({ answers, onAnswerChange }) => {
   return (
     <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 8 }}>
@@ -77,7 +74,6 @@ const AnswerEditorsContainer = React.memo(({ answers, onAnswerChange }) => {
   );
 });
 
-// New component for the modal editor
 const ExamItemEditor = React.memo(({ modalState, onSave, exam }) => {
   const [itemState, setItemState] = useState(modalState.item);
 
@@ -355,7 +351,6 @@ const ExamDisplay = () => {
     resetModalState();
   }, [currentEditorState, dispatch, modalState, resetModalState, message, exam]);
 
-  // Confirm delete item
   const confirmDeleteItem = (examBodyIndex, questionsIndex = null) => {
     setModalState({
       visible: true,
@@ -367,7 +362,6 @@ const ExamDisplay = () => {
     });
   };
 
-  // Execute delete item
   const executeDeleteItem = () => {
     const { examBodyIndex, questionsIndex, isDelete } = modalState;
     
@@ -461,7 +455,7 @@ const ExamDisplay = () => {
       dataIndex: "type",
       key: "type-column",
       width: 100,
-      render: (type, _) => {
+      render: (type) => {
         if (type === 'section') {
           return <Text>Section</Text>;
         }
@@ -564,9 +558,8 @@ const ExamDisplay = () => {
       width: 80,
       render: (marks, record) => record.type === "question" ? marks : null,
     },
-  ], [exam, handleEdit, handleMove]); // Added handleEdit and handleMove to dependencies
+  ], [exam, handleEdit, handleMove]); 
 
-  // Memoize the table data
   const memoizedTableData = useMemo(() => tableData || [], [tableData]);
 
   if (!exam || !Array.isArray(exam.examBody)) {
