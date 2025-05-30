@@ -111,10 +111,12 @@ export async function postProcessTextFormatting(docxBlob) {
                          <w:szCs w:val="22"/>
                        </w:rPr><w:t xml:space="preserve">`);
 
-                    // Handle arrow characters specifically
+                    // FIXED: Handle arrow characters specifically - preserve them instead of encoding
                     processedText = processedText
-                        .replace(/←/g, '&#x2190;')  // Left arrow
-                        .replace(/→/g, '&#x2192;'); // Right arrow
+                        .replace(/←/g, '←')  // Keep left arrow as-is
+                        .replace(/→/g, '→')  // Keep right arrow as-is
+                        .replace(/↑/g, '↑')  // Keep up arrow as-is
+                        .replace(/↓/g, '↓'); // Keep down arrow as-is
 
                     return result + processedText + `</w:t></w:r><w:r><w:t xml:space="preserve">`;
                 }
@@ -187,6 +189,20 @@ export async function postProcessTextFormatting(docxBlob) {
                 }
                 return match;
             });
+        });
+
+        // FIXED: Also handle arrow characters in regular text (not just code blocks)
+        docXml = docXml.replace(/<w:t([^>]*)>([^<]*)<\/w:t>/g, (match, attributes, content) => {
+            // Preserve arrows in regular text by ensuring they're not encoded
+            const processedContent = content
+                .replace(/&lt;/g, '←')   // In case arrows got encoded as &lt;
+                .replace(/&gt;/g, '→')   // In case arrows got encoded as &gt;
+                .replace(/&#x2190;/g, '←')  // Decode left arrow
+                .replace(/&#x2192;/g, '→')  // Decode right arrow
+                .replace(/&#x2191;/g, '↑')  // Decode up arrow
+                .replace(/&#x2193;/g, '↓'); // Decode down arrow
+
+            return `<w:t${attributes}>${processedContent}</w:t>`;
         });
 
         // Ensure that OMML namespace is declared in the document
