@@ -19,14 +19,15 @@ const QuestionItem = React.memo(({ question, qIndex, currentItemId, onNavigateTo
       key={question.id}
       className={currentItemId === question.id ? 'highlighted-item' : ''}
       onClick={() => onNavigateToItem(question.id, 'question')}
-      style={{ cursor: 'pointer' }}
+      style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
     >
-      <div style={{ width: '100%' }}>
+      <Tooltip title={question.text} placement="topLeft" mouseEnterDelay={0.2}>
         <div
-          title={question.text}
           style={{ 
             margin: 0, 
-            maxWidth: '90%',
+            flex: 1,
+            minWidth: 0, 
+            marginRight: '8px',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap'
@@ -34,7 +35,7 @@ const QuestionItem = React.memo(({ question, qIndex, currentItemId, onNavigateTo
         >
           Q{qIndex + 1}: {question.text}
         </div>
-      </div>
+      </Tooltip>
       <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
     </List.Item>
   );
@@ -46,24 +47,24 @@ const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToIt
     <List.Item
       className={currentItemId === item.id ? 'highlighted-item' : ''}
       onClick={() => onNavigateToItem(item.id, 'question')}
-      style={{ cursor: 'pointer', padding: '8px' }}
+      style={{ cursor: 'pointer', padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-        <div style={{ flex: 1, marginRight: '8px' }}>
-          <div
-            title={item.text}
-            style={{ 
-              margin: 0,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            <FileTextOutlined /> {item.text}
-          </div>
+      <Tooltip title={item.text} placement="topLeft" mouseEnterDelay={0.5}>
+        <div
+          style={{ 
+            margin: 0,
+            flex: 1,
+            minWidth: 0, 
+            marginRight: '8px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          <FileTextOutlined /> {item.text}
         </div>
-        <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
-      </div>
+      </Tooltip>
+      <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
     </List.Item>
   );
 });
@@ -103,17 +104,19 @@ const SortableQuestionItem = ({ question, qIndex, currentItemId, onNavigateToIte
         style={{ 
           cursor: 'grab',
           display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           padding: '8px 12px',
           width: '100%'
         }}
       >
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Tooltip title={question.text} placement="topLeft" mouseEnterDelay={0.5}>
           <div
-            title={question.text}
             style={{ 
               margin: 0, 
-              maxWidth: '70%',
+              flex: 1,
+              minWidth: 0, 
+              marginRight: '8px',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap'
@@ -121,8 +124,8 @@ const SortableQuestionItem = ({ question, qIndex, currentItemId, onNavigateToIte
           >
             Q{qIndex + 1}: {question.text}
           </div>
-          <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
-        </div>
+        </Tooltip>
+        <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
       </List.Item>
     </div>
   );
@@ -162,26 +165,27 @@ const SortableStandaloneQuestionItem = ({ item, currentItemId, onNavigateToItem 
           cursor: 'grab', 
           padding: '8px 12px',
           display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           width: '100%'
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-          <div style={{ flex: 1, marginRight: '8px' }}>
-            <div
-              title={item.text}
-              style={{ 
-                margin: 0,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              <FileTextOutlined /> {item.text}
-            </div>
+        <Tooltip title={item.text} placement="topLeft" mouseEnterDelay={0.5}>
+          <div
+            style={{ 
+              margin: 0,
+              flex: 1,
+              minWidth: 0, 
+              marginRight: '8px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <FileTextOutlined /> {item.text}
           </div>
-          <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
-        </div>
+        </Tooltip>
+        <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
       </List.Item>
     </div>
   );
