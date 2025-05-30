@@ -22,7 +22,7 @@ const ExamContentManager = () => {
     const selectedFile = event.target.files[0];
     if (!selectedFile) return;
 
-    const success = await importExam(selectedFile, 'all');
+    const success = await importExam(selectedFile);
     if (success) {
       setShowSuccessAlert(true);
       setError("");

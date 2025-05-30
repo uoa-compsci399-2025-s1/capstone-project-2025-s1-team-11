@@ -47,19 +47,12 @@ export function useFileSystem() {
           return updatedHandle;
     };
 
-    const importExam = async (file, format) => {
+    const importExam = async (file) => {
         try {
-            // If format is 'all' or not specified, determine it from file extension
-            let formatToUse = format;
-            if (!format || format === 'all') {
-                const ext = file.name.split('.').pop().toLowerCase();
-                formatToUse = ext === 'xml' ? 'moodle' : ext === 'docx' ? 'docx' : ext === 'tex' ? 'latex' : null;
-                
-                if (!formatToUse) {
-                    throw new Error("Unsupported file format. Please use .xml, .docx, or .tex files.");
-                }
-            } else if (!['docx', 'moodle', 'latex'].includes(formatToUse)) {
-                throw new Error(`Unsupported format: ${formatToUse}. Supported formats are: docx, moodle, latex.`);
+            const ext = file.name.split('.').pop().toLowerCase();
+            const formatToUse = ext === 'xml' ? 'moodle' : ext === 'docx' ? 'docx' : ext === 'tex' ? 'latex' : null;
+            if (!formatToUse) {
+                throw new Error("Unsupported file format. Please use .xml, .docx, or .tex files.");
             }
             
             // Process the file using the examImportService to get the DTO
@@ -72,7 +65,7 @@ export function useFileSystem() {
             
             return true;
         } catch (error) {
-            throw new Error("Error importing exam: " + error.message);
+            throw error; // Don't wrap the error here, let the caller handle it
         }
     };
 
@@ -86,7 +79,7 @@ export function useFileSystem() {
       }
 
       try {
-        await importExam(file, format);
+        await importExam(file); // Call importExam with just the file parameter
         return true;
       } catch (err) {
         console.error("Import error:", err);
