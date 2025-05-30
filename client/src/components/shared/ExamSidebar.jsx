@@ -1,62 +1,82 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip, Tag } from 'antd';
 import { ProfileOutlined, FileTextOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
-import { htmlToText } from '../utilities/textUtils';
+import { htmlToText } from '../../utilities/textUtils';
 
 const { Title, Text, Paragraph } = Typography;
 
 // Memoized QuestionItem component to prevent unnecessary re-renders
 const QuestionItem = React.memo(({ question, qIndex, currentItemId, onNavigateToItem }) => {
-  return (
-    <List.Item
-      key={question.id}
-      className={currentItemId === question.id ? 'highlighted-item' : ''}
-      onClick={() => onNavigateToItem(question.id, 'question')}
-      style={{ cursor: 'pointer' }}
-    >
-      <div style={{ width: '100%' }}>
-        <Paragraph
-          ellipsis={{
-            rows: 1,
-            tooltip: question.text
-          }}
-          style={{ margin: 0, maxWidth: '90%' }}
-        >
-          Q{qIndex + 1}: {question.text}
-        </Paragraph>
-      </div>
-      <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
-    </List.Item>
-  );
+  try {
+    const textContent = htmlToText(question.text);
+    return (
+      <List.Item
+        key={question.id}
+        className={currentItemId === question.id ? 'highlighted-item' : ''}
+        onClick={() => onNavigateToItem(question.id, 'question')}
+        style={{ cursor: 'pointer' }}
+      >
+        <div style={{ width: '100%' }}>
+          <Tooltip title={textContent}>
+            <div style={{ 
+              margin: 0, 
+              maxWidth: '90%',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>
+              Q{qIndex + 1}: {textContent}
+            </div>
+          </Tooltip>
+        </div>
+        <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
+      </List.Item>
+    );
+  } catch (error) {
+    console.error('Error rendering QuestionItem:', error);
+    console.error('Question causing error:', question);
+    return <List.Item>Error rendering question</List.Item>;
+  }
 });
 
 // Memoized standalone question item component
 const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToItem }) => {
-  return (
-    <List.Item
-      className={currentItemId === item.id ? 'highlighted-item' : ''}
-      onClick={() => onNavigateToItem(item.id, 'question')}
-      style={{ cursor: 'pointer', padding: '8px' }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-        <div style={{ flex: 1, marginRight: '8px' }}>
-          <Paragraph
-            ellipsis={{
-              rows: 1,
-              tooltip: item.text
-            }}
-            style={{ margin: 0 }}
-          >
-            <FileTextOutlined /> {item.text}
-          </Paragraph>
+  try {
+    const textContent = htmlToText(item.text);
+    return (
+      <List.Item
+        className={currentItemId === item.id ? 'highlighted-item' : ''}
+        onClick={() => onNavigateToItem(item.id, 'question')}
+        style={{ cursor: 'pointer', padding: '8px' }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+          <div style={{ flex: 1, marginRight: '8px' }}>
+            <Tooltip title={textContent}>
+              <div style={{ 
+                margin: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}>
+                <FileTextOutlined /> {textContent}
+              </div>
+            </Tooltip>
+          </div>
+          <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
         </div>
-        <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
-      </div>
-    </List.Item>
-  );
+      </List.Item>
+    );
+  } catch (error) {
+    console.error('Error rendering StandaloneQuestionItem:', error);
+    console.error('Item causing error:', item);
+    return <List.Item>Error rendering question</List.Item>;
+  }
 });
 
 const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) => {
+  const fileName = useSelector((state) => state.exam.fileName);
+
   if (!exam || !exam.examBody || !Array.isArray(exam.examBody)) {
     return (
       <Card className="exam-sidebar">
@@ -100,7 +120,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
         questions: item.questions?.map((q, qIndex) => ({
           id: q.id,
           type: 'question',
-          text: htmlToText(q.contentFormatted || q.contentText || ''),
+          text: htmlToText(q.contentFormatted || ''),
           marks: q.marks || 1,
           sectionIndex: index,
           questionIndex: qIndex
@@ -115,7 +135,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
       examStructure.push({
         id: item.id,
         type: 'question',
-        text: htmlToText(item.contentFormatted || item.contentText || ''),
+        text: htmlToText(item.contentFormatted || ''),
         marks: item.marks || 1,
         index
       });
@@ -130,7 +150,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
       label: (
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <span>
-            <ProfileOutlined /> {section.sectionNumber || section.sectionTitle}
+            <ProfileOutlined /> {section.sectionTitle || section.sectionNumber}
           </span>
           <Badge count={section.questions.length} style={{ backgroundColor: '#52c41a' }} />
         </div>
@@ -210,6 +230,14 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
               </Paragraph>
             </List.Item>
           )}
+          <List.Item>
+            <Text type="secondary">File:</Text>
+            <Tooltip title="Full file path not available due to browser privacy restrictions.">
+              <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
+                {fileName || '[unsaved file]'}
+              </Text>
+            </Tooltip>
+          </List.Item>
         </List>
       </div>
 

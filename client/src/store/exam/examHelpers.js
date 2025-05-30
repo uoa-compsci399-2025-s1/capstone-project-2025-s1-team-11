@@ -121,3 +121,70 @@ export const normaliseAnswersPerTeleformOptions = (examData) => {
     }
   });
 };
+
+/**
+ * Creates a minimal exam structure from marking key data
+ * @param {Object} markingKeyData - The marking key data containing versions, mappings, and weights
+ * @returns {Object} A minimal exam structure suitable for marking
+ */
+export function createMinimalExamFromMarkingKey(markingKeyData, createExam, createQuestion, createAnswer, generateId) {
+  const { versions, questionMappings, markWeights } = markingKeyData;
+
+  // Find the maximum number of options from the option sequences
+  let maxOptions = 0;
+  Object.values(questionMappings).forEach(questionData => {
+    Object.values(questionData).forEach(versionData => {
+      maxOptions = Math.max(maxOptions, versionData.shuffleMap.length);
+    });
+  });
+
+  // Create teleform options based on the number of options found
+  const teleformOptions = Array.from({ length: maxOptions }, (_, i) => 
+    String.fromCharCode(97 + i) // 97 is 'a' in ASCII
+  );
+
+  // Initialize minimal exam structure
+  const examData = createExam({
+    examTitle: 'Marking Only Exam',
+    versions: versions,
+    teleformOptions: teleformOptions,
+    examBody: []
+  });
+
+  // Create questions based on marking key data
+  Object.entries(questionMappings).forEach(([questionNumber, questionData]) => {
+    const newQuestion = createQuestion({
+      id: generateId(),
+      questionNumber: parseInt(questionNumber),
+      contentFormatted: `Question ${questionNumber}`,
+      marks: markWeights[questionNumber] || 1,
+      answers: Array.from({ length: maxOptions }, (_, i) => createAnswer({
+        contentFormatted: `Option ${String.fromCharCode(65 + i)}`, // A, B, C, etc.
+        correct: false
+      }))
+    });
+
+    // Initialize shuffle maps for all versions
+    newQuestion.answerShuffleMaps = versions.map(versionId => {
+      const mappingData = questionData[versionId];
+      return mappingData ? mappingData.shuffleMap : [...Array(maxOptions).keys()];
+    });
+
+    // Set correct answers based on the first version's data
+    const firstVersionData = questionData[versions[0]];
+    if (firstVersionData) {
+      firstVersionData.correctAnswerIndices.forEach(correctIndex => {
+        // Find which original answer maps to this correct position
+        for (let i = 0; i < firstVersionData.shuffleMap.length; i++) {
+          if (firstVersionData.shuffleMap[i] === correctIndex) {
+            newQuestion.answers[i].correct = true;
+          }
+        }
+      });
+    }
+
+    examData.examBody.push(newQuestion);
+  });
+
+  return examData;
+}

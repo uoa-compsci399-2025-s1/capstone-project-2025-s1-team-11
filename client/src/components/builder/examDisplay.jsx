@@ -1,7 +1,7 @@
 //examDisplay.jsx
 
 import React, { useState, useMemo, useCallback, Suspense } from "react";
-import { Button, Typography, Modal, Input, Table } from "antd";
+import { Button, Typography, Modal, Input, Table, Tooltip } from "antd";
 const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -11,70 +11,22 @@ import {
   updateSection,
   moveQuestion,
   moveSection,
-} from "../../store/exam/examSlice";
+} from "../../store/exam/examSlice.js";
 import { 
   selectExamData, 
   selectQuestionsAndSectionsForTable
-} from "../../store/exam/selectors";
-import { htmlToText } from "../../utilities/textUtils";
-import CompactRichTextEditor from "../editor/CompactRichTextEditor";
+} from "../../store/exam/selectors.js";
+import { htmlToText } from "../../utilities/textUtils.js";
+import RichTextEditor from "../editor/RichTextEditor.jsx";
+import { QuestionEditorContainer } from "./QuestionEditor.jsx";
 import 'quill/dist/quill.snow.css';
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
 //import { arrayMove } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 import useMessage from "../../hooks/useMessage.js";
+import { DEFAULT_OPTIONS } from '../../constants/answerOptions';
 
 const { TextArea } = Input;
-
-const DEFAULT_OPTIONS = ['A', 'B', 'C', 'D', 'E'];
-
-// Memoized Question Editor Component
-const QuestionEditor = React.memo(({ content, onChange }) => {
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <CompactRichTextEditor
-        key="question-editor"
-        content={content}
-        onChange={onChange}
-        placeholder="Question Text"
-      />
-    </div>
-  );
-});
-
-// Memoized Answer Editor Component
-const AnswerEditor = React.memo(({ answer, index, onChange }) => {
-  const handleChange = useCallback((html) => {
-    onChange(html, index);
-  }, [onChange, index]);
-
-  return (
-    <div style={{ marginBottom: 8 }}>
-      <CompactRichTextEditor
-        key={`answer-editor-${index}`}
-        content={answer.contentFormatted}
-        onChange={handleChange}
-        placeholder={`Answer ${String(1 + index)}`}
-      />
-    </div>
-  );
-});
-
-// Lazy loaded answer editors container
-const AnswerEditorsContainer = React.memo(({ answers, onAnswerChange }) => {
-  return (
-    <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 8 }}>
-      {answers.map((answer, index) => (
-        <AnswerEditor
-          key={`${answer.id || index}`}
-          answer={answer}
-          index={index}
-          onChange={onAnswerChange}
-        />
-      ))}
-    </div>
-  );
-});
 
 // New component for the modal editor
 const ExamItemEditor = React.memo(({ modalState, onSave }) => {
@@ -85,20 +37,6 @@ const ExamItemEditor = React.memo(({ modalState, onSave }) => {
       ...prev,
       contentFormatted: html
     }));
-  }, []);
-
-  const handleAnswerContentChange = useCallback((html, index) => {
-    setItemState(prev => {
-      const updatedAnswers = [...prev.answers];
-      updatedAnswers[index] = {
-        ...updatedAnswers[index],
-        contentFormatted: html
-      };
-      return {
-        ...prev,
-        answers: updatedAnswers
-      };
-    });
   }, []);
 
   const handleSectionTitleChange = useCallback((e) => {
@@ -124,7 +62,7 @@ const ExamItemEditor = React.memo(({ modalState, onSave }) => {
           style={{ marginBottom: 8 }}
         />
         <div style={{ marginBottom: 16 }}>
-          <CompactRichTextEditor
+          <RichTextEditor
             key="section-editor"
             content={itemState?.contentFormatted}
             onChange={handleQuestionContentChange}
@@ -137,22 +75,47 @@ const ExamItemEditor = React.memo(({ modalState, onSave }) => {
 
   if (modalState.type === "question") {
     return (
-      <>
-        <QuestionEditor
-          content={itemState?.contentFormatted}
-          onChange={handleQuestionContentChange}
-        />
-        <Suspense fallback={<div>Loading answer editors...</div>}>
-          <AnswerEditorsContainer
-            answers={itemState?.answers || []}
-            onAnswerChange={handleAnswerContentChange}
-          />
-        </Suspense>
-      </>
+      <QuestionEditorContainer 
+        item={itemState}
+        onSave={onSave}
+        examBodyIndex={modalState.examBodyIndex}
+        questionsIndex={modalState.questionsIndex}
+      />
     );
   }
 
   return null;
+});
+
+const ContentRenderer = React.memo(({ record }) => {
+  const textContent = useMemo(() => {
+    try {
+      return htmlToText(record.contentFormatted);
+    } catch (error) {
+      console.error('Error converting HTML to text:', error);
+      return 'Error rendering content';
+    }
+  }, [record.contentFormatted]);
+
+  return (
+    <div style={{ 
+      margin: 0, 
+      maxWidth: 280,
+      maxHeight: '4.5em',
+      overflow: 'hidden',
+      position: 'relative'
+    }}>
+      <div style={{
+        display: '-webkit-box',
+        WebkitLineClamp: 3,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+      }}>
+        {textContent}
+      </div>
+    </div>
+  );
 });
 
 const ExamDisplay = () => {
@@ -310,15 +273,24 @@ const ExamDisplay = () => {
     const entry = exam?.examBody?.[examBodyIndex];
 
     if (questionsIndex !== null && questionsIndex !== undefined) {
+      // Delete question from section
       dispatch(removeQuestion({ examBodyIndex, questionsIndex }));
     } else if (entry?.type === "section") {
+      // Delete section
       dispatch(removeSection(examBodyIndex));
+    } else {
+      // Delete standalone question
+      dispatch(removeQuestion({ examBodyIndex }));
     }
 
     setModalState({ visible: false, type: '', item: null, isDelete: false });
+    message.success('Item deleted successfully');
   };
 
-  // Memoize the columns configuration with exam as a dependency
+  // Memoize the table data with a stable reference
+  const memoizedTableData = useMemo(() => tableData || [], [tableData]);
+
+  // Memoize the columns configuration
   const columns = useMemo(() => [
     {
       title: "Actions",
@@ -392,7 +364,7 @@ const ExamDisplay = () => {
       ellipsis: true,
       render: (_, record) => {
         if (record.type === "section") {
-          return record.sectionNumber || record.sectionTitle;
+          return record.sectionTitle || record.sectionNumber;
         }
         return record.sectionNumber;
       },
@@ -404,35 +376,12 @@ const ExamDisplay = () => {
       render: (_, record) => {
         if (!record?.contentFormatted) return null;
         
-        if (record.type === "section") {
-          return (
-            <div key={`section-content-${record.id}`}>
-              <Paragraph
-                style={{ margin: 0, maxWidth: 280 }}
-                ellipsis={{ 
-                  rows: 3,
-                  expandable: true,
-                  symbol: 'more'
-                }}
-              >
-                {htmlToText(record.contentFormatted)}
-              </Paragraph>
-            </div>
-          );
+        try {
+          return <ContentRenderer record={record} />;
+        } catch (error) {
+          console.error('Error rendering content:', error);
+          return <div>Error rendering content</div>;
         }
-        return (
-          <Paragraph
-            key={`question-content-${record.id}`}
-            style={{ margin: 0, maxWidth: 280 }}
-            ellipsis={{ 
-              rows: 3,
-              expandable: true,
-              symbol: 'more'
-            }}
-          >
-            {htmlToText(record.contentFormatted)}
-          </Paragraph>
-        );
       },
     },
     {
@@ -447,16 +396,20 @@ const ExamDisplay = () => {
         return (
           <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
             {record.answers.map((answer, i) => (
-              <Paragraph 
-                key={`${record.id}-answer-${i}`} 
-                ellipsis={{ rows: 2, expandable: true, symbol: '...' }}
+              <div 
+                key={`${record.id}-answer-${i}`}
                 style={{ 
                   margin: '2px 0',
-                  color: answer.correct ? '#52c41a' : 'inherit'
+                  color: answer.correct ? '#52c41a' : 'inherit',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
                 }}
               >
                 {options[i]}) {htmlToText(answer.contentFormatted)}
-              </Paragraph>
+              </div>
             ))}
           </div>
         );
@@ -471,9 +424,6 @@ const ExamDisplay = () => {
     },
   ], [exam, handleEdit, handleMove]); // Added handleEdit and handleMove to dependencies
 
-  // Memoize the table data
-  const memoizedTableData = useMemo(() => tableData || [], [tableData]);
-
   if (!exam || !Array.isArray(exam.examBody)) {
     return <div>Please open an exam or create a new file.</div>;
   }
@@ -481,7 +431,7 @@ const ExamDisplay = () => {
   return (
     <div>
       <div style={{ marginBottom: 16 }}>
-       <Title level={3}>{exam.examTitle}</Title>
+        <Title level={3}>{exam.examTitle}</Title>
         {(exam.courseCode || exam.courseName || exam.semester || exam.year) && (
           <Text type="secondary">
             {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
@@ -526,6 +476,7 @@ const ExamDisplay = () => {
         }}
       >
         <Table
+          key="exam-table"
           rowKey="id" 
           columns={columns}
           dataSource={memoizedTableData}
@@ -537,7 +488,7 @@ const ExamDisplay = () => {
       {/* Modal with extracted editor component */}
       <Modal
         open={modalState.visible}
-        title={modalState.isDelete ? 'Confirm Delete' : `Edit ${modalState.type}`}
+        title={modalState.isDelete ? 'Confirm Delete' : `Edit ${modalState.type === 'question' ? 'Question' : 'Section'}`}
         onCancel={resetModalState}
         onOk={modalState.isDelete ? executeDeleteItem : handleSaveEdit}
         width={800}
