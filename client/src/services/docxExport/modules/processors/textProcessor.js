@@ -163,13 +163,14 @@ export async function postProcessTextFormatting(docxBlob) {
             {
                 pattern: /§MATH_OMML§((?:(?!§\/MATH_OMML§)[\s\S])*)§\/MATH_OMML§/g,
                 replacement: (match, ommlXml) => {
-                    // Insert OMML directly without conversion
+                    // Insert OMML with proper wrapper for Word to recognize as equation
                     const unescapedXml = ommlXml
                         .replace(/&lt;/g, '<')
                         .replace(/&gt;/g, '>')
                         .replace(/&amp;/g, '&');
 
-                    return `</w:t></w:r>${unescapedXml}<w:r><w:t xml:space="preserve">`;
+                    // Wrap in proper OMML structure for Word to recognize as equation
+                    return `</w:t></w:r><m:oMath>${unescapedXml}</m:oMath><w:r><w:t xml:space="preserve">`;
                 }
             }
         ];

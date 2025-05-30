@@ -51,6 +51,7 @@ export const detectMathElements = (para) => {
  * @returns {string} - XML string representation
  */
 function serializeOmmlToXml(ommlElement) {
+    console.log('ORIGINAL OMML BEFORE SERIALIZATION:', JSON.stringify(ommlElement, null, 2));
     if (!ommlElement || typeof ommlElement !== 'object') {
         return '';
     }
