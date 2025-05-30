@@ -46,73 +46,6 @@ export const detectMathElements = (para) => {
 };
 
 /**
- * Serialize OMML element back to XML string
- * @param {Object} ommlElement - Parsed OMML element
- * @returns {string} - XML string representation
- */
-function serializeOmmlToXml(ommlElement) {
-    console.log('ORIGINAL OMML BEFORE SERIALIZATION:', JSON.stringify(ommlElement, null, 2));
-    if (!ommlElement || typeof ommlElement !== 'object') {
-        return '';
-    }
-
-    const convertObjectToXml = (obj, tagName = '') => {
-        if (typeof obj === 'string' || typeof obj === 'number') {
-            return String(obj);
-        }
-
-        if (Array.isArray(obj)) {
-            return obj.map(item => convertObjectToXml(item, tagName)).join('');
-        }
-
-        if (typeof obj === 'object') {
-            let xml = '';
-
-            for (const [key, value] of Object.entries(obj)) {
-                if (key.startsWith('@_')) {
-                    // Skip attributes for now, they'll be handled when processing the parent element
-                    continue;
-                }
-
-                const attributes = [];
-                // Collect attributes for this element
-                const attrKey = '@_' + key.split(':').pop();
-                if (obj[attrKey]) {
-                    for (const [attrName, attrValue] of Object.entries(obj[attrKey])) {
-                        if (attrName.startsWith('@_')) {
-                            const cleanAttrName = attrName.substring(2);
-                            attributes.push(`${cleanAttrName}="${attrValue}"`);
-                        }
-                    }
-                }
-
-                const attrString = attributes.length > 0 ? ` ${attributes.join(' ')}` : '';
-
-                if (value === null || value === undefined) {
-                    xml += `<${key}${attrString}/>`;
-                } else if (typeof value === 'string' || typeof value === 'number') {
-                    xml += `<${key}${attrString}>${value}</${key}>`;
-                } else {
-                    const innerXml = convertObjectToXml(value, key);
-                    if (innerXml) {
-                        xml += `<${key}${attrString}>${innerXml}</${key}>`;
-                    } else {
-                        xml += `<${key}${attrString}/>`;
-                    }
-                }
-            }
-
-            return xml;
-        }
-
-        return '';
-    };
-
-    const result = convertObjectToXml(ommlElement);
-    return result;
-}
-
-/**
  * Extract paragraph XML from the full document XML using paragraph ID
  * @param {string} documentXml - Full document XML string
  * @param {Object} para - Paragraph object with ID
@@ -170,13 +103,15 @@ function parseParagraphChildrenFromXml(paragraphXml) {
 }
 
 /**
- * Process paragraph children in exact document order using original XML
+ * Process paragraph children in exact document order using pre-extracted math elements
  * @param {Object} para - Paragraph object
  * @param {string} documentXml - Original document XML
  * @param {Object} options - Processing options
+ * @param {Array} mathElementsWithXml - Pre-extracted math elements with original XML
+ * @param {Object} globalCounters - Global counters for tracking across paragraphs
  * @returns {string} - Content with math placeholders in correct positions
  */
-function processSequentialParagraphContent(para, documentXml, options = {}) {
+function processSequentialParagraphContent(para, documentXml, options = {}, mathElementsWithXml = [], globalCounters = {}) {
     const {
         removeMarks = false,
         relationships = {},
@@ -199,7 +134,7 @@ function processSequentialParagraphContent(para, documentXml, options = {}) {
 
     // Fallback: if we can't get XML order, use the original JSON-based approach
     if (orderedChildren.length === 0) {
-        return processParagraphFromJson(para, options);
+        return processParagraphFromJson(para, options, mathElementsWithXml, globalCounters);
     }
 
     // Process children in their exact XML document order
@@ -209,22 +144,6 @@ function processSequentialParagraphContent(para, documentXml, options = {}) {
 
     // Get arrays from the JSON for easy access
     const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
-    const mathElements = [];
-
-    // Collect math elements from JSON
-    if (para['m:oMath']) {
-        const elements = Array.isArray(para['m:oMath']) ? para['m:oMath'] : [para['m:oMath']];
-        elements.forEach(elem => mathElements.push({ element: elem, isBlockMath: false }));
-    }
-    if (para['m:oMathPara']) {
-        const mathParas = Array.isArray(para['m:oMathPara']) ? para['m:oMathPara'] : [para['m:oMathPara']];
-        mathParas.forEach(mathPara => {
-            if (mathPara['m:oMath']) {
-                const elements = Array.isArray(mathPara['m:oMath']) ? mathPara['m:oMath'] : [mathPara['m:oMath']];
-                elements.forEach(elem => mathElements.push({ element: elem, isBlockMath: true }));
-            }
-        });
-    }
 
     // Helper function to extract raw text from a single run without processing
     const extractRawTextFromRun = (run) => {
@@ -305,39 +224,23 @@ function processSequentialParagraphContent(para, documentXml, options = {}) {
             result += runText;
             runIndex++;
 
-        } else if (child.type === 'm:oMath' && mathIndex < mathElements.length && preserveMath) {
-            // Process inline math element
-            const mathElement = mathElements[mathIndex];
-            const simpleHash = Math.abs(JSON.stringify(mathElement.element).split('').reduce((a, b) => {
-                a = ((a << 5) - a) + b.charCodeAt(0);
-                return a & a;
-            }, 0)).toString(36);
-            const mathId = `math-${simpleHash}-${mathIndex}`;
+        } else if ((child.type === 'm:oMath' || child.type === 'm:oMathPara') && mathIndex < mathElementsWithXml.length && preserveMath) {
+            // Process math element using the pre-extracted original XML
+            const mathElementWithXml = mathElementsWithXml[mathIndex];
 
-            // Store complete OMML in registry
+            // Use the pre-extracted ID or generate one
+            const mathId = mathElementWithXml.id || `math-preextracted-${mathIndex}`;
+
+            // Use the original XML that was extracted during document parsing
+            const originalXml = mathElementWithXml.originalXml || '';
+
+            console.log(`Processing math element ${mathIndex}: ID=${mathId}, XML length=${originalXml.length}`);
+
+            // Store original XML in registry
             mathRegistry[mathId] = {
                 type: "omml",
-                originalXml: serializeOmmlToXml(mathElement.element),
-                context: mathElement.isBlockMath ? "block" : "inline",
-                placeholder: `[math]`
-            };
-
-            result += `[math:${mathId}]`;
-            mathIndex++;
-
-        } else if (child.type === 'm:oMathPara' && mathIndex < mathElements.length && preserveMath) {
-            // Process block math element (similar to above but mark as block)
-            const mathElement = mathElements[mathIndex];
-            const simpleHash = Math.abs(JSON.stringify(mathElement.element).split('').reduce((a, b) => {
-                a = ((a << 5) - a) + b.charCodeAt(0);
-                return a & a;
-            }, 0)).toString(36);
-            const mathId = `math-${simpleHash}-${mathIndex}`;
-
-            mathRegistry[mathId] = {
-                type: "omml",
-                originalXml: serializeOmmlToXml(mathElement.element),
-                context: "block",
+                originalXml: originalXml,
+                context: mathElementWithXml.isBlockMath ? "block" : "inline",
                 placeholder: `[math]`
             };
 
@@ -354,9 +257,11 @@ function processSequentialParagraphContent(para, documentXml, options = {}) {
  * Fallback: process paragraph from JSON structure (original logic)
  * @param {Object} para - Paragraph object
  * @param {Object} options - Processing options
+ * @param {Array} mathElementsWithXml - Pre-extracted math elements with original XML
+ * @param {Object} globalCounters - Global counters for tracking across paragraphs
  * @returns {string} - Content string
  */
-function processParagraphFromJson(para, options = {}) {
+function processParagraphFromJson(para, options = {}, mathElementsWithXml = [], globalCounters = {}) {
     const {
         relationships = {},
         imageData = {},
@@ -368,20 +273,21 @@ function processParagraphFromJson(para, options = {}) {
     const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
     let result = extractPlainText(runs, { relationships, imageData });
 
-    // Add math placeholders at the end (original behavior)
-    if (preserveMath) {
-        const mathElements = detectMathElements(para);
-        mathElements.forEach((mathElement, index) => {
-            const simpleHash = Math.abs(JSON.stringify(mathElement).split('').reduce((a, b) => {
-                a = ((a << 5) - a) + b.charCodeAt(0);
-                return a & a;
-            }, 0)).toString(36);
-            const mathId = `math-${simpleHash}-${index}`;
+    // Add math placeholders using pre-extracted math elements
+    if (preserveMath && mathElementsWithXml.length > 0) {
+        mathElementsWithXml.forEach((mathElementWithXml, index) => {
+            // Use the pre-extracted ID or generate one
+            const mathId = mathElementWithXml.id || `math-fallback-${index}`;
+
+            // Use the original XML that was extracted during document parsing
+            const originalXml = mathElementWithXml.originalXml || '';
+
+            console.log(`Processing math element (fallback) ${index}: ID=${mathId}, XML length=${originalXml.length}`);
 
             mathRegistry[mathId] = {
                 type: "omml",
-                originalXml: serializeOmmlToXml(mathElement),
-                context: "inline",
+                originalXml: originalXml,
+                context: mathElementWithXml.isBlockMath ? "block" : "inline",
                 placeholder: `[math]`
             };
 
@@ -401,31 +307,37 @@ function processParagraphFromJson(para, options = {}) {
  * @param {Object} options.imageData - Image data mapping
  * @param {boolean} options.preserveMath - Whether to preserve math elements
  * @param {Object} options.mathRegistry - Registry to store math elements
+ * @param {Array} options.mathElementsWithXml - Pre-extracted math elements with original XML
  * @param {Object} parentPara - Parent paragraph object
  * @param {string} documentXml - Original document XML string
+ * @param {Object} globalCounters - Global counters for tracking across paragraphs
  * @returns {string} Formatted content string
  */
-export const buildContentFormatted = (runs, options = {}, parentPara = null, documentXml = null) => {
+export const buildContentFormatted = (runs, options = {}, parentPara = null, documentXml = null, globalCounters = {}) => {
     const {
         removeMarks = false,
         relationships = {},
         imageData = {},
         preserveMath = true,
-        mathRegistry = {}
+        mathRegistry = {},
+        mathElementsWithXml = []
     } = options;
 
     let content;
 
     // If we have a parent paragraph and need to preserve math, use sequential processing
-    if (parentPara && preserveMath) {
-        content = processSequentialParagraphContent(parentPara, documentXml, options);
+    if (parentPara && preserveMath && mathElementsWithXml.length > 0) {
+        content = processSequentialParagraphContent(parentPara, documentXml, options, mathElementsWithXml, globalCounters);
+    } else if (preserveMath && mathElementsWithXml.length > 0) {
+        // Use the pre-extracted math elements even without XML ordering
+        content = processParagraphFromJson(parentPara, options, mathElementsWithXml, globalCounters);
     } else {
+        // No math elements, use plain text extraction
         content = extractPlainText(runs, { relationships, imageData });
     }
 
     // Remove marks pattern if requested
     if (removeMarks) {
-        const beforeMarks = content;
         content = content.replace(/^\[\d+(?:\.\d+)?\s*marks?\]\s*/i, '');
     }
 

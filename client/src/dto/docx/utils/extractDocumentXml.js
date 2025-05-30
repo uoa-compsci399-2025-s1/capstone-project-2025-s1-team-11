@@ -110,6 +110,61 @@ const extractDrawingElements = async (zip) => {
   }
 };
 
+/**
+ * Extract math elements with their original XML from the document
+ * @param {Object} zip - JSZip object containing the document
+ * @param {string} documentXml - The document XML string
+ * @returns {Array} - Array of math elements with original XML preserved
+ */
+const extractMathElements = async (zip, documentXml) => {
+  const mathElements = [];
+  let mathIndex = 0;
+
+  try {
+    // Extract all OMML elements from the document XML
+    const omathRegex = /<m:oMath[^>]*>.*?<\/m:oMath>/gs;
+    const omathParaRegex = /<m:oMathPara[^>]*>.*?<\/m:oMathPara>/gs;
+
+    let match;
+
+    // Extract standalone oMath elements
+    while ((match = omathRegex.exec(documentXml)) !== null) {
+      mathElements.push({
+        id: `math-${mathIndex++}`,
+        type: 'oMath',
+        originalXml: match[0],
+        isBlockMath: false,
+        position: match.index
+      });
+    }
+
+    // Reset regex lastIndex and extract oMathPara elements
+    omathParaRegex.lastIndex = 0;
+    while ((match = omathParaRegex.exec(documentXml)) !== null) {
+      mathElements.push({
+        id: `math-${mathIndex++}`,
+        type: 'oMathPara',
+        originalXml: match[0],
+        isBlockMath: true,
+        position: match.index
+      });
+    }
+
+    // Sort by position in document to maintain correct order
+    mathElements.sort((a, b) => a.position - b.position);
+
+    console.log(`Extracted ${mathElements.length} math elements from document`);
+    mathElements.forEach((elem, idx) => {
+      console.log(`Math ${idx}: ${elem.type} at position ${elem.position}, XML length: ${elem.originalXml.length}`);
+    });
+
+    return mathElements;
+  } catch (error) {
+    console.error('Error extracting math elements:', error);
+    return [];
+  }
+};
+
 export const extractDocumentXml = async (file) => {
   //const data = await fs.readFile(filePath);
   const zip = await JSZip.loadAsync(file);
@@ -137,6 +192,9 @@ export const extractDocumentXml = async (file) => {
 
   // Extract drawing elements with positioning and dimension info
   const drawingElements = await extractDrawingElements(zip);
+
+  // Extract math elements with original XML preserved
+  const mathElements = await extractMathElements(zip, documentXml);
 
   // Extract images as base64
   const imageData = {};
@@ -181,5 +239,5 @@ export const extractDocumentXml = async (file) => {
     }
   }
 
-  return { documentXml, relationships, imageData };
+  return { documentXml, relationships, imageData, mathElements };
 };

@@ -1,12 +1,67 @@
 // client/docxDTO/transformXmlToDto.js
 
-import { buildContentFormatted, detectMathElements } from './utils/buildContentFormatted.js';
+import { buildContentFormatted } from './utils/buildContentFormatted.js';
 import { createExam } from '../../store/exam/examUtils.js';
-// import { convertOmmlToMathML } from './utils/ommlToMathML.js';
 import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
-// import { extractPlainText } from './utils/extractPlainText.js';
 
-export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, documentXml = null) => {
+/**
+ * Match math elements in a paragraph to the pre-extracted math elements
+ * @param {Object} para - Paragraph object
+ * @param {Array} preExtractedMathElements - Pre-extracted math elements with original XML
+ * @param {Object} globalCounters - Global counters for tracking position
+ * @returns {Array} - Array of math elements for this paragraph with original XML
+ */
+const getMatchingMathElementsForParagraph = (para, preExtractedMathElements, globalCounters) => {
+  const mathElementsForParagraph = [];
+
+  if (!para || !preExtractedMathElements || preExtractedMathElements.length === 0) {
+    return mathElementsForParagraph;
+  }
+
+  let currentMathIndex = globalCounters.mathIndex || 0;
+
+  // Count math elements in this paragraph
+  let mathCount = 0;
+
+  // Check for math at the paragraph level
+  if (para['m:oMath']) {
+    mathCount += Array.isArray(para['m:oMath']) ? para['m:oMath'].length : 1;
+  }
+
+  // Check for math in oMathPara
+  if (para['m:oMathPara']) {
+    if (Array.isArray(para['m:oMathPara'])) {
+      para['m:oMathPara'].forEach(mathPara => {
+        if (mathPara['m:oMath']) {
+          mathCount += Array.isArray(mathPara['m:oMath']) ? mathPara['m:oMath'].length : 1;
+        }
+      });
+    } else if (para['m:oMathPara']['m:oMath']) {
+      mathCount += Array.isArray(para['m:oMathPara']['m:oMath']) ? para['m:oMathPara']['m:oMath'].length : 1;
+    }
+  }
+
+  // Extract the corresponding pre-extracted math elements
+  for (let i = 0; i < mathCount; i++) {
+    if (currentMathIndex + i < preExtractedMathElements.length) {
+      const preExtracted = preExtractedMathElements[currentMathIndex + i];
+
+      // Determine if this is block math based on the original type
+      const isBlockMath = preExtracted.type === 'oMathPara' || preExtracted.isBlockMath;
+
+      mathElementsForParagraph.push({
+        element: null, // We don't need the JSON element since we have the original XML
+        isBlockMath: isBlockMath,
+        originalXml: preExtracted.originalXml,
+        id: preExtracted.id
+      });
+    }
+  }
+
+  return mathElementsForParagraph;
+};
+
+export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, documentXml = null, preExtractedMathElements = []) => {
   const body = xmlJson['w:document']?.['w:body'];
   if (!body) {
     throw new Error('Invalid XML structure: missing w:body');
@@ -14,6 +69,11 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
 
   // Create math registry for this document
   const mathRegistry = {};
+
+  // Add global math counter to track across all paragraphs
+  const globalCounters = { mathIndex: 0 };
+
+  console.log(`Starting transformation with ${preExtractedMathElements.length} pre-extracted math elements`);
 
   // Extract all blocks from the document body
   const blocks = [
@@ -101,20 +161,26 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
     // Extract the paragraph content
     const para = block['w:p'] ?? block;
 
-    // Check if this paragraph contains math elements
-    const mathElements = detectMathElements(para);
-    const containsMath = mathElements.length > 0;
+    // Get matching math elements for this paragraph from pre-extracted elements
+    const mathElementsWithXml = getMatchingMathElementsForParagraph(para, preExtractedMathElements, globalCounters);
+    const containsMath = mathElementsWithXml.length > 0;
+
+    console.log(`Processing paragraph with ${mathElementsWithXml.length} math elements`);
 
     // Get all runs
     const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
 
-    // Build content with math handling, passing the parent paragraph for direct math access
+    // Build content with math handling, passing math elements with original XML
     let text = buildContentFormatted(runs, {
       relationships,
       imageData,
       preserveMath: true,
-      mathRegistry
-    }, para, documentXml);
+      mathRegistry,
+      mathElementsWithXml
+    }, para, documentXml, globalCounters);
+
+    // Update the global counter after processing this paragraph
+    globalCounters.mathIndex += mathElementsWithXml.length;
 
     // Handle empty lines
     if (text.trim() === '') {
@@ -156,8 +222,9 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
         relationships,
         imageData,
         preserveMath: true,
-        mathRegistry
-      }, para, documentXml);
+        mathRegistry,
+        mathElementsWithXml
+      }, para, documentXml, globalCounters);
 
       currentQuestion = {
         type: 'question',
@@ -183,8 +250,9 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
         relationships,
         imageData,
         preserveMath: true,
-        mathRegistry
-      }, para, documentXml);
+        mathRegistry,
+        mathElementsWithXml
+      }, para, documentXml, globalCounters);
 
       currentAnswers.push({
         type: 'answer',
@@ -208,6 +276,8 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
   // Flush any remaining question or section
   flushQuestion();
   flushSection();
+
+  console.log(`Transformation complete. Math registry contains ${Object.keys(mathRegistry).length} entries`);
 
   return { dto, mathRegistry };
 };
