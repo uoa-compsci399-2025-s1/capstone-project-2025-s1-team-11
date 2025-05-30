@@ -30,37 +30,6 @@ const Builder = () => {
         }
     };
 
-    const handleTabChange = (key) => {
-        setActiveTab(key);
-    };
-
-    const coverPageItems = [
-        {
-            key: '1',
-            label: 'Cover Page',
-            children: (
-                <div style={{ padding: '16px 0' }}>
-                    <Typography.Title level={3}>Cover Page</Typography.Title>
-                    <Button type="default" style={{ marginBottom: 12 }} onClick={handleUploadClick}>
-                        Upload Cover Page
-                    </Button>
-                    <input
-                        id="cover-upload"
-                        type="file"
-                        accept=".docx"
-                        style={{ display: "none" }}
-                        onChange={handleFileChange}
-                    />
-                    {coverPage && (
-                        <p style={{ marginBottom: 24, color: "green" }}>
-                            Cover page uploaded: {coverPage.name}
-                        </p>
-                    )}
-                </div>
-            ),
-        }
-    ];
-
     return (
         <>
             <Title level={1}>MCQ Builder</Title>
