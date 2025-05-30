@@ -7,6 +7,9 @@ import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
 // import { extractPlainText } from './utils/extractPlainText.js';
 
 export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, documentXml = null) => {
+  console.log('=== TRANSFORM XML TO DTO DEBUG ===');
+  console.log('documentXml parameter received:', !!documentXml);
+  console.log('documentXml length:', documentXml?.length);
   const body = xmlJson['w:document']?.['w:body'];
   if (!body) {
     throw new Error('Invalid XML structure: missing w:body');
@@ -137,6 +140,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
       mathRegistry
     }, para, documentXml);
 
+    console.log('Calling buildContentFormatted with documentXml:', !!documentXml);
     console.log(`Block ${i}: type=${block['w:p'] ? 'paragraph' : 'other'}, text="${text}"`,
         text.trim() === '' ? '(EMPTY)' : '');
 

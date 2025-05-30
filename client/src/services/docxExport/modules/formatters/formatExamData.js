@@ -83,7 +83,7 @@ export function formatExamDataForTemplate(examData, version = 1, mathRegistry = 
                 formattedExamBody.push(section);
             } else if (item.type === 'question') {
                 // Process standalone question with version-specific answer ordering
-                const formattedQuestion = formatQuestionWithVersion(item, versionToUse, examData.versions, examData.teleformOptions);
+                const formattedQuestion = formatQuestionWithVersion(item, versionToUse, examData.versions, examData.teleformOptions, mathRegistry);
                 const questionItem = {
                     isSection: false,
                     isQuestion: true,
@@ -186,13 +186,13 @@ function processContent(content, mathRegistry = {}) {
  * Format an array of questions for template use, with version-specific answer ordering
  * @param {Array} questions - Array of question objects
  * @param {string|number} version - Version number being exported
+ * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @param {Array} versionList - List of all versions
  * @param {Array} optionLabels - List of option labels
- * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Array} - Formatted questions
  */
-function formatQuestionsWithVersion(questions, version, versionList, optionLabels) {
-    return questions.map(question => formatQuestionWithVersion(question, version, versionList, optionLabels));
+function formatQuestionsWithVersion(questions, version, mathRegistry, versionList, optionLabels) {
+    return questions.map(question => formatQuestionWithVersion(question, version, versionList, optionLabels, mathRegistry));
 }
 
 /**
@@ -200,20 +200,11 @@ function formatQuestionsWithVersion(questions, version, versionList, optionLabel
  * @param {Object} question - Question object
  * @param {string|number} version - Version number being exported
  * @param {Array} versionList - List of all versions
- * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @param {Array} optionLabels - List of option labels
- * @returns {Object} - Formatted question
- */
-function formatQuestionWithVersion(question, version, versionList, optionLabels) {
-/**
- * Format a single question for template use, with version-specific answer ordering
- * @param {Object} question - Question object
- * @param {string|number} version - Version number being exported
- * @param {Array} versionList - List of all versions
  * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Object} - Formatted question
  */
-function formatQuestionWithVersion(question, version, versionList, mathRegistry) {
+function formatQuestionWithVersion(question, version, versionList, optionLabels, mathRegistry) {
     // Format the mark display
     const markText = question.marks
         ? `[${question.marks} mark${question.marks !== 1 ? 's' : ''}]`

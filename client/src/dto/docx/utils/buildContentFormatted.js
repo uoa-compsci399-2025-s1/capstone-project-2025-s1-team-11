@@ -210,6 +210,10 @@ function processSequentialParagraphContent(para, documentXml, options = {}) {
         if (paragraphXml) {
             console.log('Successfully extracted paragraph XML, parsing children...');
             orderedChildren = parseParagraphChildrenFromXml(paragraphXml);
+            console.log('=== XML CHILDREN ORDER DEBUG ===');
+            orderedChildren.forEach((child, index) => {
+                console.log(`Child ${index}: type=${child.type}, xml preview:`, child.xml.substring(0, 100));
+            });
         }
     }
 
@@ -243,16 +247,89 @@ function processSequentialParagraphContent(para, documentXml, options = {}) {
         });
     }
 
+    // Helper function to extract raw text from a single run without processing
+    const extractRawTextFromRun = (run) => {
+        if (!run) return '';
+
+        // Handle line breaks
+        let text = '';
+        if (run['w:br'] !== undefined) {
+            text += '<br>';
+        }
+
+        // Handle images
+        if (run['w:drawing']) {
+            const inline = run['w:drawing']['wp:inline'];
+            const anchor = run['w:drawing']['wp:anchor'];
+            let embedId = null;
+
+            if (inline) {
+                const blip = inline?.['a:graphic']?.['a:graphicData']?.['pic:pic']?.['pic:blipFill']?.['a:blip'];
+                embedId = blip?.['@_r:embed'];
+            }
+            if (!embedId && anchor) {
+                const blip = anchor?.['a:graphic']?.['a:graphicData']?.['pic:pic']?.['pic:blipFill']?.['a:blip'];
+                embedId = blip?.['@_r:embed'];
+            }
+
+            if (embedId && imageData[embedId]) {
+                const imgData = imageData[embedId];
+                const width = imgData.width ? ` width="${Math.round(imgData.width)}"` : '';
+                const height = imgData.height ? ` height="${Math.round(imgData.height)}"` : '';
+                const alt = imgData.filename || 'Image';
+                text += `<img alt="${alt}" src="${imgData.dataUrl}"${width}${height}>`;
+            } else {
+                text += `<img alt="Image" src="[Image Placeholder]">`;
+            }
+        }
+
+        // Extract text content preserving original spacing
+        const t = run['w:t'];
+        let textContent = '';
+
+        if (typeof t === 'string') {
+            textContent = t;
+        } else if (typeof t === 'number') {
+            textContent = String(t);
+        } else if (typeof t === 'object' && t) {
+            if (t['#text']) {
+                textContent = t['#text'];
+            }
+        }
+
+        // Apply basic formatting if needed
+        if (textContent) {
+            const rPr = run['w:rPr'];
+            if (rPr) {
+                if (rPr['w:b'] !== undefined) textContent = `<strong>${textContent}</strong>`;
+                if (rPr['w:i'] !== undefined) textContent = `<em>${textContent}</em>`;
+                if (rPr['w:u'] !== undefined) textContent = `<u>${textContent}</u>`;
+
+                if (rPr['w:vertAlign']) {
+                    const vertAlign = rPr['w:vertAlign'];
+                    const val = vertAlign['@_w:val'] || vertAlign['w:val'] || vertAlign?.['$']?.['w:val'];
+                    if (val === 'subscript') textContent = `<sub>${textContent}</sub>`;
+                    else if (val === 'superscript') textContent = `<sup>${textContent}</sup>`;
+                }
+            }
+        }
+
+        text += textContent;
+        return text;
+    };
+
     // Process each child in XML order
     for (const child of orderedChildren) {
+        console.log(`Processing child type: ${child.type}`);
         if (child.type === 'w:r' && runIndex < runs.length) {
-            // Process text run
-            const runText = extractPlainText([runs[runIndex]], { relationships, imageData });
-            console.log(`Processing run ${runIndex}: "${runText}"`);
+            // Use raw text extraction to preserve original spacing
+            const runText = extractRawTextFromRun(runs[runIndex]);
+            console.log(`Run ${runIndex} text: "${runText}" (length: ${runText.length})`);
             result += runText;
             runIndex++;
 
         } else if (child.type === 'm:oMath' && mathIndex < mathElements.length && preserveMath) {
+            console.log(`  Math element found at position ${child.position}`);
             // Process inline math element
             const mathElement = mathElements[mathIndex];
             const simpleHash = Math.abs(JSON.stringify(mathElement.element).split('').reduce((a, b) => {
@@ -360,6 +437,11 @@ function processParagraphFromJson(para, options = {}) {
  * @returns {string} Formatted content string
  */
 export const buildContentFormatted = (runs, options = {}, parentPara = null, documentXml = null) => {
+    console.log('=== BUILD CONTENT FORMATTED DEBUG ===');
+    console.log('parentPara provided:', !!parentPara);
+    console.log('documentXml provided:', !!documentXml);
+    console.log('documentXml length:', documentXml?.length);
+
     const {
         removeMarks = false,
         relationships = {},
@@ -381,8 +463,10 @@ export const buildContentFormatted = (runs, options = {}, parentPara = null, doc
         console.log('Using sequential paragraph processing for proper math positioning');
         content = processSequentialParagraphContent(parentPara, documentXml, options);
     } else {
-        // Fallback to original run-only processing
-        console.log('Using standard run processing (no parent paragraph or math preservation disabled)');
+        console.log('Using standard run processing - reasons:', {
+            noParentPara: !parentPara,
+            mathPreservationDisabled: !preserveMath
+        });
         content = extractPlainText(runs, { relationships, imageData });
     }
 
