@@ -1,10 +1,10 @@
 import React from 'react';
 import { Layout, theme, Typography } from 'antd';
-import { Navigation } from "./navigation.jsx";
+import { Navigation } from "./shared/navigation.jsx";
 import { Link, useLocation } from 'react-router';
 import logo from '../assets/AssesslyLogoSmall.png';
-import StaticContextBar from './StaticContextBar';
-import ExamSidebarProvider from './ExamSidebarProvider';
+import StaticContextBar from './shared/StaticContextBar.jsx';
+import ExamSidebarProvider from './shared/ExamSidebarProvider.jsx';
 
 const { Header, Content, Footer } = Layout;
 const { Paragraph } = Typography;
@@ -21,7 +21,7 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
     minHeight: '100vh', 
     minWidth: '100vw',
     flexDirection: 'column',
-    backgroundColor: isDarkMode ? '#121212' : '#f0f2f5',
+    backgroundColor: isDarkMode ? '#110000' : '#f0f2f5',
   };
 
   const headerStyle = {
@@ -29,7 +29,12 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
     display: 'flex',
     alignItems: 'center',
     padding: '0 24px',
-    color: isDarkMode ? '#ffffff' : '#000000'
+    color: isDarkMode ? '#ffffff' : '#000000',
+    boxShadow: isDarkMode
+      ? '0 8px 24px rgba(255, 255, 255, 0.05)'
+      : '0 8px 24px rgba(0, 0, 0, 0.08)',
+    zIndex: 10,
+    position: 'relative'
   };
 
   const footerStyle = {
@@ -49,11 +54,14 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
     padding: 24,
     minHeight: 380,
     backgroundColor: isDarkMode ? '#1f1f1f' : '#ffffff',
-    borderRadius: borderRadiusLG
+    borderRadius: borderRadiusLG,
+    boxShadow: isDarkMode
+      ? '0 8px 24px rgba(255, 255, 255, 0.05)'
+      : '0 8px 24px rgba(0, 0, 0, 0.08)'
   };
   
   return (
-    <Layout style={{layoutStyle}}>
+    <Layout style={layoutStyle}>
       <Header style={headerStyle}>
         <img src={logo} alt="Assessly Logo" style={{ height: "40px", marginRight: "24px" }} />
         <Navigation isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}/>
@@ -61,7 +69,7 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
 
       <Content style={contentStyle}>
         
-        {["/", "/builder", "/randomiser", "/marker", "/console"].includes(location.pathname) && (
+        {["/builder", "/randomiser", "/marker", "/console"].includes(location.pathname) && (
           <div className="context-bar-wrapper" style={{padding: '0'}}>
             <StaticContextBar />
           </div>
