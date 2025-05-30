@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import ThemeToggleSwitch from "./../ThemeToggleSwitch"; // Adjust the path as needed
+import ThemeToggleSwitch from "./../shared/ThemeToggleSwitch"; // Adjust the path as needed
 
 describe("ThemeToggleSwitch", () => {
   it("renders with light mode icon when isDarkMode is false", () => {

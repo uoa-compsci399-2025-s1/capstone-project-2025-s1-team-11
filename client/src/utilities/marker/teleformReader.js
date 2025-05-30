@@ -17,7 +17,7 @@ export function readTeleformLine(line) {
   }
 
   return {
-    studentId: line.substring(2, 11),
+    studentId: line.substring(2, 11).trim(),
     lastName: line.substring(12, 23).trim(),
     firstName: line.substring(23, 33).trim(),
     versionId: line.substring(36, 44).trim().replace(/^0+/, '') || '0',

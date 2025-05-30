@@ -2,8 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, Tooltip, Row, Col } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-import { selectExamData } from '../store/exam/selectors';
-import { handleExamDetailsSave } from '../services/examEditService';
+import { selectExamData } from '../../store/exam/selectors';
+import { handleExamDetailsSave } from '../../services/examEditService';
 import ExamSidebar from './ExamSidebar';
 import EditExamModal from './EditExamModal';
 
