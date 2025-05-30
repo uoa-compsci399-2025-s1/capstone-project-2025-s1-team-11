@@ -138,7 +138,7 @@ function safeHtmlContent(html) {
   // Remove empty <p> and <div> tags
   html = html.replace(/<(p|div)>\s*<\/\1>/g, '');
 
-  // Strip excess <strong> tags used as faux spacing (e.g., <strong> </strong> or wrapping single fragments)
+  // Strip excess <strong> tags used as faux spacing (e.g., <strong> </strong> or wrapping single fragments) - these are brought across from Quill.
   html = html.replace(/<strong>\s*<\/strong>/g, '');
   html = html.replace(/<strong>([^<]+)<\/strong>/g, '$1');
 
