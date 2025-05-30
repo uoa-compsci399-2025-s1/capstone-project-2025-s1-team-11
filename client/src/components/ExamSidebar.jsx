@@ -304,59 +304,6 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
     }
   });
 
-  // Convert structure to Collapse items
-  const collapseItems = examStructure
-    .filter(item => item.type === 'section')
-    .map((section, index) => ({
-      key: String(index),
-      label: (
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-          <span>
-            <ProfileOutlined /> {section.sectionNumber || section.sectionTitle}
-          </span>
-          <Badge count={section.questions.length} style={{ backgroundColor: '#52c41a' }} />
-        </div>
-      ),
-      extra: (
-        <Button
-          type="text"
-          size="small"
-          icon={<RightCircleOutlined />}
-          onClick={(e) => {
-            e.stopPropagation();
-            onNavigateToItem(section.id, 'section');
-          }}
-        />
-      ),
-      children: (
-        <SortableContext items={section.questions.map(q => q.id)} strategy={verticalListSortingStrategy}>
-          <List
-            size="small"
-            dataSource={section.questions}
-            renderItem={(question, qIndex) => (
-              <SortableQuestionItem
-                question={question}
-                qIndex={qIndex}
-                currentItemId={currentItemId}
-                onNavigateToItem={onNavigateToItem}
-                sectionIndex={section.index}
-              />
-            )}
-          />
-        </SortableContext>
-      )
-    }));
-
-  // Get all question IDs for global sortable context
-  const allQuestionIds = examStructure.flatMap(item => {
-    if (item.type === 'section') {
-      return item.questions.map(q => q.id);
-    } else if (item.type === 'question') {
-      return [item.id];
-    }
-    return [];
-  });
-
   return (
     <DndContext
       sensors={sensors}
@@ -364,7 +311,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
       onDragEnd={handleDragEnd}
       modifiers={[restrictToVerticalAxis]}
     >
-      <SortableContext items={allQuestionIds} strategy={verticalListSortingStrategy}>
+      <SortableContext items={examStructure.map(item => item.id)} strategy={verticalListSortingStrategy}>
         <Card className="exam-sidebar" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
           {/* Exam Details Section */}
           <div style={{ marginBottom: '16px' }}>
@@ -440,19 +387,70 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
           <Divider style={{ margin: '12px 0' }} />
 
           <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Structure</Paragraph>
-          <Collapse defaultActiveKey={['0']} ghost items={collapseItems} />
-
-          {/* Standalone questions (not in a section) */}
-          <SortableContext items={examStructure.filter(item => item.type === 'question').map(item => item.id)} strategy={verticalListSortingStrategy}>
-            {examStructure.filter(item => item.type === 'question').map((item, index) => (
-              <SortableStandaloneQuestionItem
-                key={index}
-                item={item}
-                currentItemId={currentItemId}
-                onNavigateToItem={onNavigateToItem}
-              />
-            ))}
-          </SortableContext>
+          
+          {/* Render questions/sections to be in the same order as in examBody */}
+          {examStructure.map((item, index) => {
+            if (item.type === 'section') {
+              return (
+                <div key={item.id} style={{ marginBottom: '8px' }}>
+                  <Collapse
+                    ghost
+                    items={[{
+                      key: String(index),
+                      label: (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                          <span>
+                            <ProfileOutlined /> {item.sectionNumber || item.sectionTitle}
+                          </span>
+                          <Badge count={item.questions.length} style={{ backgroundColor: '#52c41a' }} />
+                        </div>
+                      ),
+                      extra: (
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<RightCircleOutlined />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onNavigateToItem(item.id, 'section');
+                          }}
+                        />
+                      ),
+                      children: (
+                        <SortableContext items={item.questions.map(q => q.id)} strategy={verticalListSortingStrategy}>
+                          <List
+                            size="small"
+                            dataSource={item.questions}
+                            renderItem={(question, qIndex) => (
+                              <SortableQuestionItem
+                                question={question}
+                                qIndex={qIndex}
+                                currentItemId={currentItemId}
+                                onNavigateToItem={onNavigateToItem}
+                                sectionIndex={item.index}
+                              />
+                            )}
+                          />
+                        </SortableContext>
+                      )
+                    }]}
+                    defaultActiveKey={[String(index)]}
+                  />
+                </div>
+              );
+            } else if (item.type === 'question') {
+              return (
+                <div key={item.id} style={{ marginBottom: '4px' }}>
+                  <SortableStandaloneQuestionItem
+                    item={item}
+                    currentItemId={currentItemId}
+                    onNavigateToItem={onNavigateToItem}
+                  />
+                </div>
+              );
+            }
+            return null;
+          })}
 
           <Divider style={{ margin: '12px 0' }} />
 
