@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Button, Space, Divider, Spin } from 'antd';
-import { PrinterOutlined } from '@ant-design/icons';
+import { Spin, Typography } from 'antd';
 import { generateExamHtmlPreview } from '../../services/examPreview/examHtmlPreview';
-//import '../../styles/examPreview.css';
+import { renderLatexInContainer } from '../../dto/latex/utils/katexRenderer';
+
+const { Title, Paragraph, Text } = Typography;
 
 const ExamPreview = () => {
   const examData = useSelector((state) => state.exam.examData);
@@ -20,6 +21,10 @@ const ExamPreview = () => {
         const html = generateExamHtmlPreview(examData);
         setPreviewHtml(html);
         setIsLoading(false);
+
+        requestAnimationFrame(() => {
+          renderLatexInContainer('.preview-container');
+        });
       }, 100);
       
       return () => clearTimeout(timer);
@@ -28,10 +33,6 @@ const ExamPreview = () => {
       setIsLoading(false);
     }
   }, [examData]);
-
-  const handlePrint = () => {
-    window.print();
-  };
 
   if (!examData) {
     return (
@@ -42,19 +43,7 @@ const ExamPreview = () => {
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'flex-end' }}>
-        <Button 
-          icon={<PrinterOutlined />} 
-          onClick={handlePrint}
-          title="Print Preview"
-        >
-          Print
-        </Button>
-      </div>
-
-      <Divider style={{ margin: '8px 0' }} />
-      
+    <div>      
       {isLoading ? (
         <Spin size="large">
           <div style={{ textAlign: 'center', padding: '40px 0', minHeight: '200px' }}>
@@ -62,10 +51,13 @@ const ExamPreview = () => {
           </div>
         </Spin>
       ) : (
-        <div
-          className="preview-container"
-          dangerouslySetInnerHTML={{ __html: previewHtml }}
-        />
+        <div className="preview-container">
+          <Typography>
+            <div
+              dangerouslySetInnerHTML={{ __html: previewHtml }}
+            />
+          </Typography>
+        </div>
       )}
     </div>
   );
