@@ -11,10 +11,19 @@ const mockFileHandle = {
     createWritable: jest.fn(),
 };
 
-const mockWritable = {
-    write: jest.fn(),
-    close: jest.fn(),
-};
+// Mock store
+jest.mock('../../store/store', () => ({
+    store: {
+        getState: jest.fn(() => ({
+            exam: {
+                examData: {}
+            },
+            teleform: {
+                teleformData: ''
+            }
+        }))
+    }
+}));
 
 describe('fileSystemAccess service', () => {
     let originalConsoleError;
@@ -34,7 +43,12 @@ describe('fileSystemAccess service', () => {
 
     describe('loadExamFromFile', () => {
         it('shoulandd open a file, read its contents,  parse it', async () => {
-            const mockExam = { title: 'Test Exam' };
+            const mockExam = {
+                title: 'Test Exam',
+                schemaVersion: '1.0.0',
+                teleformOptions: ['a', 'b', 'c', 'd', 'e'],
+                examBody: []
+            };
             const fileContents = JSON.stringify(mockExam);
             const mockFile = { text: jest.fn().mockResolvedValue(fileContents) };
 
@@ -59,30 +73,61 @@ describe('fileSystemAccess service', () => {
     });
 
     describe('saveExamToDisk', () => {
+        let mockFileHandle;
+        let mockWritable;
+
+        beforeEach(() => {
+            // Reset mocks
+            mockWritable = {
+                write: jest.fn(),
+                close: jest.fn()
+            };
+
+            mockFileHandle = {
+                createWritable: jest.fn().mockResolvedValue(mockWritable)
+            };
+
+            // Mock window.showSaveFilePicker
+            window.showSaveFilePicker = jest.fn().mockResolvedValue(mockFileHandle);
+        });
+
         it('should save exam to an existing fileHandle', async () => {
-            mockFileHandle.createWritable.mockResolvedValue(mockWritable);
-
             const examData = { title: 'Test Save Exam' };
+            const examState = { examData };
+            const expectedData = {
+                exam: {
+                    examData
+                },
+                teleform: {
+                    teleformData: ''
+                }
+            };
 
-            const result = await saveExamToDisk(examData, mockFileHandle);
+            const result = await saveExamToDisk(examState, mockFileHandle);
 
             expect(mockFileHandle.createWritable).toHaveBeenCalledTimes(1);
-            expect(mockWritable.write).toHaveBeenCalledWith(JSON.stringify(examData, null, 2));
+            expect(mockWritable.write).toHaveBeenCalledWith(JSON.stringify(expectedData, null, 2));
             expect(mockWritable.close).toHaveBeenCalledTimes(1);
             expect(result).toBe(mockFileHandle);
         });
 
         it('should prompt for a new fileHandle if none provided', async () => {
-            global.window.showSaveFilePicker = jest.fn().mockResolvedValue(mockFileHandle);
-            mockFileHandle.createWritable.mockResolvedValue(mockWritable);
-
             const examData = { title: 'Test New Save Exam' };
+            const examState = { examData };
+            const expectedData = {
+                exam: {
+                    examData
+                },
+                teleform: {
+                    teleformData: ''
+                }
+            };
 
-            const result = await saveExamToDisk(examData);
+            const result = await saveExamToDisk(examState);
 
             expect(window.showSaveFilePicker).toHaveBeenCalledTimes(1);
             expect(mockFileHandle.createWritable).toHaveBeenCalledTimes(1);
-            expect(mockWritable.write).toHaveBeenCalledWith(JSON.stringify(examData, null, 2));
+            expect(mockWritable.write).toHaveBeenCalledWith(JSON.stringify(expectedData, null, 2));
             expect(mockWritable.close).toHaveBeenCalledTimes(1);
             expect(result).toBe(mockFileHandle);
         });

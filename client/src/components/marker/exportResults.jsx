@@ -26,9 +26,10 @@ const ExportResults = ({ resultsData, currentExamData }) => {
       // Create a zip of all individual .txt files
       const zip = new JSZip();
 
+      let missingIdCount = 0;
       resultsData.forEach(res => {
         const content = generateResultOutput(res, currentExamData, includeFeedback);
-        const filename = `${res.studentId || "student"}.txt`;
+        const filename = `${res.studentId || "MissingID" + ++missingIdCount}.txt`;
         zip.file(filename, content);
       });
 

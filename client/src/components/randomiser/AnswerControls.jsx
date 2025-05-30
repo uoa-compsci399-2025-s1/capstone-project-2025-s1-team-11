@@ -1,9 +1,9 @@
 import React from 'react';
 import { Checkbox, Select } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateQuestion } from '../store/exam/examSlice';
-import { selectExamData } from '../store/exam/selectors';
-import { DEFAULT_OPTIONS } from '../constants/answerOptions';
+import { updateQuestion } from '../../store/exam/examSlice';
+import { selectExamData } from '../../store/exam/selectors';
+import { DEFAULT_OPTIONS } from '../../constants/answerOptions';
 
 const AnswerCheckbox = ({ question, answerIndex, examBodyIndex, questionsIndex }) => {
   const dispatch = useDispatch();
