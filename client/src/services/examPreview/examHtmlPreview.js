@@ -10,8 +10,8 @@ export function generateExamHtmlPreview(examData) {
   }
 
   let html = `
-    <div class="exam-preview">
-      <div class="exam-body">
+    <div class="exam-preview" style="font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin-left: 0; background-color: #fff;">
+      <div class="exam-body" style="display: flex; flex-direction: column; gap: 64px;">
   `;
 
   // Process exam body
@@ -44,10 +44,10 @@ export function generateExamHtmlPreview(examData) {
  */
 function processSectionToHtml(section, teleformOptions) {
   let html = `
-    <div class="exam-section">
+    <section class="exam-section" style="display: flex; flex-direction: column;">
       ${section.contentFormatted ? 
-        `<div class="section-content">${safeHtmlContent(section.contentFormatted)}</div>` : ''}
-      <div class="section-questions">
+        `<div class="section-content" style="font-size: 16px; line-height: 1.6; font-weight: bold;">${safeHtmlContent(section.contentFormatted)}</div>` : ''}
+      <div class="section-questions" style="display: flex; flex-direction: column; gap: 32px;">
   `;
 
   // Process questions in this section
@@ -59,7 +59,8 @@ function processSectionToHtml(section, teleformOptions) {
 
   html += `
       </div>
-    </div>
+    </section>
+    <div style="border-bottom: 1px solid #eee;"></div>
   `;
 
   return html;
@@ -73,18 +74,16 @@ function processSectionToHtml(section, teleformOptions) {
  */
 function processQuestionToHtml(question, teleformOptions = DEFAULT_OPTIONS) {
   let html = `
-    <div class="exam-question">
-      <div class="question-header">
-        <span class="question-number"><strong>Question ${question.questionNumber || ''}.</strong></span></br>
-        ${question.marks ? 
-          `<span class="question-marks">[${question.marks} mark${question.marks !== 1 ? 's' : ''}]</span>` : ''}
-          <span class="question-content">${safeHtmlContent(question.contentFormatted || '')}</span>
+    <article class="exam-question" style="display: flex; flex-direction: column; gap: 12px;">
+      <div class="question-header" style="font-size: 20px; font-weight: 600;">
+        Question ${question.questionNumber || ''}${question.marks ? ` <span style="color: #888; font-size: 16px;">[${question.marks} mark${question.marks !== 1 ? 's' : ''}]</span>` : ''}
       </div>
+      <div class="question-text" style="font-size: 16px; line-height: 1.6; color: #333; padding-bottom: 16px;">${safeHtmlContent(question.contentFormatted || '')}</div>
   `;
 
   // Process answers with version-specific shuffling
   if (question.answers && question.answers.length > 0) {
-    html += '<div class="question-answers" style="margin-left: 30px;">';
+    html += '<div class="question-answers" style="display: flex; flex-direction: column; gap: 8px; padding-left: 24px;">';
 
     // Now render the answers in their original order
     question.answers.forEach((answer, index) => {
@@ -94,25 +93,29 @@ function processQuestionToHtml(question, teleformOptions = DEFAULT_OPTIONS) {
         const label = teleformOptions[labelIndex];
         
         html += `
-          <div class="answer-option">
-            <span class="answer-label">${label})</span>&nbsp;&nbsp;
-            <span class="answer-content">${safeHtmlContent(answer.contentFormatted || '')}</span>
-            ${answer.correct ? '<span style="color:green;"> ✓</span>' : ''}
+          <div class="answer-option" style="display: flex; gap: 8px; align-items: flex-start; font-size: 15px;">
+            <strong style="white-space: nowrap;">${label})</strong>
+            <span style="${answer.correct ? 'color: green;' : ''}">${safeHtmlContent(answer.contentFormatted || '')}</span>
           </div>
         `;
       }
     });
     
-    html += '</br></div>'; // Close question-answers
+    html += '</div>'; // Close question-answers
   }
 
-  html += '</div>'; // Close exam-question
-  
+  html += '</article>'; // Close exam-question
+
+  // Subtle divider after each question
+  html += `
+    <div style="border-bottom: 1px solid #eee;"></div>
+  `;
+
   // Add page break indicator if needed
   if (question.pageBreakAfter) {
     html += `
-      <div style="border-bottom: 1px dashed #999; margin: 20px 0; position: relative;">
-        <span style="position: absolute; right: 0; top: -10px; background: white; color: #999; font-size: 12px; padding: 0 5px;">
+      <div style="border-bottom: 1px dashed #ccc; margin: 40px 0; position: relative;">
+        <span style="position: absolute; right: 0; top: -12px; background: #fff; color: #999; font-size: 12px; padding: 0 6px;">
           Page Break
         </span>
       </div>
@@ -129,10 +132,18 @@ function processQuestionToHtml(question, teleformOptions = DEFAULT_OPTIONS) {
  */
 function safeHtmlContent(html) {
   if (!html) return '';
-  
+
+  html = html.trim();
+
+  // Remove empty <p> and <div> tags
+  html = html.replace(/<(p|div)>\s*<\/\1>/g, '');
+
+  // Strip excess <strong> tags used as faux spacing (e.g., <strong> </strong> or wrapping single fragments)
+  html = html.replace(/<strong>\s*<\/strong>/g, '');
+  html = html.replace(/<strong>([^<]+)<\/strong>/g, '$1');
+
   // Process <code> blocks specially to display HTML tags properly
   return html.replace(/<code>([\s\S]*?)<\/code>/g, function(match, codeContent) {
-    // Escape HTML tags inside code blocks to display them as text
     const escapedContent = codeContent
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -142,4 +153,4 @@ function safeHtmlContent(html) {
     
     return `<code style="font-family: monospace; padding: 1px 3px;">${escapedContent}</code>`;
   });
-} 
+}
