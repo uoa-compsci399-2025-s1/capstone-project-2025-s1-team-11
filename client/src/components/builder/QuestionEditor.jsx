@@ -179,7 +179,15 @@ const AnswerEditorsContainer = React.memo(({
 });
 
 // Main component for the exam item editor
-const QuestionEditorContainer = ({ item, onSave, examBodyIndex, questionsIndex }) => {
+const QuestionEditorContainer = ({ 
+  item, 
+  onSave, 
+  examBodyIndex, 
+  questionsIndex, 
+  availableSections, 
+  currentSectionIndex, 
+  onSectionSelectionChange 
+}) => {
   const [itemState, setItemState] = useState(item);
   const dispatch = useDispatch();
   
@@ -232,6 +240,14 @@ const QuestionEditorContainer = ({ item, onSave, examBodyIndex, questionsIndex }
     });
   }, []);
 
+  const handleSectionSelectionChange = useCallback((selectedSectionIndex) => {
+    setItemState(prev => ({
+      ...prev,
+      targetSectionIndex: selectedSectionIndex
+    }));
+    onSectionSelectionChange(selectedSectionIndex);
+  }, [onSectionSelectionChange]);
+
   // Save changes to Redux when component unmounts or when modal closes
   useEffect(() => {
     return () => {
@@ -260,6 +276,19 @@ const QuestionEditorContainer = ({ item, onSave, examBodyIndex, questionsIndex }
 
   return (
     <>
+      {availableSections && (
+        <div style={{ marginBottom: 16 }}>
+          <Text strong>Section:</Text>
+          <Select
+            value={itemState?.targetSectionIndex !== undefined ? itemState.targetSectionIndex : currentSectionIndex}
+            onChange={handleSectionSelectionChange}
+            options={availableSections}
+            style={{ width: '100%', marginTop: 4 }}
+            placeholder="Select section for this question"
+          />
+        </div>
+      )}
+      
       <QuestionEditor
         question={itemState}
         onQuestionChange={handleQuestionContentChange}
