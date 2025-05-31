@@ -1,13 +1,13 @@
 // src/pages/ExamFileManager.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider } from "antd";
+import { Button, Card, Space, Typography, Switch, Select, Spin, Pagination, theme, Divider, Tooltip, Modal, App as AntApp } from "antd";
 import { regenerateShuffleMaps, importMarkingKey } from "../store/exam/examSlice";
-import { selectExamData, selectAllQuestionsFlat } from "../store/exam/selectors";
-import MapDisplay from "../components/mapDisplay";
+import { selectExamData, selectAllQuestionsFlat, selectCorrectAnswerIndices, selectQuestionCount } from "../store/exam/selectors";
+import MapDisplay from "../components/randomiser/mapDisplay";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { htmlToText } from "../utilities/textUtils.js";
-import { importMarkingKeyFile, processMarkingKeyFile } from "../services/markingKeyImportService";
+import { importMarkingKeyFile, processMarkingKeyFile, exportMarkingKeyToXLSX } from "../services/markingKeyXlsxService";
 import useMessage from "../hooks/useMessage.js";
 
 const { Title, Text, Paragraph } = Typography;
@@ -16,16 +16,20 @@ const Randomiser = () => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
   const questions = useSelector(selectAllQuestionsFlat);
+  const correctAnswers = useSelector(selectCorrectAnswerIndices);
+  const questionCount = useSelector(selectQuestionCount);
   const { token } = theme.useToken();
   const message = useMessage();
+  const { modal } = AntApp.useApp();
 
   const [selectedVersion, setSelectedVersion] = useState('');
   const [showRaw, setShowRaw] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
   const [isImportingKey, setIsImportingKey] = useState(false);
   const [selectedSection, setSelectedSection] = useState("All");
-  const [showQuestion, setShowQuestion] = useState(true);
+  const [showQuestion, setShowQuestion] = useState(false);
   const [showAnswers, setShowAnswers] = useState(true);
+  const [showControls, setShowControls] = useState(false);
   const [displayMode, setDisplayMode] = useState("visual");
   const [visualStyle, setVisualStyle] = useState("grid");
 
@@ -57,13 +61,56 @@ const Randomiser = () => {
     }, 600);
   };
 
+  // New function to handle exporting marking key
+  const handleExportMarkingKey = async () => {
+    try {
+      // Check if there are questions to export
+      if (!questions || questions.length === 0) {
+        message.error("No questions to export.");
+        return;
+      }
+
+      // Build the marking key data structure
+      const markingKeyData = {
+        versions: exam.versions || [],
+        questionMappings: {},
+        markWeights: {}
+      };
+
+      questions.forEach(question => {
+        markingKeyData.questionMappings[question.questionNumber] = {};
+        markingKeyData.markWeights[question.questionNumber] = question.marks;
+
+        exam.versions.forEach(versionId => {
+          markingKeyData.questionMappings[question.questionNumber][versionId] = {
+            shuffleMap: question.answerShuffleMaps[exam.versions.indexOf(versionId)],
+            correctAnswerIndices: correctAnswers[versionId][question.questionNumber] || []
+          };
+        });
+      });
+
+      // Generate XLSX file
+      const blob = await exportMarkingKeyToXLSX(markingKeyData);
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${exam.courseCode || 'exam'}_marking_key.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      message.success("Marking key exported successfully.");
+    } catch (error) {
+      console.error("Error exporting marking key:", error);
+      message.error(`Failed to export marking key: ${error.message}`);
+    }
+  };
+
   // New function to handle importing marking key
   const handleImportMarkingKey = async () => {
-    if (!exam) {
-      message.error("No exam data available to import marking key.");
-      return;
-    }
-
     setIsImportingKey(true);
     try {
       // Show file picker
@@ -77,10 +124,69 @@ const Randomiser = () => {
       
       // Process the file
       const markingKeyData = await processMarkingKeyFile(file);
+      const markingKeyQuestionCount = Object.keys(markingKeyData.questionMappings).length;
+
+      // Case 1: No exam loaded or empty exam body
+      if (!exam || !exam.examBody || exam.examBody.length === 0) {
+        const shouldCreate = await new Promise(resolve => {
+          modal.confirm({
+            title: 'Create New Exam',
+            content: 'No exam content loaded - do you want to create a blank exam to use this marking key?',
+            okText: 'Create',
+            cancelText: 'Cancel',
+            onOk: () => resolve(true),
+            onCancel: () => resolve(false),
+          });
+        });
+
+        if (!shouldCreate) {
+          setIsImportingKey(false);
+          return;
+        }
+      }
+      // Case 2: Question count mismatch
+      else if (markingKeyQuestionCount !== questionCount) {
+        await new Promise(resolve => {
+          modal.error({
+            title: 'Question Count Mismatch',
+            content: `Warning: marking key length (${markingKeyQuestionCount}) does not match exam length (${questionCount}). Adjust exam or marking key and re-try.`,
+            onOk: () => resolve(),
+          });
+        });
+        setIsImportingKey(false);
+        return;
+      }
+      // Case 3: Check for mark value differences
+      else {
+        let marksChanged = false;
+        questions.forEach(question => {
+          const keyWeight = markingKeyData.markWeights[question.questionNumber];
+          if (keyWeight && keyWeight !== question.marks) {
+            marksChanged = true;
+          }
+        });
+
+        if (marksChanged) {
+          const shouldReplace = await new Promise(resolve => {
+            modal.confirm({
+              title: 'Mark Values Differ',
+              content: 'Mark values in marking key differ from current exam data. Would you like to replace marks from key or keep existing exam values?',
+              okText: 'Replace',
+              cancelText: 'Keep Existing',
+              onOk: () => resolve(true),
+              onCancel: () => resolve(false),
+            });
+          });
+
+          // If keeping existing marks, remove the markWeights from the marking key data
+          if (!shouldReplace) {
+            markingKeyData.markWeights = {};
+          }
+        }
+      }
       
-      // Update the exam with the marking key data
+      // Apply the marking key
       dispatch(importMarkingKey(markingKeyData));
-      
       message.success("Marking key imported successfully.");
     } catch (error) {
       console.error("Error importing marking key:", error);
@@ -216,18 +322,25 @@ const Randomiser = () => {
                 Shuffle All Answers
               </Button>
               
-              <Button
-                type="default"
-                onClick={handleImportMarkingKey}
-                loading={isImportingKey}
-                disabled={!exam}
-                style={{
-                  borderColor: token.colorPrimary,
-                  color: token.colorPrimary
-                }}
-              >
-                Import Marking Key
-              </Button>
+              <Space>
+                <Button
+                  type="default"
+                  onClick={handleImportMarkingKey}
+                  loading={isImportingKey}
+                  style={{
+                    borderColor: token.colorPrimary,
+                    color: token.colorPrimary
+                  }}
+                >
+                  Import Marking Key
+                </Button>
+                <Button
+                  onClick={handleExportMarkingKey}
+                  disabled={!exam || !correctAnswers}
+                >
+                  Export Marking Key
+                </Button>
+              </Space>
             </div>
           </Card>
 
@@ -284,20 +397,37 @@ const Randomiser = () => {
                   <Text strong>Show Answers:</Text>
                   <Switch checked={showAnswers} onChange={setShowAnswers} />
                 </Space>
+                <Space>
+                  <Text strong>Answer Controls:</Text>
+                  <Tooltip title="These controls apply to all versions">
+                    <Switch checked={showControls} onChange={setShowControls} />
+                  </Tooltip>
+                </Space>
               </Space>
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <Select
-                value={selectedSection}
-                onChange={setSelectedSection}
-                style={{ width: 180 }}
-              >
-                <Select.Option value="All">All Sections</Select.Option>
-                {[...new Set(questions.map(q => q.section))].filter(Boolean).map(section => (
-                  <Select.Option key={section} value={section}>{section}</Select.Option>
-                ))}
-              </Select>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Select
+                  value={selectedSection}
+                  onChange={setSelectedSection}
+                  style={{ width: 180 }}
+                >
+                  <Select.Option value="All">All Sections</Select.Option>
+                  {[...new Set(questions.map(q => q.section))].filter(Boolean).map(section => (
+                    <Select.Option key={section} value={section}>{section}</Select.Option>
+                  ))}
+                </Select>
+
+                <Pagination
+                  current={pagination.current}
+                  pageSize={pagination.pageSize}
+                  total={filteredQuestions.length}
+                  onChange={(page) => setPagination(prev => ({ ...prev, current: page }))}
+                  size="small"
+                  showSizeChanger={false}
+                />
+              </div>
             </div>
 
             <Spin spinning={isShuffling}>
@@ -336,6 +466,7 @@ const Randomiser = () => {
                           examBodyIndex={location.examBodyIndex}
                           questionsIndex={location.questionsIndex}
                           showAnswers={showAnswers}
+                          showControls={showControls}
                         />
                       ) : (
                         <Text>
@@ -347,14 +478,15 @@ const Randomiser = () => {
                 })}
               </div>
               <EmptyExam/>
-              <Pagination
-                current={pagination.current}
-                pageSize={pagination.pageSize}
-                total={filteredQuestions.length}
-                onChange={(page) => setPagination(prev => ({ ...prev, current: page }))}
-                style={{ marginTop: 16, textAlign: "center" }}
-                showSizeChanger={false}
-              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                <Pagination
+                  current={pagination.current}
+                  pageSize={pagination.pageSize}
+                  total={filteredQuestions.length}
+                  onChange={(page) => setPagination(prev => ({ ...prev, current: page }))}
+                  showSizeChanger={false}
+                />
+              </div>
             </Spin>
           </Card>
       </>

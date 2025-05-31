@@ -109,7 +109,7 @@ const renderWithRedux = (
 test('displays question content', () => {
   const mockQuestion = {
     questionNumber: 1,
-    contentText: 'What is testing?',
+    contentFormatted: 'What is testing?',
     marks: 2
   };
   

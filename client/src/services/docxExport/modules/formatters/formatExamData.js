@@ -66,7 +66,7 @@ export function formatExamDataForTemplate(examData, version = 1) {
                 );
 
                 // Process section content
-                const sectionContent = processContent(item.contentFormatted || item.contentText || '');
+                const sectionContent = processContent(item.contentFormatted || '');
 
                 const section = {
                     isSection: true,
@@ -153,7 +153,7 @@ function formatQuestionWithVersion(question, version, versionList, optionLabels)
 
     // Process question content
     const questionContent = processContent(
-        question.contentFormatted || question.contentText || ''
+        question.contentFormatted || ''
     );
 
     // Determine which shuffle map to use based on version position in versionList
@@ -193,7 +193,7 @@ function formatQuestionWithVersion(question, version, versionList, optionLabels)
             const answer = question.answers[originalIndex];
             if (answer) {
                 const answerContent = processContent(
-                    answer.contentFormatted || answer.contentText || ''
+                    answer.contentFormatted || ''
                 );
 
                 // Only include non-empty answers

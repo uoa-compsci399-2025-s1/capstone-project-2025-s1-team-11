@@ -6,16 +6,20 @@ import { useSelector } from "react-redux";
 import { generateMarkingKey } from "../utilities/marker/keyGenerator.js";
 import { markExams } from "../utilities/marker/examMarker.js";
 import DataReview from "../components/marker/dataReview.jsx";
-import {Results} from "../components/marker/results.jsx"
-import {teleformReader} from "../components/marker/teleformReader.jsx";
-import {selectCorrectAnswerIndices, selectExamData} from "../store/exam/selectors.js";
+import { Results } from "../components/marker/results.jsx"
+import TeleformReader from "../components/marker/teleformReader.jsx";
+import {
+  selectCorrectAnswerIndices, 
+  selectExamData,
+  selectTeleformData
+} from "../store/exam/selectors.js";
 import useMessage from "../hooks/useMessage.js";
 
 const Marker = () => {
   const message = useMessage();
   const examData = useSelector(selectExamData);
   const examAnswers = useSelector(selectCorrectAnswerIndices);
-  const [teleformData, setTeleformData] = useState("");
+  const teleformData = useSelector(selectTeleformData);
   const [markingKey, setMarkingKey] = useState(null);
   const [resultsData, setResultsData] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -67,19 +71,26 @@ const Marker = () => {
     }
   }, [teleformData, markingKey, currentExamData, message]);
 
-  const handleTeleformDataChange = (e) => {
-    setTeleformData(e.target.value);
-  };
-
   const renderContent = () => {
     //console.log("Current step:", currentStep);
     //console.log("Results data:", resultsData);
     
+    const navigationButtons = (
+      <div>
+        <Button onClick={prev} disabled={currentStep === 0} style={{ marginRight: 8 }}>
+          Back
+        </Button>
+        <Button type="primary" onClick={next} disabled={currentStep === 2}>
+          Next
+        </Button>
+      </div>
+    );
+
     switch (currentStep) {
       case 0:
-        return <DataReview examData={currentExamData} markingKey={markingKey} />;
+        return <DataReview examData={currentExamData} markingKey={markingKey} navigationButtons={navigationButtons} />;
       case 1:
-        return teleformReader({teleformData, markingKey, handleTeleformDataChange});
+        return <TeleformReader markingKey={markingKey} navigationButtons={navigationButtons} />;
       case 2:
         // Make sure we're passing valid data to the Results component
         if (!resultsData || !resultsData.all || !Array.isArray(resultsData.all)) {
@@ -91,11 +102,11 @@ const Marker = () => {
               markingKey={markingKey}
               setResultsData={(data) => setResultsData({ all: data })}
               setExamData={setLocalExamData}
+              navigationButtons={navigationButtons}
             />
           );
         }
         
-        //console.log("Passing to Results component:", resultsData.all);
         return (
           <Results
             resultsData={resultsData.all}
@@ -104,6 +115,7 @@ const Marker = () => {
             markingKey={markingKey}
             setResultsData={(data) => setResultsData({ all: data })}
             setExamData={setLocalExamData}
+            navigationButtons={navigationButtons}
           />
         );
       default:
@@ -138,7 +150,7 @@ const Marker = () => {
 
       <Divider />
       
-      <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Button onClick={prev} disabled={currentStep === 0} style={{ marginRight: 8 }}>
           Back
         </Button>
