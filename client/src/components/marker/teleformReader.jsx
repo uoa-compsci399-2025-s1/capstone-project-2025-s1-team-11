@@ -7,6 +7,8 @@ import { UploadOutlined, ClearOutlined, SaveOutlined } from "@ant-design/icons";
 import { setTeleformData, clearTeleformData } from "../../store/exam/teleformSlice";
 import { selectTeleformData } from "../../store/exam/selectors";
 import { selectExamData } from "../../store/exam/selectors";
+import TeleformWarnings from "../../utilities/marker/teleformWarnings.jsx";
+
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -16,7 +18,7 @@ const TeleformReader = ({ markingKey, navigationButtons }) => {
   const dispatch = useDispatch();
   const teleformData = useSelector(selectTeleformData);
   const examData = useSelector(selectExamData);
-  
+
   let parsedData = [];
   try {
     parsedData = readTeleform(teleformData);
@@ -69,7 +71,7 @@ const TeleformReader = ({ markingKey, navigationButtons }) => {
         <Title level={2} style={{ margin: 0 }}>Teleform Data</Title>
         {navigationButtons}
       </div>
-      
+
       <Space style={{ marginBottom: 16 }}>
         <Upload
           beforeUpload={handleFileUpload}
@@ -79,23 +81,23 @@ const TeleformReader = ({ markingKey, navigationButtons }) => {
           <Button icon={<UploadOutlined />}>Load from file</Button>
         </Upload>
 
-        <Button 
+        <Button
           icon={<SaveOutlined />}
           onClick={handleSaveToFile}
           disabled={!teleformData}
         >
           Save to file
         </Button>
-        
-        <Button 
-          icon={<ClearOutlined />} 
+
+        <Button
+          icon={<ClearOutlined />}
           onClick={handleClearData}
           disabled={!teleformData}
         >
           Clear
         </Button>
       </Space>
-      
+
       <TextArea
         rows={6}
         placeholder="Enter teleform scan data here"
@@ -103,6 +105,7 @@ const TeleformReader = ({ markingKey, navigationButtons }) => {
         onChange={handleTeleformDataChange}
         style={{ marginBottom: 16 }}
       />
+      <TeleformWarnings parsedData={parsedData} />
       <TeleformTable data={parsedData} answerKey={markingKey}/>
     </div>
   );
