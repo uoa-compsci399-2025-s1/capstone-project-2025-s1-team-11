@@ -1,7 +1,7 @@
 // src/components/AnswerMappingVisual.jsx
 import React from "react";
 import { useSelector } from "react-redux";
-import { selectExamData } from "../store/exam/selectors";
+import { selectExamData } from "../../store/exam/selectors";
 import { Typography } from "antd";
 const { Text } = Typography;
 

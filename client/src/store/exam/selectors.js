@@ -11,6 +11,7 @@ export const selectExamMetadata = (state) => selectExamData(state)?.metadata;
 export const selectExamBody = (state) => selectExamData(state)?.examBody;
 export const selectExamStatus = (state) => selectExamState(state).status;
 export const selectExamError = (state) => selectExamState(state).error;
+export const selectExamIsLoading = (state) => selectExamState(state).isLoading;
 
 // Section and question selectors
 export const selectSectionByIndex = (state, index) => {
@@ -72,9 +73,23 @@ export const selectTotalMarks = createSelector(
   (questions) => questions.reduce((sum, q) => sum + (q.marks || 0), 0)
 );
 
+/**
+ * Selects the total number of questions in the exam
+ */
 export const selectQuestionCount = createSelector(
-  [selectAllQuestionsFlat],
-  (questions) => questions.length
+  [selectExamData],
+  (examData) => {
+    if (!examData?.examBody) return 0;
+    
+    return examData.examBody.reduce((count, item) => {
+      if (item.type === 'question') {
+        return count + 1;
+      } else if (item.type === 'section' && Array.isArray(item.questions)) {
+        return count + item.questions.length;
+      }
+      return count;
+    }, 0);
+  }
 );
 
 export const selectQuestionsForTable = createSelector(
@@ -198,3 +213,6 @@ export const selectCorrectAnswerIndices = createSelector(
     return result;
   }
 );
+
+// Teleform data selectors
+export const selectTeleformData = (state) => state.teleform.teleformData;
