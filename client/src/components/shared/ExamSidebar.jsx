@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip, Tag } from 'antd';
 import { ProfileOutlined, FileTextOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { htmlToText } from '../../utilities/textUtils';
@@ -14,7 +13,7 @@ import useMessage from '../../hooks/useMessage';
 const { Title, Text, Paragraph } = Typography;
 
 // Memoized QuestionItem component to prevent unnecessary re-renders
-const QuestionItem = React.memo(({ question, qIndex, currentItemId, onNavigateToItem }) => {
+const QuestionItem = React.memo(({ question, currentItemId, onNavigateToItem }) => {
   try {
     const textContent = htmlToText(question.text);
     return (
@@ -334,46 +333,6 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
       });
     }
   });
-
-  // Convert structure to Collapse items
-  const collapseItems = examStructure
-    .filter(item => item.type === 'section')
-    .map((section, index) => ({
-      key: String(index),
-      label: (
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-          <span>
-            <ProfileOutlined /> {section.sectionTitle || section.sectionNumber}
-          </span>
-          <Badge count={section.questions.length} style={{ backgroundColor: '#52c41a' }} />
-        </div>
-      ),
-      extra: (
-        <Button
-          type="text"
-          size="small"
-          icon={<RightCircleOutlined />}
-          onClick={(e) => {
-            e.stopPropagation();
-            onNavigateToItem(section.id, 'section');
-          }}
-        />
-      ),
-      children: (
-        <List
-          size="small"
-          dataSource={section.questions}
-          renderItem={(question, qIndex) => (
-            <QuestionItem
-              question={question}
-              qIndex={qIndex}
-              currentItemId={currentItemId}
-              onNavigateToItem={onNavigateToItem}
-            />
-          )}
-        />
-      )
-    }));
 
   return (
     <DndContext

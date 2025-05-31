@@ -39,20 +39,6 @@ const ExamItemEditor = React.memo(({ modalState, onSave, exam }) => {
     }));
   }, []);
 
-  const handleAnswerContentChange = useCallback((html, index) => {
-    setItemState(prev => {
-      const updatedAnswers = [...prev.answers];
-      updatedAnswers[index] = {
-        ...updatedAnswers[index],
-        contentFormatted: html
-      };
-      return {
-        ...prev,
-        answers: updatedAnswers
-      };
-    });
-  }, []);
-
   const handleSectionTitleChange = useCallback((e) => {
     setItemState(prev => ({
       ...prev,
