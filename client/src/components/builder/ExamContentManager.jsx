@@ -37,6 +37,16 @@ const ExamContentManager = () => {
     }
   };
 
+  const handleAddQuestion = () => {
+    dispatch(addQuestion({ examBodyIndex: null, questionData: { contentFormatted: '' } }))
+    message.success('New question added to the end of the exam.');
+  };
+
+  const handleAddSection = () => {
+    dispatch(addSection({ sectionTitle: '', contentFormatted: '' }))
+    message.success('New section added to the end of the exam.');
+  };
+
   return (
     <Card>
       {/* <Typography.Title level={3}>File Manager</Typography.Title> */}
@@ -60,13 +70,13 @@ const ExamContentManager = () => {
       <Space wrap style={{ width: "100%", justifyContent: "space-between" }}>
         <Space wrap>
           <Button 
-            onClick={() => dispatch(addQuestion({ examBodyIndex: null, questionData: { contentFormatted: '' } }))}
+            onClick={() => handleAddQuestion()}
             disabled={!isEnabled}
           >
             Add Question
           </Button>
           <Button 
-            onClick={() => dispatch(addSection({ sectionTitle: '', contentFormatted: '' }))}
+            onClick={() => handleAddSection()}
             disabled={!isEnabled}
           >
             Add Section
