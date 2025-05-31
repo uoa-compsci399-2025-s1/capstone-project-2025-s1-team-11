@@ -27,6 +27,10 @@ const { TextArea } = Input;
 const ExamItemEditor = React.memo(({ modalState, onSave, exam }) => {
   const [itemState, setItemState] = useState(modalState.item);
 
+  React.useEffect(() => {
+    setItemState(modalState.item);
+  }, [modalState.item]);
+
   const handleQuestionContentChange = useCallback((html) => {
     setItemState(prev => ({
       ...prev,
