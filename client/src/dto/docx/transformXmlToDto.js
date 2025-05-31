@@ -1,7 +1,6 @@
 // client/docxDTO/transformXmlToDto.js
 
 import { buildContentFormatted, detectMathElements } from './utils/buildContentFormatted.js';
-import { createExam } from '../../store/exam/examUtils.js';
 // import { convertOmmlToMathML } from './utils/ommlToMathML.js';
 import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
 // import { extractPlainText } from './utils/extractPlainText.js';
@@ -23,7 +22,10 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 //  console.log(`Total document blocks: ${blocks.length}`);
 
   //const dto = [];
-  const dto = createExam();
+  const dto = {
+    type: 'exam',
+    examBody: []
+  };
 
   let currentSection = null;
   let currentQuestion = null;
@@ -245,12 +247,17 @@ const isSectionBreak = (block) => {
 
 const isNewQuestion = (text) => {
   if (!text) return false;
-  // Check if text starts with [X mark] or [X marks] pattern
-  return /^\[\d+(?:\.\d+)?\s*marks?\]/i.test(text.trim());
+  // Normalize text by removing extra spaces and converting to lowercase
+  const normalizedText = text.trim().toLowerCase();
+  // Check if text starts with [X mark] or [X marks] pattern, allowing for any amount of spaces
+  return /^\[\s*\d+(?:\.\d+)?\s*marks?\s*\]/i.test(normalizedText);
 };
 
 const extractMarks = (text) => {
-  const match = text.match(/^\[(\d+(?:\.\d+)?)\s*marks?\]/i);
+  // Normalize text by removing extra spaces and converting to lowercase
+  const normalizedText = text.trim().toLowerCase();
+  // Extract the number, handling any amount of spaces
+  const match = normalizedText.match(/^\[\s*(\d+(?:\.\d+)?)\s*marks?\s*\]/i);
   if (match) {
     return parseFloat(match[1]);
   }

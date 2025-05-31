@@ -64,11 +64,6 @@ export function Navigation({isDarkMode, setIsDarkMode}) {
               <Button type={isActive ? "primary" : "text"} style={isActive ? primaryButtonStyles : textButtonStyles}>MCQ Auto-Marker</Button>
             )}
           </NavLink>
-          <NavLink to="/console" end>
-            {({ isActive }) => (
-              <Button type={isActive ? "primary" : "text"} style={isActive ? primaryButtonStyles : textButtonStyles}>Dev Console</Button>
-            )}
-          </NavLink>
         </Space>
         <Space style={{ margin: 0 }}>
           <NavLink to="/about" end>
