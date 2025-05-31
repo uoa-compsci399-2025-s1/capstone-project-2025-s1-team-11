@@ -12,7 +12,6 @@ import useMessage from '../../hooks/useMessage';
 
 const { Title, Text, Paragraph } = Typography;
 
-// Memoized QuestionItem component to prevent unnecessary re-renders
 const QuestionItem = React.memo(({ question, currentItemId, onNavigateToItem }) => {
   try {
     const textContent = htmlToText(question.text);
@@ -48,7 +47,6 @@ const QuestionItem = React.memo(({ question, currentItemId, onNavigateToItem }) 
   }
 });
 
-// Memoized standalone question item component
 const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToItem }) => {
   try {
     const textContent = htmlToText(item.text);
@@ -284,7 +282,6 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
     totalMarks: 0
   };
 
-  // Process exam structure
   const examStructure = [];
 
   exam.examBody.forEach((item, index) => {

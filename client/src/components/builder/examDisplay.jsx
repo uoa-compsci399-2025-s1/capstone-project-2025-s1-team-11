@@ -28,7 +28,6 @@ import { DEFAULT_OPTIONS } from '../../constants/answerOptions';
 
 const { TextArea } = Input;
 
-// New component for the modal editor
 const ExamItemEditor = React.memo(({ modalState, onSave, exam }) => {
   const [itemState, setItemState] = useState(modalState.item);
 
@@ -288,10 +287,8 @@ const ExamDisplay = () => {
 
         let destination;
         if (targetSectionIndex === 'standalone') {
-          // Move to standalone (end of exam body)
           destination = { examBodyIndex: exam.examBody.length };
         } else {
-          // Move to specific section (end of that section's questions)
           const targetSection = exam.examBody[targetSectionIndex];
           const questionsLength = targetSection?.questions?.length || 0;
           destination = { 
@@ -346,10 +343,8 @@ const ExamDisplay = () => {
     message.success('Item deleted successfully');
   };
 
-  // Memoize the table data with a stable reference
   const memoizedTableData = useMemo(() => tableData || [], [tableData]);
 
-  // Memoize the columns configuration
   const columns = useMemo(() => [
     {
       title: "Actions",
