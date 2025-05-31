@@ -19,7 +19,7 @@ const TeleformReader = ({ markingKey, navigationButtons }) => {
   const teleformData = useSelector(selectTeleformData);
   const examData = useSelector(selectExamData);
 
-  let parsedData = [];
+  let parsedData;
   try {
     parsedData = readTeleform(teleformData);
   } catch {
