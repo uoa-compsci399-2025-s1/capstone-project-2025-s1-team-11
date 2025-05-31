@@ -11,7 +11,6 @@ export const selectExamMetadata = (state) => selectExamData(state)?.metadata;
 export const selectExamBody = (state) => selectExamData(state)?.examBody;
 export const selectExamStatus = (state) => selectExamState(state).status;
 export const selectExamError = (state) => selectExamState(state).error;
-export const selectExamIsLoading = (state) => selectExamState(state).isLoading;
 
 // Section and question selectors
 export const selectSectionByIndex = (state, index) => {
