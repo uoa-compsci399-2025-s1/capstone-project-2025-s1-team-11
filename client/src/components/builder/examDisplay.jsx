@@ -1,7 +1,7 @@
 //examDisplay.jsx
 
 import React, { useState, useMemo, useCallback } from "react";
-import { Button, Typography, Modal, Input, Table, Tabs } from "antd";
+import { Button, Typography, Modal, Input, Table, Select, Tabs } from "antd";
 import ExamPreview from "../exam/ExamPreview";
 const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
@@ -21,17 +21,13 @@ import { htmlToText } from "../../utilities/textUtils";
 import 'quill/dist/quill.snow.css';
 import RichTextEditor from "../editor/RichTextEditor.jsx";
 import { QuestionEditorContainer } from "./QuestionEditor.jsx";
-import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
-//import { arrayMove } from "@dnd-kit/sortable";
-import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 import useMessage from "../../hooks/useMessage.js";
 import SummaryTable from "../SummaryTable";
 import { DEFAULT_OPTIONS } from '../../constants/answerOptions';
 
 const { TextArea } = Input;
 
-// New component for the modal editor
-const ExamItemEditor = React.memo(({ modalState, onSave }) => {
+const ExamItemEditor = React.memo(({ modalState, onSave, exam }) => {
   const [itemState, setItemState] = useState(modalState.item);
 
   const handleQuestionContentChange = useCallback((html) => {
@@ -48,9 +44,41 @@ const ExamItemEditor = React.memo(({ modalState, onSave }) => {
     }));
   }, []);
 
-  // Pass the current state up to parent when modal confirms
+  const handleSectionSelectionChange = useCallback((selectedSectionIndex) => {
+    setItemState(prev => ({
+      ...prev,
+      targetSectionIndex: selectedSectionIndex
+    }));
+  }, []);
+
+  const availableSections = useMemo(() => {
+    if (!exam?.examBody) return [];
+    
+    const sections = [{ value: 'standalone', label: 'Standalone Question (No Section)' }];
+    
+    exam.examBody.forEach((item, index) => {
+      if (item.type === 'section') {
+        sections.push({
+          value: index,
+          label: item.sectionTitle || `Section ${item.sectionNumber || index + 1}`
+        });
+      }
+    });
+    
+    return sections;
+  }, [exam]);
+
+  const currentSectionIndex = useMemo(() => {
+    if (modalState.type !== 'question') return null;
+    
+    if (modalState.questionsIndex !== undefined) {
+      return modalState.examBodyIndex;
+    }
+    
+    return 'standalone';
+  }, [modalState]);
+
   React.useEffect(() => {
-    // Update the parent's reference to the current state
     onSave(itemState);
   }, [itemState, onSave]);
 
@@ -82,6 +110,10 @@ const ExamItemEditor = React.memo(({ modalState, onSave }) => {
         onSave={onSave}
         examBodyIndex={modalState.examBodyIndex}
         questionsIndex={modalState.questionsIndex}
+        exam={exam}
+        availableSections={availableSections}
+        currentSectionIndex={currentSectionIndex}
+        onSectionSelectionChange={handleSectionSelectionChange}
       />
     );
   }
@@ -135,12 +167,7 @@ const ExamDisplay = () => {
     isDelete: false,
   });
 
-  // Track the current editor state
   const [currentEditorState, setCurrentEditorState] = useState(null);
-
-  const pointerSensor = useSensor(PointerSensor);
-  const keyboardSensor = useSensor(KeyboardSensor);
-  const sensors = useSensors(pointerSensor, keyboardSensor);
 
   const handleMove = useCallback((direction, examBodyIndex, questionsIndex = null) => {
     if (examBodyIndex === undefined) return;
@@ -176,7 +203,6 @@ const ExamDisplay = () => {
     }
   }, [dispatch, exam]);
 
-  // Reset modal state helper
   const resetModalState = useCallback(() => {
     setModalState({
       visible: false,
@@ -188,9 +214,7 @@ const ExamDisplay = () => {
     });
   }, []);
 
-  // Edit item handler
   const handleEdit = useCallback((item) => {
-    // Get the actual item from the exam data
     let actualItem;
     if (item.type === 'section') {
       actualItem = exam.examBody[item.examBodyIndex];
@@ -218,11 +242,9 @@ const ExamDisplay = () => {
     });
   }, [exam, message]);
 
-  // Save edited item
   const handleSaveEdit = useCallback(() => {
     const { type, examBodyIndex, questionsIndex } = modalState;
     
-    // Use the currentEditorState which has been kept in sync with the editor
     if (!currentEditorState) return;
 
     if (type === "section") {
@@ -233,7 +255,13 @@ const ExamDisplay = () => {
           contentFormatted: currentEditorState.contentFormatted
         }
       }));
+      message.success("Section updated");
     } else if (type === "question") {
+      const currentSectionIndex = questionsIndex !== undefined ? examBodyIndex : 'standalone';
+      const targetSectionIndex = currentEditorState.targetSectionIndex !== undefined 
+        ? currentEditorState.targetSectionIndex 
+        : currentSectionIndex;
+
       dispatch(updateQuestion({
         location: {
           examBodyIndex,
@@ -245,13 +273,35 @@ const ExamDisplay = () => {
           answers: currentEditorState.answers
         }
       }));
+
+      if (targetSectionIndex !== currentSectionIndex) {
+        const source = {
+          examBodyIndex,
+          ...(questionsIndex !== undefined && { questionsIndex })
+        };
+
+        let destination;
+        if (targetSectionIndex === 'standalone') {
+          destination = { examBodyIndex: exam.examBody.length };
+        } else {
+          const targetSection = exam.examBody[targetSectionIndex];
+          const questionsLength = targetSection?.questions?.length || 0;
+          destination = { 
+            examBodyIndex: targetSectionIndex, 
+            questionsIndex: questionsLength 
+          };
+        }
+
+        dispatch(moveQuestion({ source, destination }));
+        message.success("Question updated and moved to new section");
+      } else {
+        message.success("Question updated");
+      }
     }
 
-    message.success("Saved changes");
     resetModalState();
-  }, [currentEditorState, dispatch, modalState, resetModalState, message]);
+  }, [currentEditorState, dispatch, modalState, resetModalState, message, exam]);
 
-  // Confirm delete item
   const confirmDeleteItem = (examBodyIndex, questionsIndex = null) => {
     setModalState({
       visible: true,
@@ -263,7 +313,6 @@ const ExamDisplay = () => {
     });
   };
 
-  // Execute delete item
   const executeDeleteItem = () => {
     const { examBodyIndex, questionsIndex, isDelete } = modalState;
     
@@ -289,10 +338,8 @@ const ExamDisplay = () => {
     message.success('Item deleted successfully');
   };
 
-  // Memoize the table data with a stable reference
   const memoizedTableData = useMemo(() => tableData || [], [tableData]);
 
-  // Memoize the columns configuration
   const columns = useMemo(() => [
     {
       title: "Actions",
@@ -351,13 +398,28 @@ const ExamDisplay = () => {
       dataIndex: "questionNumber",
       key: "question-number-column",
       width: 100,
+      render: (questionNumber, record) => {
+        if (record.type === "section") {
+          return (
+            <Text>
+              Section {record.sectionNumber || ''}
+            </Text>
+          );
+        }
+        return questionNumber;
+      },
     },
     {
       title: "Type",
       dataIndex: "type",
       key: "type-column",
       width: 100,
-      render: (type) => type === 'section' ? 'Section' : 'Question'
+      render: (type) => {
+        if (type === 'section') {
+          return <Text>Section</Text>;
+        }
+        return 'Question';
+      }
     },
     {
       title: "Section ID",
@@ -366,9 +428,15 @@ const ExamDisplay = () => {
       ellipsis: true,
       render: (_, record) => {
         if (record.type === "section") {
-          return record.sectionTitle || record.sectionNumber;
+          return (
+            <Text>
+              {record.sectionTitle}
+            </Text>
+          );
         }
-        return record.sectionNumber;
+        return record.sectionNumber ? `Section ${record.sectionNumber}` : (
+          <Text type="secondary" style={{ fontStyle: 'italic' }}>Standalone</Text>
+        );
       },
     },
     {
@@ -381,7 +449,7 @@ const ExamDisplay = () => {
         try {
           return <ContentRenderer record={record} />;
         } catch (error) {
-          console.error('Error rendering content:', error);
+          console.error('Error rendering content for record:', record, error);
           return <div>Error rendering content</div>;
         }
       },
@@ -422,7 +490,7 @@ const ExamDisplay = () => {
       width: 80,
       render: (marks, record) => record.type === "question" ? marks : null,
     },
-  ], [exam, handleEdit, handleMove]); // Added handleEdit and handleMove to dependencies
+  ], [exam, handleEdit, handleMove]); 
 
   if (!exam || !Array.isArray(exam.examBody)) {
     return <div>Please open an exam or create a new file.</div>;
@@ -520,7 +588,6 @@ const ExamDisplay = () => {
         onCancel={resetModalState}
         onOk={modalState.isDelete ? executeDeleteItem : handleSaveEdit}
         width={800}
-        destroyOnHidden={true}
       >
         {modalState.isDelete ? (
           <Paragraph>Are you sure you want to delete this item?</Paragraph>
@@ -529,6 +596,7 @@ const ExamDisplay = () => {
             modalState={modalState}
             onSave={setCurrentEditorState}
             onCancel={resetModalState}
+            exam={exam}
           />
         )}
       </Modal>

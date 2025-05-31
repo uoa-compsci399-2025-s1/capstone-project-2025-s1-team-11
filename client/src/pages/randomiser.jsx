@@ -42,7 +42,7 @@ const Randomiser = () => {
     } else {
       setSelectedVersion('');
     }
-  }, [exam]);
+  }, [exam?.versions]);
 
   useEffect(() => {
     setPagination(prev => ({ ...prev, current: 1 }));
@@ -81,10 +81,13 @@ const Randomiser = () => {
         markingKeyData.questionMappings[question.questionNumber] = {};
         markingKeyData.markWeights[question.questionNumber] = question.marks;
 
-        exam.versions.forEach(versionId => {
+        exam.versions.forEach((versionId, versionIndex) => {
+          // Use versionIndex + 1 for correctAnswers since it uses 1-based indexing
+          const correctAnswersKey = versionIndex + 1;
+          
           markingKeyData.questionMappings[question.questionNumber][versionId] = {
-            shuffleMap: question.answerShuffleMaps[exam.versions.indexOf(versionId)],
-            correctAnswerIndices: correctAnswers[versionId][question.questionNumber] || []
+            shuffleMap: question.answerShuffleMaps[versionIndex],
+            correctAnswerIndices: correctAnswers[correctAnswersKey]?.[question.questionNumber] || []
           };
         });
       });
