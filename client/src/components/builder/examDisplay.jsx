@@ -166,9 +166,6 @@ const ExamDisplay = () => {
 
   const [currentEditorState, setCurrentEditorState] = useState(null);
 
-  const pointerSensor = null; // Temporarily disabled
-  const sensors = null; // Temporarily disabled
-
   const handleMove = useCallback((direction, examBodyIndex, questionsIndex = null) => {
     if (examBodyIndex === undefined) return;
 

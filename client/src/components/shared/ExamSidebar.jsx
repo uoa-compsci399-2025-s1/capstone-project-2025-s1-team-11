@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip, Tag } from 'antd';
 import { ProfileOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { htmlToText } from '../../utilities/textUtils';
 import { useDispatch } from 'react-redux';
 import { moveQuestion } from '../../store/exam/examSlice';
 import useMessage from '../../hooks/useMessage';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -77,16 +78,94 @@ const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToIt
   }
 });
 
+const DraggableQuestionItem = React.memo(({ question, currentItemId, onNavigateToItem, index }) => {
+  return (
+    <Draggable draggableId={question.id} index={index}>
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          style={{
+            ...provided.draggableProps.style,
+            opacity: snapshot.isDragging ? 0.5 : 1,
+          }}
+        >
+          <QuestionItem
+            question={question}
+            currentItemId={currentItemId}
+            onNavigateToItem={onNavigateToItem}
+          />
+        </div>
+      )}
+    </Draggable>
+  );
+});
+
+const DraggableStandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToItem, index }) => {
+  return (
+    <Draggable draggableId={item.id} index={index}>
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          style={{
+            ...provided.draggableProps.style,
+            opacity: snapshot.isDragging ? 0.5 : 1,
+          }}
+        >
+          <StandaloneQuestionItem
+            item={item}
+            currentItemId={currentItemId}
+            onNavigateToItem={onNavigateToItem}
+          />
+        </div>
+      )}
+    </Draggable>
+  );
+});
+
 const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) => {
   const dispatch = useDispatch();
   const message = useMessage();
 
-  const pointerSensor = null; // Temporarily disabled
-  const sensors = null; // Temporarily disabled
+  const handleDragEnd = useCallback((result) => {
+    if (!result.destination) {
+      return;
+    }
 
-  const handleDragEnd = (event) => {
-    // Temporarily disabled
-  };
+    const { source, destination } = result;
+
+    if (source.index === destination.index && source.droppableId === destination.droppableId) {
+      return;
+    }
+
+    let sourceLocation = null;
+    let destinationLocation = null;
+    
+    if (source.droppableId.startsWith('section-')) {
+      const sectionIndex = parseInt(source.droppableId.split('-')[1]);
+      sourceLocation = { examBodyIndex: sectionIndex, questionsIndex: source.index };
+    } else if (source.droppableId === 'standalone') {
+      sourceLocation = { examBodyIndex: source.index };
+    }
+
+    if (destination.droppableId.startsWith('section-')) {
+      const sectionIndex = parseInt(destination.droppableId.split('-')[1]);
+      destinationLocation = { examBodyIndex: sectionIndex, questionsIndex: destination.index };
+    } else if (destination.droppableId === 'standalone') {
+      destinationLocation = { examBodyIndex: destination.index };
+    }
+
+    if (sourceLocation && destinationLocation) {
+      dispatch(moveQuestion({
+        source: sourceLocation,
+        destination: destinationLocation,
+      }));
+      message.success('Question reordered');
+    }
+  }, [dispatch, message]);
 
   if (!exam || !exam.examBody || !Array.isArray(exam.examBody)) {
     return (
@@ -155,173 +234,190 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
   });
 
   return (
-    <Card className="exam-sidebar" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-      {/* Exam Details Section */}
-      <div style={{ marginBottom: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <Title level={4} style={{ margin: 0 }}>Exam Details</Title>
-          <Button 
-            type="text" 
-            icon={<EditOutlined />} 
-            onClick={onEditDetails}
-            size="small"
-          />
-        </div>
-        <List size="small">
-          <List.Item>
-            <Paragraph style={{ margin: 0 }}>
-              <Text type="secondary">Course Code:</Text>{' '}
-              <Text>{exam?.courseCode || "N/A"}</Text>
-            </Paragraph>
-          </List.Item>
-          <List.Item>
-            <Paragraph style={{ margin: 0 }}>
-              <Text type="secondary">Course Name:</Text>{' '}
-              <Text>{exam?.courseName || "N/A"}</Text>
-            </Paragraph>
-          </List.Item>
-          <List.Item>
-            <Paragraph style={{ margin: 0 }}>
-              <Text type="secondary">Semester:</Text>{' '}
-              <Text>{exam?.semester || "N/A"}</Text>
-            </Paragraph>
-          </List.Item>
-          <List.Item>
-            <Paragraph style={{ margin: 0 }}>
-              <Text type="secondary">Year:</Text>{' '}
-              <Text>{exam?.year || "N/A"}</Text>
-            </Paragraph>
-          </List.Item>
-          {exam?.versions && exam.versions.length > 0 && (
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <Card className="exam-sidebar" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+        {/* Exam Details Section */}
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <Title level={4} style={{ margin: 0 }}>Exam Details</Title>
+            <Button 
+              type="text" 
+              icon={<EditOutlined />} 
+              onClick={onEditDetails}
+              size="small"
+            />
+          </div>
+          <List size="small">
             <List.Item>
               <Paragraph style={{ margin: 0 }}>
-                <Text type="secondary">Versions:</Text>{' '}
-                <span className="version-tags" style={{ marginLeft: 8 }}>
-                  {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
-                </span>
+                <Text type="secondary">Course Code:</Text>{' '}
+                <Text>{exam?.courseCode || "N/A"}</Text>
               </Paragraph>
             </List.Item>
-          )}
-        </List>
-      </div>
-
-      <Divider style={{ margin: '12px 0' }} />
-
-      <div style={{ marginBottom: '8px' }}>
-        <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Exam Overview</Paragraph>
-      </div>
-      <Divider style={{ margin: '12px 0' }} />
-
-      <div className="exam-stats">
-        <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Statistics</Paragraph>
-        <List size="small">
-          <List.Item>
-            <Badge color="blue" text={`${stats.totalSections} Sections`} />
-          </List.Item>
-          <List.Item>
-            <Badge color="green" text={`${stats.totalQuestions} Questions`} />
-          </List.Item>
-          <List.Item>
-            <Badge color="orange" text={`${stats.totalMarks} Total Marks`} />
-          </List.Item>
-        </List>
-      </div>
-
-      <Divider style={{ margin: '12px 0' }} />
-
-      <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Structure</Paragraph>
-      
-      {/* Render questions/sections to be in the same order as in examBody */}
-      {examStructure.map((item, index) => {
-        if (item.type === 'section') {
-          return (
-            <div key={item.id} style={{ marginBottom: '8px' }}>
-              <Collapse
-                ghost
-                items={[{
-                  key: String(index),
-                  label: (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                      <span>
-                        <ProfileOutlined /> {item.sectionNumber || item.sectionTitle}
-                      </span>
-                      <Badge count={item.questions.length} style={{ backgroundColor: '#52c41a' }} />
-                    </div>
-                  ),
-                  extra: (
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<RightCircleOutlined />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onNavigateToItem(item.id, 'section');
-                      }}
-                    />
-                  ),
-                  children: (
-                    <List
-                      size="small"
-                      dataSource={item.questions}
-                      renderItem={(question, qIndex) => (
-                        <QuestionItem
-                          question={question}
-                          currentItemId={currentItemId}
-                          onNavigateToItem={onNavigateToItem}
-                        />
-                      )}
-                    />
-                  )
-                }]}
-                defaultActiveKey={[String(index)]}
-              />
-            </div>
-          );
-        } else if (item.type === 'question') {
-          return (
-            <div key={item.id} style={{ marginBottom: '4px' }}>
-              <StandaloneQuestionItem
-                item={item}
-                currentItemId={currentItemId}
-                onNavigateToItem={onNavigateToItem}
-              />
-            </div>
-          );
-        }
-        return null;
-      })}
-
-      <Divider style={{ margin: '12px 0' }} />
-
-      <div className="section-distribution">
-        <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Questions by Section</Paragraph>
-        <List
-          size="small"
-          dataSource={stats.questionsPerSection}
-          renderItem={(section) => (
             <List.Item>
-              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                <div 
-                  title={section.sectionTitle}
-                  style={{ 
-                    width: '100%', 
-                    overflow: 'hidden', 
-                    textOverflow: 'ellipsis', 
-                    whiteSpace: 'nowrap' 
-                  }}
-                >
-                  {section.sectionNumber || section.sectionTitle}
-                </div>
-                <div>
-                  <Badge count={section.count} style={{ backgroundColor: '#52c41a', marginRight: '8px' }} />
-                  <Badge count={`${section.marks}m`} style={{ backgroundColor: '#1890ff' }} />
-                </div>
-              </div>
+              <Paragraph style={{ margin: 0 }}>
+                <Text type="secondary">Course Name:</Text>{' '}
+                <Text>{exam?.courseName || "N/A"}</Text>
+              </Paragraph>
             </List.Item>
+            <List.Item>
+              <Paragraph style={{ margin: 0 }}>
+                <Text type="secondary">Semester:</Text>{' '}
+                <Text>{exam?.semester || "N/A"}</Text>
+              </Paragraph>
+            </List.Item>
+            <List.Item>
+              <Paragraph style={{ margin: 0 }}>
+                <Text type="secondary">Year:</Text>{' '}
+                <Text>{exam?.year || "N/A"}</Text>
+              </Paragraph>
+            </List.Item>
+            {exam?.versions && exam.versions.length > 0 && (
+              <List.Item>
+                <Paragraph style={{ margin: 0 }}>
+                  <Text type="secondary">Versions:</Text>{' '}
+                  <span className="version-tags" style={{ marginLeft: 8 }}>
+                    {exam.versions.map((v, i) => <Tag key={i}>{v}</Tag>)}
+                  </span>
+                </Paragraph>
+              </List.Item>
+            )}
+          </List>
+        </div>
+
+        <Divider style={{ margin: '12px 0' }} />
+
+        <div style={{ marginBottom: '8px' }}>
+          <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Exam Overview</Paragraph>
+        </div>
+        <Divider style={{ margin: '12px 0' }} />
+
+        <div className="exam-stats">
+          <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Statistics</Paragraph>
+          <List size="small">
+            <List.Item>
+              <Badge color="blue" text={`${stats.totalSections} Sections`} />
+            </List.Item>
+            <List.Item>
+              <Badge color="green" text={`${stats.totalQuestions} Questions`} />
+            </List.Item>
+            <List.Item>
+              <Badge color="orange" text={`${stats.totalMarks} Total Marks`} />
+            </List.Item>
+          </List>
+        </div>
+
+        <Divider style={{ margin: '12px 0' }} />
+
+        <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Structure</Paragraph>
+        
+        {/* Render questions/sections to be in the same order as in examBody */}
+        <Droppable droppableId="main-structure">
+          {(provided) => (
+            <div ref={provided.innerRef} {...provided.droppableProps}>
+              {examStructure.map((item, index) => {
+                if (item.type === 'section') {
+                  return (
+                    <div key={item.id} style={{ marginBottom: '8px' }}>
+                      <Collapse
+                        ghost
+                        items={[{
+                          key: String(index),
+                          label: (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                              <span>
+                                <ProfileOutlined /> {item.sectionNumber || item.sectionTitle}
+                              </span>
+                              <Badge count={item.questions.length} style={{ backgroundColor: '#52c41a' }} />
+                            </div>
+                          ),
+                          extra: (
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<RightCircleOutlined />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onNavigateToItem(item.id, 'section');
+                              }}
+                            />
+                          ),
+                          children: (
+                            <Droppable droppableId={`section-${index}`}>
+                              {(sectionProvided) => (
+                                <div ref={sectionProvided.innerRef} {...sectionProvided.droppableProps}>
+                                  <List
+                                    size="small"
+                                    dataSource={item.questions}
+                                    renderItem={(question, qIndex) => (
+                                      <DraggableQuestionItem
+                                        question={question}
+                                        currentItemId={currentItemId}
+                                        onNavigateToItem={onNavigateToItem}
+                                        index={qIndex}
+                                      />
+                                    )}
+                                  />
+                                  {sectionProvided.placeholder}
+                                </div>
+                              )}
+                            </Droppable>
+                          )
+                        }]}
+                        defaultActiveKey={[String(index)]}
+                      />
+                    </div>
+                  );
+                } else if (item.type === 'question') {
+                  return (
+                    <DraggableStandaloneQuestionItem
+                      key={item.id}
+                      item={item}
+                      currentItemId={currentItemId}
+                      onNavigateToItem={onNavigateToItem}
+                      index={index}
+                    />
+                  );
+                }
+                return null;
+              })}
+              {provided.placeholder}
+            </div>
           )}
-        />
-      </div>
-    </Card>
+        </Droppable>
+
+        <Divider style={{ margin: '12px 0' }} />
+
+        <div className="section-distribution">
+          <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Questions by Section</Paragraph>
+          <List
+            size="small"
+            dataSource={stats.questionsPerSection}
+            renderItem={(section) => (
+              <List.Item>
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                  <div 
+                    title={section.sectionTitle}
+                    style={{ 
+                      width: '100%', 
+                      overflow: 'hidden', 
+                      textOverflow: 'ellipsis', 
+                      whiteSpace: 'nowrap' 
+                    }}
+                  >
+                    {section.sectionNumber || section.sectionTitle}
+                  </div>
+                  <div>
+                    <Badge count={section.count} style={{ backgroundColor: '#52c41a', marginRight: '8px' }} />
+                    <Badge count={`${section.marks}m`} style={{ backgroundColor: '#1890ff' }} />
+                  </div>
+                </div>
+              </List.Item>
+            )}
+          />
+        </div>
+      </Card>
+    </DragDropContext>
   );
 };
 
