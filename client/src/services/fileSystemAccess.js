@@ -5,11 +5,15 @@
  * Do not use this module to import an exam. Use the hook.
  */
 
+import { needsMigration, migrateExam } from '../store/exam/examUtils';
+import { store } from '../store/store';
+import { selectTeleformData } from '../store/exam/selectors';
+
 /**
  * Opens a file picker and reads an exam from a JSON file.
  * Returns an object with the file handle and the parsed Exam instance.
+ * If the exam schema is outdated, it will be automatically migrated.
  */
-
 export async function loadExamFromFile() {
     try {
       const [fileHandle] = await window.showOpenFilePicker({
@@ -24,8 +28,32 @@ export async function loadExamFromFile() {
   
       const file = await fileHandle.getFile();
       const text = await file.text();
-      const exam = JSON.parse(text);
-      return { exam, fileHandle};
+      let savedData = JSON.parse(text);
+      
+      // Handle different save formats and extract data
+      let exam, teleformData;
+      
+      if (savedData.exam && savedData.teleform) {
+        // New format
+        exam = savedData.exam.examData;
+        teleformData = savedData.teleform.teleformData;
+      } else if (savedData.examData && savedData.teleformData) {
+        // Legacy format
+        exam = savedData.examData;
+        teleformData = savedData.teleformData;
+      } else {
+        // Old format or unknown
+        exam = savedData;
+        teleformData = '';
+      }
+
+      // Check if exam needs migration
+      if (needsMigration(exam)) {
+        console.log('Migrating exam from older schema version...');
+        exam = migrateExam(exam);
+      }
+  
+      return { exam, fileHandle, teleformData };
     } catch (err) {
       console.error("File open cancelled or failed:", err);
       return null;
@@ -59,7 +87,7 @@ export async function importExamFile() {
 /**
  * Saves the given exam to the file represented by fileHandle.
  */
-export async function saveExamToDisk(exam, fileHandle = null) {
+export async function saveExamToDisk(examState, fileHandle = null) {
     // If no file handle exists, prompt the user for a save location.
     try {
         if (!fileHandle) {
@@ -76,9 +104,22 @@ export async function saveExamToDisk(exam, fileHandle = null) {
             });
         }
         
+        // Get teleform data from state
+        const teleformData = selectTeleformData(store.getState());
+
+        // Create a combined object with both exam and teleform data
+        const saveData = {
+            exam: {
+                examData: examState.examData
+            },
+            teleform: {
+                teleformData: teleformData || ''
+            }
+        };
+        
         // Create a writable stream, write the JSON content, and close the stream.
         const writable = await fileHandle.createWritable();
-        await writable.write(JSON.stringify(exam, null, 2));
+        await writable.write(JSON.stringify(saveData, null, 2));
         await writable.close();
         return fileHandle; // Return the file handle so it can be stored for future saves.
     } catch (err) {

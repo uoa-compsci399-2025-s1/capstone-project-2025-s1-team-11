@@ -145,7 +145,7 @@ export const buildContentFormatted = (runs, options = {}, parentPara = null) => 
 
     // Remove marks pattern if requested
     if (removeMarks) {
-        content = content.replace(/^\[\d+(?:\.\d+)?\s*marks?\]\s*/i, '');
+        content = content.replace(/^\[\s*\d+(?:\.\d+)?\s*marks?\s*\]\s*/i, '');
     }
 
     // Process math elements if present and preservation is requested

@@ -1,5 +1,6 @@
 {
   "type": "exam",
+  "schemaVersion": "1.0.0",
   "examTitle": "Anglea Test",
   "courseCode": "CS320",
   "courseName": "Compputer Science",
@@ -22,40 +23,34 @@
   "examBody": [
     {
       "type": "question",
-      "contentFormatted": "New Question",
+      "contentFormatted": "What is my name?",
       "format": "HTML",
-      "contentText": "New Question",
       "pageBreakAfter": false,
       "questionNumber": 1,
       "marks": 50,
       "answers": [
         {
-          "content": "",
-          "contentText": "William",
+          "contentFormatted": "William",
           "correct": true,
           "fixedPosition": null
         },
         {
-          "content": "",
-          "contentText": "Michael",
+          "contentFormatted": "Michael",
           "correct": false,
           "fixedPosition": null
         },
         {
-          "content": "",
-          "contentText": "Answer 3",
+          "contentFormatted": "Answer 3",
           "correct": false,
           "fixedPosition": null
         },
         {
-          "content": "",
-          "contentText": "Answer 4",
+          "contentFormatted": "Answer 4",
           "correct": false,
           "fixedPosition": null
         },
         {
-          "content": "",
-          "contentText": "Answer 5",
+          "contentFormatted": "Answer 5",
           "correct": false,
           "fixedPosition": null
         }
@@ -96,38 +91,32 @@
       "type": "question",
       "contentFormatted": "New Question",
       "format": "HTML",
-      "contentText": "New Question",
       "pageBreakAfter": false,
       "questionNumber": 2,
       "marks": 1,
       "answers": [
         {
-          "content": "",
-          "contentText": "Answer 1",
+          "contentFormatted": "Answer 1",
           "correct": true,
           "fixedPosition": null
         },
         {
-          "content": "",
-          "contentText": "Answer 2",
+          "contentFormatted": "Answer 2",
           "correct": false,
           "fixedPosition": null
         },
         {
-          "content": "",
-          "contentText": "Answer 3",
+          "contentFormatted": "Answer 3",
           "correct": false,
           "fixedPosition": null
         },
         {
-          "content": "",
-          "contentText": "Answer 4",
+          "contentFormatted": "Answer 4",
           "correct": false,
           "fixedPosition": null
         },
         {
-          "content": "",
-          "contentText": "Answer 5",
+          "contentFormatted": "Answer 5",
           "correct": false,
           "fixedPosition": null
         }
@@ -166,40 +155,34 @@
     },
     {
       "type": "question",
-      "contentFormatted": "",
+      "contentFormatted": "New Question",
       "format": "HTML",
-      "contentText": "New Question",
       "pageBreakAfter": false,
       "questionNumber": 3,
       "marks": 1,
       "answers": [
         {
-          "content": "",
-          "contentText": "Answer 1",
+          "contentFormatted": "Answer 1",
           "correct": true,
           "fixedPosition": null
         },
         {
-          "content": "",
-          "contentText": "Answer 2",
+          "contentFormatted": "Answer 2",
           "correct": false,
           "fixedPosition": null
         },
         {
-          "content": "",
-          "contentText": "Answer 3",
+          "contentFormatted": "Answer 3",
           "correct": false,
           "fixedPosition": null
         },
         {
-          "content": "",
-          "contentText": "Answer 4",
+          "contentFormatted": "Answer 4",
           "correct": false,
           "fixedPosition": null
         },
         {
-          "content": "",
-          "contentText": "Answer 5",
+          "contentFormatted": "Answer 5",
           "correct": false,
           "fixedPosition": null
         }
@@ -239,8 +222,7 @@
     {
       "type": "section",
       "contentFormatted": "",
-      "format": "HTML",
-      "contentText": "",
+      "format": "HTML", 
       "title": "Untitled Section",
       "subtext": "Instructions...",
       "pageBreakAfter": false,
@@ -253,7 +235,6 @@
       "type": "question",
       "contentFormatted": "",
       "format": "HTML",
-      "contentText": "",
       "id": "id-1746050461529-1",
       "correctIndex": 1,
       "pageBreakAfter": false,
@@ -264,7 +245,6 @@
           "type": "answer",
           "contentFormatted": "",
           "format": "HTML",
-          "contentText": "",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -273,7 +253,6 @@
           "type": "answer",
           "contentFormatted": "",
           "format": "HTML",
-          "contentText": "",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -282,7 +261,6 @@
           "type": "answer",
           "contentFormatted": "",
           "format": "HTML",
-          "contentText": "",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -291,7 +269,6 @@
           "type": "answer",
           "contentFormatted": "",
           "format": "HTML",
-          "contentText": "",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -300,7 +277,6 @@
           "type": "answer",
           "contentFormatted": "",
           "format": "HTML",
-          "contentText": "",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null

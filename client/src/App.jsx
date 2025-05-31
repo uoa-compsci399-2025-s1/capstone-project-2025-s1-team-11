@@ -6,7 +6,7 @@ import PopupWarning from "./components/popupWarning";
 import {Outlet} from "react-router";
 import "./index.css";
 //import ThemeToggleButton from "./components/ThemeToggleSwitch.jsx";
-import {Card, ConfigProvider, theme} from "antd";
+import {Card, ConfigProvider, theme, App as AntApp} from "antd";
 
 
 const App = () => {
@@ -48,22 +48,24 @@ const App = () => {
         },
       }}
     >
-      <MCQLayout isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}>
-        
-        <PopupWarning
-          visible={showWarning}
-          onClose={() => setShowWarning(false)}
-        />
-        <main>
-          <Outlet />
-        </main>
-        {/* <Card style={{ width: "max-content", margin: "1rem" }}>
-          <h4>Theme Mode</h4>
-            <ThemeToggleButton isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-        </Card> */}
-        <br/>
-        <DevelopmentWarning />
-      </MCQLayout>
+      <AntApp>
+        <MCQLayout isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode}>
+          
+          <PopupWarning
+            visible={showWarning}
+            onClose={() => setShowWarning(false)}
+          />
+          <main>
+            <Outlet />
+          </main>
+          {/* <Card style={{ width: "max-content", margin: "1rem" }}>
+            <h4>Theme Mode</h4>
+              <ThemeToggleButton isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+          </Card> */}
+          <br/>
+          <DevelopmentWarning />
+        </MCQLayout>
+      </AntApp>
     </ConfigProvider>
   );
 };

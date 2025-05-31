@@ -298,43 +298,43 @@ describe('Exam Helpers', () => {
                 {
                     type: 'section',
                     questions: [
-                        { id: 'q1', contentText: 'Original' }
+                        { id: 'q1', contentFormatted: 'Original' }
                     ]
                 }
             ];
             
             // Act
-            updateQuestionHelper(examBody, { examBodyIndex: 0, sectionIndex: 0 }, { contentText: 'Updated' });
+            updateQuestionHelper(examBody, { examBodyIndex: 0, sectionIndex: 0 }, { contentFormatted: 'Updated' });
             
             // Assert
-            expect(examBody[0].questions[0].contentText).toBe('Updated');
+            expect(examBody[0].questions[0].contentFormatted).toBe('Updated');
         });
 
         test('should update a standalone question', () => {
             // Arrange
             const examBody = [
-                { id: 'q1', type: 'question', contentText: 'Original' }
+                { id: 'q1', type: 'question', contentFormatted: 'Original' }
             ];
             
             // Act
-            updateQuestionHelper(examBody, { examBodyIndex: 0 }, { contentText: 'Updated' });
+            updateQuestionHelper(examBody, { examBodyIndex: 0 }, { contentFormatted: 'Updated' });
             
             // Assert
-            expect(examBody[0].contentText).toBe('Updated');
+            expect(examBody[0].contentFormatted).toBe('Updated');
         });
 
         test('should handle invalid indices gracefully', () => {
             // Arrange
             const examBody = [
-                { id: 'q1', type: 'question', contentText: 'Original' }
+                { id: 'q1', type: 'question', contentFormatted: 'Original' }
             ];
             
             // Act & Assert - should not throw
             expect(() => {
-                updateQuestionHelper(examBody, { examBodyIndex: 5 }, { contentText: 'Updated' });
+                updateQuestionHelper(examBody, { examBodyIndex: 5 }, { contentFormatted: 'Updated' });
             }).not.toThrow();
             
-            expect(examBody[0].contentText).toBe('Original');
+            expect(examBody[0].contentFormatted).toBe('Original');
         });
     });
 
@@ -358,8 +358,8 @@ describe('Exam Helpers', () => {
         const section = createSection({
             sectionTitle: 'Test Section',
             questions: [
-                createQuestion({ contentText: 'Q1' }),
-                createQuestion({ contentText: 'Q2' })
+                createQuestion({ contentFormatted: 'Q1' }),
+                createQuestion({ contentFormatted: 'Q2' })
             ]
         });
         expect(section).toHaveProperty('sectionTitle', 'Test Section');

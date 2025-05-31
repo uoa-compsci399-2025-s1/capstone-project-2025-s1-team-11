@@ -1,5 +1,7 @@
 // examUtils.js
 
+const CURRENT_SCHEMA_VERSION = '1.0.0';
+
 const DEFAULT_COMPONENT_PROPS = {
   type: 'content',
   contentFormatted: '',
@@ -9,6 +11,7 @@ const DEFAULT_COMPONENT_PROPS = {
 // Create a new exam
 export const createExam = (overrides = {}) => ({
   type: 'exam',
+  schemaVersion: CURRENT_SCHEMA_VERSION, // Add schema version
   examTitle: '',
   courseCode: '',
   courseName: '',
@@ -20,6 +23,49 @@ export const createExam = (overrides = {}) => ({
   examBody: [],
   ...overrides,
 });
+
+// Utility function to check if an exam needs migration
+export const needsMigration = (examData) => {
+  if (!examData.schemaVersion) return true;
+  return examData.schemaVersion !== CURRENT_SCHEMA_VERSION;
+};
+
+// Utility function to migrate exam data to current version
+export const migrateExam = (examData) => {
+  if (!examData.schemaVersion) {
+    // Migrate from pre-versioned schema
+    return migrateFromLegacy(examData);
+  }
+
+  // Add future version migrations here
+  switch (examData.schemaVersion) {
+    // case '1.0.0':
+    //   return migrateTo_1_1_0(examData);
+    default:
+      return examData;
+  }
+};
+
+// Migrate from legacy (unversioned) format
+const migrateFromLegacy = (examData) => {
+  // Clone the exam data to avoid mutating the original
+  const migratedExam = { ...examData };
+  
+  // Add schema version
+  migratedExam.schemaVersion = CURRENT_SCHEMA_VERSION;
+  
+  // Add any missing fields that were introduced in 1.0.0
+  if (!migratedExam.teleformOptions) {
+    migratedExam.teleformOptions = ['a', 'b', 'c', 'd', 'e'];
+  }
+  
+  // Ensure examBody is an array
+  if (!Array.isArray(migratedExam.examBody)) {
+    migratedExam.examBody = [];
+  }
+
+  return migratedExam;
+};
 
 export const createExamComponent = (overrides = {}) => ({
   ...DEFAULT_COMPONENT_PROPS,

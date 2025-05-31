@@ -2,7 +2,7 @@ import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import configureStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
-import { useFileSystem } from '../useFileSystem.js';
+import { useFileSystem } from '../useFileSystem';
 import * as fileSystemAccess from '../../services/fileSystemAccess';
 import * as examSlice from '../../store/exam/examSlice';
 import examImportService from '../../services/examImportService';
@@ -65,7 +65,8 @@ describe('useFileSystem hook', () => {
   });
 
   it('saveExam: saves exam and updates fileHandle', async () => {
-    store = mockStore({ exam: { examData: TestExam } });
+    const examState = { examData: TestExam };
+    store = mockStore({ exam: examState });
     fileSystemAccess.saveExamToDisk.mockResolvedValue({ name: 'saved.json' });
 
     const { result } = renderWithProvider();
@@ -75,7 +76,7 @@ describe('useFileSystem hook', () => {
       expect(handle.name).toBe('saved.json');
     });
 
-    expect(fileSystemAccess.saveExamToDisk).toHaveBeenCalledWith(TestExam, null);
+    expect(fileSystemAccess.saveExamToDisk).toHaveBeenCalledWith(examState, null);
   });
 
   it('importFromFileInput: calls onError for unsupported format', async () => {
