@@ -234,8 +234,6 @@ function processSequentialParagraphContent(para, documentXml, options = {}, math
             // Use the original XML that was extracted during document parsing
             const originalXml = mathElementWithXml.originalXml || '';
 
-            console.log(`Processing math element ${mathIndex}: ID=${mathId}, XML length=${originalXml.length}`);
-
             // Store original XML in registry
             mathRegistry[mathId] = {
                 type: "omml",
@@ -281,8 +279,6 @@ function processParagraphFromJson(para, options = {}, mathElementsWithXml = [], 
 
             // Use the original XML that was extracted during document parsing
             const originalXml = mathElementWithXml.originalXml || '';
-
-            console.log(`Processing math element (fallback) ${index}: ID=${mathId}, XML length=${originalXml.length}`);
 
             mathRegistry[mathId] = {
                 type: "omml",

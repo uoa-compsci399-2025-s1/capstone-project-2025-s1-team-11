@@ -20,7 +20,6 @@ export function createImageModule() {
                 }
                 return bytes.buffer;
             } catch (error) {
-                console.error("Error in getImage:", error);
                 throw error;
             }
         },
@@ -44,7 +43,7 @@ export function processTemplateData(templateData) {
 
     // Process exam body items
     if (processedData.examBody) {
-        processedData.examBody = processedData.examBody.map(item => {
+        processedData.examBody = processedData.examBody.map((item, itemIndex) => {
             let processedItem = {...item};
 
             // Handle section content with images
@@ -64,6 +63,29 @@ export function processTemplateData(templateData) {
                 processedItem = {...processedItem, ...sectionImages};
             }
 
+            // Handle questions inside sections
+            if (item.isSection && item.questions) {
+                processedItem.questions = item.questions.map(question => {
+                    let processedQuestion = {...question};
+                    if (question.questionElements) {
+                        const questionImages = {};
+                        question.questionElements.forEach((element, index) => {
+                            if (element.type === 'image') {
+                                const imageKey = `questionImage_${question.questionNumber}_${index}`;
+                                questionImages[imageKey] = element.base64;
+                                processedQuestion.questionText = processedQuestion.questionText.replace(
+                                    `{{image_${index}}}`,
+                                    `[[IMAGE::${imageKey}]]`
+                                );
+                            }
+                        });
+                        // This line was missing - we need to add the images to the parent item
+                        Object.assign(processedItem, questionImages);
+                    }
+                    return processedQuestion;
+                });
+            }
+
             // Handle question content with images
             if (item.questionElements) {
                 const questionImages = {};
@@ -71,6 +93,7 @@ export function processTemplateData(templateData) {
                     if (element.type === 'image') {
                         const imageKey = `questionImage_${item.questionNumber}_${index}`;
                         questionImages[imageKey] = element.base64;
+
                         // Replace placeholder in text
                         processedItem.questionText = processedItem.questionText.replace(
                             `{{image_${index}}}`,
@@ -379,8 +402,6 @@ export async function postProcessDocxImages(docxBlob, processedData) {
         return processedDocx;
 
     } catch (error) {
-        console.error('Error post-processing images:', error);
-        console.error('Error stack:', error.stack);
         return docxBlob; // Return original if error
     }
 }

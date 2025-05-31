@@ -73,8 +73,6 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
   // Add global math counter to track across all paragraphs
   const globalCounters = { mathIndex: 0 };
 
-  console.log(`Starting transformation with ${preExtractedMathElements.length} pre-extracted math elements`);
-
   // Extract all blocks from the document body
   const blocks = [
     ...(Array.isArray(body['w:p']) ? body['w:p'] : (body['w:p'] ? [body['w:p']] : [])),
@@ -164,8 +162,6 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
     // Get matching math elements for this paragraph from pre-extracted elements
     const mathElementsWithXml = getMatchingMathElementsForParagraph(para, preExtractedMathElements, globalCounters);
     const containsMath = mathElementsWithXml.length > 0;
-
-    console.log(`Processing paragraph with ${mathElementsWithXml.length} math elements`);
 
     // Get all runs
     const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
@@ -276,8 +272,6 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
   // Flush any remaining question or section
   flushQuestion();
   flushSection();
-
-  console.log(`Transformation complete. Math registry contains ${Object.keys(mathRegistry).length} entries`);
 
   return { dto, mathRegistry };
 };
