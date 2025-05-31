@@ -191,6 +191,10 @@ const QuestionEditorContainer = ({
   const [itemState, setItemState] = useState(item);
   const dispatch = useDispatch();
   
+  useEffect(() => {
+    setItemState(item);
+  }, [item]);
+  
   const handleQuestionContentChange = useCallback((html) => {
     setItemState(prev => ({
       ...prev,
