@@ -12,8 +12,18 @@ const {
 } = require('../../../store/exam/examSlice');
 
 // Mock the components we don't want to fully render
-jest.mock('../QuestionEditor.jsx', () => ({
-  QuestionEditorContainer: jest.fn(() => <div data-testid="question-editor">Mock Question Editor</div>)
+jest.mock('@dnd-kit/core', () => ({
+  DndContext: ({ children }) => <div>{children}</div>,
+  useSensor: jest.fn(),
+  useSensors: jest.fn(),
+  PointerSensor: jest.fn(),
+  KeyboardSensor: jest.fn(),
+  closestCenter: jest.fn()
+}));
+
+jest.mock('@dnd-kit/modifiers', () => ({
+  restrictToVerticalAxis: jest.fn(),
+  restrictToParentElement: jest.fn()
 }));
 
 // Mock the RichTextEditor component
