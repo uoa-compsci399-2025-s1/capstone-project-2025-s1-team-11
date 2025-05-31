@@ -24,9 +24,7 @@ export async function exportExamToText(examData) {
                 textContent += `\n## ${item.sectionTitle || `Section ${item.sectionNumber || idx + 1}`}\n\n`;
 
                 // Add section content as plain text
-                if (item.contentText) {
-                    textContent += `${item.contentText}\n\n`;
-                } else if (item.contentFormatted) {
+                if (item.contentFormatted) {
                     textContent += `${convertHtmlToText(item.contentFormatted)}\n\n`;
                 }
 
@@ -37,9 +35,7 @@ export async function exportExamToText(examData) {
 
                     textContent += `${questionNumber}. ${marks}\n`;
 
-                    if (question.contentText) {
-                        textContent += `${question.contentText}\n\n`;
-                    } else if (question.contentFormatted) {
+                    if (question.contentFormatted) {
                         textContent += `${convertHtmlToText(question.contentFormatted)}\n\n`;
                     }
 
@@ -47,9 +43,7 @@ export async function exportExamToText(examData) {
                     (question.answers || []).forEach((ans, ansIdx) => {
                         const optionLetter = String.fromCharCode(65 + ansIdx);
 
-                        if (ans.contentText) {
-                            textContent += `   ${optionLetter}) ${ans.contentText}\n`;
-                        } else if (ans.contentFormatted) {
+                        if (ans.contentFormatted) {
                             textContent += `   ${optionLetter}) ${convertHtmlToText(ans.contentFormatted)}\n`;
                         } else {
                             textContent += `   ${optionLetter}) \n`;
@@ -64,9 +58,7 @@ export async function exportExamToText(examData) {
 
                 textContent += `${questionNumber}. ${marks}\n`;
 
-                if (item.contentText) {
-                    textContent += `${item.contentText}\n\n`;
-                } else if (item.contentFormatted) {
+                if (item.contentFormatted) {
                     textContent += `${convertHtmlToText(item.contentFormatted)}\n\n`;
                 }
 
@@ -74,9 +66,7 @@ export async function exportExamToText(examData) {
                 (item.answers || []).forEach((ans, ansIdx) => {
                     const optionLetter = String.fromCharCode(65 + ansIdx);
 
-                    if (ans.contentText) {
-                        textContent += `   ${optionLetter}) ${ans.contentText}\n`;
-                    } else if (ans.contentFormatted) {
+                    if (ans.contentFormatted) {
                         textContent += `   ${optionLetter}) ${convertHtmlToText(ans.contentFormatted)}\n`;
                     } else {
                         textContent += `   ${optionLetter}) \n`;

@@ -22,7 +22,7 @@ import { selectTotalMarks } from "../../store/exam/selectors.js";
 import { useSelector } from "react-redux";
 import ExportResults from "./exportResults.jsx";
 
-export const Results = ({resultsData, examData}) => {
+export const Results = ({resultsData, examData, navigationButtons}) => {
   //console.log("Results component received:", resultsData);
   
   // Always define hooks at the top level, never conditionally
@@ -227,7 +227,10 @@ export const Results = ({resultsData, examData}) => {
 
   return (
     <>
-      <Title level={3}>Results & Analytics</Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Title level={2} style={{ margin: 0 }}>Results & Analytics</Title>
+        {navigationButtons}
+      </div>
       <Paragraph>
         This is the results dashboard. It summarises overall performance statistics and provides detailed insights regarding student responses,
         question-level performance and analysis. You can also export your results for further review.

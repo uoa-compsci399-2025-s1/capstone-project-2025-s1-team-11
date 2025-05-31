@@ -74,14 +74,12 @@ export function convertMoodleXmlDTOToJsonWithSections(moodleXmlDTO) {
             examBody.push({
                 type: 'question',
                 contentFormatted: question.questionText,
-                contentText: question.questionText.replace(/<[^>]*>/g, '').trim(), // Strip HTML tags for plain text
                 format: 'HTML',
                 pageBreakAfter: false,
                 marks: marks,
                 answers: question.answers.map((answer) => ({
                     type: 'answer',
                     contentFormatted: answer.text,
-                    contentText: answer.text.replace(/<[^>]*>/g, '').trim(), // Strip HTML tags for plain text
                     format: 'HTML',
                     correct: answer.fraction > 0
                 }))
