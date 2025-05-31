@@ -2,8 +2,6 @@ import React from 'react';
 import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip, Tag } from 'antd';
 import { ProfileOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { htmlToText } from '../../utilities/textUtils';
-import { useDispatch } from 'react-redux';
-import useMessage from '../../hooks/useMessage';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -77,9 +75,6 @@ const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToIt
 });
 
 const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) => {
-  const dispatch = useDispatch();
-  const message = useMessage();
-
   if (!exam || !exam.examBody || !Array.isArray(exam.examBody)) {
     return (
       <Card className="exam-sidebar">
@@ -255,7 +250,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
                     <List
                       size="small"
                       dataSource={item.questions}
-                      renderItem={(question, qIndex) => (
+                      renderItem={(question) => (
                         <QuestionItem
                           question={question}
                           currentItemId={currentItemId}
