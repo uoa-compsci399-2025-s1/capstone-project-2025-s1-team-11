@@ -19,10 +19,6 @@ import {
 import { htmlToText } from "../../utilities/textUtils.js";
 import RichTextEditor from "../editor/RichTextEditor.jsx";
 import { QuestionEditorContainer } from "./QuestionEditor.jsx";
-import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from "@dnd-kit/core";
-import { SortableContext } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 import useMessage from "../../hooks/useMessage.js";
 import { DEFAULT_OPTIONS } from '../../constants/answerOptions';
 
@@ -169,10 +165,6 @@ const ExamDisplay = () => {
   });
 
   const [currentEditorState, setCurrentEditorState] = useState(null);
-
-  const pointerSensor = useSensor(PointerSensor);
-  const keyboardSensor = useSensor(KeyboardSensor);
-  const sensors = useSensors(pointerSensor, keyboardSensor);
 
   const handleMove = useCallback((direction, examBodyIndex, questionsIndex = null) => {
     if (examBodyIndex === undefined) return;
@@ -440,7 +432,7 @@ const ExamDisplay = () => {
           );
         }
         return record.sectionNumber ? `Section ${record.sectionNumber}` : (
-          <Text type="secondary" italic>Standalone</Text>
+          <Text type="secondary" style={{ fontStyle: 'italic' }}>Standalone</Text>
         );
       },
     },
@@ -515,50 +507,14 @@ const ExamDisplay = () => {
         )}
       </div>
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        dropAnimation={{ duration: 250, easing: 'ease' }}
-        modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-        onDragStart={() => {}}
-        onDragEnd={({ active, over }) => {
-          if (!over || active.id === over.id) return;
-          
-          const activeItem = tableData.find(i => i.id === active.id);
-          const overItem = tableData.find(i => i.id === over.id);
-          
-          if (!activeItem || !overItem) return;
-          
-          if (activeItem.type === "section") {
-            dispatch(moveSection({
-              sourceIndex: activeItem.examBodyIndex,
-              destIndex: overItem.examBodyIndex
-            }));
-          } else {
-            dispatch(moveQuestion({
-              source: { 
-                examBodyIndex: activeItem.examBodyIndex,
-                questionsIndex: activeItem.questionsIndex
-              },
-              destination: { 
-                examBodyIndex: overItem.examBodyIndex,
-                questionsIndex: overItem.questionsIndex
-              }
-            }));
-          }
-          
-          message.success("Reordered via drag-and-drop");
-        }}
-      >
-        <Table
-          key="exam-table"
-          rowKey="id" 
-          columns={columns}
-          dataSource={memoizedTableData}
-          pagination={{ pageSize: 10 }}
-          scroll={{ x: "max-content" }}
-        />
-      </DndContext>
+      <Table
+        key="exam-table"
+        rowKey="id" 
+        columns={columns}
+        dataSource={memoizedTableData}
+        pagination={{ pageSize: 10 }}
+        scroll={{ x: "max-content" }}
+      />
 
       {/* Modal with extracted editor component */}
       <Modal
@@ -567,7 +523,6 @@ const ExamDisplay = () => {
         onCancel={resetModalState}
         onOk={modalState.isDelete ? executeDeleteItem : handleSaveEdit}
         width={800}
-        destroyOnHidden={true}
       >
         {modalState.isDelete ? (
           <Paragraph>Are you sure you want to delete this item?</Paragraph>
