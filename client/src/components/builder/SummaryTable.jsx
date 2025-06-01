@@ -1,7 +1,7 @@
 //BM-FIX
 
 import React, { useState, useMemo } from 'react';
-import { Table, InputNumber, Checkbox, Button, Typography, Tag, Space, Tooltip } from 'antd';
+import {Table, InputNumber, Button, Typography, Tag, Space, Tooltip, Switch} from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectExamData } from '../../store/exam/selectors';
 import { updateQuestion, removeQuestion } from '../../store/exam/examSlice';
@@ -204,13 +204,14 @@ const SummaryTable = () => {
         <span>Total Questions: {processedQuestions.length}</span>
         <span>Questions with Flags: {questionsWithFlags}</span>
       </Paragraph>
-      <Checkbox
-        checked={showOnlyFlagged}
-        onChange={e => setShowOnlyFlagged(e.target.checked)}
-        style={{ marginBottom: 16 }}
-      >
-        Show only flagged
-      </Checkbox>
+      <label style={{ display: 'inline-flex', alignItems: 'center', marginBottom: 16 }}>
+        <Switch
+          checked={showOnlyFlagged}
+          onChange={checked => setShowOnlyFlagged(checked)}
+        />
+        <span style={{ marginLeft: 8 }}>Show only flagged</span>
+      </label>
+
       <div style={{ marginBottom: 12 }}>
         <Button danger onClick={handleDeleteSelected} disabled={selectedRowKeys.length === 0}>
           Delete Question(s)
