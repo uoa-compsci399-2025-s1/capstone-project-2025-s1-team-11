@@ -6,16 +6,19 @@
  */
 
 import { useDispatch, useSelector } from 'react-redux';
-import {initialiseExamState, clearExamState, setFileName} from '../store/exam/examSlice';
+import {initialiseExamState, clearExamState, setFileName, setCoverPage} from '../store/exam/examSlice';
 import { loadExamFromFile, saveExamToDisk } from '../services/fileSystemAccess.js';
 import examImportService  from '../services/examImportService.js';
 import { importDTOToState } from '../services/examImportService.js';
 import { setTeleformData } from '../store/exam/teleformSlice';
 import { useState } from 'react'; // for local fileHandle if not stored in Redux
+import { selectExamData, selectTeleformData, selectCoverPage } from '../store/exam/selectors';
 
 export function useFileSystem() {
     const dispatch = useDispatch();
-    const examState = useSelector(state => state.exam);
+    const examData = useSelector(selectExamData);
+    const coverPage = useSelector(selectCoverPage);
+    const teleformData = useSelector(selectTeleformData);
     const [fileHandle, setFileHandle] = useState(null);
   
     // Opens the exam file and updates the global state
@@ -23,8 +26,9 @@ export function useFileSystem() {
       const result = await loadExamFromFile();
       if (result) {
         // Initialize exam state
-        dispatch(initialiseExamState(result.exam));
+        dispatch(initialiseExamState(result.examData));
         // Initialize teleform data if it exists in the loaded data
+        dispatch(setCoverPage(result.coverPage));
         dispatch(setTeleformData(result.teleformData || ''));
         setFileHandle(result.fileHandle);
         dispatch(setFileName(result.fileHandle?.name || null));
@@ -32,8 +36,8 @@ export function useFileSystem() {
       return result;
     };
 
-    const createExam = async (exam) => {
-        dispatch(initialiseExamState(exam));
+    const createExam = async (examData) => {
+        dispatch(initialiseExamState(examData));
         dispatch(setTeleformData('')); // Clear any existing teleform data
         setFileHandle(null);
         dispatch(setFileName(null));
@@ -41,8 +45,9 @@ export function useFileSystem() {
 
     // Saves the exam and updates the file handle in the global state
     const saveExam = async () => {
-        if (!examState.examData) return null;
-        const updatedHandle = await saveExamToDisk(examState, fileHandle);
+        if (!examData) return null;
+
+        const updatedHandle = await saveExamToDisk(examData, coverPage, teleformData, fileHandle);
         if (updatedHandle) {
             setFileHandle(updatedHandle);
             dispatch(setFileName(updatedHandle?.name || null));
@@ -96,7 +101,7 @@ export function useFileSystem() {
     };
 
     return { 
-        exam: examState.examData, 
+        exam: examData, 
         fileHandle, 
         setFileHandle,
         openExam, 

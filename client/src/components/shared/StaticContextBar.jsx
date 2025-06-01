@@ -292,7 +292,7 @@ const StaticContextBar = ({
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exam, teleformData, autoSaveEnabled]);
+  }, [exam, teleformData, coverPage, autoSaveEnabled]);
 
   // Add keyboard shortcuts
   useKeyboardShortcuts({

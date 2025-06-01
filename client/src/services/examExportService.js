@@ -232,10 +232,10 @@ export class ExamExportService {
      * Export and save all versions of an exam in one operation
      *
      * @param {Object} examData - Exam data from Redux store
-     * @param {Blob} coverPageBlob - The cover page as a DOCX blob
+     * @param {Object} coverPageData - The cover page data with content as ArrayBuffer
      * @returns {Promise<{success: boolean, error?: string, warnings?: string[]}>}
      */
-    static async exportAndSaveVersionedExam(examData, coverPageBlob) {
+    static async exportAndSaveVersionedExam(examData, coverPageData) {
         try {
             // Check if exam is ready for versioned export
             const { warnings } = this.checkExamVersionsReady(examData);
@@ -245,6 +245,30 @@ export class ExamExportService {
                 // For safety, check inside the export function too
                 console.warn("Export warnings:", warnings);
             }
+
+            // Convert cover page data to Blob if needed
+            let coverPageBlob;
+            if (coverPageData.content && typeof coverPageData.content === 'string') {
+                // New format: convert base64 string back to Blob
+                try {
+                    const binaryString = atob(coverPageData.content);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    coverPageBlob = new Blob([bytes], { 
+                        type: coverPageData.type || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+                    });
+                } catch (error) {
+                    throw new Error('Failed to decode cover page content: ' + error.message);
+                }
+            } else if (coverPageData instanceof Blob || coverPageData instanceof File) {
+                // Legacy format: already a Blob/File
+                coverPageBlob = coverPageData;
+            } else {
+                throw new Error('Invalid cover page format');
+            }
+
 
             const versionedBlobs = await this.exportVersionedDocx(examData, coverPageBlob);
             this.saveVersionedFiles(versionedBlobs, examData);
