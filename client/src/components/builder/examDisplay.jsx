@@ -107,6 +107,7 @@ const ExamItemEditor = React.memo(({ modalState, onSave, exam }) => {
   if (modalState.type === "question") {
     return (
       <QuestionEditorContainer 
+        key={`question-${modalState.examBodyIndex}-${modalState.questionsIndex || 'standalone'}-${itemState?.id}`}
         item={itemState}
         onSave={onSave}
         examBodyIndex={modalState.examBodyIndex}
@@ -213,6 +214,7 @@ const ExamDisplay = () => {
       questionsIndex: null,
       isDelete: false,
     });
+    setCurrentEditorState(null);
   }, []);
 
   const handleEdit = useCallback((item) => {
@@ -233,10 +235,13 @@ const ExamDisplay = () => {
       return;
     }
 
+    // Create a deep copy to prevent any reference issues
+    const itemCopy = JSON.parse(JSON.stringify(actualItem));
+
     setModalState({
       visible: true,
       type: item.type,
-      item: actualItem,
+      item: itemCopy,
       examBodyIndex: item.examBodyIndex,
       questionsIndex: item.questionsIndex,
       isDelete: false,
@@ -532,6 +537,7 @@ const ExamDisplay = () => {
           <Paragraph>Are you sure you want to delete this item?</Paragraph>
         ) : (
           <ExamItemEditor
+            key={`${modalState.type}-${modalState.examBodyIndex}-${modalState.questionsIndex || 'standalone'}`}
             modalState={modalState}
             onSave={setCurrentEditorState}
             onCancel={resetModalState}
