@@ -19,7 +19,6 @@ export const createExam = (overrides = {}) => ({
   year: '',
   versions: ['00000001', '00000002', '00000003', '00000004'], // Default versions
   teleformOptions: ['a', 'b', 'c', 'd', 'e'], // Default options
-  coverPage: null,
   examBody: [],
   ...overrides,
 });

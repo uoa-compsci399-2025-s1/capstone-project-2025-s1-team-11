@@ -225,7 +225,8 @@ function formatQuestionWithVersion(question, version, versionList, optionLabels,
     if (question.answers && question.answers.length > 0) {
         // Create a temporary array to hold answers in their new positions
         const tempAnswers = new Array(question.answers.length);
-
+        //console.log("optionLabels", optionLabels);
+        //console.log("shuffleMap", shuffleMap);
         // Place each answer in its new position in the temp array
         shuffleMap.forEach((newIndex, originalIndex) => {
             const answer = question.answers[originalIndex];

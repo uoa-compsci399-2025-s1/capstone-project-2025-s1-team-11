@@ -6,8 +6,6 @@
  */
 
 import { needsMigration, migrateExam } from '../store/exam/examUtils';
-import { store } from '../store/store';
-import { selectTeleformData } from '../store/exam/selectors';
 
 /**
  * Opens a file picker and reads an exam from a JSON file.
@@ -31,29 +29,19 @@ export async function loadExamFromFile() {
       let savedData = JSON.parse(text);
       
       // Handle different save formats and extract data
-      let exam, teleformData;
+      let examData, teleformData, coverPage;
       
-      if (savedData.exam && savedData.teleform) {
-        // New format
-        exam = savedData.exam.examData;
-        teleformData = savedData.teleform.teleformData;
-      } else if (savedData.examData && savedData.teleformData) {
-        // Legacy format
-        exam = savedData.examData;
-        teleformData = savedData.teleformData;
-      } else {
-        // Old format or unknown
-        exam = savedData;
-        teleformData = '';
-      }
+        examData = savedData.exam.examData || null;
+        coverPage = savedData.exam.coverPage || null;
+        teleformData = savedData.teleform.teleformData || null;
 
       // Check if exam needs migration
-      if (needsMigration(exam)) {
+      if (needsMigration(examData)) {
         console.log('Migrating exam from older schema version...');
-        exam = migrateExam(exam);
+        examData = migrateExam(examData);
       }
   
-      return { exam, fileHandle, teleformData };
+      return { examData, teleformData, coverPage, fileHandle };
     } catch (err) {
       console.error("File open cancelled or failed:", err);
       return null;
@@ -87,7 +75,7 @@ export async function importExamFile() {
 /**
  * Saves the given exam to the file represented by fileHandle.
  */
-export async function saveExamToDisk(examState, fileHandle = null) {
+export async function saveExamToDisk(examData=null, coverPage=null, teleformData=null, fileHandle = null) {
     // If no file handle exists, prompt the user for a save location.
     try {
         if (!fileHandle) {
@@ -103,17 +91,16 @@ export async function saveExamToDisk(examState, fileHandle = null) {
                 ],
             });
         }
-        
-        // Get teleform data from state
-        const teleformData = selectTeleformData(store.getState());
 
         // Create a combined object with both exam and teleform data
         const saveData = {
             exam: {
-                examData: examState.examData
+                examData: examData || null,
+                coverPage: coverPage || null
             },
+            
             teleform: {
-                teleformData: teleformData || ''
+                teleformData: teleformData || null
             }
         };
         

@@ -214,5 +214,7 @@ export const selectCorrectAnswerIndices = createSelector(
   }
 );
 
-// Teleform data selectors
-export const selectTeleformData = (state) => state.teleform.teleformData;
+// Other simple selectors
+export const selectTeleformData = (state) => state.teleform?.teleformData || '';
+export const selectCoverPage = (state) => state.exam?.coverPage || null;
+export const selectFileName = (state) => state.exam?.fileName || null;
