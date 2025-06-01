@@ -22,7 +22,7 @@ import { selectTotalMarks } from "../../store/exam/selectors.js";
 import { useSelector } from "react-redux";
 import ExportResults from "./exportResults.jsx";
 
-export const Results = ({resultsData, examData}) => {
+export const Results = ({resultsData, examData, navigationButtons}) => {
   //console.log("Results component received:", resultsData);
   
   // Always define hooks at the top level, never conditionally
@@ -122,6 +122,27 @@ export const Results = ({resultsData, examData}) => {
                 precision={1}
               />
             </Col>
+            <Col span={6}>
+              <Statistic 
+                title="Min Marks" 
+                value={statistics?.summary?.lowestRawMark || 0}
+                suffix=" marks"
+              />
+            </Col>
+            <Col span={6}>
+              <Statistic 
+                title="Max Marks" 
+                value={statistics?.summary?.highestRawMark || 0}
+                suffix=" marks"
+              />
+            </Col>
+            <Col span={6}>
+              <Statistic 
+                title="Total Marks" 
+                value={statistics?.summary?.totalMarksAvailable || 0}
+                suffix=" marks"
+              />
+            </Col>
           </Row>
 
           <Divider />
@@ -155,7 +176,9 @@ export const Results = ({resultsData, examData}) => {
         <QuestionStats 
           results={{ 
             all: resultsData,
-            questionStats
+            questionStats,
+            versions: statistics?.versions || {},
+            versionList: statistics?.versionList || []
           }}
           examData={examData}
         />
@@ -166,21 +189,42 @@ export const Results = ({resultsData, examData}) => {
       label: 'Student Reports',
       children: (
         <Space direction="vertical" style={{ width: '100%' }}>
-          <Select
-            style={{ width: 300 }}
-            placeholder="Select a student"
-            value={selectedStudentId}
-            onChange={(value) => {
-              //console.log("Selecting student with ID:", value);
-              setSelectedStudentId(value);
-            }}
-          >
-            {resultsData.map((student) => (
-              <Select.Option key={student.studentId} value={student.studentId}>
-                {student.firstName} {student.lastName} ({student.studentId})
-              </Select.Option>
-            ))}
-          </Select>
+          <div>
+            <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+              Search by name or student ID:
+            </Typography.Text>
+            <Select
+              style={{ width: 400 }}
+              placeholder="Search or select a student"
+              value={selectedStudentId}
+              showSearch
+              optionFilterProp="label"
+              filterOption={(input, option) => {
+                // Get the student ID from the option
+                const studentId = option.value.toString();
+                const label = option.label.toLowerCase();
+                const searchTerm = input.toLowerCase();
+                
+                // Check if search directly matches the student ID
+                if (studentId.includes(searchTerm)) {
+                  return true;
+                }
+                
+                // Fall back to searching in the full label
+                return label.includes(searchTerm);
+              }}
+              notFoundContent="No students found"
+              allowClear
+              onChange={(value) => {
+                //console.log("Selecting student with ID:", value);
+                setSelectedStudentId(value);
+              }}
+              options={resultsData.map((student) => ({
+                value: student.studentId,
+                label: `${student.firstName} ${student.lastName} (${student.studentId}) - ${student.totalMarks !== undefined ? `${student.totalMarks}/${student.maxMarks}` : "N/A"}`
+              }))}
+            />
+          </div>
 
           {selectedStudent ? (
             <StudentReport 
@@ -227,7 +271,10 @@ export const Results = ({resultsData, examData}) => {
 
   return (
     <>
-      <Title level={3}>Results & Analytics</Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Title level={2} style={{ margin: 0 }}>Results & Analytics</Title>
+        {navigationButtons}
+      </div>
       <Paragraph>
         This is the results dashboard. It summarises overall performance statistics and provides detailed insights regarding student responses,
         question-level performance and analysis. You can also export your results for further review.

@@ -109,7 +109,7 @@ export const importDTOToState = (examDTO, mathRegistry = null) => async (dispatc
     // This initialises an exam if somehow an import is attempted before an exam is loaded/created. Typically 
     // import before exam load/creation would be disabled.
     if (!examData) {
-      const message = "No existing exam found. Default properties will be loaded. Change in exam settings if required and re-import.";
+      const message = "No existing exam found. Default properties will be loaded. Change in exam settings if required.";
       //console.log(message);
       //console.log(`examDTO: ${JSON.stringify(examDTO.examTitle)}`);
       importMessages.push(message);
@@ -124,7 +124,9 @@ export const importDTOToState = (examDTO, mathRegistry = null) => async (dispatc
       //console.log(`examData: ${JSON.stringify(examData)}`);
     } else {
       Object.keys(examDTO).forEach(key => {
-        if (key !== 'examBody' && examData[key] && examDTO[key] && examData[key] != examDTO[key]) {
+        if (key !== 'examBody' && examDTO[key] && 
+            examDTO[key] !== null && examDTO[key] !== undefined && examDTO[key] !== '' && 
+            (!examData[key] || examData[key] != examDTO[key])) {
           dispatch(updateExamField({
             field: key,
             value: examDTO[key]

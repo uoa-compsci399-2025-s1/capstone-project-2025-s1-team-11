@@ -1,5 +1,6 @@
 {
   "type": "exam",
+  "schemaVersion": "1.0.0",
   "examTitle": "Test",
   "courseCode": "101",
   "courseName": "Angela Test",
@@ -25,7 +26,6 @@
       "contentFormatted": "What is my name?",
       "format": "HTML",
       "id": "id-1745890408860-1",
-      "contentText": "What is my name?",
       "answerShuffleMap": [],
       "pageBreakAfter": false,
       "questionNumber": 1,
@@ -34,8 +34,7 @@
         {
           "type": "answer",
           "contentFormatted": "William",
-          "format": "HTML",
-          "contentText": "William",
+          "format": "HTML", 
           "pageBreakAfter": false,
           "correct": true,
           "fixedPosition": null
@@ -44,7 +43,6 @@
           "type": "answer",
           "contentFormatted": "Alice",
           "format": "HTML",
-          "contentText": "Alice",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -53,7 +51,6 @@
           "type": "answer",
           "contentFormatted": "Bob",
           "format": "HTML",
-          "contentText": "Bob",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -62,7 +59,6 @@
           "type": "answer",
           "contentFormatted": "Rob",
           "format": "HTML",
-          "contentText": "Rob",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -71,7 +67,6 @@
           "type": "answer",
           "contentFormatted": "Option E",
           "format": "HTML",
-          "contentText": "Option E",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -113,7 +108,6 @@
       "contentFormatted": "Capital of New Zealand?",
       "format": "HTML",
       "id": "id-1745890409600-2",
-      "contentText": "Capital of New Zealand?",
       "answerShuffleMap": [],
       "pageBreakAfter": false,
       "questionNumber": 2,
@@ -123,7 +117,6 @@
           "type": "answer",
           "contentFormatted": "Auckland",
           "format": "HTML",
-          "contentText": "Auckland",
           "pageBreakAfter": false,
           "correct": true,
           "fixedPosition": null
@@ -132,7 +125,6 @@
           "type": "answer",
           "contentFormatted": "Christchurch",
           "format": "HTML",
-          "contentText": "Christchurch",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -141,7 +133,6 @@
           "type": "answer",
           "contentFormatted": "Otago",
           "format": "HTML",
-          "contentText": "Otago",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -150,7 +141,6 @@
           "type": "answer",
           "contentFormatted": "Hamilton",
           "format": "HTML",
-          "contentText": "Hamilton",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -159,7 +149,6 @@
           "type": "answer",
           "contentFormatted": "Option E",
           "format": "HTML",
-          "contentText": "Option E",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -200,8 +189,7 @@
       "type": "question",
       "contentFormatted": "New Question",
       "format": "HTML",
-      "id": "id-1745890410595-3",
-      "contentText": "New Question",
+      "id": "id-1745890410595-3", 
       "answerShuffleMap": [],
       "pageBreakAfter": false,
       "questionNumber": 3,
@@ -211,7 +199,6 @@
           "type": "answer",
           "contentFormatted": "Option A",
           "format": "HTML",
-          "contentText": "Option A",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -220,7 +207,6 @@
           "type": "answer",
           "contentFormatted": "Option B",
           "format": "HTML",
-          "contentText": "Option B",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -229,7 +215,6 @@
           "type": "answer",
           "contentFormatted": "Option C",
           "format": "HTML",
-          "contentText": "Option C",
           "pageBreakAfter": false,
           "correct": true,
           "fixedPosition": null
@@ -238,7 +223,6 @@
           "type": "answer",
           "contentFormatted": "Option D",
           "format": "HTML",
-          "contentText": "Option D",
           "pageBreakAfter": false,
           "correct": true,
           "fixedPosition": null
@@ -247,7 +231,6 @@
           "type": "answer",
           "contentFormatted": "Option E",
           "format": "HTML",
-          "contentText": "Option E",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -289,7 +272,6 @@
       "contentFormatted": "New Question",
       "format": "HTML",
       "id": "id-1745890412644-4",
-      "contentText": "New Question",
       "answerShuffleMap": [],
       "pageBreakAfter": false,
       "questionNumber": 4,
@@ -299,7 +281,6 @@
           "type": "answer",
           "contentFormatted": "Option A",
           "format": "HTML",
-          "contentText": "Option A",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -308,7 +289,6 @@
           "type": "answer",
           "contentFormatted": "Option B",
           "format": "HTML",
-          "contentText": "Option B",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -317,7 +297,6 @@
           "type": "answer",
           "contentFormatted": "Option C",
           "format": "HTML",
-          "contentText": "Option C",
           "pageBreakAfter": false,
           "correct": true,
           "fixedPosition": null
@@ -326,7 +305,6 @@
           "type": "answer",
           "contentFormatted": "Option D",
           "format": "HTML",
-          "contentText": "Option D",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -335,7 +313,6 @@
           "type": "answer",
           "contentFormatted": "Option E",
           "format": "HTML",
-          "contentText": "Option E",
           "pageBreakAfter": false,
           "correct": false,
           "fixedPosition": null
@@ -376,7 +353,6 @@
       "type": "section",
       "contentFormatted": "This sectin has a nested question",
       "format": "HTML",
-      "contentText": "This section has a nested question",
       "title": "Nest test Sect",
       "pageBreakAfter": false,
       "sectionTitle": "",
@@ -387,7 +363,6 @@
           "contentFormatted": "New Question",
           "format": "HTML",
           "id": "id-1745890412644-4",
-          "contentText": "New Question",
           "answerShuffleMap": [],
           "pageBreakAfter": false,
           "questionNumber": 4,
@@ -397,7 +372,6 @@
               "type": "answer",
               "contentFormatted": "Option A",
               "format": "HTML",
-              "contentText": "Option A",
               "pageBreakAfter": false,
               "correct": false,
               "fixedPosition": null
@@ -406,7 +380,6 @@
               "type": "answer",
               "contentFormatted": "Option B",
               "format": "HTML",
-              "contentText": "Option B",
               "pageBreakAfter": false,
               "correct": false,
               "fixedPosition": null
@@ -415,7 +388,6 @@
               "type": "answer",
               "contentFormatted": "Option C",
               "format": "HTML",
-              "contentText": "Option C",
               "pageBreakAfter": false,
               "correct": true,
               "fixedPosition": null
@@ -424,7 +396,6 @@
               "type": "answer",
               "contentFormatted": "Option D",
               "format": "HTML",
-              "contentText": "Option D",
               "pageBreakAfter": false,
               "correct": false,
               "fixedPosition": null
@@ -433,7 +404,6 @@
               "type": "answer",
               "contentFormatted": "Option E",
               "format": "HTML",
-              "contentText": "Option E",
               "pageBreakAfter": false,
               "correct": false,
               "fixedPosition": null

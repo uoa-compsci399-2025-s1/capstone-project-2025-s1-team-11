@@ -1,49 +1,61 @@
 import React, { useState } from "react";
-import { Button, Card, Checkbox, message, Radio } from "antd";
+import {Button, Card, Checkbox, Divider, message, Radio, Space} from "antd";
 import { generateResultOutput } from "../../utilities/marker/outputFormatter.js";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+import {DownloadOutlined} from "@ant-design/icons";
 
 const ExportResults = ({ resultsData, currentExamData }) => {
   const [exportFormat, setExportFormat] = useState("text");
   const [includeFeedback, setIncludeFeedback] = useState(true);
+  const courseCode = currentExamData?.courseCode || "exam";
 
-  const handleExportResults = () => {
+  const handleExportStudentFiles = async () => {
     if (!Array.isArray(resultsData) || resultsData.length === 0) {
       message.error("No valid results available to export.");
       return;
     }
 
-    const courseCode = currentExamData?.courseCode || "exam";
-
-    function createFile(filename, content, type){
-      const blob = new Blob([content], { type });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
     if (exportFormat === "json") {
-      const filename = `${courseCode}_results.json`;
+      const filename = `${courseCode}_student_results.json`;
       const content = JSON.stringify(resultsData, null, 2);
-      const type = "application/json";
-
-      createFile(filename, content, type);
-
+      const blob = new Blob([content], { type: "application/json" });
+      saveAs(blob, filename);
       message.success("Results exported successfully.");
     } else {
-      // Export each student's results as a separate .txt file using student ID as filename
+      // Create a zip of all individual .txt files
+      const zip = new JSZip();
+
+      let missingIdCount = 0;
       resultsData.forEach(res => {
         const content = generateResultOutput(res, currentExamData, includeFeedback);
-        const type = "text/plain";
-        const filename = `${courseCode}_${res.studentId || "student"}.txt`;
-
-        createFile(filename, content, type);
+        const filename = `${res.studentId || "MissingID" + ++missingIdCount}.txt`;
+        zip.file(filename, content);
       });
 
-      message.success("Individual student results exported.");
+      try {
+        const blob = await zip.generateAsync({ type: "blob" });
+        saveAs(blob, `${courseCode}_student_results.zip`);
+        message.success("Results exported as ZIP file.");
+      } catch (error) {
+        console.error("Zip generation failed:", error);
+        message.error("Failed to generate ZIP file.");
+      }
     }
+  };
+
+  const handleExportMarksCsv = () => {
+    if (!Array.isArray(resultsData) || resultsData.length === 0) {
+      message.error("No valid results available to export.");
+      return;
+    }
+
+    const header = "AUID,Total Marks";
+    const rows = resultsData.map(res => `${res.studentId},${res.totalMarks}`);
+    const content = [header, ...rows].join("\n");
+    const blob = new Blob([content], { type: "text/csv" });
+    saveAs(blob, `${courseCode}_marks.csv`);
+    message.success("Marks CSV exported.");
   };
 
   return (
@@ -66,9 +78,15 @@ const ExportResults = ({ resultsData, currentExamData }) => {
         Include Results Feedback
       </Checkbox>
 
-      <Button type="primary" onClick={handleExportResults}>
-        Export Student Results
-      </Button>
+      <Space>
+        <Button type="primary" onClick={handleExportStudentFiles} icon={<DownloadOutlined />}>
+          Export Student Results
+        </Button>
+        <Divider type="vertical" />
+        <Button type="primary" onClick={handleExportMarksCsv} icon={<DownloadOutlined />}>
+          Export Mark Summary (CSV)
+        </Button>
+      </Space>
     </Card>
   );
 };

@@ -1,59 +1,77 @@
 import React from 'react';
 import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip, Tag } from 'antd';
-import { ProfileOutlined, FileTextOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
-import { htmlToText } from '../utilities/textUtils';
+import { ProfileOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
+import { htmlToText } from '../../utilities/textUtils';
 
 const { Title, Text, Paragraph } = Typography;
 
-// Memoized QuestionItem component to prevent unnecessary re-renders
-const QuestionItem = React.memo(({ question, qIndex, currentItemId, onNavigateToItem }) => {
-  return (
-    <List.Item
-      key={question.id}
-      className={currentItemId === question.id ? 'highlighted-item' : ''}
-      onClick={() => onNavigateToItem(question.id, 'question')}
-      style={{ cursor: 'pointer' }}
-    >
-      <div style={{ width: '100%' }}>
-        <Paragraph
-          ellipsis={{
-            rows: 1,
-            tooltip: question.text
-          }}
-          style={{ margin: 0, maxWidth: '90%' }}
-        >
-          Q{qIndex + 1}: {question.text}
-        </Paragraph>
-      </div>
-      <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
-    </List.Item>
-  );
+const QuestionItem = React.memo(({ question, currentItemId, onNavigateToItem }) => {
+  try {
+    const textContent = htmlToText(question.text);
+    return (
+      <List.Item
+        key={question.id}
+        className={currentItemId === question.id ? 'highlighted-item' : ''}
+        onClick={() => onNavigateToItem(question.id, 'question')}
+        style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+      >
+        <Tooltip title={textContent} placement="topLeft" mouseEnterDelay={0.2}>
+          <div
+            style={{ 
+              margin: 0, 
+              flex: 1,
+              minWidth: 0, 
+              marginRight: '8px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            Q{question.questionNumber}: {textContent}
+          </div>
+        </Tooltip>
+        <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
+      </List.Item>
+    );
+  } catch (error) {
+    console.error('Error rendering QuestionItem:', error);
+    console.error('Question causing error:', question);
+    return <List.Item>Error rendering question</List.Item>;
+  }
 });
 
-// Memoized standalone question item component
 const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToItem }) => {
-  return (
-    <List.Item
-      className={currentItemId === item.id ? 'highlighted-item' : ''}
-      onClick={() => onNavigateToItem(item.id, 'question')}
-      style={{ cursor: 'pointer', padding: '8px' }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-        <div style={{ flex: 1, marginRight: '8px' }}>
-          <Paragraph
-            ellipsis={{
-              rows: 1,
-              tooltip: item.text
+  try {
+    const textContent = htmlToText(item.text);
+    return (
+      <List.Item
+        className={currentItemId === item.id ? 'highlighted-item' : ''}
+        onClick={() => onNavigateToItem(item.id, 'question')}
+        style={{ cursor: 'pointer', padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+      >
+        <Tooltip title={textContent} placement="topLeft" mouseEnterDelay={0.2}>
+          <div
+            style={{ 
+              margin: 0,
+              flex: 1,
+              minWidth: 0, 
+              marginRight: '8px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
             }}
-            style={{ margin: 0 }}
           >
-            <FileTextOutlined /> {item.text}
-          </Paragraph>
-        </div>
+            Q{item.questionNumber}: {textContent}
+          </div>
+        </Tooltip>
         <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
-      </div>
-    </List.Item>
-  );
+      </List.Item>
+    );
+  } catch (error) {
+    console.error('Error rendering StandaloneQuestionItem:', error);
+    console.error('Item causing error:', item);
+    return <List.Item>Error rendering question</List.Item>;
+  }
 });
 
 const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) => {
@@ -74,7 +92,6 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
     totalMarks: 0
   };
 
-  // Process exam structure
   const examStructure = [];
 
   exam.examBody.forEach((item, index) => {
@@ -100,8 +117,9 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
         questions: item.questions?.map((q, qIndex) => ({
           id: q.id,
           type: 'question',
-          text: htmlToText(q.contentFormatted || q.contentText || ''),
+          text: htmlToText(q.contentFormatted || ''),
           marks: q.marks || 1,
+          questionNumber: q.questionNumber,
           sectionIndex: index,
           questionIndex: qIndex
         })) || []
@@ -115,52 +133,13 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
       examStructure.push({
         id: item.id,
         type: 'question',
-        text: htmlToText(item.contentFormatted || item.contentText || ''),
+        text: htmlToText(item.contentFormatted || ''),
         marks: item.marks || 1,
+        questionNumber: item.questionNumber,
         index
       });
     }
   });
-
-  // Convert structure to Collapse items
-  const collapseItems = examStructure
-    .filter(item => item.type === 'section')
-    .map((section, index) => ({
-      key: String(index),
-      label: (
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-          <span>
-            <ProfileOutlined /> {section.sectionNumber || section.sectionTitle}
-          </span>
-          <Badge count={section.questions.length} style={{ backgroundColor: '#52c41a' }} />
-        </div>
-      ),
-      extra: (
-        <Button
-          type="text"
-          size="small"
-          icon={<RightCircleOutlined />}
-          onClick={(e) => {
-            e.stopPropagation();
-            onNavigateToItem(section.id, 'section');
-          }}
-        />
-      ),
-      children: (
-        <List
-          size="small"
-          dataSource={section.questions}
-          renderItem={(question, qIndex) => (
-            <QuestionItem
-              question={question}
-              qIndex={qIndex}
-              currentItemId={currentItemId}
-              onNavigateToItem={onNavigateToItem}
-            />
-          )}
-        />
-      )
-    }));
 
   return (
     <Card className="exam-sidebar" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
@@ -238,17 +217,66 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
       <Divider style={{ margin: '12px 0' }} />
 
       <Paragraph strong style={{ fontSize: '16px', marginBottom: 8 }}>Structure</Paragraph>
-      <Collapse defaultActiveKey={['0']} ghost items={collapseItems} />
-
-      {/* Standalone questions (not in a section) */}
-      {examStructure.filter(item => item.type === 'question').map((item, index) => (
-        <StandaloneQuestionItem
-          key={index}
-          item={item}
-          currentItemId={currentItemId}
-          onNavigateToItem={onNavigateToItem}
-        />
-      ))}
+      
+      {/* Render questions/sections to be in the same order as in examBody */}
+      {examStructure.map((item, index) => {
+        if (item.type === 'section') {
+          return (
+            <div key={item.id} style={{ marginBottom: '8px' }}>
+              <Collapse
+                ghost
+                items={[{
+                  key: String(index),
+                  label: (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                      <span>
+                        <ProfileOutlined /> {item.sectionNumber || item.sectionTitle}
+                      </span>
+                      <Badge count={item.questions.length} style={{ backgroundColor: '#52c41a' }} />
+                    </div>
+                  ),
+                  extra: (
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<RightCircleOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onNavigateToItem(item.id, 'section');
+                      }}
+                    />
+                  ),
+                  children: (
+                    <List
+                      size="small"
+                      dataSource={item.questions}
+                      renderItem={(question) => (
+                        <QuestionItem
+                          question={question}
+                          currentItemId={currentItemId}
+                          onNavigateToItem={onNavigateToItem}
+                        />
+                      )}
+                    />
+                  )
+                }]}
+                defaultActiveKey={[String(index)]}
+              />
+            </div>
+          );
+        } else if (item.type === 'question') {
+          return (
+            <div key={item.id} style={{ marginBottom: '4px' }}>
+              <StandaloneQuestionItem
+                item={item}
+                currentItemId={currentItemId}
+                onNavigateToItem={onNavigateToItem}
+              />
+            </div>
+          );
+        }
+        return null;
+      })}
 
       <Divider style={{ margin: '12px 0' }} />
 
@@ -260,11 +288,17 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
           renderItem={(section) => (
             <List.Item>
               <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                <Tooltip title={section.sectionTitle}>
-                  <Text style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {section.sectionNumber || section.sectionTitle}
-                  </Text>
-                </Tooltip>
+                <div 
+                  title={section.sectionTitle}
+                  style={{ 
+                    width: '100%', 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis', 
+                    whiteSpace: 'nowrap' 
+                  }}
+                >
+                  {section.sectionNumber || section.sectionTitle}
+                </div>
                 <div>
                   <Badge count={section.count} style={{ backgroundColor: '#52c41a', marginRight: '8px' }} />
                   <Badge count={`${section.marks}m`} style={{ backgroundColor: '#1890ff' }} />

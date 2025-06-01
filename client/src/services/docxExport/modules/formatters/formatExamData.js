@@ -68,7 +68,7 @@ export function formatExamDataForTemplate(examData, version = 1, mathRegistry = 
                 );
 
                 // Process section content
-                const sectionContent = processContent(item.contentFormatted || item.contentText || '', mathRegistry);
+                const sectionContent = processContent(item.contentFormatted || '', mathRegistry);
 
                 const section = {
                     isSection: true,
@@ -195,7 +195,7 @@ function formatQuestionWithVersion(question, version, versionList, optionLabels,
 
     // Process question content
     const questionContent = processContent(
-        question.contentFormatted || question.contentText || '',
+        question.contentFormatted || '',
         mathRegistry
     );
 
@@ -231,7 +231,7 @@ function formatQuestionWithVersion(question, version, versionList, optionLabels,
             const answer = question.answers[originalIndex];
             if (answer) {
                 const answerContent = processContent(
-                    answer.contentFormatted || answer.contentText || '',
+                    answer.contentFormatted || '',
                     mathRegistry
                 );
 

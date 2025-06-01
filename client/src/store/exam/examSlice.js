@@ -20,6 +20,7 @@ import {
   renumberSections,
   normaliseAnswersToLength,
   normaliseAnswersPerTeleformOptions,
+  createMinimalExamFromMarkingKey,
 } from './examHelpers';
 
 const initialState = {
@@ -242,9 +243,10 @@ const examSlice = createSlice({
     },
 
     removeQuestion: (state, action) => {
-      // Payload should be examBodyIndex of section to remove
-      if (!state.examData.examBody) { return; }
-      removeQuestionHelper(state.examData.examBody, action.payload);
+      // Payload should be an object with examBodyIndex and questionsIndex
+      if (!state.examData?.examBody) { return; }
+      const { examBodyIndex, questionsIndex } = action.payload;
+      removeQuestionHelper(state.examData.examBody, { examBodyIndex, questionsIndex });
       renumberQuestions(state.examData.examBody);
     },
 
@@ -366,14 +368,14 @@ const examSlice = createSlice({
     },
 
     importExamStart: (state) => {
-      state.loading = true;
+      state.isLoading = true;
       state.error = null;
     },
     importExamSuccess: (state) => {
-      state.loading = false;
+      state.isLoading = false;
     },
     importExamFailure: (state, action) => {
-      state.loading = false;
+      state.isLoading = false;
       state.error = action.payload;
     },
     addExamMessage: (state, action) => {
@@ -383,10 +385,21 @@ const examSlice = createSlice({
       state.fileName = action.payload;
     },
     importMarkingKey: (state, action) => {
-      if (!state.examData) return;
-
       const { versions, questionMappings, markWeights } = action.payload;
 
+      // If no exam exists, create a minimal exam structure
+      if (!state.examData) {
+        state.examData = createMinimalExamFromMarkingKey(
+          action.payload,
+          createExam,
+          createQuestion,
+          createAnswer,
+          generateId
+        );
+        return;
+      }
+
+      // Original code for when exam exists
       // Update exam versions if needed
       if (versions && versions.length > 0) {
         state.examData.versions = versions;

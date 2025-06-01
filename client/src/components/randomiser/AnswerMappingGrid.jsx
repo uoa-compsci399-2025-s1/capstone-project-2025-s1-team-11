@@ -2,14 +2,14 @@
 import React from "react";
 import { Typography, theme } from "antd";
 import { useSelector } from "react-redux";
-import { selectExamData } from "../store/exam/selectors";
-import AnswerControls from "./AnswerControls";
-import { htmlToText } from "../utilities/textUtils";
-import { DEFAULT_OPTIONS } from '../constants/answerOptions';
+import { selectExamData } from "../../store/exam/selectors";
+import AnswerControls from "../randomiser/AnswerControls";
+import { htmlToText } from "../../utilities/textUtils";
+import { DEFAULT_OPTIONS } from '../../constants/answerOptions';
 
 const { Text, Paragraph } = Typography;
 
-const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex, showAnswers }) => {
+const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex, showAnswers, showControls }) => {
   const examData = useSelector(selectExamData);
   const options = examData?.teleformOptions || DEFAULT_OPTIONS;
   const { token } = theme.useToken();
@@ -56,41 +56,46 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex, s
       {/* Main Grid */}
       <div style={{ 
         display: "grid", 
-        gridTemplateColumns: "70px 100px auto minmax(0, 1fr)", 
+        gridTemplateColumns: showControls 
+          ? "70px 100px auto minmax(0, 1fr)" 
+          : "auto minmax(0, 1fr)", 
         gap: "24px", 
         alignItems: "start",
         width: "100%"
       }}>
-        {/* Correct Column */}
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={columnStyles.header}>Correct</div>
-          {letters.map((_, rowIndex) => (
-            <div key={rowIndex} style={columnStyles.cell}>
-              <AnswerControls.Checkbox
-                question={question}
-                answerIndex={rowIndex}
-                examBodyIndex={examBodyIndex}
-                questionsIndex={questionsIndex}
-              />
-            </div>
-          ))}
-        </div>
+        {/* Correct Column - Only show if showControls is true */}
+        {showControls && (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={columnStyles.header}>Correct</div>
+            {letters.map((_, rowIndex) => (
+              <div key={rowIndex} style={columnStyles.cell}>
+                <AnswerControls.Checkbox
+                  question={question}
+                  answerIndex={rowIndex}
+                  examBodyIndex={examBodyIndex}
+                  questionsIndex={questionsIndex}
+                />
+              </div>
+            ))}
+          </div>
+        )}
         
-
-        {/* Map-to Column */}
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={columnStyles.header}>Map-to</div>
-          {letters.map((_, rowIndex) => (
-            <div key={rowIndex} style={columnStyles.cell}>
-              <AnswerControls.Select
-                question={question}
-                answerIndex={rowIndex}
-                examBodyIndex={examBodyIndex}
-                questionsIndex={questionsIndex}
-              />
-            </div>
-          ))}
-        </div>
+        {/* Map-to Column - Only show if showControls is true */}
+        {showControls && (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={columnStyles.header}>Map-to</div>
+            {letters.map((_, rowIndex) => (
+              <div key={rowIndex} style={columnStyles.cell}>
+                <AnswerControls.Select
+                  question={question}
+                  answerIndex={rowIndex}
+                  examBodyIndex={examBodyIndex}
+                  questionsIndex={questionsIndex}
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Mapping Grid Column */}
         <div style={{ 
@@ -154,10 +159,13 @@ const AnswerMappingGrid = ({ mapping, question, examBodyIndex, questionsIndex, s
             flexDirection: "column",
             minWidth: 0,
           }}>
-            <div style={columnStyles.header}>Answer Text</div>
+            <div style={columnStyles.header}></div>
             {letters.map((_, rowIndex) => (
               <div key={rowIndex} style={{ ...columnStyles.cell, justifyContent: "flex-start", padding: "0 8px" }}>
-                <Text ellipsis style={{ width: "100%" }}>
+                <Text ellipsis style={{ 
+                  width: "100%",
+                  color: question.answers[rowIndex]?.correct ? token.colorSuccess : 'inherit'
+                }}>
                   {question.answers[rowIndex]?.contentFormatted ? htmlToText(question.answers[rowIndex].contentFormatted) : ''}
                 </Text>
               </div>

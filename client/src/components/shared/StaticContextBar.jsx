@@ -3,19 +3,20 @@ import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spi
 import { App as AntApp } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from "react-redux";
-import { useFileSystem } from "../hooks/useFileSystem.js";
-import { selectExamData } from '../store/exam/selectors.js';
-import { useHistory } from '../hooks/useHistory';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import CreateExamModal from './CreateExamModal';
-import EditExamModal from './EditExamModal';
+import { useFileSystem } from "../../hooks/useFileSystem.js";
+import { selectExamData } from '../../store/exam/selectors.js';
+import { selectTeleformData } from '../../store/exam/selectors.js';
+import { useHistory } from '../../hooks/useHistory.js';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts.js';
+import CreateExamModal from './CreateExamModal.jsx';
+import EditExamModal from './EditExamModal.jsx';
 //import { exportExamToPdf } from "../services/exportPdf";
-import { handleExportDocx } from '../utilities/UIUtils';
-import '../index.css';
-import useMessage from "../hooks/useMessage.js";
+import { handleExportDocx } from '../../utilities/UIUtils.jsx';
+import '../../index.css';
+import useMessage from "../../hooks/useMessage.js";
 // Import saveExamToDisk directly for use after creating a new exam
-import { saveExamToDisk } from '../services/fileSystemAccess.js';
-import { handleExamDetailsSave } from '../services/examEditService';
+import { saveExamToDisk } from '../../services/fileSystemAccess.js';
+import { handleExamDetailsSave } from '../../services/examEditService.js';
 
 const { Text, Paragraph } = Typography;
 
@@ -28,6 +29,7 @@ const StaticContextBar = ({
                           }) => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
+  const teleformData = useSelector(selectTeleformData);
   const coverPage = useSelector(state => state.exam.coverPage);
   const mathRegistry = useSelector(state => state.exam.mathRegistry);
   const { fileHandle, createExam, openExam, saveExam, setFileHandle } = useFileSystem();
@@ -245,12 +247,12 @@ const StaticContextBar = ({
     }
   }, [exam]);
   
-  // Auto-save effect: save after 2 seconds of inactivity when exam changes.
+  // Auto-save effect: save after 2 seconds of inactivity when exam or teleform changes.
   useEffect(() => {
     if (!autoSaveEnabled) return;
     if (!exam) return;
     
-    // Mark as unsaved when exam changes
+    // Mark as unsaved when exam or teleform changes
     setSaveState('unsaved');
     
     // Clear any previous debounce
@@ -291,7 +293,7 @@ const StaticContextBar = ({
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exam, autoSaveEnabled]);
+  }, [exam, teleformData, autoSaveEnabled]);
 
   // Add keyboard shortcuts
   useKeyboardShortcuts({

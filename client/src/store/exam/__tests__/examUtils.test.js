@@ -10,7 +10,9 @@ import {
   createSection,
   createQuestion,
   createAnswer,
-  createExamComponent
+  createExamComponent,
+  needsMigration,
+  migrateExam
 } from '../examUtils';
 
 describe('Exam Utility Functions', () => {
@@ -84,13 +86,11 @@ describe('Exam Utility Functions', () => {
   test('createExamComponent applies overrides correctly', () => {
     const component = createExamComponent({
       type: 'custom',
-      contentFormatted: '<p>Custom content</p>',
-      contentText: 'Custom text'
+      contentFormatted: '<p>Custom content</p>'
     });
 
     expect(component.type).toBe('custom');
     expect(component.contentFormatted).toBe('<p>Custom content</p>');
-    expect(component.contentText).toBe('Custom text');
     expect(component.pageBreakAfter).toBe(false);
   });
 
@@ -99,7 +99,6 @@ describe('Exam Utility Functions', () => {
       questionNumber: 5,
       marks: 10,
       contentFormatted: '<p>Complex question?</p>',
-      contentText: 'Complex question?',
       answers: [
         { contentFormatted: '<p>Answer 1</p>', correct: true },
         { contentFormatted: '<p>Answer 2</p>', correct: false }
@@ -110,7 +109,6 @@ describe('Exam Utility Functions', () => {
     expect(question.questionNumber).toBe(5);
     expect(question.marks).toBe(10);
     expect(question.contentFormatted).toBe('<p>Complex question?</p>');
-    expect(question.contentText).toBe('Complex question?');
     expect(question.answers).toHaveLength(2);
     expect(question.answers[0].correct).toBe(true);
     expect(question.answers[1].correct).toBe(false);
@@ -121,7 +119,6 @@ describe('Exam Utility Functions', () => {
       sectionTitle: 'Advanced Section',
       sectionNumber: 3,
       contentFormatted: '<p>Section instructions</p>',
-      contentText: 'Section instructions',
       questions: [
         createQuestion({ contentFormatted: '<p>Question 1</p>' }),
         createQuestion({ contentFormatted: '<p>Question 2</p>' })
@@ -132,9 +129,71 @@ describe('Exam Utility Functions', () => {
     expect(section.sectionTitle).toBe('Advanced Section');
     expect(section.sectionNumber).toBe(3);
     expect(section.contentFormatted).toBe('<p>Section instructions</p>');
-    expect(section.contentText).toBe('Section instructions');
     expect(section.questions).toHaveLength(2);
     expect(section.questions[0].type).toBe('question');
     expect(section.questions[1].type).toBe('question');
+  });
+});
+
+describe('Exam Versioning', () => {
+  test('new exams should have current schema version', () => {
+    const exam = createExam();
+    expect(exam.schemaVersion).toBeDefined();
+    expect(exam.schemaVersion).toBe('1.0.0');
+  });
+
+  test('should detect when migration is needed', () => {
+    // Legacy exam without version
+    const legacyExam = {
+      type: 'exam',
+      examTitle: 'Old Exam',
+      examBody: []
+    };
+    expect(needsMigration(legacyExam)).toBe(true);
+
+    // Current version exam
+    const currentExam = createExam();
+    expect(needsMigration(currentExam)).toBe(false);
+
+    // Future version exam (hypothetical)
+    const futureExam = {
+      ...createExam(),
+      schemaVersion: '2.0.0'
+    };
+    expect(needsMigration(futureExam)).toBe(true);
+  });
+
+  test('should migrate legacy exam format', () => {
+    const legacyExam = {
+      type: 'exam',
+      examTitle: 'Legacy Exam',
+      examBody: null // Invalid examBody
+    };
+
+    const migratedExam = migrateExam(legacyExam);
+
+    // Check that version was added
+    expect(migratedExam.schemaVersion).toBe('1.0.0');
+
+    // Check that required fields were added
+    expect(migratedExam.teleformOptions).toEqual(['a', 'b', 'c', 'd', 'e']);
+    expect(Array.isArray(migratedExam.examBody)).toBe(true);
+    expect(migratedExam.examBody).toEqual([]);
+
+    // Check that original fields were preserved
+    expect(migratedExam.type).toBe('exam');
+    expect(migratedExam.examTitle).toBe('Legacy Exam');
+  });
+
+  test('should not modify current version exams', () => {
+    const currentExam = createExam({
+      examTitle: 'Current Exam',
+      customField: 'value'
+    });
+
+    const migratedExam = migrateExam(currentExam);
+
+    // Should be the same object
+    expect(migratedExam).toEqual(currentExam);
   });
 });

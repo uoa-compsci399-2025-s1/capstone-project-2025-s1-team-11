@@ -334,7 +334,7 @@ export const buildContentFormatted = (runs, options = {}, parentPara = null, doc
 
     // Remove marks pattern if requested
     if (removeMarks) {
-        content = content.replace(/^\[\d+(?:\.\d+)?\s*marks?\]\s*/i, '');
+        content = content.replace(/^\[\s*\d+(?:\.\d+)?\s*marks?\s*\]\s*/i, '');
     }
 
     // Process multiple br tags to preserve spacing
