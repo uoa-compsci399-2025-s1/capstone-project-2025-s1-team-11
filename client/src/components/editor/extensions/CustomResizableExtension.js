@@ -105,7 +105,6 @@ const CustomResizableExtension = Extension.create({
     resizeLayer.addEventListener("mousedown", (e) => {
       e.preventDefault();
       const resizeElement = this.storage.resizeElement;
-      const resizeNode = this.storage.resizeNode;
       if (!resizeElement) return;
       //if (/bottom/.test(e.target.className)) {
       if (e.target.classList.contains("handler")) {
