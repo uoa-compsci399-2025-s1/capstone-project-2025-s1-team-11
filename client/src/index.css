@@ -292,3 +292,9 @@ button:focus-visible {
   color: #1890ff;
   background-color: rgba(24, 144, 255, 0.1);
 }
+
+.exam-preview p,
+.exam-preview div {
+  margin: 0;
+  padding: 0;
+}
