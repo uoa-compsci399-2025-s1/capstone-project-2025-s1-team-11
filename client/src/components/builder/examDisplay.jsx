@@ -1,7 +1,9 @@
 //examDisplay.jsx
-
 import React, { useState, useMemo, useCallback, Suspense } from "react";
 import { Button, Typography, Modal, Input, Table, Select, Tooltip } from "antd";
+import { Tabs } from "antd";
+import SummaryTable from "./SummaryTable";
+import ExamPreview from "./ExamPreview";
 const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -500,26 +502,53 @@ const ExamDisplay = () => {
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <Title level={3}>{exam.examTitle}</Title>
-        {(exam.courseCode || exam.courseName || exam.semester || exam.year) && (
-          <Text type="secondary">
-            {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
-            {exam.semester} {exam.year}
-          </Text>
-        )}
-      </div>
+    <>
+      <Tabs
+        defaultActiveKey="builder"
+        type="card"
+        items={[
+          {
+            key: 'builder',
+            label: 'Builder',
+            children: (
+              <>
+                <div style={{ marginBottom: 16 }}>
+                  <Title level={3}>{exam.examTitle}</Title>
+                  {(exam.courseCode || exam.courseName || exam.semester || exam.year) && (
+                    <Text type="secondary">
+                      {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
+                      {exam.semester} {exam.year}
+                    </Text>
+                  )}
+                </div>
 
-      <Table
-        key="exam-table"
-        rowKey="id" 
-        columns={columns}
-        dataSource={memoizedTableData}
-        pagination={{ pageSize: 10 }}
-        scroll={{ x: "max-content" }}
+                <Table
+                  key="exam-table"
+                  rowKey="id"
+                  columns={columns}
+                  dataSource={memoizedTableData}
+                  pagination={{ pageSize: 10 }}
+                  scroll={{ x: "max-content" }}
+                />
+              </>
+            )
+          },
+          {
+            key: 'summary',
+            label: 'Summary',
+            children: <SummaryTable exam={exam} />
+          },
+          {
+            key: "preview",
+            label: "Preview",
+            children: (
+              <div style={{ marginTop: '24px' }}>
+                <ExamPreview exam={exam} />
+              </div>
+            )
+          }
+        ]}
       />
-
       {/* Modal with extracted editor component */}
       <Modal
         open={modalState.visible}
@@ -539,7 +568,7 @@ const ExamDisplay = () => {
           />
         )}
       </Modal>
-    </div>
+    </>
   );
 };
 
