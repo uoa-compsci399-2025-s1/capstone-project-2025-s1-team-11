@@ -37,7 +37,7 @@ const QuestionEditor = React.memo(({
       <Row gutter={16} align="top">
         <Col flex="auto">
           <RichTextEditor
-            key={`question-editor-${question.id || 'new'}`}
+            key="question-editor"
             content={question.contentFormatted}
             onChange={handleQuestionContentChange}
             placeholder="Question Text"
@@ -103,7 +103,7 @@ const AnswerEditor = React.memo(({
       <Row gutter={8} align="middle">
         <Col flex="auto">
           <RichTextEditor
-            key={`answer-editor-${answer.id || index}-${question?.id || 'new'}`}
+            key={`answer-editor-${index}`}
             content={answer.contentFormatted}
             onChange={handleChange}
             placeholder={`Answer ${options[index] || String(index + 1)}`}
@@ -189,8 +189,7 @@ const QuestionEditorContainer = ({
   onSectionSelectionChange 
 }) => {
   const [itemState, setItemState] = useState(item);
-  const dispatch = useDispatch();
-  
+
   useEffect(() => {
     setItemState(item);
   }, [item]);
