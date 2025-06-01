@@ -37,7 +37,7 @@ const QuestionEditor = React.memo(({
       <Row gutter={16} align="top">
         <Col flex="auto">
           <RichTextEditor
-            key="question-editor"
+            key={`question-editor-${question.id || 'new'}`}
             content={question.contentFormatted}
             onChange={handleQuestionContentChange}
             placeholder="Question Text"
@@ -103,7 +103,7 @@ const AnswerEditor = React.memo(({
       <Row gutter={8} align="middle">
         <Col flex="auto">
           <RichTextEditor
-            key={`answer-editor-${index}`}
+            key={`answer-editor-${answer.id || index}-${question?.id || 'new'}`}
             content={answer.contentFormatted}
             onChange={handleChange}
             placeholder={`Answer ${options[index] || String(index + 1)}`}
@@ -189,7 +189,6 @@ const QuestionEditorContainer = ({
   onSectionSelectionChange 
 }) => {
   const [itemState, setItemState] = useState(item);
-  const dispatch = useDispatch();
   
   useEffect(() => {
     setItemState(item);
@@ -251,27 +250,6 @@ const QuestionEditorContainer = ({
     }));
     onSectionSelectionChange(selectedSectionIndex);
   }, [onSectionSelectionChange]);
-
-  // Save changes to Redux when component unmounts or when modal closes
-  useEffect(() => {
-    return () => {
-      // Apply the batch update to Redux once on unmount
-      if (itemState !== item) {
-        dispatch(updateQuestion({
-          location: {
-            examBodyIndex,
-            questionsIndex,
-            questionId: itemState.id
-          },
-          newData: {
-            contentFormatted: itemState.contentFormatted,
-            marks: itemState.marks,
-            answers: itemState.answers
-          }
-        }));
-      }
-    };
-  }, [dispatch, examBodyIndex, questionsIndex, itemState, item]);
 
   // Pass the current state up to parent when changes are made
   useEffect(() => {
