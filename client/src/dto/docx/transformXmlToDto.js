@@ -68,7 +68,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
 
   const flushSection = () => {
     if (currentSection) {
-      // Format section content
+      // Format section content (same pattern as questions)
       if (sectionContentBlocks.length > 0) {
         currentSection.contentFormatted = sectionContentBlocks.join('<p>\n');
       }

@@ -8,14 +8,19 @@ const CustomResizableExtension = Extension.create({
     return {
       types: ["image"],
       handlerStyle: {
-        width: "8px",
-        height: "8px",
-        background: "rgb(145, 145, 145)",
+        width: "10px",
+        height: "10px",
+        background: "#1677ff",
+        border: "2px solid #ffffff",
+        borderRadius: "50%",
         pointerEvents: "all",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+        zIndex: "1000",
       },
       layerStyle: {
-        border: "none",
+        border: "2px solid #1677ff",
         pointerEvents: "none",
+        zIndex: "999",
       },
     };
   },
@@ -34,10 +39,28 @@ const CustomResizableExtension = Extension.create({
         attributes: {
           width: {
             default: null,
-            parseHTML: (element) => element.style.width,
+            parseHTML: (element) => {
+              // Priority: width attribute > style width
+              return element.getAttribute('width') || 
+                     (element.style.width ? element.style.width.replace('px', '') + 'px' : null);
+            },
             renderHTML: (attributes) => {
               if (!attributes.width) return {};
-              return { style: `width: ${attributes.width}` };
+              const width = attributes.width.toString().includes('px') ? attributes.width : attributes.width + 'px';
+              return { width: width, style: `width: ${width}; height: auto;` };
+            },
+          },
+          height: {
+            default: null,
+            parseHTML: (element) => {
+              // Priority: height attribute > style height
+              return element.getAttribute('height') || 
+                     (element.style.height ? element.style.height.replace('px', '') + 'px' : null);
+            },
+            renderHTML: (attributes) => {
+              if (!attributes.height) return {};
+              const height = attributes.height.toString().includes('px') ? attributes.height : attributes.height + 'px';
+              return { height: height };
             },
           },
         },
@@ -73,10 +96,20 @@ const CustomResizableExtension = Extension.create({
           const width = resizeElement.clientWidth;
           const distanceX = e.screenX - startX;
           const total = width + dir * distanceX;
-          // resizeElement
+          
+          // Maintain aspect ratio
+          const aspectRatio = resizeElement.naturalHeight / resizeElement.naturalWidth;
+          const newHeight = total * aspectRatio;
+          
+          // Update element styles
           resizeElement.style.width = total + "px";
+          resizeElement.style.height = newHeight + "px";
+          
+          // Update node attributes for TipTap
           resizeNode.attrs.width = total + "px";
-          // resizeLayer
+          resizeNode.attrs.height = newHeight + "px";
+          
+          // Update resizeLayer position and size
           const clientWidth = resizeElement.clientWidth;
           const clientHeight = resizeElement.clientHeight;
           const pos = getRelativePosition(resizeElement, element);

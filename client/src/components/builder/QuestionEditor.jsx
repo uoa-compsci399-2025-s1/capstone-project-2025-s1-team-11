@@ -1,12 +1,13 @@
 import React, { useState, useCallback, Suspense, useEffect } from "react";
-import { Input, Checkbox, Select, InputNumber, Space, Typography, Row, Col } from "antd";
+import { Input, Checkbox, Select, InputNumber, Space, Typography, Row, Col, Collapse, Button } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuestion } from "../../store/exam/examSlice.js";
 import { selectExamData } from "../../store/exam/selectors.js";
 import RichTextEditor from "../editor/RichTextEditor.jsx";
 import { DEFAULT_OPTIONS } from '../../constants/answerOptions';
 
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
+const { Panel } = Collapse;
 
 // Memoized Question Editor Component
 const QuestionEditor = React.memo(({ 
@@ -16,6 +17,7 @@ const QuestionEditor = React.memo(({
   onQuestionChange 
 }) => {
   const dispatch = useDispatch();
+  const [showDebug, setShowDebug] = useState(false);
 
   const handleQuestionContentChange = useCallback((html) => {
     onQuestionChange(html);
@@ -34,6 +36,36 @@ const QuestionEditor = React.memo(({
 
   return (
     <div style={{ marginBottom: 16 }}>
+      {/* HTML Debug Panel */}
+      <div style={{ marginBottom: 12 }}>
+        <Button 
+          size="small" 
+          type="text" 
+          onClick={() => setShowDebug(!showDebug)}
+          style={{ padding: '2px 8px', fontSize: '12px' }}
+        >
+          {showDebug ? 'Hide' : 'Show'} HTML Debug
+        </Button>
+        {showDebug && (
+          <div style={{ 
+            marginTop: 8, 
+            padding: 8, 
+            backgroundColor: '#f5f5f5', 
+            border: '1px solid #d9d9d9',
+            borderRadius: 4,
+            fontSize: '12px',
+            fontFamily: 'monospace',
+            maxHeight: 200,
+            overflow: 'auto'
+          }}>
+            <div style={{ marginBottom: 4, fontWeight: 'bold', color: '#666' }}>Question HTML:</div>
+            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+              {question.contentFormatted || '(empty)'}
+            </pre>
+          </div>
+        )}
+      </div>
+
       <Row gutter={16} align="top">
         <Col flex="auto">
           <RichTextEditor
@@ -70,6 +102,7 @@ const AnswerEditor = React.memo(({
 }) => {
   const exam = useSelector(selectExamData);
   const options = exam?.teleformOptions || DEFAULT_OPTIONS;
+  const [showDebug, setShowDebug] = useState(false);
 
   const handleChange = useCallback((html) => {
     onChange(html, index);
@@ -100,6 +133,35 @@ const AnswerEditor = React.memo(({
 
   return (
     <div style={{ marginBottom: 8 }}>
+      {/* HTML Debug for Answer */}
+      <div style={{ marginBottom: 4 }}>
+        <Button 
+          size="small" 
+          type="text" 
+          onClick={() => setShowDebug(!showDebug)}
+          style={{ padding: '2px 4px', fontSize: '10px' }}
+        >
+          {showDebug ? 'Hide' : 'Show'} Answer HTML
+        </Button>
+        {showDebug && (
+          <div style={{ 
+            marginTop: 4, 
+            padding: 4, 
+            backgroundColor: '#fafafa', 
+            border: '1px solid #e8e8e8',
+            borderRadius: 2,
+            fontSize: '10px',
+            fontFamily: 'monospace',
+            maxHeight: 100,
+            overflow: 'auto'
+          }}>
+            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+              {answer.contentFormatted || '(empty)'}
+            </pre>
+          </div>
+        )}
+      </div>
+      
       <Row gutter={8} align="middle">
         <Col flex="auto">
           <RichTextEditor
