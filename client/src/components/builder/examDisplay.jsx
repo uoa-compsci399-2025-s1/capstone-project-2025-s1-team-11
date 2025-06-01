@@ -217,17 +217,22 @@ const ExamDisplay = () => {
   }, []);
 
   const handleEdit = useCallback((item) => {
-    let actualItem;
-    if (item.type === 'section') {
-      actualItem = exam.examBody[item.examBodyIndex];
-    } else if (item.type === 'question') {
-      const section = exam.examBody[item.examBodyIndex];
-      if (section?.type === 'section') {
-        actualItem = section.questions[item.questionsIndex];
-      } else {
-        actualItem = section;
-      }
+    if (!item || typeof item.examBodyIndex !== 'number') {
+      message.error('Invalid item provided');
+      return;
     }
+
+    const section = exam.examBody?.[item.examBodyIndex];
+    if (!section) {
+      message.error('Section not found');
+      return;
+    }
+
+    const actualItem = item.type === 'section'
+      ? section
+      : section?.type === 'section'
+        ? section.questions?.[item.questionsIndex]
+        : section;
 
     if (!actualItem) {
       message.error('Failed to find item to edit');
@@ -237,7 +242,7 @@ const ExamDisplay = () => {
     setModalState({
       visible: true,
       type: item.type,
-      item: actualItem,
+      item: structuredClone(actualItem),
       examBodyIndex: item.examBodyIndex,
       questionsIndex: item.questionsIndex,
       isDelete: false,
@@ -560,6 +565,7 @@ const ExamDisplay = () => {
           <Paragraph>Are you sure you want to delete this item?</Paragraph>
         ) : (
           <ExamItemEditor
+            key={`${modalState.type}-${modalState.examBodyIndex}-${modalState.questionsIndex ?? 'none'}`}
             modalState={modalState}
             onSave={setCurrentEditorState}
             onCancel={resetModalState}
