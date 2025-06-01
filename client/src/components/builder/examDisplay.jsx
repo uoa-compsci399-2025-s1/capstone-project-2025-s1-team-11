@@ -1,7 +1,9 @@
 //examDisplay.jsx
-
-import React, { useState, useMemo, useCallback, Suspense } from "react";
-import { Button, Typography, Modal, Input, Table, Select, Tooltip } from "antd";
+import React, { useState, useMemo, useCallback } from "react";
+import { Button, Typography, Modal, Input, Table } from "antd";
+import { Tabs } from "antd";
+import SummaryTable from "./SummaryTable";
+import ExamPreview from "./ExamPreview";
 const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -21,8 +23,6 @@ import RichTextEditor from "../editor/RichTextEditor.jsx";
 import { QuestionEditorContainer } from "./QuestionEditor.jsx";
 import useMessage from "../../hooks/useMessage.js";
 import { DEFAULT_OPTIONS } from '../../constants/answerOptions';
-
-const { TextArea } = Input;
 
 const ExamItemEditor = React.memo(({ modalState, onSave, exam }) => {
   const [itemState, setItemState] = useState(modalState.item);
@@ -107,7 +107,6 @@ const ExamItemEditor = React.memo(({ modalState, onSave, exam }) => {
   if (modalState.type === "question") {
     return (
       <QuestionEditorContainer 
-        key={`question-${modalState.examBodyIndex}-${modalState.questionsIndex || 'standalone'}-${itemState?.id}`}
         item={itemState}
         onSave={onSave}
         examBodyIndex={modalState.examBodyIndex}
@@ -218,30 +217,32 @@ const ExamDisplay = () => {
   }, []);
 
   const handleEdit = useCallback((item) => {
-    let actualItem;
-    if (item.type === 'section') {
-      actualItem = exam.examBody[item.examBodyIndex];
-    } else if (item.type === 'question') {
-      const section = exam.examBody[item.examBodyIndex];
-      if (section?.type === 'section') {
-        actualItem = section.questions[item.questionsIndex];
-      } else {
-        actualItem = section;
-      }
+    if (!item || typeof item.examBodyIndex !== 'number') {
+      message.error('Invalid item provided');
+      return;
     }
+
+    const section = exam.examBody?.[item.examBodyIndex];
+    if (!section) {
+      message.error('Section not found');
+      return;
+    }
+
+    const actualItem = item.type === 'section'
+      ? section
+      : section?.type === 'section'
+        ? section.questions?.[item.questionsIndex]
+        : section;
 
     if (!actualItem) {
       message.error('Failed to find item to edit');
       return;
     }
 
-    // Create a deep copy to prevent any reference issues
-    const itemCopy = JSON.parse(JSON.stringify(actualItem));
-
     setModalState({
       visible: true,
       type: item.type,
-      item: itemCopy,
+      item: structuredClone(actualItem),
       examBodyIndex: item.examBodyIndex,
       questionsIndex: item.questionsIndex,
       isDelete: false,
@@ -504,26 +505,53 @@ const ExamDisplay = () => {
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <Title level={3}>{exam.examTitle}</Title>
-        {(exam.courseCode || exam.courseName || exam.semester || exam.year) && (
-          <Text type="secondary">
-            {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
-            {exam.semester} {exam.year}
-          </Text>
-        )}
-      </div>
+    <>
+      <Tabs
+        defaultActiveKey="builder"
+        type="card"
+        items={[
+          {
+            key: 'builder',
+            label: 'Builder',
+            children: (
+              <>
+                <div style={{ marginBottom: 16 }}>
+                  <Title level={3}>{exam.examTitle}</Title>
+                  {(exam.courseCode || exam.courseName || exam.semester || exam.year) && (
+                    <Text type="secondary">
+                      {[exam.courseCode, exam.courseName].filter(Boolean).join(" - ")}{" "}
+                      {exam.semester} {exam.year}
+                    </Text>
+                  )}
+                </div>
 
-      <Table
-        key="exam-table"
-        rowKey="id" 
-        columns={columns}
-        dataSource={memoizedTableData}
-        pagination={{ pageSize: 10 }}
-        scroll={{ x: "max-content" }}
+                <Table
+                  key="exam-table"
+                  rowKey="id"
+                  columns={columns}
+                  dataSource={memoizedTableData}
+                  pagination={{ pageSize: 10 }}
+                  scroll={{ x: "max-content" }}
+                />
+              </>
+            )
+          },
+          {
+            key: 'summary',
+            label: 'Summary',
+            children: <SummaryTable exam={exam} />
+          },
+          {
+            key: "preview",
+            label: "Preview",
+            children: (
+              <div style={{ marginTop: '24px' }}>
+                <ExamPreview exam={exam} />
+              </div>
+            )
+          }
+        ]}
       />
-
       {/* Modal with extracted editor component */}
       <Modal
         open={modalState.visible}
@@ -536,7 +564,7 @@ const ExamDisplay = () => {
           <Paragraph>Are you sure you want to delete this item?</Paragraph>
         ) : (
           <ExamItemEditor
-            key={`${modalState.type}-${modalState.examBodyIndex}-${modalState.questionsIndex || 'standalone'}`}
+            key={`${modalState.type}-${modalState.examBodyIndex}-${modalState.questionsIndex ?? 'none'}`}
             modalState={modalState}
             onSave={setCurrentEditorState}
             onCancel={resetModalState}
@@ -544,7 +572,7 @@ const ExamDisplay = () => {
           />
         )}
       </Modal>
-    </div>
+    </>
   );
 };
 
