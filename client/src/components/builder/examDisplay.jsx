@@ -232,13 +232,10 @@ const ExamDisplay = () => {
       return;
     }
 
-    // Create a deep copy to prevent any reference issues
-    //const itemCopy = JSON.parse(JSON.stringify(actualItem));
-
     setModalState({
       visible: true,
       type: item.type,
-      item: actualItem,//itemCopy
+      item: actualItem,
       examBodyIndex: item.examBodyIndex,
       questionsIndex: item.questionsIndex,
       isDelete: false,
