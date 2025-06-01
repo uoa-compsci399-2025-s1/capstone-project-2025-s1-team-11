@@ -6,8 +6,6 @@
  */
 
 import { needsMigration, migrateExam } from '../store/exam/examUtils';
-import { store } from '../store/store';
-import { selectTeleformData } from '../store/exam/selectors';
 
 /**
  * Opens a file picker and reads an exam from a JSON file.
@@ -40,7 +38,7 @@ export async function loadExamFromFile() {
       // Check if exam needs migration
       if (needsMigration(examData)) {
         console.log('Migrating exam from older schema version...');
-        exam = migrateExam(exam);
+        examData = migrateExam(examData);
       }
   
       return { examData, teleformData, coverPage, fileHandle };
@@ -77,7 +75,7 @@ export async function importExamFile() {
 /**
  * Saves the given exam to the file represented by fileHandle.
  */
-export async function saveExamToDisk(examData, coverPage, teleformData, fileHandle = null) {
+export async function saveExamToDisk(examData=null, coverPage=null, teleformData=null, fileHandle = null) {
     // If no file handle exists, prompt the user for a save location.
     try {
         if (!fileHandle) {

@@ -189,7 +189,6 @@ const QuestionEditorContainer = ({
   onSectionSelectionChange 
 }) => {
   const [itemState, setItemState] = useState(item);
-  const dispatch = useDispatch();
   
   useEffect(() => {
     setItemState(item);

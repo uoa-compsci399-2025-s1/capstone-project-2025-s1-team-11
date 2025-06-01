@@ -1,21 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Dropdown, Button, Typography, Tag, Tooltip, Alert, Divider, Switch, Spin, Modal } from 'antd';
-import { App as AntApp } from 'antd';
+import { Dropdown, Button, Typography, Tag, Tooltip, Switch, Spin } from 'antd';
 import { FileOutlined, ExportOutlined, SaveOutlined, UndoOutlined, RedoOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from "react-redux";
 import { useFileSystem } from "../../hooks/useFileSystem.js";
-import { selectExamData } from '../../store/exam/selectors.js';
+import { selectExamData, selectCoverPage } from '../../store/exam/selectors.js';
 import { selectTeleformData } from '../../store/exam/selectors.js';
 import { useHistory } from '../../hooks/useHistory.js';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts.js';
 import CreateExamModal from './CreateExamModal.jsx';
 import EditExamModal from './EditExamModal.jsx';
-//import { exportExamToPdf } from "../services/exportPdf";
 import { handleExportDocx } from '../../utilities/UIUtils.jsx';
 import '../../index.css';
 import useMessage from "../../hooks/useMessage.js";
-// Import saveExamToDisk directly for use after creating a new exam
-import { saveExamToDisk } from '../../services/fileSystemAccess.js';
 import { handleExamDetailsSave } from '../../services/examEditService.js';
 
 const { Text, Paragraph } = Typography;
@@ -28,10 +24,10 @@ const StaticContextBar = ({
                             canExportMarking = false
                           }) => {
   const dispatch = useDispatch();
-  const exam = useSelector(selectExamData);
+  const examData = useSelector(selectExamData);
   const teleformData = useSelector(selectTeleformData);
-  const coverPage = useSelector(state => state.exam.coverPage);
-  const { fileHandle, createExam, openExam, saveExam, setFileHandle } = useFileSystem();
+  const coverPage = useSelector(selectCoverPage);
+  const { fileHandle, createExam, openExam, saveExam } = useFileSystem();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newExamData, setNewExamData] = useState({
     examTitle: '',
@@ -61,6 +57,7 @@ const StaticContextBar = ({
   });
   // Manual auto-save toggle
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const [shouldAutoSaveAfterCreate, setShouldAutoSaveAfterCreate] = useState(false);
   const { canUndo, canRedo, undo, redo } = useHistory();
 
   // Exam progress
@@ -85,7 +82,7 @@ const StaticContextBar = ({
   };
 
   const handleSaveExam = async () => {
-    if (!exam) {
+    if (!examData) {
       message.error("No exam data to save.");
       return;
     }
@@ -131,7 +128,7 @@ const StaticContextBar = ({
     setVersionCount(4);
   };
 
-  const handleCreateModalOk = () => {
+  const handleCreateModalOk = async () => {
     const examData = {
       // answerOptions: parseInt(newExamData.answerOptions) || 4,
       examTitle: newExamData.examTitle || "Untitled Exam",
@@ -164,34 +161,21 @@ const StaticContextBar = ({
           .filter(Boolean);
     }
 
-    // Create the exam in Redux
-    createExam(examData);
-    setShowCreateModal(false);
-    
-    // Show success message
-    setTimeout(() => message.success("New exam created successfully."), 0);
-    
-    // Trigger save dialog after a short delay
-    setTimeout(async () => {
-      try {
-        setSaveState('saving'); // Update state before save
-        // We use saveExamToDisk directly since it doesn't rely on Redux state
-        const newFileHandle = await saveExamToDisk(examData);
-        if (newFileHandle) {
-          // Update the file handle in state
-          setFileHandle(newFileHandle);
-          setSaveState('saved');
-          setLastSavedTime(new Date());
-          message.success("Exam saved successfully.");
-        } else {
-          // If user cancelled the file picker
-          setSaveState('unsaved');
-        }
-      } catch (error) {
-        setSaveState('unsaved');
-        console.error("Failed to save new exam:", error);
-      }
-    }, 300);
+    try {
+      // Set flag to trigger auto-save after exam creation
+      setShouldAutoSaveAfterCreate(true);
+      
+      // Create the exam in Redux - useEffect will handle the save automatically
+      await createExam(examData);
+      setShowCreateModal(false);
+      
+      // Show success message
+      message.success("New exam created successfully.");
+    } catch (error) {
+      setShouldAutoSaveAfterCreate(false); // Clear flag on error
+      console.error("Failed to create exam:", error);
+      message.error("Failed to create exam: " + error.message);
+    }
   };
 
   const handleCreateModalCancel = () => {
@@ -200,7 +184,7 @@ const StaticContextBar = ({
   };
 
   const confirmExport = (type) => {
-    if (!exam) {
+    if (!examData) {
       message.error("No exam available to export.");
       return;
     }
@@ -209,11 +193,11 @@ const StaticContextBar = ({
       if (!window.confirm("Are you sure you want to export this? It may be incomplete.")) return;
     }
     // For now, call exportExamToPdf. In future, branch by type.
-    if (exam) {
+    if (examData) {
       // Stub branching for future formats
       message.info(`PDF export (${type}) functionality is currently a Work In Progress!`);
       // if (type === 'demo' || type === 'randomised' || type === 'exemplar' || type === 'marking') {
-      //   exportExamToPdf(exam, type);
+      //   exportExamToPdf(examData, type);
       // } else {
       //   //console.log('Unknown export type:', type);
       // }
@@ -233,25 +217,53 @@ const StaticContextBar = ({
 
   // Removed DOM event listeners for mouseenter/mouseleave on dropdown refs.
 
-  // Effect to prepopulate editDetailsData when exam changes
+  // Effect to prepopulate editDetailsData when examData changes
   useEffect(() => {
-    if (exam) {
+    if (examData) {
       setEditDetailsData({
-        examTitle: exam.examTitle || '',
-        courseCode: exam.courseCode || '',
-        courseName: exam.courseName || '',
-        semester: exam.semester || '',
-        year: exam.year || ''
+        examTitle: examData.examTitle || '',
+        courseCode: examData.courseCode || '',
+        courseName: examData.courseName || '',
+        semester: examData.semester || '',
+        year: examData.year || ''
       });
     }
-  }, [exam]);
+  }, [examData]);
   
-  // Auto-save effect: save after 2 seconds of inactivity when exam or teleform changes.
+  // Auto-save effect after exam creation
+  useEffect(() => {
+    if (shouldAutoSaveAfterCreate && examData) {
+      setShouldAutoSaveAfterCreate(false); // Clear the flag
+      
+      const performAutoSave = async () => {
+        try {
+          setSaveState('saving');
+          const newFileHandle = await saveExam();
+          if (newFileHandle) {
+            setSaveState('saved');
+            setLastSavedTime(new Date());
+            message.success("Exam saved successfully.");
+          } else {
+            setSaveState('unsaved');
+            message.info("Exam created but not saved - you can save it later using the Save button.");
+          }
+        } catch (error) {
+          setSaveState('unsaved');
+          console.error("Failed to save new exam:", error);
+          message.error("Failed to save exam: " + error.message);
+        }
+      };
+      
+      performAutoSave();
+    }
+  }, [examData, shouldAutoSaveAfterCreate, saveExam, message]);
+
+  // Auto-save effect: save after 2 seconds of inactivity when examData or teleform changes.
   useEffect(() => {
     if (!autoSaveEnabled) return;
-    if (!exam) return;
+    if (!examData) return;
     
-    // Mark as unsaved when exam or teleform changes
+    // Mark as unsaved when examData or teleform changes
     setSaveState('unsaved');
     
     // Clear any previous debounce
@@ -292,7 +304,7 @@ const StaticContextBar = ({
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exam, teleformData, coverPage, autoSaveEnabled]);
+  }, [examData, teleformData, coverPage, autoSaveEnabled]);
 
   // Add keyboard shortcuts
   useKeyboardShortcuts({
@@ -404,7 +416,7 @@ const StaticContextBar = ({
                   </Button>
                 </Tooltip>
               </div>
-              {exam && (
+              {examData && (
                   <>
                     <Tooltip title={`File: ${examTitle}`}>
                       <Tag
@@ -447,7 +459,7 @@ const StaticContextBar = ({
                 padding: "0 12px"
               }}
             >
-              {exam ? (
+              {examData ? (
                 <>
                   <Text
                     strong
@@ -458,13 +470,13 @@ const StaticContextBar = ({
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       maxWidth: "100%",
-                      fontSize: `${(exam?.examTitle?.length || 0) + (exam?.courseName?.length || 0) + (exam?.courseCode?.length || 0) > 50 ? '14px' : '16px'}`
+                      fontSize: `${(examData?.examTitle?.length || 0) + (examData?.courseName?.length || 0) + (examData?.courseCode?.length || 0) > 50 ? '14px' : '16px'}`
                     }}
                   >
-                    {`${exam?.courseName || "Unknown Course"} ${exam?.courseCode || ""}: ${exam?.examTitle || "Untitled Exam"}`}
+                    {`${examData?.courseName || "Unknown Course"} ${examData?.courseCode || ""}: ${examData?.examTitle || "Untitled Exam"}`}
                   </Text>
                   {/* Inline warning if key fields are missing */}
-                  {(!exam?.examTitle || !exam?.courseCode) && (
+                  {(!examData?.examTitle || !examData?.courseCode) && (
                     <Text className="context-warning" type="warning" style={{ marginLeft: 12 }}>
                       Missing required exam details
                     </Text>
@@ -481,7 +493,7 @@ const StaticContextBar = ({
                   <Button
                       icon={<SaveOutlined />}
                       onClick={handleSaveExam}
-                      disabled={!exam}
+                      disabled={!examData}
                       type="text"
                   >
                     <span className="context-button-label">Save</span>
@@ -496,7 +508,7 @@ const StaticContextBar = ({
                           key: 'docx',
                           label: 'Download as DOCX',
                           onClick: async () => {
-                            await handleExportDocx(exam, coverPage);
+                            await handleExportDocx(examData, coverPage);
                             setExportDropdownOpen(false);
                           }
                         },

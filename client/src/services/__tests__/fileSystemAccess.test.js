@@ -42,14 +42,21 @@ describe('fileSystemAccess service', () => {
     });
 
     describe('loadExamFromFile', () => {
-        it('shoulandd open a file, read its contents,  parse it', async () => {
+        it('should open a file, read its contents,  parse it', async () => {
             const mockExam = {
                 title: 'Test Exam',
                 schemaVersion: '1.0.0',
                 teleformOptions: ['a', 'b', 'c', 'd', 'e'],
                 examBody: []
             };
-            const fileContents = JSON.stringify(mockExam);
+            const fileContents = JSON.stringify({
+                exam: {
+                    examData: mockExam
+                },
+                teleform: {
+                    teleformData: 'test-teleform'
+                }
+            });
             const mockFile = { text: jest.fn().mockResolvedValue(fileContents) };
 
             global.window.showOpenFilePicker = jest.fn().mockResolvedValue([mockFileHandle]);
@@ -59,7 +66,8 @@ describe('fileSystemAccess service', () => {
 
             expect(window.showOpenFilePicker).toHaveBeenCalledTimes(1);
             expect(mockFileHandle.getFile).toHaveBeenCalledTimes(1);
-            expect(result.exam).toEqual(mockExam);
+            expect(result.examData).toEqual(mockExam);
+            expect(result.teleformData).toEqual('test-teleform');
             expect(result.fileHandle).toBe(mockFileHandle);
         });
 
@@ -93,18 +101,19 @@ describe('fileSystemAccess service', () => {
 
         it('should save exam to an existing fileHandle', async () => {
             const examData = { title: 'Test Save Exam' };
-            const examState = { examData };
+            const coverPage = null;
+            const teleformData = null;
             const expectedData = {
                 exam: {
-                    examData
+                    examData: examData,
+                    coverPage: coverPage
                 },
                 teleform: {
-                    teleformData: ''
+                    teleformData: teleformData
                 }
             };
 
-            const result = await saveExamToDisk(examState, mockFileHandle);
-
+            const result = await saveExamToDisk(examData, coverPage, teleformData, mockFileHandle);
             expect(mockFileHandle.createWritable).toHaveBeenCalledTimes(1);
             expect(mockWritable.write).toHaveBeenCalledWith(JSON.stringify(expectedData, null, 2));
             expect(mockWritable.close).toHaveBeenCalledTimes(1);
@@ -112,18 +121,20 @@ describe('fileSystemAccess service', () => {
         });
 
         it('should prompt for a new fileHandle if none provided', async () => {
-            const examData = { title: 'Test New Save Exam' };
-            const examState = { examData };
+            const examData = { title: 'Test Save Exam' };
+            const coverPage = null;
+            const teleformData = null;
             const expectedData = {
                 exam: {
-                    examData
+                    examData: examData,
+                    coverPage: coverPage
                 },
                 teleform: {
-                    teleformData: ''
+                    teleformData: teleformData
                 }
             };
 
-            const result = await saveExamToDisk(examState);
+            const result = await saveExamToDisk(examData, coverPage, teleformData);
 
             expect(window.showSaveFilePicker).toHaveBeenCalledTimes(1);
             expect(mockFileHandle.createWritable).toHaveBeenCalledTimes(1);
