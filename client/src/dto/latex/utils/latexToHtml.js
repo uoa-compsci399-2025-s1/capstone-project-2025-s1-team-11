@@ -28,6 +28,10 @@ export function latexToHtml(latex) {
   html = html.replace(/\\&/g, '&amp;');
   html = html.replace(/\\#/g, '#');
   html = html.replace(/\\_/g, '_');
+  // Handle escaped dollar signs (currency): replace \\$ with a literal dollar sign
+  html = html.replace(/\\\$/g, '$');
+  // Handle escaped percent signs (for percentages): replace \\% with %
+  html = html.replace(/\\%/g, '%');
   
   // Remove LaTeX label commands
   html = html.replace(/\\label\{[^}]*\}/g, '');
@@ -72,8 +76,25 @@ function replaceMathExpressions(text) {
   result = result.replace(/(\$.*?)%[^\n$]*?(\$)/g, '$1$2');
   
   // Handle display math ($$...$$)
-  result = result.replace(/\$\$(.*?)\$\$/g, (match, formula) => {
-    return `<div class="math-display">$${cleanMathFormula(formula)}$</div>`;
+  result = result.replace(/\$\$(.*?)\$\$/gs, (match, formula) => {
+    // Check if this is a display math block (multiple lines or contains display math commands)
+    const isDisplayMath = formula.includes('\n') || 
+                         formula.includes('\\begin{align}') || 
+                         formula.includes('\\begin{equation}') ||
+                         formula.includes('\\sum') ||
+                         formula.includes('\\int') ||
+                         formula.includes('\\prod');
+    
+    if (isDisplayMath) {
+      return `<div class="math-display">$$${cleanMathFormula(formula)}$$</div>`;
+    } else {
+      return `<span class="math-inline">$$${cleanMathFormula(formula)}$$</span>`;
+    }
+  });
+  
+  // Handle inline math ($...$)
+  result = result.replace(/\$([^$]+?)\$/g, (match, formula) => {
+    return `<span class="math-inline">$$${cleanMathFormula(formula)}$$</span>`;
   });
   
   // Handle specific problems with fractions in math
@@ -85,19 +106,14 @@ function replaceMathExpressions(text) {
   // Ensure proper log rendering for bases
   result = result.replace(/\\log_([0-9]+)/g, '\\log_{$1}');
   
-  // Handle inline math ($...$)
-  result = result.replace(/\$(.*?)\$/g, (match, formula) => {
-    return `<span class="math-inline">$${cleanMathFormula(formula)}$</span>`;
-  });
-  
   // Replace \[ \] display math
   result = result.replace(/\\\[(.*?)\\\]/g, (match, formula) => {
-    return `<div class="math-display">$${cleanMathFormula(formula)}$</div>`;
+    return `<div class="math-display">$$${cleanMathFormula(formula)}$$</div>`;
   });
   
   // Replace \( \) inline math
   result = result.replace(/\\\((.*?)\\\)/g, (match, formula) => {
-    return `<span class="math-inline">$${cleanMathFormula(formula)}$</span>`;
+    return `<span class="math-inline">$$${cleanMathFormula(formula)}$$</span>`;
   });
   
   // Process math-related commands like \frac, \sqrt, etc.
