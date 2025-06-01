@@ -1,5 +1,5 @@
 import React, { useState, useCallback, Suspense, useEffect } from "react";
-import { Input, Checkbox, Select, InputNumber, Space, Typography, Row, Col } from "antd";
+import { Checkbox, Select, InputNumber, Space, Typography, Row, Col } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuestion } from "../../store/exam/examSlice.js";
 import { selectExamData } from "../../store/exam/selectors.js";

@@ -1,7 +1,7 @@
 //examDisplay.jsx
 
-import React, { useState, useMemo, useCallback, Suspense } from "react";
-import { Button, Typography, Modal, Input, Table, Select, Tooltip } from "antd";
+import React, { useState, useMemo, useCallback } from "react";
+import { Button, Typography, Modal, Input, Table } from "antd";
 const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -21,8 +21,6 @@ import RichTextEditor from "../editor/RichTextEditor.jsx";
 import { QuestionEditorContainer } from "./QuestionEditor.jsx";
 import useMessage from "../../hooks/useMessage.js";
 import { DEFAULT_OPTIONS } from '../../constants/answerOptions';
-
-const { TextArea } = Input;
 
 const ExamItemEditor = React.memo(({ modalState, onSave, exam }) => {
   const [itemState, setItemState] = useState(modalState.item);
