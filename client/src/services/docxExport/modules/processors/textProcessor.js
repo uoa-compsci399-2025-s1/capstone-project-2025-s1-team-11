@@ -165,7 +165,6 @@ export async function postProcessTextFormatting(docxBlob) {
             {
                 pattern: /§MATH_OMML§((?:(?!§\/MATH_OMML§)[\s\S])*)§\/MATH_OMML§/g,
                 replacement: (match, ommlXml) => {
-                    //console.log('Processing OMML:', ommlXml);
                     const unescapedXml = ommlXml
                         .replace(/&lt;/g, '<')
                         .replace(/&gt;/g, '>')
