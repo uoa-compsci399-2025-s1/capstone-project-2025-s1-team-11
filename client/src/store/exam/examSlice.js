@@ -148,7 +148,7 @@ const examSlice = createSlice({
     },
     //update-question 0 0 "answers" "1|4|5"
     updateQuestion: (state, action) => {
-      if (!state.examData.examBody) { return; }
+      if (!state.examData?.examBody) { return; }
       const { location, newData } = action.payload;
       const { examBodyIndex, questionsIndex } = location;
       const optionsCount = state.examData.teleformOptions.length;
@@ -379,10 +379,10 @@ const examSlice = createSlice({
       state.fileName = action.payload;
     },
     importMarkingKey: (state, action) => {
-      const { versions, questionMappings, markWeights } = action.payload;
+      const { versions, questionMappings, markWeights, shouldCreate } = action.payload;
       
-      // If no exam exists, create a minimal exam structure
-      if (!state.examData) {
+      // Use the flag passed from the component
+      if (shouldCreate) {
         state.examData = createMinimalExamFromMarkingKey(
           action.payload,
           createExam,

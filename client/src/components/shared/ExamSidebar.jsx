@@ -2,6 +2,8 @@ import React from 'react';
 import { Card, Divider, Badge, List, Button, Typography, Collapse, Tooltip, Tag } from 'antd';
 import { ProfileOutlined, RightCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { htmlToText } from '../../utilities/textUtils';
+import { useSelector } from 'react-redux';
+import { selectFileName } from '../../store/exam/selectors';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -75,6 +77,8 @@ const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToIt
 });
 
 const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) => {
+  const fileName = useSelector(selectFileName);
+
   if (!exam || !exam.examBody || !Array.isArray(exam.examBody)) {
     return (
       <Card className="exam-sidebar">
@@ -189,6 +193,15 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
               </Paragraph>
             </List.Item>
           )}
+          <List.Item>
+            <Text type="secondary">File:</Text>
+            <Tooltip title="Full file path not available due to browser privacy restrictions.">
+              <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
+                {fileName || '[unsaved file]'}
+              </Text>
+            </Tooltip>
+          </List.Item>
+
         </List>
       </div>
 
@@ -230,7 +243,7 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
                   label: (
                     <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                       <span>
-                        <ProfileOutlined /> {item.sectionNumber || item.sectionTitle}
+                        <ProfileOutlined /> {item.sectionTitle || `Section ${item.sectionNumber}`}
                       </span>
                       <Badge count={item.questions.length} style={{ backgroundColor: '#52c41a' }} />
                     </div>

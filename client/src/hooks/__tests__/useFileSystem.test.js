@@ -9,7 +9,10 @@ import examImportService from '../../services/examImportService';
 import TestExam from './Test.json';
 
 const mockStore = configureStore([]);
-const initialState = { exam: { examData: null } };
+const initialState = { 
+  exam: { examData: null, coverPage: null }, 
+  teleform: { teleformData: '' }
+};
 
 jest.mock('../../services/fileSystemAccess', () => ({
   ...jest.requireActual('../../services/fileSystemAccess'),
@@ -36,7 +39,9 @@ describe('useFileSystem hook', () => {
 
   it('openExam: loads and dispatches exam data', async () => {
     fileSystemAccess.loadExamFromFile.mockResolvedValue({
-      exam: TestExam,
+      examData: TestExam,
+      teleformData: 'test-teleform',
+      coverPage: null,
       fileHandle: { name: 'Test.json' }
     });
 
@@ -44,7 +49,7 @@ describe('useFileSystem hook', () => {
 
     await act(async () => {
       const data = await result.current.openExam();
-      expect(data.exam.examTitle).toBe('Test');
+      expect(data.examData.examTitle).toBe('Test');
     });
 
     expect(store.getActions()).toContainEqual(
@@ -65,8 +70,8 @@ describe('useFileSystem hook', () => {
   });
 
   it('saveExam: saves exam and updates fileHandle', async () => {
-    const examState = { examData: TestExam };
-    store = mockStore({ exam: examState });
+    const examState = { examData: TestExam, coverPage: null };
+    store = mockStore({ exam: examState, teleform: { teleformData: '' } });
     fileSystemAccess.saveExamToDisk.mockResolvedValue({ name: 'saved.json' });
 
     const { result } = renderWithProvider();
@@ -76,7 +81,7 @@ describe('useFileSystem hook', () => {
       expect(handle.name).toBe('saved.json');
     });
 
-    expect(fileSystemAccess.saveExamToDisk).toHaveBeenCalledWith(examState, null);
+    expect(fileSystemAccess.saveExamToDisk).toHaveBeenCalledWith(TestExam, null, '', null);
   });
 
   it('importFromFileInput: calls onError for unsupported format', async () => {

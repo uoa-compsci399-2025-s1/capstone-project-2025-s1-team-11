@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import examReducer, { importMarkingKey } from '../../store/exam/examSlice';
+import examReducer, { importMarkingKey, initialiseExamState } from '../../store/exam/examSlice';
 import { parseMarkingKeyXLSX, exportMarkingKeyToXLSX } from '../../services/markingKeyXlsxService';
 import ExcelJS from 'exceljs';
 
@@ -76,6 +76,9 @@ describe('Marking Key XLSX Integration', () => {
     // Parse marking key
     const parsedData = await parseMarkingKeyXLSX(new ArrayBuffer(0));
 
+    // Initialize exam state first
+    store.dispatch(initialiseExamState());
+
     // Dispatch to Redux store using the proper examSlice action
     store.dispatch(importMarkingKey({
       versions: parsedData.versions,
@@ -92,7 +95,8 @@ describe('Marking Key XLSX Integration', () => {
       markWeights: {
         '1': 2.5,
         '2': 2.5
-      }
+      },
+      shouldCreate: true
     }));
 
     // Verify Redux state was updated

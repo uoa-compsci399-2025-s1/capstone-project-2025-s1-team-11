@@ -37,7 +37,7 @@ const QuestionEditor = React.memo(({
       <Row gutter={16} align="top">
         <Col flex="auto">
           <RichTextEditor
-            key="question-editor"
+            key={`question-editor-${question.id || 'new'}`}
             content={question.contentFormatted}
             onChange={handleQuestionContentChange}
             placeholder="Question Text"
@@ -103,7 +103,7 @@ const AnswerEditor = React.memo(({
       <Row gutter={8} align="middle">
         <Col flex="auto">
           <RichTextEditor
-            key={`answer-editor-${index}`}
+            key={`answer-editor-${answer.id || index}-${question?.id || 'new'}`}
             content={answer.contentFormatted}
             onChange={handleChange}
             placeholder={`Answer ${options[index] || String(index + 1)}`}
