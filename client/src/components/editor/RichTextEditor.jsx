@@ -247,10 +247,16 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
               renderHTML: attributes => {
                 if (!attributes.width) return {};
                 const width = attributes.width.toString().includes('px') ? attributes.width : attributes.width + 'px';
-                return { 
-                  width: width,
-                  style: `width: ${width}; height: auto;`
-                };
+                // Only set width in style if there's no height attribute to avoid conflicts
+                const heightAttr = attributes.height;
+                if (heightAttr) {
+                  return { width: width };
+                } else {
+                  return { 
+                    width: width,
+                    style: `width: ${width}; height: auto;`
+                  };
+                }
               },
             },
             height: {
@@ -263,9 +269,21 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
               renderHTML: attributes => {
                 if (!attributes.height) return {};
                 const height = attributes.height.toString().includes('px') ? attributes.height : attributes.height + 'px';
-                return { 
-                  height: height
-                };
+                const width = attributes.width;
+                if (width) {
+                  // Both width and height are present - use explicit dimensions
+                  const widthValue = width.toString().includes('px') ? width : width + 'px';
+                  return { 
+                    height: height,
+                    style: `width: ${widthValue}; height: ${height};`
+                  };
+                } else {
+                  // Only height is present
+                  return { 
+                    height: height,
+                    style: `height: ${height}; width: auto;`
+                  };
+                }
               },
             },
           };

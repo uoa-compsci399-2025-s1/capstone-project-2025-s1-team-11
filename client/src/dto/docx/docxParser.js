@@ -11,13 +11,13 @@ import { transformXmlToDto } from './transformXmlToDto.js';
 export async function parseDocx(file) {
     try {
         // Extract document content
-        const { documentXml, relationships, imageData } = await extractDocumentXml(file);
+        const { documentXml, relationships, imageData, drawingInstances } = await extractDocumentXml(file);
 
         // Parse XML to JSON
         const parsedXml = parseXmlToJson(documentXml);
 
         // Transform to DTO structure
-        const dto = transformXmlToDto(parsedXml, relationships, imageData);
+        const dto = transformXmlToDto(parsedXml, relationships, imageData, drawingInstances);
 
         return dto;
     } catch (error) {

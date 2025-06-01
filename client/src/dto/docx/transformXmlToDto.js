@@ -5,7 +5,7 @@ import { buildContentFormatted, detectMathElements } from './utils/buildContentF
 import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
 // import { extractPlainText } from './utils/extractPlainText.js';
 
-export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) => {
+export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, drawingInstances = []) => {
   const body = xmlJson['w:document']?.['w:body'];
   if (!body) {
     throw new Error('Invalid XML structure: missing w:body');
@@ -125,7 +125,9 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
     let text = buildContentFormatted(runs, {
       relationships,
       imageData,
-      preserveMath: true
+      preserveMath: true,
+      drawingInstances,
+      paragraphIndex: i
     }, para);
 
     // console.log(`Block ${i}: type=${block['w:p'] ? 'paragraph' : 'other'}, text="${text}"`,
@@ -173,7 +175,9 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
         removeMarks: true,
         relationships,
         imageData,
-        preserveMath: true
+        preserveMath: true,
+        drawingInstances,
+        paragraphIndex: i
       }, para);
 
       currentQuestion = {
@@ -201,7 +205,9 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}) =
       const answerText = buildContentFormatted(runs, {
         relationships,
         imageData,
-        preserveMath: true
+        preserveMath: true,
+        drawingInstances,
+        paragraphIndex: i
       }, para);
 
       currentAnswers.push({
