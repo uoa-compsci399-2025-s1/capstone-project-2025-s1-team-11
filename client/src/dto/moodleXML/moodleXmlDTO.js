@@ -188,7 +188,7 @@ function extractImages(htmlContent) {
     const doc = parser.parseFromString(htmlContent, "text/html");
     const imgElements = doc.getElementsByTagName("img");
     
-    Array.from(imgElements).forEach(img => {
+    Array.from(imgElements).forEach((img) => {
         images.push(new ImageDTO(
             img.src,
             img.alt,
@@ -253,14 +253,8 @@ function applyDefaultImageSizing(htmlContent) {
     
     let hasChanges = false;
     
-    Array.from(imgElements).forEach((img, index) => {
-        // console.log(`\n--- Processing image ${index + 1} ---`);
-        // console.log("Image src:", img.src?.substring(0, 50) + "...");
-        // console.log("Existing width attr:", img.getAttribute('width'));
-        // console.log("Existing height attr:", img.getAttribute('height'));
-        // console.log("Existing width style:", img.style.width);
-        // console.log("Existing height style:", img.style.height);
-        
+    Array.from(imgElements).forEach((img) => {
+        // console.log("Processing image...");
         // Skip if image already has both width and height attributes or styles
         const hasExplicitWidth = img.getAttribute('width') || img.style.width;
         const hasExplicitHeight = img.getAttribute('height') || img.style.height;
