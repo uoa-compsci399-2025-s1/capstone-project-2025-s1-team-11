@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCoverPage } from "../store/exam/examSlice";
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/builder/examDisplay.jsx";
-import ExamFileManager from "../components/builder/ExamContentManager.jsx";
+// import ExamFileManager from "../components/builder/ExamContentManager.jsx";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { Typography, Button, Collapse, Divider} from "antd";
 //import { exportExamToPdf } from "../services/exportPdf.js";
@@ -86,12 +86,10 @@ const Builder = () => {
             {/* MCQ Exam Questions Section */}
             <div style={{ marginTop: '24px' }}>
                 <Title level={3}>Questions</Title>
-                {exam?
-                <ExamDisplay
-                    exam={exam}
-                />
-                : <EmptyExam />}
-                <ExamFileManager />
+                {exam
+                    ? <ExamDisplay exam={exam} />
+                    : <EmptyExam />}
+                {/* <ExamFileManager /> - removed from here so it's not on all three tabs, only the builder tab */}
             </div>
 
         </>

@@ -4,6 +4,7 @@ import { Button, Typography, Modal, Input, Table } from "antd";
 import { Tabs } from "antd";
 import SummaryTable from "./SummaryTable";
 import ExamPreview from "./ExamPreview";
+import ExamFileManager from "./ExamContentManager.jsx";
 const { Title, Text, Paragraph } = Typography;
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -533,6 +534,8 @@ const ExamDisplay = () => {
                   pagination={{ pageSize: 10 }}
                   scroll={{ x: "max-content" }}
                 />
+
+                <ExamFileManager />
               </>
             )
           },
