@@ -89,7 +89,7 @@ const ExamContentManager = () => {
         />
       )}
       {examData && (
-        <Space style={{ marginTop: "16px", justifyContent: "space-between", width: "100%", display: "flex" }}>
+        <Space style={{justifyContent: "space-between", width: "100%", display: "flex" }}>
           <span /> {/* Placeholder for left alignment */}
         </Space>
       )}
