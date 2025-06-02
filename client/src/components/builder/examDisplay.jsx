@@ -534,8 +534,9 @@ const ExamDisplay = () => {
                   pagination={{ pageSize: 10 }}
                   scroll={{ x: "max-content" }}
                 />
-
-                <ExamFileManager />
+              <div style={{padding: "40px 0 20px 0"}}>
+                  <ExamFileManager />
+                </div>
               </>
             )
           },
