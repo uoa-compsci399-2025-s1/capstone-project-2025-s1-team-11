@@ -94,7 +94,6 @@ const Builder = () => {
                 <ExamFileManager />
             </div>
 
-            <Divider />
         </>
     );
 };
