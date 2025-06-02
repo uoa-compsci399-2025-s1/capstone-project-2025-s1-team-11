@@ -1,7 +1,6 @@
 // client/docxDTO/utils/extractDocumentXml.js
 
 import JSZip from 'jszip';
-//import fs from 'fs/promises';
 import { parseXmlToJson } from './parseXmlToJson.js';
 
 // Image optimization settings
@@ -70,8 +69,8 @@ const optimizeImage = async (imageArrayBuffer, mimeType) => {
       img.onerror = () => reject(new Error('Failed to load image for optimization'));
       img.src = URL.createObjectURL(blob);
 
-    } catch (error) {
-      reject(error);
+    } catch (err) {
+      reject(err);
     }
   });
 };
@@ -79,7 +78,6 @@ const optimizeImage = async (imageArrayBuffer, mimeType) => {
 /**
  * Helper function to extract image dimensions and positioning information
  * @param {Object} zip - JSZip object containing the document
- * @param {String} relationships - Object mapping relationship IDs to targets
  * @returns {Promise<Object>} - Object containing drawing elements with their information
  */
 const extractDrawingElements = async (zip) => {
@@ -178,7 +176,7 @@ const extractDrawingElements = async (zip) => {
     });
 
     return drawingMap;
-  } catch (error) {
+  } catch {
     return {};
   }
 };
@@ -227,13 +225,12 @@ const extractMathElements = async (zip, documentXml) => {
     mathElements.sort((a, b) => a.position - b.position);
 
     return mathElements;
-  } catch (error) {
+  } catch {
     return [];
   }
 };
 
 export const extractDocumentXml = async (file) => {
-  //const data = await fs.readFile(filePath);
   const zip = await JSZip.loadAsync(file);
 
   // Extract main document
@@ -296,7 +293,7 @@ export const extractDocumentXml = async (file) => {
                 mimeType = IMAGE_OPTIMIZATION.format;
               }
               // For PNG, mimeType stays as 'image/png'
-            } catch (error) {
+            } catch  {
               // Continue with original image if optimization fails
             }
           }
@@ -315,7 +312,7 @@ export const extractDocumentXml = async (file) => {
             ...drawingElements[relId] // Add dimension and position data if available
           };
         }
-      } catch (error) {
+      } catch  {
         // Handle error silently
       }
     }

@@ -113,8 +113,8 @@ function parseParagraphChildrenFromXml(paragraphXml) {
  */
 function processSequentialParagraphContent(para, documentXml, options = {}, mathElementsWithXml = [], globalCounters = {}) {
     const {
-        removeMarks = false,
-        relationships = {},
+        //removeMarks = false,
+        //relationships = {},
         imageData = {},
         preserveMath = true,
         mathRegistry = {}
@@ -259,7 +259,7 @@ function processSequentialParagraphContent(para, documentXml, options = {}, math
  * @param {Object} globalCounters - Global counters for tracking across paragraphs
  * @returns {string} - Content string
  */
-function processParagraphFromJson(para, options = {}, mathElementsWithXml = [], globalCounters = {}) {
+function processParagraphFromJson(para, options = {}, mathElementsWithXml = []) { //function processParagraphFromJson(para, options = {}, mathElementsWithXml = [], globalCounters = {}) {
     const {
         relationships = {},
         imageData = {},
@@ -315,7 +315,7 @@ export const buildContentFormatted = (runs, options = {}, parentPara = null, doc
         relationships = {},
         imageData = {},
         preserveMath = true,
-        mathRegistry = {},
+        //mathRegistry = {},
         mathElementsWithXml = []
     } = options;
 

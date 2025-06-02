@@ -1,5 +1,5 @@
 ﻿import { loadDocx, copyRelatedFiles } from "../loaders/docxLoader.js";
-import { extractRefs, findAndRemoveFirstSectPr } from "../processors/documentStructureProcessor.js";
+import { findAndRemoveFirstSectPr } from "../processors/documentStructureProcessor.js";
 import {
     extractRelationships,
     processRelationships,
@@ -167,7 +167,7 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
             mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         });
     } catch (error) {
-        console.error('Error merging docx files:', error);
+        console.error('Something failed in mergeDocxFiles():', error);
         throw error;
     }
 }

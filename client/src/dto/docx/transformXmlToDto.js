@@ -1,8 +1,6 @@
 // client/docxDTO/transformXmlToDto.js
 
-import { buildContentFormatted, detectMathElements } from './utils/buildContentFormatted.js';
-// import { createExam } from '../../store/exam/examUtils.js';
-// import { convertOmmlToMathML } from './utils/ommlToMathML.js';
+import { buildContentFormatted } from './utils/buildContentFormatted.js';
 import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
 
 /**
@@ -81,8 +79,6 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
     ...(body['w:sectPr'] ? [body['w:sectPr']] : [])
   ];
 
-
-  //const dto = [];
   const dto = {
     type: 'exam',
     examBody: []
@@ -167,7 +163,6 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
 
     // Get matching math elements for this paragraph from pre-extracted elements
     const mathElementsWithXml = getMatchingMathElementsForParagraph(para, preExtractedMathElements, globalCounters);
-    const containsMath = mathElementsWithXml.length > 0;
 
     // Get all runs
     const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);

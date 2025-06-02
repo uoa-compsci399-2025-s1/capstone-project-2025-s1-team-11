@@ -5,8 +5,8 @@ export const extractPlainText = (runs, options = {}) => {
 
   let result = '';
   let lastRunEndedWithSpace = false;
-  let lastRunWasLineBreak = false; // Track if the last run was a line break
-  let lastRunWasSingleChar = false; // Track if the last run was a single character
+  let lastRunWasLineBreak = false;
+  let lastRunWasSingleChar = false;
 
   for (let i = 0; i < runs.length; i++) {
     const r = runs[i];
@@ -49,11 +49,11 @@ export const extractPlainText = (runs, options = {}) => {
     if (r['w:br'] !== undefined) {
       result += '<br>';
       lastRunEndedWithSpace = false;
-      lastRunWasLineBreak = true; // Set the flag
+      lastRunWasLineBreak = true;
 
       // Check if this run also has text (uncommon but possible)
       if (r['w:t'] === undefined) {
-        continue; // Only skip if there's no text in this run
+        continue;
       }
       // If there is text, fall through to process it
     }
@@ -91,8 +91,8 @@ export const extractPlainText = (runs, options = {}) => {
         result += `<img alt="${alt}" src="[Image Placeholder]">`;
       }
 
-      lastRunWasLineBreak = false; // Reset the flag
-      lastRunWasSingleChar = false; // Reset single char flag
+      lastRunWasLineBreak = false;
+      lastRunWasSingleChar = false;
       continue;
     }
 
@@ -118,7 +118,6 @@ export const extractPlainText = (runs, options = {}) => {
       if (r['w:sym']) {
         // Symbol character
         const symChar = r['w:sym']['@_w:char'];
-        const symFont = r['w:sym']['@_w:font'];
 
         if (symChar) {
           // Convert hex code to character if needed
@@ -207,17 +206,13 @@ export const extractPlainText = (runs, options = {}) => {
     result += textContent;
 
     lastRunEndedWithSpace = textContent.endsWith(' ');
-    lastRunWasLineBreak = false; // Reset the flag for non-linebreak runs
-    lastRunWasSingleChar = currentIsSingleWordChar; // Track if this run was a single character
+    lastRunWasLineBreak = false;
+    lastRunWasSingleChar = currentIsSingleWordChar;
   }
 
   // Post-cleaning - Only handle explicit notation patterns
   result = result.replace(/(\w+)~(\d+)~/g, '$1<sub>$2</sub>');
   result = result.replace(/(\w+)\^(\d+)\^/g, '$1<sup>$2</sup>');
-
-  // REMOVED: The problematic hex notation regex that was causing false subscript detection
-  // Subscript formatting should come from actual Word document formatting (w:vertAlign),
-  // not from pattern matching that makes assumptions about content
 
   // Keep subscripts and superscripts together with their base text
   result = result.replace(/(\w+)\s+<(sub|sup)>(\w+)<\/(sub|sup)>/g, '$1<$2>$3</$4>');

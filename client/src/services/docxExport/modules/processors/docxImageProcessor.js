@@ -7,7 +7,6 @@ import ImageModule from "docxtemplater-image-module-free";
  * Create the image module configuration
  */
 export function createImageModule() {
-    // noinspection JSUnusedGlobalSymbols
     const imageOpts = {
         centered: false,
         fileType: "docx",
@@ -22,6 +21,7 @@ export function createImageModule() {
                 }
                 return bytes.buffer;
             } catch (error) {
+                console.error('Something failed in createImageModule():', error);
                 throw error;
             }
         },
@@ -45,7 +45,7 @@ export function processTemplateData(templateData) {
 
     // Process exam body items
     if (processedData.examBody) {
-        processedData.examBody = processedData.examBody.map((item, itemIndex) => {
+        processedData.examBody = processedData.examBody.map((item) => {
             let processedItem = {...item};
 
             // Handle section content with images
@@ -206,7 +206,7 @@ export async function postProcessDocxImages(docxBlob, processedData) {
 
                 // Check questions within sections for images
                 if (item.questions) {
-                    item.questions.forEach((question, qIndex) => {
+                    item.questions.forEach(question => {
                         // Check for structured image data in questionElements
                         if (question.questionElements) {
                             question.questionElements.forEach((element, index) => {
@@ -470,6 +470,7 @@ export async function postProcessDocxImages(docxBlob, processedData) {
 
         return processedDocx;
 
+        // eslint-disable-next-line no-unused-vars
     } catch (error) {
         return docxBlob; // Return original if error
     }
