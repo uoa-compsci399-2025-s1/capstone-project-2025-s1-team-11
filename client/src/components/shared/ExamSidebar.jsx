@@ -35,7 +35,7 @@ const QuestionItem = React.memo(({ question, currentItemId, onNavigateToItem }) 
         <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
       </List.Item>
     );
-  } catch (error) {
+  } catch {
     return <List.Item>Error rendering question</List.Item>;
   }
 });
@@ -67,7 +67,7 @@ const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToIt
         <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
       </List.Item>
     );
-  } catch (error) {
+  } catch {
     return <List.Item>Error rendering question</List.Item>;
   }
 });

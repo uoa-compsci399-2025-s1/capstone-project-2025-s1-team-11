@@ -296,7 +296,7 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
       const html = editor.getHTML();
       onChange(html);
     },
-    onCreate: ({ editor }) => {
+    onCreate: () => {
       // Editor created successfully
     },
     onDestroy: () => {
