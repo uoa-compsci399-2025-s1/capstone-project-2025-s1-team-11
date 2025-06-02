@@ -37,13 +37,14 @@ export class MoodleXmlDTO {
 }
 
 export class QuestionXmlDTO {
-    constructor(type, name, questionText, generalFeedback, answers, images) {
+    constructor(type, name, questionText, generalFeedback, answers, images, defaultgrade) {
         this.type = type;           
         this.name = name;           
         this.questionText = questionText;
         this.generalFeedback = generalFeedback;
         this.answers = answers;     
         this.images = images;       
+        this.defaultgrade = defaultgrade; // Mark value from XML
     }
 
     static fromXMLElement(elem) {
@@ -91,6 +92,17 @@ export class QuestionXmlDTO {
         let generalFeedback = generalFeedbackElem ? generalFeedbackElem.getElementsByTagName("text")[0].textContent : "";
         generalFeedback = replacePluginFileReferences(generalFeedback, fileMap);
         
+        // Extract defaultgrade (marks) from XML structure
+        const defaultgradeElem = elem.getElementsByTagName("defaultgrade")[0];
+        let defaultgrade = 1; // Default value
+        if (defaultgradeElem) {
+            const gradeValue = parseFloat(defaultgradeElem.textContent);
+            if (!isNaN(gradeValue)) {
+                defaultgrade = gradeValue;
+            }
+        }
+        // console.log("  - Default grade:", defaultgrade);
+        
         // Answer parsing
         const answerElems = elem.getElementsByTagName("answer");
         // console.log(`  - Found ${answerElems.length} answer elements`);
@@ -119,7 +131,7 @@ export class QuestionXmlDTO {
             console.error("  - Failed to extract images:", error);
         }
         
-        return new QuestionXmlDTO(type, name, questionText, generalFeedback, answers, images);
+        return new QuestionXmlDTO(type, name, questionText, generalFeedback, answers, images, defaultgrade);
     }
 }
 
