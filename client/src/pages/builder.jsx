@@ -63,7 +63,7 @@ const Builder = () => {
             <Divider />
 
             <div>
-                        <Typography.Title level={3}>Cover Page</Typography.Title>
+                        <Typography.Title level={2}>Cover Page</Typography.Title>
                         <Button type="default" style={{ marginBottom: 12 }} onClick={handleUploadCoverPageClick}>
                             Upload Cover Page
                         </Button>
@@ -85,7 +85,7 @@ const Builder = () => {
 
             {/* MCQ Exam Questions Section */}
             <div style={{ marginTop: '24px' }}>
-                <Title level={3}>Questions</Title>
+                <Typography.Title level={2}>Questions</Typography.Title>
                 {exam
                     ? <ExamDisplay exam={exam} />
                     : <EmptyExam />}
