@@ -53,16 +53,6 @@ const ExamSidebarProvider = ({ children }) => {
 
   const showSidebar = !!exam;
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('ExamSidebarProvider Debug:', {
-      exam: !!exam,
-      examBody: exam?.examBody?.length || 0,
-      showSidebar,
-      sidebarCollapsed
-    });
-  }, [exam, showSidebar, sidebarCollapsed]);
-
   return (
     <>
       {showSidebar && (

@@ -36,8 +36,6 @@ const QuestionItem = React.memo(({ question, currentItemId, onNavigateToItem }) 
       </List.Item>
     );
   } catch (error) {
-    console.error('Error rendering QuestionItem:', error);
-    console.error('Question causing error:', question);
     return <List.Item>Error rendering question</List.Item>;
   }
 });
@@ -70,8 +68,6 @@ const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToIt
       </List.Item>
     );
   } catch (error) {
-    console.error('Error rendering StandaloneQuestionItem:', error);
-    console.error('Item causing error:', item);
     return <List.Item>Error rendering question</List.Item>;
   }
 });

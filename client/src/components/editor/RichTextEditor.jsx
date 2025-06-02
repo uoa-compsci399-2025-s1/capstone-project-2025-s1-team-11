@@ -297,10 +297,10 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
       onChange(html);
     },
     onCreate: ({ editor }) => {
-      console.log('Editor created successfully:', editor);
+      // Editor created successfully
     },
     onDestroy: () => {
-      console.log('Editor destroyed');
+      // Editor destroyed
     },
     editorProps: {
       attributes: {
@@ -378,7 +378,6 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
         });
         
         if (hasImageChange) {
-          //console.log('Image size changed - triggering update');
           onChange(editor.getHTML());
         }
       });
