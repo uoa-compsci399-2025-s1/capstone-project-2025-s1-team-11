@@ -137,11 +137,18 @@ export const buildContentFormatted = (runs, options = {}, parentPara = null) => 
         removeMarks = false,
         relationships = {},
         imageData = {},
-        preserveMath = true // Default to true
+        preserveMath = true, // Default to true
+        drawingInstances = [],
+        paragraphIndex = 0
     } = options;
 
     // Get the plain text content using the extractPlainText utility
-    let content = extractPlainText(runs, { relationships, imageData });
+    let content = extractPlainText(runs, { 
+        relationships, 
+        imageData, 
+        drawingInstances, 
+        paragraphIndex 
+    });
 
     // Remove marks pattern if requested
     if (removeMarks) {

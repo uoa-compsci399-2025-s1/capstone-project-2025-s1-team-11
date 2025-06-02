@@ -8,14 +8,19 @@ const CustomResizableExtension = Extension.create({
     return {
       types: ["image"],
       handlerStyle: {
-        width: "8px",
-        height: "8px",
-        background: "rgb(145, 145, 145)",
+        width: "10px",
+        height: "10px",
+        background: "#1677ff",
+        border: "2px solid #ffffff",
+        borderRadius: "50%",
         pointerEvents: "all",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+        zIndex: "1000",
       },
       layerStyle: {
-        border: "none",
+        border: "2px solid #1677ff",
         pointerEvents: "none",
+        zIndex: "999",
       },
     };
   },
@@ -34,10 +39,48 @@ const CustomResizableExtension = Extension.create({
         attributes: {
           width: {
             default: null,
-            parseHTML: (element) => element.style.width,
+            parseHTML: (element) => {
+              // Priority: width attribute > style width
+              return element.getAttribute('width') || 
+                     (element.style.width ? element.style.width.replace('px', '') + 'px' : null);
+            },
             renderHTML: (attributes) => {
               if (!attributes.width) return {};
-              return { style: `width: ${attributes.width}` };
+              const width = attributes.width.toString().includes('px') ? attributes.width : attributes.width + 'px';
+              // Only set width in style if there's no height attribute to avoid conflicts
+              const heightAttr = attributes.height;
+              if (heightAttr) {
+                return { width: width };
+              } else {
+                return { width: width, style: `width: ${width}; height: auto;` };
+              }
+            },
+          },
+          height: {
+            default: null,
+            parseHTML: (element) => {
+              // Priority: height attribute > style height
+              return element.getAttribute('height') || 
+                     (element.style.height ? element.style.height.replace('px', '') + 'px' : null);
+            },
+            renderHTML: (attributes) => {
+              if (!attributes.height) return {};
+              const height = attributes.height.toString().includes('px') ? attributes.height : attributes.height + 'px';
+              const width = attributes.width;
+              if (width) {
+                // Both width and height are present - use explicit dimensions
+                const widthValue = width.toString().includes('px') ? width : width + 'px';
+                return { 
+                  height: height,
+                  style: `width: ${widthValue}; height: ${height};`
+                };
+              } else {
+                // Only height is present
+                return { 
+                  height: height,
+                  style: `height: ${height}; width: auto;`
+                };
+              }
             },
           },
         },
@@ -62,7 +105,6 @@ const CustomResizableExtension = Extension.create({
     resizeLayer.addEventListener("mousedown", (e) => {
       e.preventDefault();
       const resizeElement = this.storage.resizeElement;
-      const resizeNode = this.storage.resizeNode;
       if (!resizeElement) return;
       //if (/bottom/.test(e.target.className)) {
       if (e.target.classList.contains("handler")) {
@@ -73,23 +115,62 @@ const CustomResizableExtension = Extension.create({
           const width = resizeElement.clientWidth;
           const distanceX = e.screenX - startX;
           const total = width + dir * distanceX;
-          // resizeElement
-          resizeElement.style.width = total + "px";
-          resizeNode.attrs.width = total + "px";
-          // resizeLayer
-          const clientWidth = resizeElement.clientWidth;
-          const clientHeight = resizeElement.clientHeight;
+          
+          // Maintain aspect ratio - with safety checks
+          let aspectRatio = 1; // Default aspect ratio
+          if (resizeElement.naturalWidth && resizeElement.naturalHeight) {
+            aspectRatio = resizeElement.naturalHeight / resizeElement.naturalWidth;
+          } else if (resizeElement.clientWidth && resizeElement.clientHeight) {
+            // Fallback to current display dimensions if natural dimensions aren't available
+            aspectRatio = resizeElement.clientHeight / resizeElement.clientWidth;
+          }
+          
+          const newHeight = total * aspectRatio;
+          
+          // Ensure minimum size
+          const minSize = 20;
+          const finalWidth = Math.max(minSize, total);
+          const finalHeight = Math.max(minSize, newHeight);
+          
+          // Update element styles for immediate visual feedback
+          resizeElement.style.width = finalWidth + "px";
+          resizeElement.style.height = finalHeight + "px";
+          
+          // Update resizeLayer position and size
           const pos = getRelativePosition(resizeElement, element);
           resizeLayer.style.top = pos.top + "px";
           resizeLayer.style.left = pos.left + "px";
-          resizeLayer.style.width = clientWidth + "px";
-          resizeLayer.style.height = clientHeight + "px";
+          resizeLayer.style.width = finalWidth + "px";
+          resizeLayer.style.height = finalHeight + "px";
           startX = e.screenX;
         };
-        document.addEventListener("mousemove", mousemoveHandle);
-        document.addEventListener("mouseup", () => {
+        
+        const mouseupHandle = () => {
+          // On mouse up, dispatch a proper TipTap transaction to persist the changes
+          const finalWidth = parseInt(resizeElement.style.width);
+          const finalHeight = parseInt(resizeElement.style.height);
+          
+          // Find the position of the selected node
+          const selection = editor.state.selection;
+          if (selection && selection.node) {
+            const transaction = editor.state.tr.setNodeMarkup(
+              selection.from,
+              null,
+              {
+                ...selection.node.attrs,
+                width: `${finalWidth}px`,
+                height: `${finalHeight}px`,
+              }
+            );
+            editor.view.dispatch(transaction);
+          }
+          
           document.removeEventListener("mousemove", mousemoveHandle);
-        });
+          document.removeEventListener("mouseup", mouseupHandle);
+        };
+        
+        document.addEventListener("mousemove", mousemoveHandle);
+        document.addEventListener("mouseup", mouseupHandle);
       }
     });
     // 句柄

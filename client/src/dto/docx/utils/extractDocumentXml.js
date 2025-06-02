@@ -10,6 +10,7 @@ import { parseXmlToJson } from './parseXmlToJson.js';
  */
 const extractDrawingElements = async (zip) => {
   const drawingMap = {};
+  const drawingInstances = []; // NEW: Store all instances with position info
 
   try {
     // Get the document.xml content
@@ -20,11 +21,11 @@ const extractDrawingElements = async (zip) => {
     const paragraphs = documentJson['w:document']?.['w:body']?.['w:p'];
     const paragraphArray = Array.isArray(paragraphs) ? paragraphs : (paragraphs ? [paragraphs] : []);
 
-    paragraphArray.forEach(paragraph => {
+    paragraphArray.forEach((paragraph, paragraphIndex) => {
       const runs = paragraph['w:r'];
       const runArray = Array.isArray(runs) ? runs : (runs ? [runs] : []);
 
-      runArray.forEach(run => {
+      runArray.forEach((run, runIndex) => {
         if (run['w:drawing']) {
           // Process inline images
           if (run['w:drawing']['wp:inline']) {
@@ -42,12 +43,18 @@ const extractDrawingElements = async (zip) => {
               const widthPt = widthEmu / 12700; // 914400/72 = 12700
               const heightPt = heightEmu / 12700;
 
-              drawingMap[embedId] = {
+              const instanceData = {
                 type: 'inline',
                 width: widthPt,
                 height: heightPt,
-                embedId: embedId
+                embedId: embedId,
+                paragraphIndex,
+                runIndex
               };
+
+              // Store in both the legacy map (for backward compatibility) and the new instances array
+              drawingMap[embedId] = instanceData;
+              drawingInstances.push(instanceData);
             }
           }
 
@@ -84,11 +91,13 @@ const extractDrawingElements = async (zip) => {
                       anchor['wp:wrapTight'] ? 'tight' :
                           anchor['wp:wrapThrough'] ? 'through' : 'inline';
 
-              drawingMap[embedId] = {
+              const instanceData = {
                 type: 'floating',
                 width: widthPt,
                 height: heightPt,
                 embedId: embedId,
+                paragraphIndex,
+                runIndex,
                 position: {
                   horizontalRelative: hRelative,
                   verticalRelative: vRelative,
@@ -97,16 +106,20 @@ const extractDrawingElements = async (zip) => {
                 },
                 wrapping: wrapType
               };
+
+              // Store in both the legacy map (for backward compatibility) and the new instances array
+              drawingMap[embedId] = instanceData;
+              drawingInstances.push(instanceData);
             }
           }
         }
       });
     });
 
-    return drawingMap;
+    return { drawingMap, drawingInstances };
   } catch (error) {
     console.error('Error extracting drawing elements:', error);
-    return {};
+    return { drawingMap: {}, drawingInstances: [] };
   }
 };
 
@@ -136,7 +149,7 @@ export const extractDocumentXml = async (file) => {
   }
 
   // Extract drawing elements with positioning and dimension info
-  const drawingElements = await extractDrawingElements(zip);
+  const { drawingMap, drawingInstances } = await extractDrawingElements(zip);
 
   // Extract images as base64
   const imageData = {};
@@ -172,7 +185,7 @@ export const extractDocumentXml = async (file) => {
             dataUrl: `data:${mimeType};base64,${base64Image}`,
             mimeType: mimeType,
             filename: target.split('/').pop(),
-            ...drawingElements[relId] // Add dimension and position data if available
+            ...drawingMap[relId] // Add dimension and position data if available
           };
         }
       } catch (error) {
@@ -181,5 +194,5 @@ export const extractDocumentXml = async (file) => {
     }
   }
 
-  return { documentXml, relationships, imageData };
+  return { documentXml, relationships, imageData, drawingInstances };
 };

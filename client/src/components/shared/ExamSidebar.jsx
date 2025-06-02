@@ -35,9 +35,7 @@ const QuestionItem = React.memo(({ question, currentItemId, onNavigateToItem }) 
         <Badge count={question.marks} style={{ backgroundColor: '#1890ff' }} />
       </List.Item>
     );
-  } catch (error) {
-    console.error('Error rendering QuestionItem:', error);
-    console.error('Question causing error:', question);
+  } catch {
     return <List.Item>Error rendering question</List.Item>;
   }
 });
@@ -69,9 +67,7 @@ const StandaloneQuestionItem = React.memo(({ item, currentItemId, onNavigateToIt
         <Badge count={item.marks} style={{ backgroundColor: '#1890ff' }} />
       </List.Item>
     );
-  } catch (error) {
-    console.error('Error rendering StandaloneQuestionItem:', error);
-    console.error('Item causing error:', item);
+  } catch {
     return <List.Item>Error rendering question</List.Item>;
   }
 });

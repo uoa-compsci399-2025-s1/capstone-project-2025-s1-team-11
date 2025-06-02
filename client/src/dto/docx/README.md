@@ -7,6 +7,31 @@ Work in progress — basic parsing of sections, questions, answers, marks, image
 
 ---
 
+## Recent Fixes
+
+### Image Sizing Fix (Multiple Instances)
+**Problem**: When the same image appears multiple times in a DOCX with different dimensions (e.g., `rId4` appearing with both 75.50x90.75 and 120.75x145.14), the last occurrence would overwrite earlier ones, causing all instances to have the same size.
+
+**Solution**: Updated the processing pipeline to store per-instance dimensions instead of per-embedId dimensions:
+- `extractDocumentXml.js`: Now stores `drawingInstances` array with position information (paragraphIndex, runIndex)
+- `extractPlainText.js`: Looks up correct dimensions by matching position instead of just embedId
+- Data flows through: `docxParser.js` → `transformXmlToDto.js` → `buildContentFormatted.js` → `extractPlainText.js`
+
+**Result**: Each image instance now gets its correct size based on where it appears in the document.
+
+### Image Aspect Ratio Fix (RichTextEditor)
+**Problem**: Images were getting stretched/distorted after resizing in the RichTextEditor due to conflicting CSS styles. The width renderHTML was setting `height: auto` which overrode explicit height attributes, causing aspect ratio distortion during export.
+
+**Solution**: Fixed the renderHTML logic in both `RichTextEditor.jsx` and `CustomResizableExtension.js`:
+- **Conditional Style Application**: Width renderHTML only sets `height: auto` when no height attribute is present
+- **Coordinated Rendering**: When both width and height are present, height renderHTML includes both dimensions in style
+- **Proper Transaction Dispatch**: Fixed resize extension to dispatch TipTap transactions on mouseup to persist changes
+- **Improved Aspect Ratio Calculation**: Added safety checks for naturalWidth/naturalHeight with fallbacks
+
+**Result**: Images now maintain their aspect ratio during resize and export correctly without distortion.
+
+---
+
 ## Notes
 
 - MVP only — complex styles and edge cases not fully supported yet
