@@ -97,8 +97,14 @@ const StudentReport = ({ student, questionStats, examData, totalExamMarks }) => 
       <Card type="inner" title="Score Summary">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <Text>Marks: {student.totalMarks || 0} / {totalExamMarks || student.maxMarks || 0} ({studentScore.toFixed(1)}%)</Text>
-            <Text style={{ display: 'block', marginTop: '8px' }}>Correct Answers: {totalCorrect} / {totalQuestions}</Text>
+            <Text>
+              <Text strong style={{ fontSize: '16px' }}>Marks:</Text>
+              <Text> {student.totalMarks || 0} / {totalExamMarks || student.maxMarks || 0} ({studentScore.toFixed(1)}%)</Text>
+            </Text>
+            <Text style={{ display: 'block', marginTop: '8px' }}>
+              <Text strong style={{ fontSize: '16px' }}>Correct Answers:</Text>
+              <Text> {totalCorrect} / {totalQuestions}</Text>
+            </Text>
           </div>
           
           <div style={{ width: '200px', height: '200px' }}>
