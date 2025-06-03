@@ -509,7 +509,7 @@ const StaticContextBar = ({
                           key: 'docx',
                           label: 'Download as DOCX',
                           onClick: async () => {
-                            await handleExportDocx(examData, coverPage, mathRegistry);
+                            await handleExportDocx(examData, coverPage, mathRegistry, message);
                             setExportDropdownOpen(false);
                           }
                         },

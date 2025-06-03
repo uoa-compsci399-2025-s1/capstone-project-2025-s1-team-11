@@ -1,8 +1,8 @@
-import { message, Modal } from 'antd';
+import { Modal } from 'antd';
 import { ExamExportService } from '../services/examExportService';
 import React from 'react';
 
-export const handleExportDocx = async (exam, coverPage, mathRegistry) => {
+export const handleExportDocx = async (exam, coverPage, mathRegistry, message) => {
     try {
         if (!exam) {
             message.error("No exam data available for export");
