@@ -102,7 +102,7 @@ const StudentReport = ({ student, questionStats, examData, totalExamMarks }) => 
               <Text> {student.totalMarks || 0} / {totalExamMarks || student.maxMarks || 0} ({studentScore.toFixed(1)}%)</Text>
             </Text>
             <Text style={{ display: 'block', marginTop: '8px' }}>
-              <Text strong style={{ fontSize: '16px' }}>Correct Answers:</Text>
+              <Text strong style={{ fontSize: '16px' }}>Correct Answers (out of questions answered):</Text>
               <Text> {totalCorrect} / {totalQuestions}</Text>
             </Text>
           </div>
