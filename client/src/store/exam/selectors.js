@@ -218,4 +218,5 @@ export const selectCorrectAnswerIndices = createSelector(
 // Other simple selectors
 export const selectTeleformData = (state) => state.teleform?.teleformData || '';
 export const selectCoverPage = (state) => state.exam?.coverPage || null;
+export const selectMathRegistry = (state) => state.exam?.mathRegistry || null;
 export const selectFileName = (state) => state.exam?.fileName || null;

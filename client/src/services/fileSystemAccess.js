@@ -29,10 +29,11 @@ export async function loadExamFromFile() {
       let savedData = JSON.parse(text);
       
       // Handle different save formats and extract data
-      let examData, teleformData, coverPage;
+      let examData, teleformData, coverPage, mathRegistry;
       
         examData = savedData.exam.examData || null;
         coverPage = savedData.exam.coverPage || null;
+        mathRegistry = savedData.exam.mathRegistry || null;
         teleformData = savedData.teleform.teleformData || null;
 
       // Check if exam needs migration
@@ -41,7 +42,7 @@ export async function loadExamFromFile() {
         examData = migrateExam(examData);
       }
   
-      return { examData, teleformData, coverPage, fileHandle };
+      return { examData, teleformData, coverPage, mathRegistry, fileHandle };
     } catch (err) {
       console.error("File open cancelled or failed:", err);
       return null;
@@ -75,7 +76,7 @@ export async function importExamFile() {
 /**
  * Saves the given exam to the file represented by fileHandle.
  */
-export async function saveExamToDisk(examData=null, coverPage=null, teleformData=null, fileHandle = null) {
+export async function saveExamToDisk(examData=null, coverPage=null, mathRegistry=null, teleformData=null, fileHandle = null) {
     // If no file handle exists, prompt the user for a save location.
     try {
         if (!fileHandle) {
@@ -96,7 +97,8 @@ export async function saveExamToDisk(examData=null, coverPage=null, teleformData
         const saveData = {
             exam: {
                 examData: examData || null,
-                coverPage: coverPage || null
+                coverPage: coverPage || null,
+                mathRegistry: mathRegistry || null
             },
             
             teleform: {

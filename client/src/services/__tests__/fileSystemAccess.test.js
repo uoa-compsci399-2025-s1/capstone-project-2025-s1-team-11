@@ -102,18 +102,20 @@ describe('fileSystemAccess service', () => {
         it('should save exam to an existing fileHandle', async () => {
             const examData = { title: 'Test Save Exam' };
             const coverPage = null;
+            const mathRegistry = null;
             const teleformData = null;
             const expectedData = {
                 exam: {
                     examData: examData,
-                    coverPage: coverPage
+                    coverPage: coverPage,
+                    mathRegistry: mathRegistry
                 },
                 teleform: {
                     teleformData: teleformData
                 }
             };
 
-            const result = await saveExamToDisk(examData, coverPage, teleformData, mockFileHandle);
+            const result = await saveExamToDisk(examData, coverPage, mathRegistry, teleformData, mockFileHandle);
             expect(mockFileHandle.createWritable).toHaveBeenCalledTimes(1);
             expect(mockWritable.write).toHaveBeenCalledWith(JSON.stringify(expectedData, null, 2));
             expect(mockWritable.close).toHaveBeenCalledTimes(1);
@@ -123,18 +125,20 @@ describe('fileSystemAccess service', () => {
         it('should prompt for a new fileHandle if none provided', async () => {
             const examData = { title: 'Test Save Exam' };
             const coverPage = null;
+            const mathRegistry = null;
             const teleformData = null;
             const expectedData = {
                 exam: {
                     examData: examData,
-                    coverPage: coverPage
+                    coverPage: coverPage,
+                    mathRegistry: mathRegistry
                 },
                 teleform: {
                     teleformData: teleformData
                 }
             };
 
-            const result = await saveExamToDisk(examData, coverPage, teleformData);
+            const result = await saveExamToDisk(examData, coverPage, mathRegistry, teleformData);
 
             expect(window.showSaveFilePicker).toHaveBeenCalledTimes(1);
             expect(mockFileHandle.createWritable).toHaveBeenCalledTimes(1);

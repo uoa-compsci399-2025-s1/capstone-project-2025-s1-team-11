@@ -68,10 +68,6 @@ const examSlice = createSlice({
       ensureUniqueIds(state.examData);
     },
 
-    setMathRegistry: (state, action) => {
-      state.mathRegistry = action.payload;
-    },
-
     clearExamState: (state) => {
       state.examData = null;
       state.mathRegistry = {};
@@ -135,7 +131,13 @@ const examSlice = createSlice({
     },
 
     setCoverPage: (state, action) => {
+      if (!state.examData) { return; }
       state.coverPage = action.payload;
+    },
+
+    setMathRegistry: (state, action) => {
+      if (!state.examData) { return; }
+      state.mathRegistry = action.payload;
     },
 
     setAppendix: (state, action) => {

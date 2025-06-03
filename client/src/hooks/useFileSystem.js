@@ -6,18 +6,19 @@
  */
 
 import { useDispatch, useSelector } from 'react-redux';
-import {initialiseExamState, clearExamState, setFileName, setCoverPage} from '../store/exam/examSlice';
+import {initialiseExamState, clearExamState, setFileName, setCoverPage, setMathRegistry} from '../store/exam/examSlice';
 import { loadExamFromFile, saveExamToDisk } from '../services/fileSystemAccess.js';
 import examImportService  from '../services/examImportService.js';
 import { importDTOToState } from '../services/examImportService.js';
 import { setTeleformData } from '../store/exam/teleformSlice';
 import { useState } from 'react'; // for local fileHandle if not stored in Redux
-import { selectExamData, selectTeleformData, selectCoverPage } from '../store/exam/selectors';
+import { selectExamData, selectTeleformData, selectCoverPage, selectMathRegistry } from '../store/exam/selectors';
 
 export function useFileSystem() {
     const dispatch = useDispatch();
     const examData = useSelector(selectExamData);
     const coverPage = useSelector(selectCoverPage);
+    const mathRegistry = useSelector(selectMathRegistry);
     const teleformData = useSelector(selectTeleformData);
     const [fileHandle, setFileHandle] = useState(null);
 
@@ -29,6 +30,7 @@ export function useFileSystem() {
         dispatch(initialiseExamState(result.examData));
         // Initialize teleform data if it exists in the loaded data
         dispatch(setCoverPage(result.coverPage));
+        dispatch(setMathRegistry(result.mathRegistry));
         dispatch(setTeleformData(result.teleformData || ''));
         setFileHandle(result.fileHandle);
         dispatch(setFileName(result.fileHandle?.name || null));
@@ -47,7 +49,7 @@ export function useFileSystem() {
     const saveExam = async () => {
         if (!examData) return null;
 
-        const updatedHandle = await saveExamToDisk(examData, coverPage, teleformData, fileHandle);
+        const updatedHandle = await saveExamToDisk(examData, coverPage, mathRegistry, teleformData, fileHandle);
         if (updatedHandle) {
             setFileHandle(updatedHandle);
             dispatch(setFileName(updatedHandle?.name || null));
