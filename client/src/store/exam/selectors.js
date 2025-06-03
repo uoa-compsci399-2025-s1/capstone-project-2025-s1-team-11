@@ -136,7 +136,7 @@ export const selectQuestionsAndSectionsForTable = createSelector(
         // Add all questions in this section
         item.questions?.forEach((question, questionsIndex) => {
           result.push({
-            ...normaliseQuestionForTable(question, item.sectionNumber || currentSectionNumber),
+            ...normaliseQuestionForTable(question, item.sectionNumber || currentSectionNumber, item.sectionTitle),
             examBodyIndex,
             questionsIndex,
             id: question.id,
@@ -159,9 +159,10 @@ export const selectQuestionsAndSectionsForTable = createSelector(
 );
 
 // Update the normaliseQuestionForTable function to handle more fields
-const normaliseQuestionForTable = (question, sectionNumber = null) => ({
+const normaliseQuestionForTable = (question, sectionNumber = null, sectionTitle = null) => ({
   type: 'question',
   sectionNumber,
+  sectionTitle,
   questionNumber: question.questionNumber,
   contentFormatted: question.contentFormatted || '',
   marks: question.marks || 0,

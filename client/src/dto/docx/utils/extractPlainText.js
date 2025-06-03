@@ -1,7 +1,7 @@
 export const extractPlainText = (runs, options = {}) => {
   if (!Array.isArray(runs)) return '';
 
-  const { imageData = {} } = options;
+  const { imageData = {}, drawingInstances = [], paragraphIndex = 0 } = options;
 
   let result = '';
   let lastRunEndedWithSpace = false;
@@ -80,7 +80,25 @@ export const extractPlainText = (runs, options = {}) => {
 
       // If we found an embed ID and have image data, use the actual image
       if (embedId && imageData[embedId]) {
-        const imgData = imageData[embedId];
+        // NEW: Find the correct dimensions by matching position
+        let imgData = imageData[embedId]; // Default fallback
+        
+        // Look for specific instance dimensions based on position
+        const matchingInstance = drawingInstances.find(instance => 
+          instance.embedId === embedId && 
+          instance.paragraphIndex === paragraphIndex && 
+          instance.runIndex === i
+        );
+        
+        if (matchingInstance) {
+          // Use the instance-specific dimensions
+          imgData = {
+            ...imgData,
+            width: matchingInstance.width,
+            height: matchingInstance.height
+          };
+        }
+        
         const width = imgData.width ? ` width="${Math.round(imgData.width)}"` : '';
         const height = imgData.height ? ` height="${Math.round(imgData.height)}"` : '';
         const alt = imgData.filename || 'Image';

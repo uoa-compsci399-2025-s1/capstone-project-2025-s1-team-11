@@ -1,12 +1,13 @@
 import React, { useState, useCallback, Suspense, useEffect } from "react";
-import { Checkbox, Select, InputNumber, Space, Typography, Row, Col } from "antd";
+import { Checkbox, Select, InputNumber, Space, Typography, Row, Col, Collapse, Button } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuestion } from "../../store/exam/examSlice.js";
 import { selectExamData } from "../../store/exam/selectors.js";
 import RichTextEditor from "../editor/RichTextEditor.jsx";
 import { DEFAULT_OPTIONS } from '../../constants/answerOptions';
 
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
+const { Panel } = Collapse;
 
 // Memoized Question Editor Component
 const QuestionEditor = React.memo(({ 

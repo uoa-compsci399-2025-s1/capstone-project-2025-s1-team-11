@@ -30,16 +30,44 @@ export function processImage(imgElement) {
 
             const [, format, base64Data] = base64Match;
 
-            // Get dimensions from the element or use defaults
-            const width = imgElement.width || imgElement.naturalWidth || 300;
-            const height = imgElement.height || imgElement.naturalHeight || 200;
+            // Get dimensions - prioritize style attributes from resizing, then element attributes, then natural size
+            let width = imgElement.naturalWidth || 300;
+            let height = imgElement.naturalHeight || 200;
+            
+            // Check for style-based dimensions (from resizing)
+            if (imgElement.style.width) {
+                const styleWidth = parseFloat(imgElement.style.width);
+                if (!isNaN(styleWidth)) {
+                    width = styleWidth;
+                    // Calculate proportional height if only width is styled
+                    if (!imgElement.style.height && imgElement.naturalWidth && imgElement.naturalHeight) {
+                        const aspectRatio = imgElement.naturalHeight / imgElement.naturalWidth;
+                        height = width * aspectRatio;
+                    }
+                }
+            }
+            
+            if (imgElement.style.height) {
+                const styleHeight = parseFloat(imgElement.style.height);
+                if (!isNaN(styleHeight)) {
+                    height = styleHeight;
+                }
+            }
+            
+            // Fallback to element attributes
+            if (imgElement.width && !imgElement.style.width) {
+                width = imgElement.width;
+            }
+            if (imgElement.height && !imgElement.style.height) {
+                height = imgElement.height;
+            }
 
             return {
                 type: 'image',
                 format: format,
                 base64: base64Data,
-                width: width,
-                height: height,
+                width: Math.round(width),
+                height: Math.round(height),
                 alt: imgElement.alt || 'Image'
             };
         }

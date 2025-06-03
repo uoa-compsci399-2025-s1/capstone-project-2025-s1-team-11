@@ -315,8 +315,9 @@ export const buildContentFormatted = (runs, options = {}, parentPara = null, doc
         relationships = {},
         imageData = {},
         preserveMath = true,
-        //mathRegistry = {},
-        mathElementsWithXml = []
+        mathElementsWithXml = [],
+        drawingInstances = [],
+        paragraphIndex = 0
     } = options;
 
     let content;
@@ -329,9 +330,13 @@ export const buildContentFormatted = (runs, options = {}, parentPara = null, doc
         content = processParagraphFromJson(parentPara, options, mathElementsWithXml, globalCounters);
     } else {
         // No math elements, use plain text extraction
-        content = extractPlainText(runs, { relationships, imageData });
+        content = extractPlainText(runs, {
+            relationships,
+            imageData,
+            drawingInstances,
+            paragraphIndex
+        });
     }
-
     // Remove marks pattern if requested
     if (removeMarks) {
         content = content.replace(/^\[\s*\d+(?:\.\d+)?\s*marks?\s*\]\s*/i, '');

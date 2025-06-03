@@ -6,7 +6,7 @@ import Underline from '@tiptap/extension-underline';
 import Typography from '@tiptap/extension-typography';
 import FontFamily from '@tiptap/extension-font-family';
 import TextStyle from '@tiptap/extension-text-style';
-import Image from '@tiptap/extension-image';
+import TipTapImage from '@tiptap/extension-image';
 import { Extension } from '@tiptap/core';
 import { Button, Tooltip, Select, Upload, Slider, Card, theme } from 'antd';
 import {
@@ -117,9 +117,38 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
           margin: 0 !important;
           color: ${token.colorText};
           background-color: ${token.colorBgContainer};
+          overflow: hidden;
+          position: relative;
         }
         .ProseMirror p {
           margin: 0;
+        }
+        .ProseMirror img {
+          height: auto;
+          position: relative;
+          z-index: 1;
+        }
+        .compact-editor-container {
+          position: relative;
+          overflow: hidden;
+        }
+        .compact-editor-container .ant-card {
+          overflow: hidden !important;
+          z-index: 10;
+          position: relative;
+        }
+        .compact-editor-container .ant-card-body {
+          overflow: hidden !important;
+        }
+        .resize-layer {
+          z-index: 1000 !important;
+        }
+        .handler {
+          z-index: 1001 !important;
+        }
+        /* Ensure modal dialogs appear above images */
+        .ant-modal, .ant-modal-wrap, .ant-modal-mask {
+          z-index: 1050 !important;
         }
       `;
       document.head.appendChild(style);
@@ -199,11 +228,65 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
       }),
       Typography,
       CustomIndentExtension,
-      Image.configure({
+      TipTapImage.configure({
         inline: true,
         allowBase64: true,
         HTMLAttributes: {
           style: 'display: inline; vertical-align: baseline;'
+        },
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            width: {
+              default: null,
+              parseHTML: element => {
+                // Priority: width attribute > style width > natural width
+                return element.getAttribute('width') || 
+                       (element.style.width ? element.style.width.replace('px', '') + 'px' : null);
+              },
+              renderHTML: attributes => {
+                if (!attributes.width) return {};
+                const width = attributes.width.toString().includes('px') ? attributes.width : attributes.width + 'px';
+                // Only set width in style if there's no height attribute to avoid conflicts
+                const heightAttr = attributes.height;
+                if (heightAttr) {
+                  return { width: width };
+                } else {
+                  return { 
+                    width: width,
+                    style: `width: ${width}; height: auto;`
+                  };
+                }
+              },
+            },
+            height: {
+              default: null,
+              parseHTML: element => {
+                // Priority: height attribute > style height > natural height
+                return element.getAttribute('height') || 
+                       (element.style.height ? element.style.height.replace('px', '') + 'px' : null);
+              },
+              renderHTML: attributes => {
+                if (!attributes.height) return {};
+                const height = attributes.height.toString().includes('px') ? attributes.height : attributes.height + 'px';
+                const width = attributes.width;
+                if (width) {
+                  // Both width and height are present - use explicit dimensions
+                  const widthValue = width.toString().includes('px') ? width : width + 'px';
+                  return { 
+                    height: height,
+                    style: `width: ${widthValue}; height: ${height};`
+                  };
+                } else {
+                  // Only height is present
+                  return { 
+                    height: height,
+                    style: `height: ${height}; width: auto;`
+                  };
+                }
+              },
+            },
+          };
         }
       }),
       CustomResizableExtension,
@@ -212,6 +295,12 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       onChange(html);
+    },
+    onCreate: () => {
+      // Editor created successfully
+    },
+    onDestroy: () => {
+      // Editor destroyed
     },
     editorProps: {
       attributes: {
@@ -247,13 +336,13 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
         mouseup: (view, event) => {
           // Additional handler for resize completion
           if (event.target.closest('.resize-handler')) {
-            //console.log('Resize mouseup detected');
-            //console.log('Current doc content:', view.state.doc.toJSON());
-            onChange(view.state.doc.content.toJSON());
+            onChange(editor.getHTML());
           }
         }
       }
     },
+    editable: true,
+    enableContentCheck: true,
   });
 
   // Add style element to hide unwanted handles
@@ -289,7 +378,6 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
         });
         
         if (hasImageChange) {
-          //console.log('Image size changed - triggering update');
           onChange(editor.getHTML());
         }
       });
@@ -316,7 +404,35 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
     reader.onload = (e) => {
       const dataUrl = e.target.result;
       if (editor) {
-        editor.chain().focus().setImage({ src: dataUrl }).run();
+        // Create a temporary image to get natural dimensions using native Image constructor
+        const tempImage = new window.Image();
+        tempImage.onload = () => {
+          // Get the editor container width for size calculation
+          const editorElement = editor.view.dom.closest('.compact-editor-container');
+          const containerWidth = editorElement ? editorElement.clientWidth - 40 : 400; // Account for padding
+          const maxInitialWidth = Math.min(containerWidth * 0.5, 400); // Max 64% of container or 400px (reduced by 20%)
+          
+          let insertWidth = tempImage.naturalWidth;
+          let insertHeight = tempImage.naturalHeight;
+          
+          // Apply size constraint only if image is larger than max
+          if (insertWidth > maxInitialWidth) {
+            const aspectRatio = insertHeight / insertWidth;
+            insertWidth = maxInitialWidth;
+            insertHeight = insertWidth * aspectRatio;
+          }
+          
+          // Insert image with calculated dimensions
+          editor.chain()
+            .focus()
+            .setImage({ 
+              src: dataUrl,
+              width: `${insertWidth}px`,
+              height: `${insertHeight}px`
+            })
+            .run();
+        };
+        tempImage.src = dataUrl;
       }
     };
     reader.readAsDataURL(file);

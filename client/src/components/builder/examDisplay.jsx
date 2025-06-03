@@ -407,11 +407,7 @@ const ExamDisplay = () => {
       width: 100,
       render: (questionNumber, record) => {
         if (record.type === "section") {
-          return (
-            <Text>
-              Section {record.sectionNumber || ''}
-            </Text>
-          );
+          return '';
         }
         return questionNumber;
       },
@@ -423,7 +419,7 @@ const ExamDisplay = () => {
       width: 100,
       render: (type) => {
         if (type === 'section') {
-          return <Text>Section</Text>;
+          return <Text style={{ textDecoration: 'underline' }}>Section</Text>;
         }
         return 'Question';
       }
@@ -436,12 +432,15 @@ const ExamDisplay = () => {
       render: (_, record) => {
         if (record.type === "section") {
           return (
-            <Text>
-              {record.sectionTitle}
+            <Text style={{ textDecoration: 'underline' }}>
+              {record.sectionTitle || `Section ${record.sectionNumber || ''}`}
             </Text>
           );
         }
-        return record.sectionNumber ? `Section ${record.sectionNumber}` : (
+        if (record.sectionNumber) {
+          return record.sectionTitle || `Section ${record.sectionNumber}`;
+        }
+        return (
           <Text type="secondary" style={{ fontStyle: 'italic' }}>Standalone</Text>
         );
       },

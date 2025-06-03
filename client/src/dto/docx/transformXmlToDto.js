@@ -11,60 +11,60 @@ import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
  * @returns {Array} - Array of math elements for this paragraph with original XML
  */
 const getMatchingMathElementsForParagraph = (para, preExtractedMathElements, globalCounters) => {
-  const mathElementsForParagraph = [];
+    const mathElementsForParagraph = [];
 
-  if (!para || !preExtractedMathElements || preExtractedMathElements.length === 0) {
-    return mathElementsForParagraph;
-  }
+    if (!para || !preExtractedMathElements || preExtractedMathElements.length === 0) {
+        return mathElementsForParagraph;
+    }
 
-  let currentMathIndex = globalCounters.mathIndex || 0;
+    let currentMathIndex = globalCounters.mathIndex || 0;
 
-  // Count math elements in this paragraph
-  let mathCount = 0;
+    // Count math elements in this paragraph
+    let mathCount = 0;
 
-  // Check for math at the paragraph level
-  if (para['m:oMath']) {
-    mathCount += Array.isArray(para['m:oMath']) ? para['m:oMath'].length : 1;
-  }
+    // Check for math at the paragraph level
+    if (para['m:oMath']) {
+        mathCount += Array.isArray(para['m:oMath']) ? para['m:oMath'].length : 1;
+    }
 
-  // Check for math in oMathPara
-  if (para['m:oMathPara']) {
-    if (Array.isArray(para['m:oMathPara'])) {
-      para['m:oMathPara'].forEach(mathPara => {
-        if (mathPara['m:oMath']) {
-          mathCount += Array.isArray(mathPara['m:oMath']) ? mathPara['m:oMath'].length : 1;
+    // Check for math in oMathPara
+    if (para['m:oMathPara']) {
+        if (Array.isArray(para['m:oMathPara'])) {
+            para['m:oMathPara'].forEach(mathPara => {
+                if (mathPara['m:oMath']) {
+                    mathCount += Array.isArray(mathPara['m:oMath']) ? mathPara['m:oMath'].length : 1;
+                }
+            });
+        } else if (para['m:oMathPara']['m:oMath']) {
+            mathCount += Array.isArray(para['m:oMathPara']['m:oMath']) ? para['m:oMath'].length : 1;
         }
-      });
-    } else if (para['m:oMathPara']['m:oMath']) {
-      mathCount += Array.isArray(para['m:oMathPara']['m:oMath']) ? para['m:oMathPara']['m:oMath'].length : 1;
     }
-  }
 
-  // Extract the corresponding pre-extracted math elements
-  for (let i = 0; i < mathCount; i++) {
-    if (currentMathIndex + i < preExtractedMathElements.length) {
-      const preExtracted = preExtractedMathElements[currentMathIndex + i];
+    // Extract the corresponding pre-extracted math elements
+    for (let i = 0; i < mathCount; i++) {
+        if (currentMathIndex + i < preExtractedMathElements.length) {
+            const preExtracted = preExtractedMathElements[currentMathIndex + i];
 
-      // Determine if this is block math based on the original type
-      const isBlockMath = preExtracted.type === 'oMathPara' || preExtracted.isBlockMath;
+            // Determine if this is block math based on the original type
+            const isBlockMath = preExtracted.type === 'oMathPara' || preExtracted.isBlockMath;
 
-      mathElementsForParagraph.push({
-        element: null, // We don't need the JSON element since we have the original XML
-        isBlockMath: isBlockMath,
-        originalXml: preExtracted.originalXml,
-        id: preExtracted.id
-      });
+            mathElementsForParagraph.push({
+                element: null, // We don't need the JSON element since we have the original XML
+                isBlockMath: isBlockMath,
+                originalXml: preExtracted.originalXml,
+                id: preExtracted.id
+            });
+        }
     }
-  }
 
-  return mathElementsForParagraph;
+    return mathElementsForParagraph;
 };
 
-export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, documentXml = null, preExtractedMathElements = []) => {
-  const body = xmlJson['w:document']?.['w:body'];
-  if (!body) {
-    throw new Error('Invalid XML structure: missing w:body');
-  }
+export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, documentXml = null, preExtractedMathElements = [], drawingInstances = []) => {
+    const body = xmlJson['w:document']?.['w:body'];
+    if (!body) {
+        throw new Error('Invalid XML structure: missing w:body');
+    }
 
   // Create math registry for this document
   const mathRegistry = {};
@@ -123,7 +123,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
 
   const flushSection = () => {
     if (currentSection) {
-      // Format section content
+      // Format section content (same pattern as questions)
       if (sectionContentBlocks.length > 0) {
         currentSection.contentFormatted = sectionContentBlocks.join('<p>\n');
       }
@@ -168,13 +168,15 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
     const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
 
     // Build content with math handling, passing math elements with original XML
-    let text = buildContentFormatted(runs, {
-      relationships,
-      imageData,
-      preserveMath: true,
-      mathRegistry,
-      mathElementsWithXml
-    }, para, documentXml, globalCounters);
+      let text = buildContentFormatted(runs, {
+          relationships,
+          imageData,
+          preserveMath: true,
+          mathRegistry,
+          mathElementsWithXml,
+          drawingInstances,
+          paragraphIndex: i
+      }, para, documentXml, globalCounters);
 
     // Update the global counter after processing this paragraph
     globalCounters.mathIndex += mathElementsWithXml.length;
@@ -214,15 +216,16 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
       const marks = extractMarks(text);
 
       // Process the question content with math preservation
-      const contentText = buildContentFormatted(runs, {
-        removeMarks: true,
-        relationships,
-        imageData,
-        preserveMath: true,
-        mathRegistry,
-        mathElementsWithXml
-      }, para, documentXml, globalCounters);
-
+        const contentText = buildContentFormatted(runs, {
+            removeMarks: true,
+            relationships,
+            imageData,
+            preserveMath: true,
+            mathRegistry,
+            mathElementsWithXml,
+            drawingInstances,
+            paragraphIndex: i
+        }, para, documentXml, globalCounters);
       currentQuestion = {
         type: 'question',
         contentFormatted: sanitizeContentFormatted(contentText),
@@ -242,14 +245,16 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
     }
 
     // Handle question answers
-    if (currentQuestion) {
-      const answerText = buildContentFormatted(runs, {
-        relationships,
-        imageData,
-        preserveMath: true,
-        mathRegistry,
-        mathElementsWithXml
-      }, para, documentXml, globalCounters);
+      if (currentQuestion) {
+          const answerText = buildContentFormatted(runs, {
+              relationships,
+              imageData,
+              preserveMath: true,
+              mathRegistry,
+              mathElementsWithXml,
+              drawingInstances,
+              paragraphIndex: i
+          }, para, documentXml, globalCounters);
 
       currentAnswers.push({
         type: 'answer',
