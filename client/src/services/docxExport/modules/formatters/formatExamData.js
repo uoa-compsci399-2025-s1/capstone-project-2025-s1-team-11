@@ -7,9 +7,10 @@ import { parseHtmlContent } from '../contentProcessors/htmlParser.js';
  * Formats exam data from Redux store format to Docxtemplater template format
  * @param {Object} examData - Exam data from Redux store
  * @param {string|number} version - Version number to include in the export
+ * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Object} - Formatted data ready for Docxtemplater
  */
-export function formatExamDataForTemplate(examData, version = 1) {
+export function formatExamDataForTemplate(examData, version = 1, mathRegistry = null) {
     if (!examData) {
         return {};
     }
@@ -61,12 +62,13 @@ export function formatExamDataForTemplate(examData, version = 1) {
                 const sectionQuestions = formatQuestionsWithVersion(
                     item.questions || [],
                     versionToUse,
+                    mathRegistry,
                     examData.versions,
                     examData.teleformOptions
                 );
 
                 // Process section content
-                const sectionContent = processContent(item.contentFormatted || '');
+                const sectionContent = processContent(item.contentFormatted || '', mathRegistry);
 
                 const section = {
                     isSection: true,
@@ -81,7 +83,7 @@ export function formatExamDataForTemplate(examData, version = 1) {
                 formattedExamBody.push(section);
             } else if (item.type === 'question') {
                 // Process standalone question with version-specific answer ordering
-                const formattedQuestion = formatQuestionWithVersion(item, versionToUse, examData.versions, examData.teleformOptions);
+                const formattedQuestion = formatQuestionWithVersion(item, versionToUse, examData.versions, examData.teleformOptions, mathRegistry);
                 const questionItem = {
                     isSection: false,
                     isQuestion: true,
@@ -107,34 +109,73 @@ export function formatExamDataForTemplate(examData, version = 1) {
 }
 
 /**
+ * Resolve math placeholders with content from math registry
+ * @param {string} content - Content with math placeholders
+ * @param {Object} mathRegistry - Math registry
+ * @returns {string} - Content with resolved math
+ */
+function resolveMathPlaceholders(content, mathRegistry) {
+    if (!mathRegistry || Object.keys(mathRegistry).length === 0) {
+        return content;
+    }
+
+    const result = content.replace(/\[math:([^\]]+)\]/g, (match, mathId) => {
+        const mathEntry = mathRegistry[mathId];
+        if (mathEntry) {
+            const escapedXml = mathEntry.originalXml
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            const replacement = mathEntry.context === 'block'
+                ? `§MATH_OMML§${escapedXml}§/MATH_OMML§`
+                : `§MATH_OMML§${escapedXml}§/MATH_OMML§`;
+
+            return replacement;
+        }
+        return match; // Keep original if not found
+    });
+
+    return result;
+}
+
+/**
  * Process content that may contain HTML formatting
  * @param {string} content - Content string (HTML or plain text)
+ * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Object} - Processed content with text and elements
  */
-function processContent(content) {
+function processContent(content, mathRegistry = {}) {
     if (!content) {
         return { text: '', elements: [] };
     }
 
+    // Resolve math placeholders BEFORE HTML processing
+    let processedContent = content;
+    if (mathRegistry && Object.keys(mathRegistry).length > 0) {
+        processedContent = resolveMathPlaceholders(content, mathRegistry);
+    }
+
     // Check if content contains HTML tags
-    if (/<[^>]+>/.test(content)) {
-        return parseHtmlContent(content);
+    if (/<[^>]+>/.test(processedContent)) {
+        return parseHtmlContent(processedContent);
     }
 
     // Plain text
-    return { text: content, elements: [] };
+    return { text: processedContent, elements: [] };
 }
 
 /**
  * Format an array of questions for template use, with version-specific answer ordering
  * @param {Array} questions - Array of question objects
  * @param {string|number} version - Version number being exported
+ * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @param {Array} versionList - List of all versions
  * @param {Array} optionLabels - List of option labels
  * @returns {Array} - Formatted questions
  */
-function formatQuestionsWithVersion(questions, version, versionList, optionLabels) {
-    return questions.map(question => formatQuestionWithVersion(question, version, versionList, optionLabels));
+function formatQuestionsWithVersion(questions, version, mathRegistry, versionList, optionLabels) {
+    return questions.map(question => formatQuestionWithVersion(question, version, versionList, optionLabels, mathRegistry));
 }
 
 /**
@@ -143,9 +184,10 @@ function formatQuestionsWithVersion(questions, version, versionList, optionLabel
  * @param {string|number} version - Version number being exported
  * @param {Array} versionList - List of all versions
  * @param {Array} optionLabels - List of option labels
+ * @param {Object} mathRegistry - Math registry for resolving math placeholders
  * @returns {Object} - Formatted question
  */
-function formatQuestionWithVersion(question, version, versionList, optionLabels) {
+function formatQuestionWithVersion(question, version, versionList, optionLabels, mathRegistry) {
     // Format the mark display
     const markText = question.marks
         ? `[${question.marks} mark${question.marks !== 1 ? 's' : ''}]`
@@ -153,7 +195,8 @@ function formatQuestionWithVersion(question, version, versionList, optionLabels)
 
     // Process question content
     const questionContent = processContent(
-        question.contentFormatted || ''
+        question.contentFormatted || '',
+        mathRegistry
     );
 
     // Determine which shuffle map to use based on version position in versionList
@@ -170,14 +213,10 @@ function formatQuestionWithVersion(question, version, versionList, optionLabels)
         }
     }
 
-    //console.log("Version:", version, "Position in list:", versionIndex);
-
     // Get the appropriate shuffle map for this version
     // Note: shuffleMap.[original index] = new index
 
     const shuffleMap = question.answerShuffleMaps?.[versionIndex] || [...Array(question.answers?.length || 0).keys()];
-
-    //console.log("Using shuffle map:", shuffleMap);
 
     // Format answers using the appropriate shuffle map for this version
     const formattedAnswers = [];
@@ -193,7 +232,8 @@ function formatQuestionWithVersion(question, version, versionList, optionLabels)
             const answer = question.answers[originalIndex];
             if (answer) {
                 const answerContent = processContent(
-                    answer.contentFormatted || ''
+                    answer.contentFormatted || '',
+                    mathRegistry
                 );
 
                 // Only include non-empty answers

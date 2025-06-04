@@ -5,8 +5,8 @@ export const extractPlainText = (runs, options = {}) => {
 
   let result = '';
   let lastRunEndedWithSpace = false;
-  let lastRunWasLineBreak = false; // Track if the last run was a line break
-  let lastRunWasSingleChar = false; // Track if the last run was a single character
+  let lastRunWasLineBreak = false;
+  let lastRunWasSingleChar = false;
 
   for (let i = 0; i < runs.length; i++) {
     const r = runs[i];
@@ -49,11 +49,11 @@ export const extractPlainText = (runs, options = {}) => {
     if (r['w:br'] !== undefined) {
       result += '<br>';
       lastRunEndedWithSpace = false;
-      lastRunWasLineBreak = true; // Set the flag
+      lastRunWasLineBreak = true;
 
       // Check if this run also has text (uncommon but possible)
       if (r['w:t'] === undefined) {
-        continue; // Only skip if there's no text in this run
+        continue;
       }
       // If there is text, fall through to process it
     }
@@ -109,12 +109,12 @@ export const extractPlainText = (runs, options = {}) => {
         result += `<img alt="${alt}" src="[Image Placeholder]">`;
       }
 
-      lastRunWasLineBreak = false; // Reset the flag
-      lastRunWasSingleChar = false; // Reset single char flag
+      lastRunWasLineBreak = false;
+      lastRunWasSingleChar = false;
       continue;
     }
 
-    // Extract text content - IMPROVED to handle more cases
+    // Extract text content - IMPROVED to handle more cases INCLUDING SPECIAL CHARACTERS
     let textContent = '';
     const t = r['w:t'];
 
@@ -132,18 +132,50 @@ export const extractPlainText = (runs, options = {}) => {
         textContent = ''; // Avoid undefined text
       }
     } else {
-      // Only try fallback if t wasn't found or is null/undefined
-      try {
-        // More careful fallback approach
-        const fallbackKeys = Object.keys(r).filter(k => typeof r[k] === 'string' && k.startsWith('w:'));
-        if (fallbackKeys.length > 0) {
-          textContent = fallbackKeys.map(k => r[k].trim()).filter(s => s).join(' ');
-        } else {
-          // If all else fails, skip this run
+      // Check for special character elements when w:t is missing
+      if (r['w:sym']) {
+        // Symbol character
+        const symChar = r['w:sym']['@_w:char'];
+
+        if (symChar) {
+          // Convert hex code to character if needed
+          if (symChar.startsWith('F0')) {
+            // Common symbol font mappings for arrows
+            const symbolMap = {
+              'F0E0': '←', // Left arrow in some symbol fonts
+              'F0E1': '→', // Right arrow in some symbol fonts
+              'F0E2': '↑', // Up arrow in some symbol fonts
+              'F0E3': '↓', // Down arrow in some symbol fonts
+            };
+            textContent = symbolMap[symChar] || symChar;
+          } else {
+            // Try to parse as Unicode hex
+            const charCode = parseInt(symChar, 16);
+            if (!isNaN(charCode)) {
+              textContent = String.fromCharCode(charCode);
+            }
+          }
+        }
+      } else if (r['w:cr']) {
+        // Carriage return
+        textContent = '\n';
+      } else if (r['w:tab']) {
+        // Tab character
+        textContent = '\t';
+      } else {
+        // Only try fallback if no special elements found
+        try {
+          // More careful fallback approach
+          const fallbackKeys = Object.keys(r).filter(k => typeof r[k] === 'string' && k.startsWith('w:'));
+          if (fallbackKeys.length > 0) {
+            textContent = fallbackKeys.map(k => r[k].trim()).filter(s => s).join(' ');
+          } else {
+            // If all else fails, skip this run
+            continue;
+          }
+        } catch {
           continue;
         }
-      } catch {
-        continue;
       }
     }
 
@@ -172,6 +204,15 @@ export const extractPlainText = (runs, options = {}) => {
       }
     }
 
+    // Handle font-specific character mappings BEFORE applying formatting
+    if (isMonospace && textContent) {
+      // Fira Mono and other monospace fonts often use en dash (–) for left arrows
+      // Map common monospace font characters to their intended symbols
+      textContent = textContent
+          .replace(/–/g, '←')  // En dash to left arrow (common in Fira Mono)
+          .replace(/—/g, '→'); // Em dash to right arrow (if used)
+    }
+
     // Apply formatting
     if (isSubscript) textContent = `<sub>${textContent}</sub>`;
     else if (isSuperscript) textContent = `<sup>${textContent}</sup>`;
@@ -183,14 +224,13 @@ export const extractPlainText = (runs, options = {}) => {
     result += textContent;
 
     lastRunEndedWithSpace = textContent.endsWith(' ');
-    lastRunWasLineBreak = false; // Reset the flag for non-linebreak runs
-    lastRunWasSingleChar = currentIsSingleWordChar; // Track if this run was a single character
+    lastRunWasLineBreak = false;
+    lastRunWasSingleChar = currentIsSingleWordChar;
   }
 
-  // Post-cleaning - Enhanced to handle more notation formats
+  // Post-cleaning - Only handle explicit notation patterns
   result = result.replace(/(\w+)~(\d+)~/g, '$1<sub>$2</sub>');
   result = result.replace(/(\w+)\^(\d+)\^/g, '$1<sup>$2</sup>');
-  result = result.replace(/(\b[A-F0-9]+)(\d{1,2})\.(?=\s|<br>|$)/g, '$1<sub>$2</sub>.');
 
   // Keep subscripts and superscripts together with their base text
   result = result.replace(/(\w+)\s+<(sub|sup)>(\w+)<\/(sub|sup)>/g, '$1<$2>$3</$4>');

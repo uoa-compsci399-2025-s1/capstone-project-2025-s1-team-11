@@ -1,11 +1,83 @@
+// client/docxDTO/utils/extractDocumentXml.js
+
 import JSZip from 'jszip';
-//import fs from 'fs/promises';
 import { parseXmlToJson } from './parseXmlToJson.js';
+
+// Image optimization settings
+const IMAGE_OPTIMIZATION = {
+  threshold: 40000,     // 50KB - when to optimize
+  quality: 0.8,         // 80% - compression level only
+  format: 'image/jpeg'  // Output format for compression
+};
+
+/**
+ * Optimize large images to reduce file size while maintaining dimensions
+ * @param {ArrayBuffer} imageArrayBuffer - Original image data
+ * @param {string} mimeType - Original image MIME type
+ * @returns {Promise<ArrayBuffer>} - Optimized image data
+ */
+const optimizeImage = async (imageArrayBuffer, mimeType) => {
+  return new Promise((resolve, reject) => {
+    try {
+      // Create a blob from the array buffer
+      const blob = new Blob([imageArrayBuffer], { type: mimeType });
+
+      // Create an image element
+      const img = new Image();
+
+      img.onload = () => {
+        // Create a canvas with the same dimensions as the original
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        // Clear canvas with transparent background for PNG images
+        if (mimeType === 'image/png') {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Draw the image on the canvas
+        ctx.drawImage(img, 0, 0);
+
+        // Determine output format based on original type
+        let outputFormat = mimeType;
+        let quality = IMAGE_OPTIMIZATION.quality;
+
+        // Only convert to JPEG if original is JPEG or we're sure it has no transparency
+        if (mimeType === 'image/jpeg') {
+          outputFormat = IMAGE_OPTIMIZATION.format;
+        } else if (mimeType === 'image/png') {
+          // Keep PNG format to preserve transparency/shadows
+          outputFormat = 'image/png';
+          // PNG doesn't use quality parameter, but we can try to compress it
+          quality = undefined;
+        }
+
+        // Convert to optimized format
+        canvas.toBlob((optimizedBlob) => {
+          if (optimizedBlob) {
+            // Convert blob back to array buffer
+            optimizedBlob.arrayBuffer().then(resolve).catch(reject);
+          } else {
+            reject(new Error('Failed to optimize image'));
+          }
+        }, outputFormat, quality);
+      };
+
+      img.onerror = () => reject(new Error('Failed to load image for optimization'));
+      img.src = URL.createObjectURL(blob);
+
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
 
 /**
  * Helper function to extract image dimensions and positioning information
  * @param {Object} zip - JSZip object containing the document
- * @param {String} relationships - Object mapping relationship IDs to targets
  * @returns {Promise<Object>} - Object containing drawing elements with their information
  */
 const extractDrawingElements = async (zip) => {
@@ -123,8 +195,56 @@ const extractDrawingElements = async (zip) => {
   }
 };
 
+/**
+ * Extract math elements with their original XML from the document
+ * @param {Object} zip - JSZip object containing the document
+ * @param {string} documentXml - The document XML string
+ * @returns {Array} - Array of math elements with original XML preserved
+ */
+const extractMathElements = async (zip, documentXml) => {
+  const mathElements = [];
+  let mathIndex = 0;
+
+  try {
+    // Extract all OMML elements from the document XML
+    const omathRegex = /<m:oMath[^>]*>.*?<\/m:oMath>/gs;
+    const omathParaRegex = /<m:oMathPara[^>]*>.*?<\/m:oMathPara>/gs;
+
+    let match;
+
+    // Extract standalone oMath elements
+    while ((match = omathRegex.exec(documentXml)) !== null) {
+      mathElements.push({
+        id: `math-${mathIndex++}`,
+        type: 'oMath',
+        originalXml: match[0],
+        isBlockMath: false,
+        position: match.index
+      });
+    }
+
+    // Reset regex lastIndex and extract oMathPara elements
+    omathParaRegex.lastIndex = 0;
+    while ((match = omathParaRegex.exec(documentXml)) !== null) {
+      mathElements.push({
+        id: `math-${mathIndex++}`,
+        type: 'oMathPara',
+        originalXml: match[0],
+        isBlockMath: true,
+        position: match.index
+      });
+    }
+
+    // Sort by position in document to maintain correct order
+    mathElements.sort((a, b) => a.position - b.position);
+
+    return mathElements;
+  } catch {
+    return [];
+  }
+};
+
 export const extractDocumentXml = async (file) => {
-  //const data = await fs.readFile(filePath);
   const zip = await JSZip.loadAsync(file);
 
   // Extract main document
@@ -151,6 +271,9 @@ export const extractDocumentXml = async (file) => {
   // Extract drawing elements with positioning and dimension info
   const { drawingMap, drawingInstances } = await extractDrawingElements(zip);
 
+  // Extract math elements with original XML preserved
+  const mathElements = await extractMathElements(zip, documentXml);
+
   // Extract images as base64
   const imageData = {};
   for (const relId in relationships) {
@@ -163,13 +286,7 @@ export const extractDocumentXml = async (file) => {
 
         if (imageFile) {
           // Get image as ArrayBuffer (browser-compatible)
-          const imageArrayBuffer = await imageFile.async('arraybuffer');
-
-          const base64Image = btoa(
-              Array.from(new Uint8Array(imageArrayBuffer))
-                  .map(b => String.fromCharCode(b))
-                  .join('')
-          );
+          let imageArrayBuffer = await imageFile.async('arraybuffer');
 
           // Determine mime type based on file extension
           const fileExt = target.split('.').pop().toLowerCase();
@@ -180,6 +297,27 @@ export const extractDocumentXml = async (file) => {
           else if (fileExt === 'svg') mimeType = 'image/svg+xml';
           else if (fileExt === 'webp') mimeType = 'image/webp';
 
+          // Optimize large images
+          if (imageArrayBuffer.byteLength > IMAGE_OPTIMIZATION.threshold) {
+            try {
+              const originalMimeType = mimeType;
+              imageArrayBuffer = await optimizeImage(imageArrayBuffer, mimeType);
+              // Only update mime type if we actually converted to JPEG
+              if (originalMimeType === 'image/jpeg') {
+                mimeType = IMAGE_OPTIMIZATION.format;
+              }
+              // For PNG, mimeType stays as 'image/png'
+            } catch  {
+              // Continue with original image if optimization fails
+            }
+          }
+
+          const base64Image = btoa(
+              Array.from(new Uint8Array(imageArrayBuffer))
+                  .map(b => String.fromCharCode(b))
+                  .join('')
+          );
+
           // Store the data URL and image properties
           imageData[relId] = {
             dataUrl: `data:${mimeType};base64,${base64Image}`,
@@ -188,11 +326,11 @@ export const extractDocumentXml = async (file) => {
             ...drawingMap[relId] // Add dimension and position data if available
           };
         }
-      } catch (error) {
-        console.error(`Error extracting image ${target}:`, error);
+      } catch  {
+        // Handle error silently
       }
     }
   }
 
-  return { documentXml, relationships, imageData, drawingInstances };
+  return { documentXml, relationships, imageData,  mathElements, drawingInstances };
 };

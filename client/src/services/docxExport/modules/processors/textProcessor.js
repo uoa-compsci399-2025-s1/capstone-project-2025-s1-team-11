@@ -7,6 +7,7 @@ import { convertLatexToOmml } from '../utils/ommlConverter';
  * @returns {Promise<Blob>} - The processed DOCX with text formatting
  */
 export async function postProcessTextFormatting(docxBlob) {
+
     try {
         // Convert blob to arraybuffer
         const arrayBuffer = await docxBlob.arrayBuffer();
@@ -17,17 +18,10 @@ export async function postProcessTextFormatting(docxBlob) {
         // Get the main document
         let docXml = await zip.file('word/document.xml').async('string');
 
-        // Debug logging
-        //console.log("Document contains §CODE§:", docXml.includes('§CODE§'));
-        if (docXml.includes('§CODE§')) {
-            const codeIndex = docXml.indexOf('§CODE§');
-            console.log("XML around code tag:", docXml.substring(codeIndex - 100, codeIndex + 200));
-        }
-
-// First, identify code blocks but PRESERVE nested tags
+        // First, identify code blocks but PRESERVE nested tags
         let processedXml = docXml;
 
-// Find all code blocks with nested tags
+        // Find all code blocks with nested tags
         const codeBlockRegex = /§CODE§(.*?)§\/CODE§/gs;
         let match;
 
@@ -75,52 +69,54 @@ export async function postProcessTextFormatting(docxBlob) {
                 replacement: (match, text) => {
                     // Base code formatting
                     let result = `</w:t></w:r><w:r><w:rPr>
-                      <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
-                      <w:sz w:val="22"/>
-                      <w:szCs w:val="22"/>
-                    </w:rPr><w:t xml:space="preserve">`;
+                     <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                     <w:sz w:val="22"/>
+                     <w:szCs w:val="22"/>
+                   </w:rPr><w:t xml:space="preserve">`;
 
                     // Process text to handle nested formatting while preserving code font
                     let processedText = text
                         // Replace special code formatting markers
                         .replace(/§CODE_BOLD§([\s\S]*?)§\/CODE_BOLD§/g,
                             (m, boldText) => `</w:t></w:r><w:r><w:rPr>
-                          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
-                          <w:sz w:val="22"/>
-                          <w:szCs w:val="22"/>
-                          <w:b/>
-                        </w:rPr><w:t xml:space="preserve">${boldText}</w:t></w:r><w:r><w:rPr>
-                          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
-                          <w:sz w:val="22"/>
-                          <w:szCs w:val="22"/>
-                        </w:rPr><w:t xml:space="preserve">`)
+                         <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                         <w:sz w:val="22"/>
+                         <w:szCs w:val="22"/>
+                         <w:b/>
+                       </w:rPr><w:t xml:space="preserve">${boldText}</w:t></w:r><w:r><w:rPr>
+                         <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                         <w:sz w:val="22"/>
+                         <w:szCs w:val="22"/>
+                       </w:rPr><w:t xml:space="preserve">`)
                         .replace(/§CODE_ITALIC§([\s\S]*?)§\/CODE_ITALIC§/g,
                             (m, italicText) => `</w:t></w:r><w:r><w:rPr>
-                          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
-                          <w:sz w:val="22"/>
-                          <w:szCs w:val="22"/>
-                          <w:i/>
-                        </w:rPr><w:t xml:space="preserve">${italicText}</w:t></w:r><w:r><w:rPr>
-                          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
-                          <w:sz w:val="22"/>
-                          <w:szCs w:val="22"/>
-                        </w:rPr><w:t xml:space="preserve">`)
+                         <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                         <w:sz w:val="22"/>
+                         <w:szCs w:val="22"/>
+                         <w:i/>
+                       </w:rPr><w:t xml:space="preserve">${italicText}</w:t></w:r><w:r><w:rPr>
+                         <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                         <w:sz w:val="22"/>
+                         <w:szCs w:val="22"/>
+                       </w:rPr><w:t xml:space="preserve">`)
                         .replace(/§CODE_UNDERLINE§([\s\S]*?)§\/CODE_UNDERLINE§/g,
                             (m, underlineText) => `</w:t></w:r><w:r><w:rPr>
-                          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
-                          <w:sz w:val="22"/>
-                          <w:szCs w:val="22"/>
-                          <w:u w:val="single"/>
-                        </w:rPr><w:t xml:space="preserve">${underlineText}</w:t></w:r><w:r><w:rPr>
-                          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
-                          <w:sz w:val="22"/>
-                          <w:szCs w:val="22"/>
-                        </w:rPr><w:t xml:space="preserve">`);
+                         <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                         <w:sz w:val="22"/>
+                         <w:szCs w:val="22"/>
+                         <w:u w:val="single"/>
+                       </w:rPr><w:t xml:space="preserve">${underlineText}</w:t></w:r><w:r><w:rPr>
+                         <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+                         <w:sz w:val="22"/>
+                         <w:szCs w:val="22"/>
+                       </w:rPr><w:t xml:space="preserve">`);
 
-                    // Handle arrow characters specifically
+                    // FIXED: Handle arrow characters specifically - preserve them instead of encoding
                     processedText = processedText
-                        .replace(/←/g, '&#x2190;')  // Left arrow
-                        .replace(/→/g, '&#x2192;'); // Right arrow
+                        .replace(/←/g, '←')  // Keep left arrow as-is
+                        .replace(/→/g, '→')  // Keep right arrow as-is
+                        .replace(/↑/g, '↑')  // Keep up arrow as-is
+                        .replace(/↓/g, '↓'); // Keep down arrow as-is
 
                     return result + processedText + `</w:t></w:r><w:r><w:t xml:space="preserve">`;
                 }
@@ -142,12 +138,12 @@ export async function postProcessTextFormatting(docxBlob) {
                 replacement: (match, text) => {
                     // Convert inline LaTeX math to OMML
                     return `</w:t></w:r>
-                      <m:oMathPara>
-                        <m:oMath>
-                          ${convertLatexToOmml(text)}
-                        </m:oMath>
-                      </m:oMathPara>
-                    <w:r><w:t xml:space="preserve">`;
+                     <m:oMathPara>
+                       <m:oMath>
+                         ${convertLatexToOmml(text)}
+                       </m:oMath>
+                     </m:oMathPara>
+                   <w:r><w:t xml:space="preserve">`;
                 }
             },
             {
@@ -155,15 +151,29 @@ export async function postProcessTextFormatting(docxBlob) {
                 replacement: (match, text) => {
                     // Convert display LaTeX math to OMML with display style
                     return `</w:t></w:r>
-                      <m:oMathPara>
-                        <m:oMathParaPr>
-                          <m:jc m:val="center"/>
-                        </m:oMathParaPr>
-                        <m:oMath>
-                          ${convertLatexToOmml(text, true)}
-                        </m:oMath>
-                      </m:oMathPara>
-                    <w:r><w:t xml:space="preserve">`;
+                     <m:oMathPara>
+                       <m:oMathParaPr>
+                         <m:jc m:val="center"/>
+                       </m:oMathParaPr>
+                       <m:oMath>
+                         ${convertLatexToOmml(text, true)}
+                       </m:oMath>
+                     </m:oMathPara>
+                   <w:r><w:t xml:space="preserve">`;
+                }
+            },
+            {
+                pattern: /§MATH_OMML§((?:(?!§\/MATH_OMML§)[\s\S])*)§\/MATH_OMML§/g,
+                replacement: (match, ommlXml) => {
+                    const unescapedXml = ommlXml
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&amp;/g, '&');
+
+                    //console.log('Unescaped OMML:', unescapedXml);
+
+                    // Wrap in proper OMML structure for Word to recognize as equation
+                    return `</w:t></w:r><m:oMath>${unescapedXml}</m:oMath><w:r><w:t xml:space="preserve">`;
                 }
             }
         ];
@@ -178,6 +188,20 @@ export async function postProcessTextFormatting(docxBlob) {
                 }
                 return match;
             });
+        });
+
+        // FIXED: Also handle arrow characters in regular text (not just code blocks)
+        docXml = docXml.replace(/<w:t([^>]*)>([^<]*)<\/w:t>/g, (match, attributes, content) => {
+            // Preserve arrows in regular text by ensuring they're not encoded
+            const processedContent = content
+                .replace(/&lt;/g, '←')   // In case arrows got encoded as &lt;
+                .replace(/&gt;/g, '→')   // In case arrows got encoded as &gt;
+                .replace(/&#x2190;/g, '←')  // Decode left arrow
+                .replace(/&#x2192;/g, '→')  // Decode right arrow
+                .replace(/&#x2191;/g, '↑')  // Decode up arrow
+                .replace(/&#x2193;/g, '↓'); // Decode down arrow
+
+            return `<w:t${attributes}>${processedContent}</w:t>`;
         });
 
         // Ensure that OMML namespace is declared in the document

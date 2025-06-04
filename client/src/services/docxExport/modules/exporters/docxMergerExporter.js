@@ -1,5 +1,5 @@
 ﻿import { loadDocx, copyRelatedFiles } from "../loaders/docxLoader.js";
-import { extractRefs, findAndRemoveFirstSectPr } from "../processors/documentStructureProcessor.js";
+import { findAndRemoveFirstSectPr } from "../processors/documentStructureProcessor.js";
 import {
     extractRelationships,
     processRelationships,
@@ -26,12 +26,6 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
 
         // Find and preserve the final section properties from the cover page
         const finalSectPr = coverBody.find(el => el['w:sectPr']);
-        if (finalSectPr) {
-            console.log('[SECTPR-DEBUG] Found final section properties:', {
-                headerRefs: extractRefs(finalSectPr['w:sectPr'], 'w:headerReference'),
-                footerRefs: extractRefs(finalSectPr['w:sectPr'], 'w:footerReference')
-            });
-        }
 
         const bodyDoc = body.documentObj.find((el) => 'w:document' in el);
         const bodyRelationships = extractRelationships(body.relationshipsXml);
@@ -132,10 +126,6 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
             }
             // Add back the preserved final section properties
             coverBody.push(finalSectPr);
-            // console.log('[SECTPR-DEBUG] Restored final section properties:', {
-            //     headerRefs: extractRefs(finalSectPr['w:sectPr'], 'w:headerReference'),
-            //     footerRefs: extractRefs(finalSectPr['w:sectPr'], 'w:footerReference')
-            // });
         }
 
         // Copy related files
@@ -177,7 +167,7 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
             mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         });
     } catch (error) {
-        console.error('Error merging docx files:', error);
+        console.error('Something failed in mergeDocxFiles():', error);
         throw error;
     }
 }
