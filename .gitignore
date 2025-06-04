@@ -1633,4 +1633,3 @@ Thumbs.db
 node_modules
 /client/src/testing/docx_samples/
 .archive
-client/src/resources/Exam.json
