@@ -150,17 +150,44 @@ export const Results = ({resultsData, examData, navigationButtons}) => {
           <Row gutter={16} style={{ marginTop: 16 }}>
             <Col span={24}>
               <Typography.Title level={4}>Score Distribution</Typography.Title>
-              <div style={{ width: '100%', height: '300px' }}>
-                <ResponsiveContainer width="100%" aspect={16/9}>
+              <div style={{ width: '100%', height: '400px', position: 'relative' }}>
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={statistics?.summary?.scoreDistribution || []}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="range" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#1890ff" />
+                    <XAxis 
+                      dataKey="range" 
+                      tick={{ fontSize: 12 }}
+                      interval={0}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 12 }}
+                      label={{ value: 'Number of Students', angle: -90, position: 'insideLeft' }}
+                    />
+                    <Tooltip 
+                      cursor={{ fill: 'rgba(24, 144, 255, 0.1)' }}
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #d9d9d9',
+                        borderRadius: '6px',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                      }}
+                      labelStyle={{ fontWeight: 'bold', color: '#1890ff' }}
+                      formatter={(value) => [
+                        `${value} students`,
+                        'Count'
+                      ]}
+                      labelFormatter={(label) => `Score Range: ${label}`}
+                    />
+                    <Bar 
+                      dataKey="count" 
+                      fill="#1890ff"
+                      radius={[4, 4, 0, 0]}
+                      stroke="#096dd9"
+                      strokeWidth={1}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
