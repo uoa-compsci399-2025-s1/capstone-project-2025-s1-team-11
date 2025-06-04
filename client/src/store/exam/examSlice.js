@@ -98,7 +98,7 @@ const examSlice = createSlice({
       let answers = rawAnswers.map((ans, idx) => {
         return createAnswer({ 
           contentFormatted: ans.contentFormatted,
-          correct: ans.correct !== undefined ? ans.correct : idx === 0,
+          correct: idx === 0,
           fixedPosition: ans.fixedPosition ? ans.fixedPosition : null
         });
       });
@@ -461,26 +461,6 @@ const examSlice = createSlice({
         }
       });
     },
-
-    setCorrectAnswer: (state, action) => {
-      if (!state.examData?.examBody) return;
-      
-      const { location, answerIndex, isCorrect } = action.payload;
-      const { examBodyIndex, questionsIndex } = location;
-      const container = state.examData.examBody?.[examBodyIndex];
-      if (!container) return;
-    
-      let question;
-      if (questionsIndex !== undefined && container.type === 'section') {
-        question = container.questions[questionsIndex];
-      } else if (container.type === 'question') {
-        question = container;
-      }
-      
-      if (question && question.answers && question.answers[answerIndex]) {
-        question.answers[answerIndex].correct = isCorrect;
-      }
-    },
   }
 });
 
@@ -511,8 +491,7 @@ export const {
   importExamFailure,  
   addExamMessage,
   setFileName,
-  importMarkingKey,
-  setCorrectAnswer
+  importMarkingKey
 } = examSlice.actions;
 
 // Export reducer

@@ -221,7 +221,7 @@ export const Results = ({resultsData, examData, navigationButtons}) => {
               }}
               options={resultsData.map((student) => ({
                 value: student.studentId,
-                label: `${student.firstName} ${student.lastName} (${student.studentId}) - ${student.totalMarks !== undefined ? `${student.totalMarks}/${totalExamMarks}` : "N/A"}`
+                label: `${student.firstName} ${student.lastName} (${student.studentId}) - ${student.totalMarks !== undefined ? `${student.totalMarks}/${student.maxMarks}` : "N/A"}`
               }))}
             />
           </div>
@@ -231,7 +231,6 @@ export const Results = ({resultsData, examData, navigationButtons}) => {
               student={selectedStudent}
               questionStats={questionStats}
               examData={examData}
-              totalExamMarks={totalExamMarks}
             />
           ) : (
             <Typography.Text type="warning">
@@ -251,10 +250,10 @@ export const Results = ({resultsData, examData, navigationButtons}) => {
             <div key={index} className="student-result" style={{ marginBottom: 12, padding: 8, borderRadius: 4 }}>
               <Text strong>{result.lastName || "Unknown"}, {result.firstName || "Student"} ({result.studentId || "N/A"})</Text>
               <Paragraph>Version: {result.versionNumber || result.versionId || "N/A"}</Paragraph>
-              <Paragraph>Score: {result.totalMarks !== undefined ? result.totalMarks : "?"}/{totalExamMarks !== undefined ? totalExamMarks : "?"}</Paragraph>
+              <Paragraph>Score: {result.totalMarks !== undefined ? result.totalMarks : "?"}/{result.maxMarks !== undefined ? result.maxMarks : "?"}</Paragraph>
               <details>
                 <summary>View Details</summary>
-                <pre>{generateResultOutput(result, examData, true, totalExamMarks)}</pre>
+                <pre>{generateResultOutput(result, examData)}</pre>
               </details>
             </div>
           ))}
@@ -284,7 +283,6 @@ export const Results = ({resultsData, examData, navigationButtons}) => {
       <ExportResults
         resultsData = {resultsData}
         currentExamData = {examData}
-        totalExamMarks = {totalExamMarks}
       />
 
 

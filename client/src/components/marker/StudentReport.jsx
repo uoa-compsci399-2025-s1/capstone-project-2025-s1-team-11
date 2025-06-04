@@ -7,14 +7,14 @@ const { Title, Text } = Typography;
 /**
  * Component to display a student's exam report with class statistics comparison
  */
-const StudentReport = ({ student, questionStats, examData, totalExamMarks }) => {
+const StudentReport = ({ student, questionStats, examData }) => {
   if (!student || !student.questions) {
     return <Text>No data available for this student.</Text>;
   }
 
   const totalCorrect = student.questions.filter(q => q.isCorrect).length;
   const totalQuestions = student.questions.length;
-  const studentScore = (student.totalMarks / (totalExamMarks || student.maxMarks)) * 100;
+  const studentScore = (student.totalMarks / student.maxMarks) * 100;
   
   // Prepare summary data for pie chart
   const summaryData = [
@@ -97,14 +97,8 @@ const StudentReport = ({ student, questionStats, examData, totalExamMarks }) => 
       <Card type="inner" title="Score Summary">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <Text>
-              <Text strong style={{ fontSize: '16px' }}>Marks:</Text>
-              <Text> {student.totalMarks || 0} / {totalExamMarks || student.maxMarks || 0} ({studentScore.toFixed(1)}%)</Text>
-            </Text>
-            <Text style={{ display: 'block', marginTop: '8px' }}>
-              <Text strong style={{ fontSize: '16px' }}>Correct Answers (out of questions answered):</Text>
-              <Text> {totalCorrect} / {totalQuestions}</Text>
-            </Text>
+            <Title level={4}>{student.totalMarks || 0} / {student.maxMarks || 0} ({studentScore.toFixed(1)}%)</Title>
+            <Text>Correct Answers: {totalCorrect} / {totalQuestions}</Text>
           </div>
           
           <div style={{ width: '200px', height: '200px' }}>

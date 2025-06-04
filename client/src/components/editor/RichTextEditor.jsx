@@ -7,8 +7,6 @@ import Typography from '@tiptap/extension-typography';
 import FontFamily from '@tiptap/extension-font-family';
 import TextStyle from '@tiptap/extension-text-style';
 import TipTapImage from '@tiptap/extension-image';
-import Subscript from '@tiptap/extension-subscript';
-import Superscript from '@tiptap/extension-superscript';
 import { Extension } from '@tiptap/core';
 import { Button, Tooltip, Select, Upload, Slider, Card, theme } from 'antd';
 import {
@@ -129,14 +127,6 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
           height: auto;
           position: relative;
           z-index: 1;
-        }
-        .ProseMirror sub {
-          vertical-align: sub;
-          font-size: smaller;
-        }
-        .ProseMirror sup {
-          vertical-align: super;
-          font-size: smaller;
         }
         .compact-editor-container {
           position: relative;
@@ -300,8 +290,6 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
         }
       }),
       CustomResizableExtension,
-      Subscript,
-      Superscript,
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -533,26 +521,6 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
                 icon={<UnderlineOutlined />}
                 onClick={() => editor.chain().focus().toggleUnderline().run()}
                 className={editor.isActive('underline') ? 'is-active' : ''}
-              />
-            </Tooltip>
-
-            <Tooltip title="Subscript">
-              <Button
-                type="text"
-                size="small"
-                icon={<span style={{ fontSize: '0.8em' }}>X₂</span>}
-                onClick={() => editor.chain().focus().toggleSubscript().run()}
-                className={editor.isActive('subscript') ? 'is-active' : ''}
-              />
-            </Tooltip>
-
-            <Tooltip title="Superscript">
-              <Button
-                type="text"
-                size="small"
-                icon={<span style={{ fontSize: '0.8em' }}>X²</span>}
-                onClick={() => editor.chain().focus().toggleSuperscript().run()}
-                className={editor.isActive('superscript') ? 'is-active' : ''}
               />
             </Tooltip>
 

@@ -5,7 +5,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import {DownloadOutlined} from "@ant-design/icons";
 
-const ExportResults = ({ resultsData, currentExamData, totalExamMarks }) => {
+const ExportResults = ({ resultsData, currentExamData }) => {
   const [exportFormat, setExportFormat] = useState("text");
   const [includeFeedback, setIncludeFeedback] = useState(true);
   const courseCode = currentExamData?.courseCode || "exam";
@@ -28,7 +28,7 @@ const ExportResults = ({ resultsData, currentExamData, totalExamMarks }) => {
 
       let missingIdCount = 0;
       resultsData.forEach(res => {
-        const content = generateResultOutput(res, currentExamData, includeFeedback, totalExamMarks);
+        const content = generateResultOutput(res, currentExamData, includeFeedback);
         const filename = `${res.studentId || "MissingID" + ++missingIdCount}.txt`;
         zip.file(filename, content);
       });
