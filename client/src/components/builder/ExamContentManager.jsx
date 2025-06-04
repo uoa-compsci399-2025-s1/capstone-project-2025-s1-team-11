@@ -80,13 +80,15 @@ const ExamContentManager = () => {
       {/* <Alert message="Some of this is moved/moving to the static context menu..." type="info" showIcon/> */}
       {error && <Text type="danger">{error}</Text>}
       {showSuccessAlert && (
+        <div style={{paddingBottom: "24px"}}>
         <Alert
           message="Success"
           type="success"
           showIcon
           closable
           onClose={() => setShowSuccessAlert(false)}
-        />
+          />
+          </div>
       )}
       {examData && (
         <Space style={{justifyContent: "space-between", width: "100%", display: "flex" }}>
