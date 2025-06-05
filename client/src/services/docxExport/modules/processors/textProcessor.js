@@ -259,7 +259,6 @@ export async function postProcessTextFormatting(docxBlob) {
 
         // Apply replacements - first pass: process individual text nodes
         replacements.forEach(({pattern, replacement}) => {
-            const originalDocXml = docXml;
             docXml = docXml.replace(/<w:t([^>]*)>([\s\S]*?)<\/w:t>/g, (match, attributes, content) => {
                 if (pattern.test(content)) {
                     const newContent = content.replace(pattern, replacement);

@@ -211,7 +211,6 @@ const extractMathElements = async (zip, documentXml) => {
     let match;
 
     while ((match = omathParaRegex.exec(documentXml)) !== null) {
-      const fullParaXml = match[0];
       const paraContent = match[1];
       
       mathElements.push({

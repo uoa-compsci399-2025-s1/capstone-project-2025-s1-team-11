@@ -17,7 +17,7 @@ export const xmlBuilder = new XMLBuilder({
     suppressBooleanAttributes: false,
     // CRITICAL FIX: Prevent re-escaping of content that's already been processed
     // This stops the XMLBuilder from escaping math content we've already unescaped
-    tagValueProcessor: (tagName, tagValue, jPath, hasAttributes, isLeafNode) => {
+    tagValueProcessor: (tagName, tagValue) => {
         // Don't escape content in text nodes - we've already processed it
         if (tagName === 'w:t' && typeof tagValue === 'string') {
             // If the content contains math markers or already contains unescaped XML,
