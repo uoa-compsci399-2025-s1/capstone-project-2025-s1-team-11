@@ -107,16 +107,14 @@ const StudentReport = ({ student, questionStats, examData, totalExamMarks }) => 
             </Text>
           </div>
           
-          <div style={{ width: '200px', height: '200px' }}>
-            <ResponsiveContainer width="100%" aspect={1}>
+          <div style={{ width: '250px', height: '220px' }}>
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={summaryData}
                   cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
+                  cy="45%"
+                  outerRadius={70}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -124,7 +122,24 @@ const StudentReport = ({ student, questionStats, examData, totalExamMarks }) => 
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '6px',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                  }}
+                  formatter={(value) => [`${value} questions`, 'Count']}
+                />
+                <Legend 
+                  verticalAlign="bottom"
+                  height={36}
+                  formatter={(value, entry) => 
+                    <span style={{ color: entry.color }}>
+                      {value}: {entry.payload.value} ({((entry.payload.value / (totalCorrect + (totalQuestions - totalCorrect))) * 100).toFixed(0)}%)
+                    </span>
+                  }
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -134,15 +149,34 @@ const StudentReport = ({ student, questionStats, examData, totalExamMarks }) => 
       <Divider />
       
       <Card type="inner" title="Performance Comparison" style={{ marginBottom: 20 }}>
-        <div style={{ width: '100%', height: '300px' }}>
-          <ResponsiveContainer width="100%" aspect={16/9}>
+        <div style={{ width: '100%', height: '350px', position: 'relative' }}>
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={questionComparisonData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
             >
-              <XAxis dataKey="question" />
-              <YAxis label={{ value: 'Correct %', angle: -90, position: 'insideLeft' }} />
-              <Tooltip />
+              <XAxis 
+                dataKey="question" 
+                tick={{ fontSize: 12 }}
+                interval={0}
+              />
+              <YAxis 
+                label={{ value: 'Correct %', angle: -90, position: 'insideLeft' }}
+                tick={{ fontSize: 12 }}
+              />
+              <Tooltip 
+                cursor={{ fill: 'rgba(24, 144, 255, 0.1)' }}
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #d9d9d9',
+                  borderRadius: '6px',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                }}
+                formatter={(value, name) => [
+                  `${value}%`,
+                  name
+                ]}
+              />
               <Legend />
               <Bar dataKey="student" name="Your Score" fill="#52c41a">
                 {
