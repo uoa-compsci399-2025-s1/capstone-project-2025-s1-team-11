@@ -1,7 +1,6 @@
 // src/App.jsx
 import React, { useEffect, useState } from "react";
 import MCQLayout from "./components/Layout";
-import DevelopmentWarning from "./components/developmentWarning";
 import PopupWarning from "./components/popupWarning";
 import {Outlet} from "react-router";
 import "./index.css";
@@ -63,7 +62,6 @@ const App = () => {
               <ThemeToggleButton isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
           </Card> */}
           <br/>
-          <DevelopmentWarning />
         </MCQLayout>
       </AntApp>
     </ConfigProvider>

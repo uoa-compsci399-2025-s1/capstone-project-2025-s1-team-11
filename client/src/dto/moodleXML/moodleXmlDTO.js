@@ -37,18 +37,35 @@ export class MoodleXmlDTO {
 }
 
 export class QuestionXmlDTO {
-    constructor(type, name, questionText, generalFeedback, answers, images) {
+    constructor(type, name, questionText, generalFeedback, answers, images, defaultgrade) {
         this.type = type;           
         this.name = name;           
         this.questionText = questionText;
         this.generalFeedback = generalFeedback;
         this.answers = answers;     
         this.images = images;       
+        this.defaultgrade = defaultgrade; // Mark value from XML
     }
 
     static fromXMLElement(elem) {
         // console.log("  Parsing question details:");
         const type = elem.getAttribute("type") || "multichoice";
+        
+        // First, extract all file elements and build a filename-to-base64 map
+        const fileMap = new Map();
+        const fileElems = elem.getElementsByTagName("file");
+        Array.from(fileElems).forEach(fileElem => {
+            const fileName = fileElem.getAttribute("name");
+            const encoding = fileElem.getAttribute("encoding");
+            if (fileName && encoding === "base64") {
+                const base64Data = fileElem.textContent.trim();
+                // Determine MIME type from file extension
+                const mimeType = getMimeTypeFromExtension(fileName);
+                const dataUri = `data:${mimeType};base64,${base64Data}`;
+                fileMap.set(fileName, dataUri);
+                // console.log(`  - Found file: ${fileName} (${base64Data.length} chars)`);
+            }
+        });
         
         // Name parsing
         const nameElem = elem.getElementsByTagName("name")[0];
@@ -59,19 +76,32 @@ export class QuestionXmlDTO {
         const name = nameElem ? nameElem.getElementsByTagName("text")[0].textContent : "";
         // console.log("  - Parsed name:", name);
         
-        // Question text parsing
+        // Question text parsing with @@PLUGINFILE@@ replacement
         const questionTextElem = elem.getElementsByTagName("questiontext")[0];
         // console.log("  - Question text element found:", !!questionTextElem);
         // if (questionTextElem) {
         //     console.log("    Question text XML:", questionTextElem.outerHTML);
         // }
-        const questionText = questionTextElem ? questionTextElem.getElementsByTagName("text")[0].textContent : "";
+        let questionText = questionTextElem ? questionTextElem.getElementsByTagName("text")[0].textContent : "";
+        questionText = replacePluginFileReferences(questionText, fileMap);
         // console.log("  - Question text length:", questionText.length);
         
-        // General feedback parsing
+        // General feedback parsing with @@PLUGINFILE@@ replacement
         const generalFeedbackElem = elem.getElementsByTagName("generalfeedback")[0];
         // console.log("  - General feedback element found:", !!generalFeedbackElem);
-        const generalFeedback = generalFeedbackElem ? generalFeedbackElem.getElementsByTagName("text")[0].textContent : "";
+        let generalFeedback = generalFeedbackElem ? generalFeedbackElem.getElementsByTagName("text")[0].textContent : "";
+        generalFeedback = replacePluginFileReferences(generalFeedback, fileMap);
+        
+        // Extract defaultgrade (marks) from XML structure
+        const defaultgradeElem = elem.getElementsByTagName("defaultgrade")[0];
+        let defaultgrade = 1; // Default value
+        if (defaultgradeElem) {
+            const gradeValue = parseFloat(defaultgradeElem.textContent);
+            if (!isNaN(gradeValue)) {
+                defaultgrade = gradeValue;
+            }
+        }
+        // console.log("  - Default grade:", defaultgrade);
         
         // Answer parsing
         const answerElems = elem.getElementsByTagName("answer");
@@ -80,7 +110,7 @@ export class QuestionXmlDTO {
         Array.from(answerElems).forEach((answerElem, index) => {
             // console.log(`    Processing answer ${index + 1}`);
             try {
-                const answer = AnswerXmlDTO.fromXMLElement(answerElem);
+                const answer = AnswerXmlDTO.fromXMLElement(answerElem, fileMap);
                 answers.push(answer);
                 // console.log(`    Answer ${index + 1} parsed successfully`);
             } catch (error) {
@@ -101,7 +131,7 @@ export class QuestionXmlDTO {
             console.error("  - Failed to extract images:", error);
         }
         
-        return new QuestionXmlDTO(type, name, questionText, generalFeedback, answers, images);
+        return new QuestionXmlDTO(type, name, questionText, generalFeedback, answers, images, defaultgrade);
     }
 }
 
@@ -113,7 +143,7 @@ export class AnswerXmlDTO {
         this.images = images;       
     }
 
-    static fromXMLElement(elem) {
+    static fromXMLElement(elem, fileMap = new Map()) {
         // console.log("      Parsing answer details");
         const fraction = parseFloat(elem.getAttribute("fraction") || "0");
         // console.log("      - Answer fraction:", fraction);
@@ -125,11 +155,13 @@ export class AnswerXmlDTO {
             console.error("      - Answer XML:", elem.outerHTML);
             throw new Error("Missing text element in answer");
         }
-        const text = textElem.textContent;
+        let text = textElem.textContent;
+        text = replacePluginFileReferences(text, fileMap);
         // console.log("      - Answer text length:", text.length);
         
         const feedbackElem = elem.getElementsByTagName("feedback")[0];
-        const feedback = feedbackElem ? feedbackElem.getElementsByTagName("text")[0].textContent : "";
+        let feedback = feedbackElem ? feedbackElem.getElementsByTagName("text")[0].textContent : "";
+        feedback = replacePluginFileReferences(feedback, fileMap);
         
         const images = [];
         const answerImages = extractImages(text);
@@ -156,7 +188,7 @@ function extractImages(htmlContent) {
     const doc = parser.parseFromString(htmlContent, "text/html");
     const imgElements = doc.getElementsByTagName("img");
     
-    Array.from(imgElements).forEach(img => {
+    Array.from(imgElements).forEach((img) => {
         images.push(new ImageDTO(
             img.src,
             img.alt,
@@ -166,4 +198,110 @@ function extractImages(htmlContent) {
     });
     
     return images;
+}
+
+// Helper function to get MIME type from file extension
+function getMimeTypeFromExtension(fileName) {
+    const extension = fileName.toLowerCase().split('.').pop();
+    const mimeTypes = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'bmp': 'image/bmp',
+        'webp': 'image/webp',
+        'svg': 'image/svg+xml',
+        'ico': 'image/x-icon'
+    };
+    return mimeTypes[extension] || 'image/jpeg'; // Default to JPEG if unknown
+}
+
+// Helper function to replace @@PLUGINFILE@@ references with actual data URIs
+function replacePluginFileReferences(htmlContent, fileMap) {
+    if (!htmlContent || fileMap.size === 0) {
+        return htmlContent;
+    }
+    
+    let updatedContent = htmlContent;
+    
+    // Replace @@PLUGINFILE@@/filename references
+    fileMap.forEach((dataUri, fileName) => {
+        const pluginFileRef = `@@PLUGINFILE@@/${fileName}`;
+        updatedContent = updatedContent.replace(new RegExp(pluginFileRef, 'g'), dataUri);
+    });
+    
+    // Apply default size constraints to images without explicit sizes
+    updatedContent = applyDefaultImageSizing(updatedContent);
+    
+    return updatedContent;
+}
+
+// Helper function to apply default size constraints to images
+function applyDefaultImageSizing(htmlContent) {
+    if (!htmlContent) {
+        return htmlContent;
+    }
+    
+    // console.log("=== Applying default image sizing ===");
+    // console.log("Input HTML:", htmlContent);
+    
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, "text/html");
+    const imgElements = doc.getElementsByTagName("img");
+    
+    // console.log(`Found ${imgElements.length} img elements`);
+    
+    let hasChanges = false;
+    
+    Array.from(imgElements).forEach((img) => {
+        // console.log("Processing image...");
+        // Skip if image already has both width and height attributes or styles
+        const hasExplicitWidth = img.getAttribute('width') || img.style.width;
+        const hasExplicitHeight = img.getAttribute('height') || img.style.height;
+        
+        if (hasExplicitWidth && hasExplicitHeight) {
+            // console.log("Skipping - already has explicit sizing");
+            return; // Image already has explicit sizing
+        }
+        
+        // For base64 images, apply default sizing
+        if (img.src && img.src.startsWith('data:image')) {
+            // console.log("Processing base64 image...");
+            // Set a default max width similar to rich text editor
+            const maxDefaultWidth = 400; // Max width for imported images
+            
+            // If no explicit sizing, apply default
+            if (!hasExplicitWidth && !hasExplicitHeight) {
+                // console.log(`Applying default sizing: ${maxDefaultWidth}px width, auto height`);
+                img.setAttribute('width', maxDefaultWidth);
+                img.setAttribute('height', 'auto');
+                img.style.width = maxDefaultWidth + 'px';
+                img.style.height = 'auto';
+                hasChanges = true;
+            } else if (!hasExplicitWidth) {
+                // Has height but no width
+                // console.log("Setting width to auto (has height)");
+                img.style.width = 'auto';
+                hasChanges = true;
+            } else if (!hasExplicitHeight) {
+                // Has width but no height
+                // console.log("Setting height to auto (has width)");
+                img.style.height = 'auto';
+                hasChanges = true;
+            }
+        } else {
+            // console.log("Skipping - not a base64 image");
+        }
+    });
+    
+    // Return the updated HTML if changes were made
+    if (hasChanges) {
+        const result = doc.body.innerHTML;
+        // console.log("=== Image sizing complete - changes made ===");
+        // console.log("Output HTML:", result);
+        return result;
+    }
+    
+    // console.log("=== Image sizing complete - no changes needed ===");
+    return htmlContent;
 } 

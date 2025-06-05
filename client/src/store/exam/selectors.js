@@ -215,6 +215,20 @@ export const selectCorrectAnswerIndices = createSelector(
   }
 );
 
+// Selector to get correct answer indices for a specific question (original order, not shuffled)
+export const selectQuestionCorrectAnswers = createSelector(
+  [
+    (state, examBodyIndex, questionsIndex) => selectQuestionByPath(state, examBodyIndex, questionsIndex)
+  ],
+  (question) => {
+    if (!question?.answers) return [];
+    
+    return question.answers
+      .map((answer, index) => answer.correct ? index : -1)
+      .filter(index => index !== -1);
+  }
+);
+
 // Other simple selectors
 export const selectTeleformData = (state) => state.teleform?.teleformData || '';
 export const selectCoverPage = (state) => state.exam?.coverPage || null;
