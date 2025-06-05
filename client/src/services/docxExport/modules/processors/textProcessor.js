@@ -180,11 +180,8 @@ export async function postProcessTextFormatting(docxBlob) {
                     
                     // Check if still escaped (double-escaped case)
                     if (unescapedXml.includes('&lt;') || unescapedXml.includes('&gt;') || unescapedXml.includes('&quot;')) {
-                        console.log('Double-escaped inline content detected, unescaping again...');
                         unescapedXml = decodeHtmlEntities(unescapedXml);
                     }
-
-                    console.log('Unescaped OMML XML (inline):', unescapedXml.substring(0, 200) + '...');
 
                     // Check if the XML is already a complete <m:oMath> element
                     let result;
