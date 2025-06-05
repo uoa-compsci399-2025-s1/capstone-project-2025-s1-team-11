@@ -215,24 +215,15 @@ const extractMathElements = async (zip, documentXml) => {
       const fullParaXml = match[0];
       const paraContent = match[1];
       
-      // Extract the inner m:oMath content from the oMathPara
-      const innerMathRegex = /<m:oMath[^>]*>(.*?)<\/m:oMath>/gs;
-      const innerMatch = innerMathRegex.exec(paraContent);
+      console.log(`Extracted block math ${mathIndex}: ${paraContent.substring(0, 50)}...`);
       
-      if (innerMatch) {
-        // Use only the inner content of m:oMath, not the m:oMath tags themselves
-        const innerContent = innerMatch[1];
-        
-        console.log(`Extracted block math ${mathIndex}: ${innerContent.substring(0, 100)}...`);
-        
-        mathElements.push({
-          id: `math-${mathIndex++}`,
-          type: 'oMathPara',
-          originalXml: innerContent, // Store only the inner content
-          isBlockMath: true,
-          position: match.index
-        });
-      }
+      mathElements.push({
+        id: `math-${mathIndex++}`,
+        type: 'oMathPara',
+        originalXml: paraContent, // Store the complete content including oMathParaPr and oMath
+        isBlockMath: true,
+        position: match.index
+      });
     }
 
     // Then, extract standalone oMath elements (inline math) that are NOT inside oMathPara
@@ -270,12 +261,12 @@ const extractMathElements = async (zip, documentXml) => {
 
       if (!isInsideParaRange) {
         // This is a standalone oMath (inline math)
-        console.log(`Extracted inline math ${mathIndex}: ${omathMatch.innerContent.substring(0, 100)}...`);
+        console.log(`Extracted inline math ${mathIndex}: ${omathMatch.innerContent.substring(0, 50)}...`);
         
         mathElements.push({
           id: `math-${mathIndex++}`,
           type: 'oMath',
-          originalXml: omathMatch.innerContent, // Store only the inner content
+          originalXml: omathMatch.fullMatch, // Store the complete oMath element including tags
           isBlockMath: false,
           position: omathMatch.position
         });

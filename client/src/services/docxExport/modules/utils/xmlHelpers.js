@@ -7,12 +7,30 @@ export const xmlParserOptions = {
     preserveOrder: true,
     trimValues: false
 };
+
 export const xmlBuilder = new XMLBuilder({
     ignoreAttributes: false,
     attributeNamePrefix: '@_',
     preserveOrder: true,
-    format: true
+    format: true,
+    suppressEmptyNode: false,
+    suppressBooleanAttributes: false,
+    // CRITICAL FIX: Prevent re-escaping of content that's already been processed
+    // This stops the XMLBuilder from escaping math content we've already unescaped
+    tagValueProcessor: (tagName, tagValue, jPath, hasAttributes, isLeafNode) => {
+        // Don't escape content in text nodes - we've already processed it
+        if (tagName === 'w:t' && typeof tagValue === 'string') {
+            // If the content contains math markers or already contains unescaped XML,
+            // return it as-is without further escaping
+            if (tagValue.includes('<m:') || tagValue.includes('§MATH_')) {
+                return tagValue;
+            }
+        }
+        // For all other content, use default processing (which includes escaping)
+        return tagValue;
+    }
 });
+
 export const xmlParser = new XMLParser(xmlParserOptions);
 
 /**

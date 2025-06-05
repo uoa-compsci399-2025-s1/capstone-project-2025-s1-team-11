@@ -242,7 +242,8 @@ function processSequentialParagraphContent(para, documentXml, options = {}, math
                 placeholder: `[math]`
             };
 
-            result += `[math:${mathId}]`;
+            const placeholder = `[math:${mathId}]`;
+            result += placeholder;
             mathIndex++;
         }
         // Skip other element types like w:proofErr for now
@@ -273,6 +274,7 @@ function processParagraphFromJson(para, options = {}, mathElementsWithXml = []) 
 
     // Add math placeholders using pre-extracted math elements
     if (preserveMath && mathElementsWithXml.length > 0) {
+        console.log(`Adding ${mathElementsWithXml.length} fallback math placeholders`);
         mathElementsWithXml.forEach((mathElementWithXml, index) => {
             // Use the pre-extracted ID or generate one
             const mathId = mathElementWithXml.id || `math-fallback-${index}`;
@@ -287,7 +289,8 @@ function processParagraphFromJson(para, options = {}, mathElementsWithXml = []) 
                 placeholder: `[math]`
             };
 
-            result += `[math:${mathId}]`;
+            const placeholder = `[math:${mathId}]`;
+            result = result.replace(/\[math\]/, placeholder);
         });
     }
 
