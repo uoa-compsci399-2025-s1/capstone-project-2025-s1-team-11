@@ -210,12 +210,9 @@ const extractMathElements = async (zip, documentXml) => {
     const omathParaRegex = /<m:oMathPara[^>]*>(.*?)<\/m:oMathPara>/gs;
     let match;
 
-    console.log('Extracting oMathPara elements (block math)...');
     while ((match = omathParaRegex.exec(documentXml)) !== null) {
       const fullParaXml = match[0];
       const paraContent = match[1];
-      
-      console.log(`Extracted block math ${mathIndex}: ${paraContent.substring(0, 50)}...`);
       
       mathElements.push({
         id: `math-${mathIndex++}`,
@@ -252,7 +249,6 @@ const extractMathElements = async (zip, documentXml) => {
       });
     }
 
-    console.log('Extracting standalone oMath elements (inline math)...');
     // Filter out oMath elements that are inside oMathPara
     allOmathMatches.forEach(omathMatch => {
       const isInsideParaRange = omathParaRanges.some(paraRange => 
@@ -261,8 +257,6 @@ const extractMathElements = async (zip, documentXml) => {
 
       if (!isInsideParaRange) {
         // This is a standalone oMath (inline math)
-        console.log(`Extracted inline math ${mathIndex}: ${omathMatch.innerContent.substring(0, 50)}...`);
-        
         mathElements.push({
           id: `math-${mathIndex++}`,
           type: 'oMath',
@@ -275,9 +269,6 @@ const extractMathElements = async (zip, documentXml) => {
 
     // Sort by position in document to maintain correct order
     mathElements.sort((a, b) => a.position - b.position);
-
-    console.log(`Total math elements extracted: ${mathElements.length}`);
-    console.log('Math elements:', mathElements.map(m => ({ id: m.id, type: m.type, isBlock: m.isBlockMath })));
 
     return mathElements;
   } catch (error) {

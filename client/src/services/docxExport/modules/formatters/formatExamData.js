@@ -126,13 +126,9 @@ function resolveMathPlaceholders(content, mathRegistry) {
         return content;
     }
 
-    console.log(`Found ${mathPlaceholderMatches.length} math placeholders to resolve`);
-
     const result = content.replace(/\[math:([^\]]+)\]/g, (match, mathId) => {
         const mathEntry = mathRegistry[mathId];
         if (mathEntry && mathEntry.originalXml) {
-            console.log(`Math ${mathId} originalXml format check:`, mathEntry.originalXml.substring(0, 100) + '...');
-            
             // Check if originalXml is already escaped (including quotes)
             const isAlreadyEscaped = mathEntry.originalXml.includes('&lt;') || 
                                    mathEntry.originalXml.includes('&gt;') || 
@@ -142,7 +138,6 @@ function resolveMathPlaceholders(content, mathRegistry) {
             if (isAlreadyEscaped) {
                 // Already escaped, use as-is
                 xmlForMarker = mathEntry.originalXml;
-                console.log(`Math ${mathId} is already escaped, using as-is`);
             } else {
                 // Not escaped, need to escape for the marker
                 // Note: Escape quotes and apostrophes too for proper XML attributes
@@ -152,17 +147,14 @@ function resolveMathPlaceholders(content, mathRegistry) {
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&apos;');
-                console.log(`Math ${mathId} escaped for marker`);
             }
 
             const marker = mathEntry.context === 'block' 
                 ? `§MATH_OMML_BLOCK§${xmlForMarker}§/MATH_OMML_BLOCK§`
                 : `§MATH_OMML§${xmlForMarker}§/MATH_OMML§`;
 
-            console.log(`Resolved ${match} to ${mathEntry.context} math`);
             return marker;
         } else {
-            console.warn(`No math entry found for: ${mathId}`);
             return match;
         }
     });

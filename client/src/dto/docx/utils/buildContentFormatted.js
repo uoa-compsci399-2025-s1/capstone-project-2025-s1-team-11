@@ -274,7 +274,6 @@ function processParagraphFromJson(para, options = {}, mathElementsWithXml = []) 
 
     // Add math placeholders using pre-extracted math elements
     if (preserveMath && mathElementsWithXml.length > 0) {
-        console.log(`Adding ${mathElementsWithXml.length} fallback math placeholders`);
         mathElementsWithXml.forEach((mathElementWithXml, index) => {
             // Use the pre-extracted ID or generate one
             const mathId = mathElementWithXml.id || `math-fallback-${index}`;
