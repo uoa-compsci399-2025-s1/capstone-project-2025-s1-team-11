@@ -175,6 +175,25 @@ export async function postProcessTextFormatting(docxBlob) {
                     // Wrap in proper OMML structure for Word to recognize as equation
                     return `</w:t></w:r><m:oMath>${unescapedXml}</m:oMath><w:r><w:t xml:space="preserve">`;
                 }
+            },
+            {
+                pattern: /§MATH_OMML_BLOCK§((?:(?!§\/MATH_OMML_BLOCK§)[\s\S])*)§\/MATH_OMML_BLOCK§/g,
+                replacement: (match, ommlXml) => {
+                    const unescapedXml = ommlXml
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&amp;/g, '&');
+
+                    // Wrap block math in proper m:oMathPara structure for Word to recognize as block equation
+                    return `</w:t></w:r>
+                     <m:oMathPara>
+                       <m:oMathParaPr>
+                         <m:jc m:val="left"/>
+                       </m:oMathParaPr>
+                       <m:oMath>${unescapedXml}</m:oMath>
+                     </m:oMathPara>
+                   <w:r><w:t xml:space="preserve">`;
+                }
             }
         ];
 

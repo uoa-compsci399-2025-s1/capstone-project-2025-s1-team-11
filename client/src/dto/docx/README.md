@@ -30,6 +30,85 @@ Work in progress — basic parsing of sections, questions, answers, marks, image
 
 **Result**: Images now maintain their aspect ratio during resize and export correctly without distortion.
 
+### DOCX Math Corruption Fix
+
+## Problem
+
+Previously, when importing certain DOCX exams, the math elements would be corrupted when trying to open the exported DOCX file. This happened because:
+
+1. **Nested OMML Structure**: The extraction logic was capturing full `<m:oMathPara>` elements including the inner `<m:oMath>` tags
+2. **Export Logic Wrapping**: The export logic would wrap the content in additional `<m:oMath>` tags, creating invalid nested structures like:
+   ```xml
+   <m:oMath>
+     <m:oMathPara>
+       <m:oMath>...</m:oMath>  <!-- INVALID: nested m:oMath -->
+     </m:oMathPara>
+   </m:oMath>
+   ```
+3. **Duplicate Extraction**: Some documents had both inline and block versions of the same equations being extracted separately
+
+## Solution
+
+### 1. Updated Math Extraction (`extractDocumentXml.js`)
+
+- **Extract Inner Content Only**: Now extracts only the inner content of math elements, not the wrapper tags
+- **Prevent Duplication**: Properly filters out `<m:oMath>` elements that are already inside `<m:oMathPara>` to avoid duplicates
+- **Maintain Context**: Still correctly identifies block vs inline math context
+
+**Before:**
+```javascript
+// Would extract: <m:oMathPara><m:oMath>content</m:oMath></m:oMathPara>
+originalXml: "<m:oMathPara><m:oMathParaPr><m:jc m:val=\"left\"/></m:oMathParaPr><m:oMath>...</m:oMath></m:oMathPara>"
+```
+
+**After:**
+```javascript
+// Now extracts: content (inner content only)
+originalXml: "<m:acc><m:accPr><m:chr m:val=\"̅\"/>...</m:e></m:acc>"
+```
+
+### 2. Enhanced Export Logic (`textProcessor.js`)
+
+- **Context-Aware Wrapping**: Different handling for block vs inline math
+- **Block Math**: Wrapped in proper `<m:oMathPara>` structure with properties
+- **Inline Math**: Wrapped in simple `<m:oMath>` structure
+
+**Block Math Export:**
+```xml
+<m:oMathPara>
+  <m:oMathParaPr>
+    <m:jc m:val="left"/>
+  </m:oMathParaPr>
+  <m:oMath>[inner content]</m:oMath>
+</m:oMathPara>
+```
+
+**Inline Math Export:**
+```xml
+<m:oMath>[inner content]</m:oMath>
+```
+
+### 3. Updated Placeholder Resolution (`formatExamData.js`)
+
+- **Different Markers**: Uses `§MATH_OMML_BLOCK§` for block math and `§MATH_OMML§` for inline math
+- **Preserves Context**: Maintains the distinction between block and inline math throughout the export process
+
+## Result
+
+- ✅ **No More Corruption**: Exported DOCX files with math equations open correctly in Word
+- ✅ **Proper Structure**: Valid OMML XML structure without nested `<m:oMath>` elements  
+- ✅ **Context Preservation**: Block math displays as block, inline math displays inline
+- ✅ **No Duplicates**: Each math element is extracted only once
+
+## Testing
+
+The fix includes debug logging to help track the extraction process:
+- Logs when extracting block vs inline math elements
+- Shows the first 100 characters of extracted content
+- Displays total count and types of extracted math elements
+
+To test with a problematic DOCX file, check the browser console for extraction logs when importing the document.
+
 ---
 
 ## Notes

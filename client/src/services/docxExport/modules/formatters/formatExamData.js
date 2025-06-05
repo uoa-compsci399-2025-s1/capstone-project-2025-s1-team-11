@@ -127,8 +127,9 @@ function resolveMathPlaceholders(content, mathRegistry) {
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
 
+            // Use different markers for block vs inline math
             const replacement = mathEntry.context === 'block'
-                ? `§MATH_OMML§${escapedXml}§/MATH_OMML§`
+                ? `§MATH_OMML_BLOCK§${escapedXml}§/MATH_OMML_BLOCK§`
                 : `§MATH_OMML§${escapedXml}§/MATH_OMML§`;
 
             return replacement;

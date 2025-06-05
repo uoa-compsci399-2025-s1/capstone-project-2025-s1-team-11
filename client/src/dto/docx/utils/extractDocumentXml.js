@@ -206,40 +206,91 @@ const extractMathElements = async (zip, documentXml) => {
   let mathIndex = 0;
 
   try {
-    // Extract all OMML elements from the document XML
-    const omathRegex = /<m:oMath[^>]*>.*?<\/m:oMath>/gs;
-    const omathParaRegex = /<m:oMathPara[^>]*>.*?<\/m:oMathPara>/gs;
-
+    // First, extract all oMathPara elements (block math)
+    const omathParaRegex = /<m:oMathPara[^>]*>(.*?)<\/m:oMathPara>/gs;
     let match;
 
-    // Extract standalone oMath elements
+    console.log('Extracting oMathPara elements (block math)...');
+    while ((match = omathParaRegex.exec(documentXml)) !== null) {
+      const fullParaXml = match[0];
+      const paraContent = match[1];
+      
+      // Extract the inner m:oMath content from the oMathPara
+      const innerMathRegex = /<m:oMath[^>]*>(.*?)<\/m:oMath>/gs;
+      const innerMatch = innerMathRegex.exec(paraContent);
+      
+      if (innerMatch) {
+        // Use only the inner content of m:oMath, not the m:oMath tags themselves
+        const innerContent = innerMatch[1];
+        
+        console.log(`Extracted block math ${mathIndex}: ${innerContent.substring(0, 100)}...`);
+        
+        mathElements.push({
+          id: `math-${mathIndex++}`,
+          type: 'oMathPara',
+          originalXml: innerContent, // Store only the inner content
+          isBlockMath: true,
+          position: match.index
+        });
+      }
+    }
+
+    // Then, extract standalone oMath elements (inline math) that are NOT inside oMathPara
+    // We need to be careful not to extract oMath elements that are already part of oMathPara
+    const omathRegex = /<m:oMath[^>]*>(.*?)<\/m:oMath>/gs;
+    const allOmathMatches = [];
+    
+    // Collect all oMath matches
+    omathRegex.lastIndex = 0;
     while ((match = omathRegex.exec(documentXml)) !== null) {
-      mathElements.push({
-        id: `math-${mathIndex++}`,
-        type: 'oMath',
-        originalXml: match[0],
-        isBlockMath: false,
-        position: match.index
+      allOmathMatches.push({
+        fullMatch: match[0],
+        innerContent: match[1],
+        position: match.index,
+        endPosition: match.index + match[0].length
       });
     }
 
-    // Reset regex lastIndex and extract oMathPara elements
+    // Collect all oMathPara ranges to exclude nested oMath
+    const omathParaRanges = [];
     omathParaRegex.lastIndex = 0;
     while ((match = omathParaRegex.exec(documentXml)) !== null) {
-      mathElements.push({
-        id: `math-${mathIndex++}`,
-        type: 'oMathPara',
-        originalXml: match[0],
-        isBlockMath: true,
-        position: match.index
+      omathParaRanges.push({
+        start: match.index,
+        end: match.index + match[0].length
       });
     }
+
+    console.log('Extracting standalone oMath elements (inline math)...');
+    // Filter out oMath elements that are inside oMathPara
+    allOmathMatches.forEach(omathMatch => {
+      const isInsideParaRange = omathParaRanges.some(paraRange => 
+        omathMatch.position >= paraRange.start && omathMatch.endPosition <= paraRange.end
+      );
+
+      if (!isInsideParaRange) {
+        // This is a standalone oMath (inline math)
+        console.log(`Extracted inline math ${mathIndex}: ${omathMatch.innerContent.substring(0, 100)}...`);
+        
+        mathElements.push({
+          id: `math-${mathIndex++}`,
+          type: 'oMath',
+          originalXml: omathMatch.innerContent, // Store only the inner content
+          isBlockMath: false,
+          position: omathMatch.position
+        });
+      }
+    });
 
     // Sort by position in document to maintain correct order
     mathElements.sort((a, b) => a.position - b.position);
 
+    console.log(`Total math elements extracted: ${mathElements.length}`);
+    console.log('Math elements:', mathElements.map(m => ({ id: m.id, type: m.type, isBlock: m.isBlockMath })));
+
     return mathElements;
-  } catch {
+  } catch (error) {
+    console.error('Error extracting math elements:', error);
     return [];
   }
 };
