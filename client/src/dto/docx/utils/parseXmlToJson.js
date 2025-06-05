@@ -7,5 +7,8 @@ export const parseXmlToJson = (xmlString) => {
     ignoreDeclaration: true,
     trimValues: false
   });
-  return parser.parse(xmlString);
+
+  const result = parser.parse(xmlString);
+
+  return result;
 };

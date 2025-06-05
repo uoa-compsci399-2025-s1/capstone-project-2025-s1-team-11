@@ -67,7 +67,7 @@ function processNode(node, result) {
         switch (tagName) {
             case 'img':
                 // Process image
-                { const imageData = processImage(node);
+            { const imageData = processImage(node);
                 if (imageData) {
                     // Add placeholder in text
                     result.text += `{{image_${result.elements.length}}}`;
@@ -155,13 +155,13 @@ function processNode(node, result) {
 
             case 'math-inline':
                 // Inline LaTeX math
-                { const inlineLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
+            { const inlineLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
                 result.text += `§MATH_INLINE§${inlineLatex}§/MATH_INLINE§`;
                 break; }
 
             case 'math-display':
                 // Display LaTeX math
-                { const displayLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
+            { const displayLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
                 result.text += `§MATH_DISPLAY§${displayLatex}§/MATH_DISPLAY§`;
                 break; }
 
@@ -201,7 +201,7 @@ export function containsImages(htmlString) {
  */
 export function containsMath(htmlString) {
     if (!htmlString) return false;
-    return /\$\$(.*?)\$\$/gs.test(htmlString) || 
-           /\$(.*?)\$/g.test(htmlString) ||
-           /<math/.test(htmlString);
+    return /\$\$(.*?)\$\$/gs.test(htmlString) ||
+        /\$(.*?)\$/g.test(htmlString) ||
+        /<math/.test(htmlString);
 }

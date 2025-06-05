@@ -42,8 +42,6 @@ In order to install and use Assessly, you will need to install:
 2. Run ```npm run build``` to create a distributable - you can run this anytime you want to update what the server is sending.
 
 ## Usage
-> [!WARNING]  
-> Assessly is in development. Features should be complete, however bugs are expected. Please report any bugs you encounter to Team 11.
 
 ### 1. Building an exam
 

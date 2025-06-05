@@ -2,7 +2,7 @@ import { parseDocx } from '../dto/docx/docxParser.js';
 import { MoodleXmlDTO } from '../dto/moodleXML/moodleXmlDTO.js'
 import { parseLatex, isLikelyLatex } from '../dto/latex/latexParser.js';
 import { convertMoodleXmlDTOToJsonWithSections } from '../utilities/convertMoodleXmlToJsonWithSections.js';
-import { 
+import {
   importExamStart,
   importExamSuccess,
   importExamFailure,
@@ -10,7 +10,8 @@ import {
   addSection,
   addQuestion,
   updateExamField,
-  addExamMessage
+  addExamMessage,
+  setMathRegistry
 } from '../store/exam/examSlice';
 
 import { selectExamData } from '../store/exam/selectors.js';
@@ -36,9 +37,12 @@ export class ExamImportService {
   }
 
   async processDocxExam(file) {
-    const docxDTO = await parseDocx(file);
-    //return normaliseDocxDTO(docxDTO);
-    return docxDTO;
+    const { dto, mathRegistry } = await parseDocx(file);
+
+    // Store the math registry for later use during export
+    this.mathRegistry = mathRegistry;
+
+    return dto;
   }
 
   async processMoodleExam(file) {
@@ -55,20 +59,20 @@ export class ExamImportService {
     try {
       // Read the file content first
       const latexContent = await this.readFileContent(file);
-      
+
       // Validate that this looks like a LaTeX file
       if (!isLikelyLatex(latexContent)) {
         throw new Error("The provided file does not appear to be a valid LaTeX document");
       }
-      
+
       // Parse LaTeX content and return DTO
       const latexDTO = parseLatex(latexContent);
-      
+
       // Validate the returned DTO has the expected structure
       if (!latexDTO || !latexDTO.examBody || !Array.isArray(latexDTO.examBody)) {
         throw new Error("Failed to extract exam structure from LaTeX document");
       }
-      
+
       return latexDTO;
     } catch (error) {
       console.error("Error processing LaTeX exam:", error);
@@ -89,9 +93,15 @@ export class ExamImportService {
 // Thunk for importing an exam - intended behaviour is to add questions from the imported exam to the existing examBody.
 // And if imported exam contains metadata, update the existing exam metadata.
 // However we do not want to clear existing exam metadata or replace existing questions.
-export const importDTOToState = (examDTO) => async (dispatch, getState) => {
+export const importDTOToState = (examDTO, mathRegistry = null) => async (dispatch, getState) => {
   try {
     dispatch(importExamStart());
+
+    // Store math registry if provided (from DOCX imports)
+    if (mathRegistry) {
+      dispatch(setMathRegistry(mathRegistry));
+    }
+
     //let's check if an exam is already loaded, if so update exam metadata where imported exam has metadate.
     const examData = selectExamData(getState());
     let importMessages = [];
@@ -109,7 +119,7 @@ export const importDTOToState = (examDTO) => async (dispatch, getState) => {
           examProps[key] = examDTO[key];
         }
       });
-      
+
       dispatch(initialiseExamState(examProps));
       //console.log(`examData: ${JSON.stringify(examData)}`);
     } else {
@@ -135,17 +145,17 @@ export const importDTOToState = (examDTO) => async (dispatch, getState) => {
           const sectionWithoutQuestions = { ...item };
           delete sectionWithoutQuestions.questions;
           await dispatch(addSection(sectionWithoutQuestions));
-          
+
           for (const question of item.questions || []) {
-            await dispatch(addQuestion({ 
-              examBodyIndex: examBodyIndexCounter, 
-              questionData: question 
+            await dispatch(addQuestion({
+              examBodyIndex: examBodyIndexCounter,
+              questionData: question
             }));
           }
         } else {
-          await dispatch(addQuestion({ 
-            examBodyIndex: null, 
-            questionData: item 
+          await dispatch(addQuestion({
+            examBodyIndex: null,
+            questionData: item
           }));
         }
         examBodyIndexCounter++;
@@ -156,7 +166,7 @@ export const importDTOToState = (examDTO) => async (dispatch, getState) => {
       }
     }
     importMessages.forEach(message => dispatch(addExamMessage(message)));
-    dispatch(importExamSuccess()); 
+    dispatch(importExamSuccess());
 
     return;
   } catch (error) {

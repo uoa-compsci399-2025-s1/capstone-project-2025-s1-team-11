@@ -1,11 +1,12 @@
-﻿import JSZip from "jszip";
+﻿// src/services/docxExport/modules/processors/docxImageProcessor.js
+
+import JSZip from "jszip";
 import ImageModule from "docxtemplater-image-module-free";
 
 /**
  * Create the image module configuration
  */
 export function createImageModule() {
-    // noinspection JSUnusedGlobalSymbols
     const imageOpts = {
         centered: false,
         fileType: "docx",
@@ -20,7 +21,7 @@ export function createImageModule() {
                 }
                 return bytes.buffer;
             } catch (error) {
-                console.error("Error in getImage:", error);
+                console.error('Something failed in createImageModule():', error);
                 throw error;
             }
         },
@@ -44,7 +45,7 @@ export function processTemplateData(templateData) {
 
     // Process exam body items
     if (processedData.examBody) {
-        processedData.examBody = processedData.examBody.map(item => {
+        processedData.examBody = processedData.examBody.map((item) => {
             let processedItem = {...item};
 
             // Handle section content with images
@@ -64,6 +65,29 @@ export function processTemplateData(templateData) {
                 processedItem = {...processedItem, ...sectionImages};
             }
 
+            // Handle questions inside sections
+            if (item.isSection && item.questions) {
+                processedItem.questions = item.questions.map(question => {
+                    let processedQuestion = {...question};
+                    if (question.questionElements) {
+                        const questionImages = {};
+                        question.questionElements.forEach((element, index) => {
+                            if (element.type === 'image') {
+                                const imageKey = `questionImage_${question.questionNumber}_${index}`;
+                                questionImages[imageKey] = element.base64;
+                                processedQuestion.questionText = processedQuestion.questionText.replace(
+                                    `{{image_${index}}}`,
+                                    `[[IMAGE::${imageKey}]]`
+                                );
+                            }
+                        });
+                        // Store images at question level, not section level
+                        processedQuestion = {...processedQuestion, ...questionImages};
+                    }
+                    return processedQuestion;
+                });
+            }
+
             // Handle question content with images
             if (item.questionElements) {
                 const questionImages = {};
@@ -71,6 +95,7 @@ export function processTemplateData(templateData) {
                     if (element.type === 'image') {
                         const imageKey = `questionImage_${item.questionNumber}_${index}`;
                         questionImages[imageKey] = element.base64;
+
                         // Replace placeholder in text
                         processedItem.questionText = processedItem.questionText.replace(
                             `{{image_${index}}}`,
@@ -175,6 +200,73 @@ export async function postProcessDocxImages(docxBlob, processedData) {
                                 mimeType: element.mimeType,
                                 filename: element.filename
                             };
+                        }
+                    });
+                }
+
+                // Check questions within sections for images
+                if (item.questions) {
+                    item.questions.forEach(question => {
+                        // Check for structured image data in questionElements
+                        if (question.questionElements) {
+                            question.questionElements.forEach((element, index) => {
+                                if (element.type === 'image') {
+                                    const imageKey = `questionImage_${question.questionNumber}_${index}`;
+                                    allImages[imageKey] = {
+                                        base64: element.base64,
+                                        width: element.width,
+                                        height: element.height,
+                                        mimeType: element.mimeType,
+                                        filename: element.filename
+                                    };
+                                }
+                            });
+                        }
+
+                        // Check for direct image properties at question level
+                        Object.keys(question).forEach(key => {
+                            if (key.includes('Image') && typeof question[key] === 'string' && question[key].length > 100) {
+                                if (!allImages[key]) {
+                                    allImages[key] = {
+                                        base64: question[key],
+                                        width: 300,
+                                        height: 200
+                                    };
+                                }
+                            }
+                        });
+
+                        // Check answers for images
+                        if (question.answers) {
+                            question.answers.forEach((answer, answerIndex) => {
+                                if (answer.elements) {
+                                    answer.elements.forEach((element, index) => {
+                                        if (element.type === 'image') {
+                                            const imageKey = `answerImage_${question.questionNumber}_${answerIndex}_${index}`;
+                                            allImages[imageKey] = {
+                                                base64: element.base64,
+                                                width: element.width,
+                                                height: element.height,
+                                                mimeType: element.mimeType,
+                                                filename: element.filename
+                                            };
+                                        }
+                                    });
+                                }
+
+                                // Fallback for direct properties
+                                Object.keys(answer).forEach(key => {
+                                    if (key.includes('Image') && typeof answer[key] === 'string' && answer[key].length > 100) {
+                                        if (!allImages[key]) {
+                                            allImages[key] = {
+                                                base64: answer[key],
+                                                width: 300,
+                                                height: 200
+                                            };
+                                        }
+                                    }
+                                });
+                            });
                         }
                     });
                 }
@@ -378,9 +470,8 @@ export async function postProcessDocxImages(docxBlob, processedData) {
 
         return processedDocx;
 
+        // eslint-disable-next-line no-unused-vars
     } catch (error) {
-        console.error('Error post-processing images:', error);
-        console.error('Error stack:', error.stack);
         return docxBlob; // Return original if error
     }
 }

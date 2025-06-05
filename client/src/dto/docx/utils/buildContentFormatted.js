@@ -1,7 +1,6 @@
 ﻿// client/docxDTO/utils/buildContentFormatted.js
 
 import { extractPlainText } from './extractPlainText.js';
-import { convertOmmlToLatex } from './ommlToLatex.js';
 
 /**
  * Detect math elements in a paragraph
@@ -47,79 +46,252 @@ export const detectMathElements = (para) => {
 };
 
 /**
- * Process math elements in content
- * @param {string} content - The text content with potential math placeholders
- * @param {Object} para - The paragraph object containing math elements
- * @returns {string} - Content with math elements processed
+ * Extract paragraph XML from the full document XML using paragraph ID
+ * @param {string} documentXml - Full document XML string
+ * @param {Object} para - Paragraph object with ID
+ * @returns {string|null} - Paragraph XML string or null if not found
  */
-function processMathElements(content, para) {
-    // Get math elements
-    const mathElements = detectMathElements(para);
+function extractParagraphXml(documentXml, para) {
+    if (!documentXml || !para) return null;
 
-    if (mathElements.length === 0) return content;
+    // Try to find paragraph ID in the para object
+    const paraId = para['@_w14:paraId'] || para['@_w:paraId'];
+    if (!paraId) {
+        return null;
+    }
 
-    console.log(`Found ${mathElements.length} math element(s)`);
+    // Find the paragraph in the XML using the ID
+    const paraRegex = new RegExp(`<w:p[^>]*w14:paraId="${paraId}"[^>]*>(.*?)</w:p>`, 's');
+    const match = documentXml.match(paraRegex);
 
-    // Split content by line breaks
-    const lines = content.split(/<br>/);
+    if (match) {
+        return `<w:p${match[0].substring(4)}`; // Include the full paragraph with attributes
+    }
 
-    // Try to match each math element with a numbered line (i., ii., etc.)
-    for (let i = 0; i < mathElements.length && i < lines.length; i++) {
-        const line = lines[i];
-        // If line looks like "i.", "ii.", etc.
-        if (/^(i{1,4}|iv|v|vi{1,3})\.\s*$/.test(line.trim())) {
-            try {
-                const latex = convertOmmlToLatex(mathElements[i]);
-                if (latex) {
-                    lines[i] = line.trim() + ` $${latex}$`;
-                }
-            } catch (error) {
-                console.error(`Error converting math element ${i}:`, error);
-            }
-        }
-        // Special case for lines with just a roman numeral followed by a dot
-        else if (line.includes('i.') || line.includes('ii.') ||
-            line.includes('iii.') || line.includes('iv.')) {
-            // If we find a potential pattern anywhere in the line
-            const match = line.match(/(i{1,4}|iv|v|vi{1,3})\./);
-            if (match) {
-                try {
-                    const latex = convertOmmlToLatex(mathElements[i]);
-                    if (latex) {
-                        // Insert after the match
-                        const pos = line.indexOf(match[0]) + match[0].length;
-                        lines[i] = line.substring(0, pos) +
-                            ` $${latex}$` +
-                            line.substring(pos);
-                    }
-                } catch (error) {
-                    console.error(`Error converting math element ${i}:`, error);
-                }
-            }
+    return null;
+}
+
+/**
+ * Parse paragraph XML to get children in correct order
+ * @param {string} paragraphXml - Paragraph XML string
+ * @returns {Array} - Array of child elements in document order
+ */
+function parseParagraphChildrenFromXml(paragraphXml) {
+    if (!paragraphXml) return [];
+
+    const children = [];
+
+    // Simple regex to find all direct children of the paragraph
+    // This matches w:r, m:oMath, m:oMathPara, w:br, etc.
+    const childRegex = /<(w:r|m:oMath|m:oMathPara|w:br|w:proofErr)(?:\s[^>]*)?>(?:.*?<\/\1>|)/gs;
+
+    let match;
+    let position = 0;
+
+    while ((match = childRegex.exec(paragraphXml)) !== null) {
+        const tagName = match[1];
+        const fullElement = match[0];
+
+        children.push({
+            type: tagName,
+            xml: fullElement,
+            position: position++
+        });
+    }
+
+    return children;
+}
+
+/**
+ * Process paragraph children in exact document order using pre-extracted math elements
+ * @param {Object} para - Paragraph object
+ * @param {string} documentXml - Original document XML
+ * @param {Object} options - Processing options
+ * @param {Array} mathElementsWithXml - Pre-extracted math elements with original XML
+ * @param {Object} globalCounters - Global counters for tracking across paragraphs
+ * @returns {string} - Content with math placeholders in correct positions
+ */
+function processSequentialParagraphContent(para, documentXml, options = {}, mathElementsWithXml = [], globalCounters = {}) {
+    const {
+        //removeMarks = false,
+        //relationships = {},
+        imageData = {},
+        preserveMath = true,
+        mathRegistry = {}
+    } = options;
+
+    if (!para) return '';
+
+    // Try to get the original paragraph XML for correct ordering
+    let orderedChildren = [];
+
+    if (documentXml) {
+        const paragraphXml = extractParagraphXml(documentXml, para);
+        if (paragraphXml) {
+            orderedChildren = parseParagraphChildrenFromXml(paragraphXml);
         }
     }
 
-    // If there are unmatched math elements, append them at appropriate places
-    if (mathElements.length > lines.length) {
-        for (let i = lines.length; i < mathElements.length; i++) {
-            try {
-                const latex = convertOmmlToLatex(mathElements[i]);
-                if (latex) {
-                    // Append to the last line or create a new line
-                    if (i < lines.length) {
-                        lines[i] += ` $${latex}$`;
-                    } else {
-                        lines.push(`$${latex}$`);
-                    }
-                }
-            } catch (error) {
-                console.error(`Error converting math element ${i}:`, error);
-            }
-        }
+    // Fallback: if we can't get XML order, use the original JSON-based approach
+    if (orderedChildren.length === 0) {
+        return processParagraphFromJson(para, options, mathElementsWithXml, globalCounters);
     }
 
-    // Reassemble content
-    return lines.join('<br>');
+    // Process children in their exact XML document order
+    let result = '';
+    let mathIndex = 0;
+    let runIndex = 0;
+
+    // Get arrays from the JSON for easy access
+    const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
+
+    // Helper function to extract raw text from a single run without processing
+    const extractRawTextFromRun = (run) => {
+        if (!run) return '';
+
+        // Handle line breaks
+        let text = '';
+        if (run['w:br'] !== undefined) {
+            text += '<br>';
+        }
+
+        // Handle images
+        if (run['w:drawing']) {
+            const inline = run['w:drawing']['wp:inline'];
+            const anchor = run['w:drawing']['wp:anchor'];
+            let embedId = null;
+
+            if (inline) {
+                const blip = inline?.['a:graphic']?.['a:graphicData']?.['pic:pic']?.['pic:blipFill']?.['a:blip'];
+                embedId = blip?.['@_r:embed'];
+            }
+            if (!embedId && anchor) {
+                const blip = anchor?.['a:graphic']?.['a:graphicData']?.['pic:pic']?.['pic:blipFill']?.['a:blip'];
+                embedId = blip?.['@_r:embed'];
+            }
+
+            if (embedId && imageData[embedId]) {
+                const imgData = imageData[embedId];
+                const width = imgData.width ? ` width="${Math.round(imgData.width)}"` : '';
+                const height = imgData.height ? ` height="${Math.round(imgData.height)}"` : '';
+                const alt = imgData.filename || 'Image';
+                text += `<img alt="${alt}" src="${imgData.dataUrl}"${width}${height}>`;
+            } else {
+                text += `<img alt="Image" src="[Image Placeholder]">`;
+            }
+        }
+
+        // Extract text content preserving original spacing
+        const t = run['w:t'];
+        let textContent = '';
+
+        if (typeof t === 'string') {
+            textContent = t;
+        } else if (typeof t === 'number') {
+            textContent = String(t);
+        } else if (typeof t === 'object' && t) {
+            if (t['#text']) {
+                textContent = t['#text'];
+            }
+        }
+
+        // Apply basic formatting if needed
+        if (textContent) {
+            const rPr = run['w:rPr'];
+            if (rPr) {
+                if (rPr['w:b'] !== undefined) textContent = `<strong>${textContent}</strong>`;
+                if (rPr['w:i'] !== undefined) textContent = `<em>${textContent}</em>`;
+                if (rPr['w:u'] !== undefined) textContent = `<u>${textContent}</u>`;
+
+                if (rPr['w:vertAlign']) {
+                    const vertAlign = rPr['w:vertAlign'];
+                    const val = vertAlign['@_w:val'] || vertAlign['w:val'] || vertAlign?.['$']?.['w:val'];
+                    if (val === 'subscript') textContent = `<sub>${textContent}</sub>`;
+                    else if (val === 'superscript') textContent = `<sup>${textContent}</sup>`;
+                }
+            }
+        }
+
+        text += textContent;
+        return text;
+    };
+
+    // Process each child in XML order
+    for (const child of orderedChildren) {
+        if (child.type === 'w:r' && runIndex < runs.length) {
+            // Use raw text extraction to preserve original spacing
+            const runText = extractRawTextFromRun(runs[runIndex]);
+            result += runText;
+            runIndex++;
+
+        } else if ((child.type === 'm:oMath' || child.type === 'm:oMathPara') && mathIndex < mathElementsWithXml.length && preserveMath) {
+            // Process math element using the pre-extracted original XML
+            const mathElementWithXml = mathElementsWithXml[mathIndex];
+
+            // Use the pre-extracted ID or generate one
+            const mathId = mathElementWithXml.id || `math-preextracted-${mathIndex}`;
+
+            // Use the original XML that was extracted during document parsing
+            const originalXml = mathElementWithXml.originalXml || '';
+
+            // Store original XML in registry
+            mathRegistry[mathId] = {
+                type: "omml",
+                originalXml: originalXml,
+                context: mathElementWithXml.isBlockMath ? "block" : "inline",
+                placeholder: `[math]`
+            };
+
+            result += `[math:${mathId}]`;
+            mathIndex++;
+        }
+        // Skip other element types like w:proofErr for now
+    }
+
+    return result;
+}
+
+/**
+ * Fallback: process paragraph from JSON structure (original logic)
+ * @param {Object} para - Paragraph object
+ * @param {Object} options - Processing options
+ * @param {Array} mathElementsWithXml - Pre-extracted math elements with original XML
+ * @param {Object} globalCounters - Global counters for tracking across paragraphs
+ * @returns {string} - Content string
+ */
+function processParagraphFromJson(para, options = {}, mathElementsWithXml = []) { //function processParagraphFromJson(para, options = {}, mathElementsWithXml = [], globalCounters = {}) {
+    const {
+        relationships = {},
+        imageData = {},
+        preserveMath = true,
+        mathRegistry = {}
+    } = options;
+
+    // Get text runs and process them
+    const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
+    let result = extractPlainText(runs, { relationships, imageData });
+
+    // Add math placeholders using pre-extracted math elements
+    if (preserveMath && mathElementsWithXml.length > 0) {
+        mathElementsWithXml.forEach((mathElementWithXml, index) => {
+            // Use the pre-extracted ID or generate one
+            const mathId = mathElementWithXml.id || `math-fallback-${index}`;
+
+            // Use the original XML that was extracted during document parsing
+            const originalXml = mathElementWithXml.originalXml || '';
+
+            mathRegistry[mathId] = {
+                type: "omml",
+                originalXml: originalXml,
+                context: mathElementWithXml.isBlockMath ? "block" : "inline",
+                placeholder: `[math]`
+            };
+
+            result += `[math:${mathId}]`;
+        });
+    }
+
+    return result;
 }
 
 /**
@@ -129,35 +301,45 @@ function processMathElements(content, para) {
  * @param {boolean} options.removeMarks - Whether to remove marks pattern
  * @param {Object} options.relationships - Document relationships
  * @param {Object} options.imageData - Image data mapping
- * @param {boolean} options.preserveMath - Whether to preserve math elements as LaTeX
+ * @param {boolean} options.preserveMath - Whether to preserve math elements
+ * @param {Object} options.mathRegistry - Registry to store math elements
+ * @param {Array} options.mathElementsWithXml - Pre-extracted math elements with original XML
+ * @param {Object} parentPara - Parent paragraph object
+ * @param {string} documentXml - Original document XML string
+ * @param {Object} globalCounters - Global counters for tracking across paragraphs
  * @returns {string} Formatted content string
  */
-export const buildContentFormatted = (runs, options = {}, parentPara = null) => {
+export const buildContentFormatted = (runs, options = {}, parentPara = null, documentXml = null, globalCounters = {}) => {
     const {
         removeMarks = false,
         relationships = {},
         imageData = {},
-        preserveMath = true, // Default to true
+        preserveMath = true,
+        mathElementsWithXml = [],
         drawingInstances = [],
         paragraphIndex = 0
     } = options;
 
-    // Get the plain text content using the extractPlainText utility
-    let content = extractPlainText(runs, { 
-        relationships, 
-        imageData, 
-        drawingInstances, 
-        paragraphIndex 
-    });
+    let content;
 
+    // If we have a parent paragraph and need to preserve math, use sequential processing
+    if (parentPara && preserveMath && mathElementsWithXml.length > 0) {
+        content = processSequentialParagraphContent(parentPara, documentXml, options, mathElementsWithXml, globalCounters);
+    } else if (preserveMath && mathElementsWithXml.length > 0) {
+        // Use the pre-extracted math elements even without XML ordering
+        content = processParagraphFromJson(parentPara, options, mathElementsWithXml, globalCounters);
+    } else {
+        // No math elements, use plain text extraction
+        content = extractPlainText(runs, {
+            relationships,
+            imageData,
+            drawingInstances,
+            paragraphIndex
+        });
+    }
     // Remove marks pattern if requested
     if (removeMarks) {
         content = content.replace(/^\[\s*\d+(?:\.\d+)?\s*marks?\s*\]\s*/i, '');
-    }
-
-    // Process math elements if present and preservation is requested
-    if (parentPara && preserveMath) {
-        content = processMathElements(content, parentPara);
     }
 
     // Process multiple br tags to preserve spacing

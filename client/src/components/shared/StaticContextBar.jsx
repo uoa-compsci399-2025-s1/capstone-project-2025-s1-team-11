@@ -27,6 +27,7 @@ const StaticContextBar = ({
   const examData = useSelector(selectExamData);
   const teleformData = useSelector(selectTeleformData);
   const coverPage = useSelector(selectCoverPage);
+  const mathRegistry = useSelector(state => state.exam.mathRegistry);
   const { fileHandle, createExam, openExam, saveExam } = useFileSystem();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newExamData, setNewExamData] = useState({
@@ -164,11 +165,11 @@ const StaticContextBar = ({
     try {
       // Set flag to trigger auto-save after exam creation
       setShouldAutoSaveAfterCreate(true);
-      
+
       // Create the exam in Redux - useEffect will handle the save automatically
       await createExam(examData);
       setShowCreateModal(false);
-      
+
       // Show success message
       message.success("New exam created successfully.");
     } catch (error) {
@@ -234,7 +235,7 @@ const StaticContextBar = ({
   useEffect(() => {
     if (shouldAutoSaveAfterCreate && examData) {
       setShouldAutoSaveAfterCreate(false); // Clear the flag
-      
+
       const performAutoSave = async () => {
         try {
           setSaveState('saving');
@@ -253,7 +254,7 @@ const StaticContextBar = ({
           message.error("Failed to save exam: " + error.message);
         }
       };
-      
+
       performAutoSave();
     }
   }, [examData, shouldAutoSaveAfterCreate, saveExam, message]);
@@ -508,7 +509,7 @@ const StaticContextBar = ({
                           key: 'docx',
                           label: 'Download as DOCX',
                           onClick: async () => {
-                            await handleExportDocx(examData, coverPage);
+                            await handleExportDocx(examData, coverPage, mathRegistry, message);
                             setExportDropdownOpen(false);
                           }
                         },

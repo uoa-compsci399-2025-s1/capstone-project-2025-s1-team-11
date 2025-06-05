@@ -6,21 +6,22 @@
  */
 
 import { useDispatch, useSelector } from 'react-redux';
-import {initialiseExamState, clearExamState, setFileName, setCoverPage} from '../store/exam/examSlice';
+import {initialiseExamState, clearExamState, setFileName, setCoverPage, setMathRegistry} from '../store/exam/examSlice';
 import { loadExamFromFile, saveExamToDisk } from '../services/fileSystemAccess.js';
 import examImportService  from '../services/examImportService.js';
 import { importDTOToState } from '../services/examImportService.js';
 import { setTeleformData } from '../store/exam/teleformSlice';
 import { useState } from 'react'; // for local fileHandle if not stored in Redux
-import { selectExamData, selectTeleformData, selectCoverPage } from '../store/exam/selectors';
+import { selectExamData, selectTeleformData, selectCoverPage, selectMathRegistry } from '../store/exam/selectors';
 
 export function useFileSystem() {
     const dispatch = useDispatch();
     const examData = useSelector(selectExamData);
     const coverPage = useSelector(selectCoverPage);
+    const mathRegistry = useSelector(selectMathRegistry);
     const teleformData = useSelector(selectTeleformData);
     const [fileHandle, setFileHandle] = useState(null);
-  
+
     // Opens the exam file and updates the global state
     const openExam = async () => {
       const result = await loadExamFromFile();
@@ -29,6 +30,7 @@ export function useFileSystem() {
         dispatch(initialiseExamState(result.examData));
         // Initialize teleform data if it exists in the loaded data
         dispatch(setCoverPage(result.coverPage));
+        dispatch(setMathRegistry(result.mathRegistry));
         dispatch(setTeleformData(result.teleformData || ''));
         setFileHandle(result.fileHandle);
         dispatch(setFileName(result.fileHandle?.name || null));
@@ -47,7 +49,7 @@ export function useFileSystem() {
     const saveExam = async () => {
         if (!examData) return null;
 
-        const updatedHandle = await saveExamToDisk(examData, coverPage, teleformData, fileHandle);
+        const updatedHandle = await saveExamToDisk(examData, coverPage, mathRegistry, teleformData, fileHandle);
         if (updatedHandle) {
             setFileHandle(updatedHandle);
             dispatch(setFileName(updatedHandle?.name || null));
@@ -61,27 +63,30 @@ export function useFileSystem() {
       if (!formatToUse) {
           throw new Error("Unsupported file format. Please use .xml, .docx, or .tex files.");
       }
-      
+
       // Process the file using the examImportService to get the DTO
       const examDTO = await examImportService.importExamToDTO(file, formatToUse);
-      
-      // Update the application state with the DTO
-      dispatch(importDTOToState(examDTO));
+
+      // For DOCX imports, also get the math registry
+      const mathRegistry = formatToUse === 'docx' ? examImportService.mathRegistry : null;
+
+      // Update the application state with the DTO and math registry
+      dispatch(importDTOToState(examDTO, mathRegistry));
       dispatch(setTeleformData('')); // Clear any existing teleform data
       setFileHandle(null); // reset file handle, this wasn't opened from disk
       dispatch(setFileName(null));
-      
+
       return true;
     };
 
     const importFromFileInput = async (file, onError) => {
-      const ext = file.name.split('.').pop().toLowerCase();
-      const format = ext === 'xml' ? 'moodle' : ext === 'docx' ? 'docx' : null;
+        const ext = file.name.split('.').pop().toLowerCase();
+        const format = ext === 'xml' ? 'moodle' : ext === 'docx' ? 'docx' : null;
 
-      if (!format) {
-        onError?.("Unsupported file format");
-        return;
-      }
+        if (!format) {
+            onError?.("Unsupported file format");
+            return;
+        }
 
       try {
         await importExam(file); // Call importExam with just the file parameter
@@ -101,14 +106,14 @@ export function useFileSystem() {
     };
 
     return { 
-        exam: examData, 
+        exam: examData,
         fileHandle, 
         setFileHandle,
-        openExam, 
-        createExam, 
-        saveExam, 
-        importExam, 
-        closeExam, 
-        importFromFileInput 
+        openExam,
+        createExam,
+        saveExam,
+        importExam,
+        closeExam,
+        importFromFileInput
     };
 }

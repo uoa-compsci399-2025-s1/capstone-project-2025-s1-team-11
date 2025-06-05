@@ -1,90 +1,211 @@
 // src/pages/ExamFileManager.jsx
-import React from "react";
-import { Typography } from "antd";
-const { Title, Paragraph } = Typography;
-import homePageImage from "../assets/homePageImage.jpg";
+import React, { useState, useEffect, useRef } from "react";
+import { Typography, Button } from "antd";
+import { useNavigate } from "react-router";
+const { Paragraph } = Typography;
+import builderVideo from "../assets/builder.mov";
+import randomiserVideo from "../assets/randomiser.mov";
+import markerVideo from "../assets/marker.mov";
+import resultsVideo from "../assets/results.mov";
+import "./home.css";
 
 const Home = () => {
+    const navigate = useNavigate();
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const videoRefs = useRef([]);
+    
+    const slides = [
+        {
+            title: "MCQ Builder",
+            subtitle: "Import & Edit with Ease",
+            description: "Upload existing exams or create new questions from scratch.",
+            media: builderVideo,
+            isVideo: true
+        },
+        {
+            title: "Smart Randomiser", 
+            subtitle: "Generate Multiple Versions",
+            description: "Create randomized versions to ensure exam integrity.",
+            media: randomiserVideo,
+            isVideo: true
+        },
+        {
+            title: "Auto-Marker",
+            subtitle: "Instant Grading", 
+            description: "Upload completed exams and get immediate results.",
+            media: markerVideo,
+            isVideo: true
+        },
+        {
+            title: "Results Analytics",
+            subtitle: "Performance Insights",
+            description: "View detailed statistics to improve your teaching.",
+            media: resultsVideo,
+            isVideo: true
+        }
+    ];
+
+    // Auto-slide every 5 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % slides.length);
+        }, 5000);
+        
+        return () => clearInterval(interval);
+    }, [slides.length]);
+
+    // Reset video when slide changes
+    useEffect(() => {
+        videoRefs.current.forEach((video, index) => {
+            if (video) {
+                if (index === currentSlide) {
+                    // Reset and play the active video
+                    video.currentTime = 0;
+                    video.play().catch(e => console.log('Video play failed:', e));
+                } else {
+                    // Pause other videos
+                    video.pause();
+                }
+            }
+        });
+    }, [currentSlide]);
+
+    const handleStartCreating = () => {
+        navigate('/builder');
+    };
+
+    const goToSlide = (index) => {
+        setCurrentSlide(index);
+    };
+
     return (
-        <div style={{ width: "100%" }}>
-            <div style={{
-                position: "relative", 
-                width: "100", 
-                height: "100vh", 
-                overflow: "hidden"
-            }}>
-                <img 
-                    src={homePageImage} 
-                    alt="Home" 
-                    style={{ 
-                        width: "100%", 
-                        height: "97%", 
-                        objectFit: "cover", 
-                        objectPosition: "center center", 
-                        display: "block"
-                    }} 
-                />
-                <div 
-                    style={{
-                        position: "absolute",
-                        bottom: "0",
-                        left: "0",
-                        width: "100%",
-                        height: "20%", 
-                        background: "linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 100%)", 
-                        zIndex: 1
-                    }}
-                />
-                <div 
-                    style={{
-                        position: "absolute",
-                        top: "25%", 
-                        left: "5%", 
-                        color: "black", 
-                        textAlign: "left",
-                        zIndex: 2
-                    }}
-                >
-                    <h1 style={{ margin: 0, fontSize: "3rem" }}>Welcome to Assessly, by Cache Converters.</h1>
-                    <Paragraph style={{ marginTop: "1rem", fontSize: "1.2rem" }}>
-                        Simplify Exam Creation, Marking, and Analysis – All on One Platform.
+        <div className="home-container">
+            {/* Particle Background */}
+            <div className="particles-container">
+                {Array.from({ length: 20 }).map((_, i) => (
+                    <div key={i} className={`particle particle-${i % 5}`}>
+                        {['📝', '✏️', '❌', '✔️', '📄'][i % 5]}
+                    </div>
+                ))}
+            </div>
+
+            {/* Hero Section */}
+            <div className="hero-section">
+                {/* Welcome Header */}
+                <div className="welcome-header">
+                    <h1 className="main-title">Welcome to Assessly</h1>
+                    <Paragraph className="main-subtitle">
+                        Simplify Exam Creation, Marking, and Analysis – All on One Platform
                     </Paragraph>
                 </div>
+
+                {/* Hero Carousel */}
+                <div className="hero-carousel">
+                    <div className="carousel-container">
+                        {slides.map((slide, index) => (
+                            <div 
+                                key={index}
+                                className={`carousel-slide ${index === currentSlide ? 'active' : ''}`}
+                            >
+                                <div className="slide-content">
+                                    <div className="slide-text">
+                                        <h2 className="slide-title">{slide.title}</h2>
+                                        <h3 className="slide-subtitle">{slide.subtitle}</h3>
+                                        <Paragraph className="slide-description">
+                                            {slide.description}
+                                        </Paragraph>
+                                    </div>
+                                    <div className="slide-media">
+                                        {slide.isVideo ? (
+                                            <video 
+                                                ref={el => videoRefs.current[index] = el}
+                                                src={slide.media} 
+                                                alt={slide.title}
+                                                className="slide-video"
+                                                loop
+                                                muted
+                                                playsInline
+                                                preload="metadata"
+                                            />
+                                        ) : (
+                                            <img 
+                                                src={slide.media} 
+                                                alt={slide.title}
+                                                className="slide-image"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Carousel Indicators */}
+                    <div className="carousel-indicators">
+                        {slides.map((_, index) => (
+                            <button
+                                key={index}
+                                className={`indicator ${index === currentSlide ? 'active' : ''}`}
+                                onClick={() => goToSlide(index)}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Main CTA Button */}
+                <div className="cta-container">
+                    <Button 
+                        type="primary" 
+                        size="large"
+                        className="main-cta-button"
+                        onClick={handleStartCreating}
+                    >
+                        <span className="cta-icon">📝</span>
+                        Start Creating Your Exam
+                        <span className="cta-arrow">→</span>
+                    </Button>
+                </div>
+
+                {/* Scroll Down Arrow */}
                 <div 
-                    className="arrow"
-                    style={{
-                        position: "absolute", 
-                        bottom: "75px", 
-                        left: "50%", 
-                        transform: "translateX(-50%)", 
-                        fontSize: "3rem",
-                        color: "black",
-                        backgroundColor: "rgba(255, 255, 255, 0.8)",
-                        borderRadius: "50%",
-                        width: "60px",
-                        height: "60px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                        cursor: "pointer",
-                        zIndex: 3
-                    }}
+                    className="scroll-arrow"
                     onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
                 >
-                    &#8595; 
+                    &#8595;
                 </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-start', maxWidth: '1500px', margin: '5px auto', padding: '3px' }}>
-                <div style={{ width: '50%', padding: '32px', borderRadius: '8px' }}>
-                    <h2 style={{ fontSize: '3rem', marginBottom: '1rem' }}>
-                        Assessly
-                    </h2>
-                    <p style={{ fontSize: '1.5rem', lineHeight: 1.6 }}>
+            {/* About Section */}
+            <div className="about-section">
+                <div className="about-content">
+                    <h2 className="about-title">How Assessly Works</h2>
+                    <p className="about-description">
                         Assessly is designed to help educators and staff streamline the process of working with multiple-choice examinations.
-                        This entails generating randomised exam papers, auto-marking multiple-choice questions, efficiently analysing performance data and ensuring assessment integrity. 
+                        Generate randomised exam papers, auto-mark questions, and efficiently analyse performance data – all on one platform.
                     </p>
+                    
+                    <div className="features-grid">
+                        <div className="feature-card">
+                            <div className="feature-icon">📝</div>
+                            <h3>Build</h3>
+                            <p>Create and import MCQ exams</p>
+                        </div>
+                        <div className="feature-card">
+                            <div className="feature-icon">🔀</div>
+                            <h3>Randomize</h3>
+                            <p>Generate multiple versions</p>
+                        </div>
+                        <div className="feature-card">
+                            <div className="feature-icon">✅</div>
+                            <h3>Mark</h3>
+                            <p>Auto-grade with analysis</p>
+                        </div>
+                        <div className="feature-card">
+                            <div className="feature-icon">📊</div>
+                            <h3>Analyze</h3>
+                            <p>View detailed insights</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -81,7 +81,7 @@ describe('useFileSystem hook', () => {
       expect(handle.name).toBe('saved.json');
     });
 
-    expect(fileSystemAccess.saveExamToDisk).toHaveBeenCalledWith(TestExam, null, '', null);
+    expect(fileSystemAccess.saveExamToDisk).toHaveBeenCalledWith(TestExam, null, null, '', null);
   });
 
   it('importFromFileInput: calls onError for unsupported format', async () => {
