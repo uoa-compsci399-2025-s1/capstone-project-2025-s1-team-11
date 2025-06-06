@@ -165,29 +165,147 @@ export async function postProcessTextFormatting(docxBlob) {
             {
                 pattern: /§MATH_OMML§((?:(?!§\/MATH_OMML§)[\s\S])*)§\/MATH_OMML§/g,
                 replacement: (match, ommlXml) => {
-                    const unescapedXml = ommlXml
-                        .replace(/&lt;/g, '<')
-                        .replace(/&gt;/g, '>')
-                        .replace(/&amp;/g, '&');
+                    // Function to decode all HTML entities properly
+                    const decodeHtmlEntities = (text) => {
+                        return text
+                            .replace(/&lt;/g, '<')
+                            .replace(/&gt;/g, '>')
+                            .replace(/&quot;/g, '"')
+                            .replace(/&apos;/g, "'")
+                            .replace(/&amp;/g, '&'); // Must be last to avoid double-decoding
+                    };
+                    
+                    // First pass: decode HTML entities
+                    let unescapedXml = decodeHtmlEntities(ommlXml);
+                    
+                    // Check if still escaped (double-escaped case)
+                    if (unescapedXml.includes('&lt;') || unescapedXml.includes('&gt;') || unescapedXml.includes('&quot;')) {
+                        unescapedXml = decodeHtmlEntities(unescapedXml);
+                    }
 
-                    //console.log('Unescaped OMML:', unescapedXml);
+                    // Check if the XML is already a complete <m:oMath> element
+                    let result;
+                    if (unescapedXml.trim().startsWith('<m:oMath')) {
+                        // Already complete OMML, just insert it
+                        result = `</w:t></w:r>${unescapedXml}<w:r><w:t xml:space="preserve">`;
+                    } else {
+                        // Partial OMML content, wrap in m:oMath
+                        result = `</w:t></w:r><m:oMath>${unescapedXml}</m:oMath><w:r><w:t xml:space="preserve">`;
+                    }
+                    
+                    return result;
+                }
+            },
+            {
+                pattern: /§MATH_OMML_BLOCK§((?:(?!§\/MATH_OMML_BLOCK§)[\s\S])*)§\/MATH_OMML_BLOCK§/g,
+                replacement: (match, ommlXml) => {
+                    
+                    // Improved unescaping - handle both single and double escaping
+                    let unescapedXml = ommlXml;
+                    
+                    // Function to decode all HTML entities properly
+                    const decodeHtmlEntities = (text) => {
+                        return text
+                            .replace(/&lt;/g, '<')
+                            .replace(/&gt;/g, '>')
+                            .replace(/&quot;/g, '"')
+                            .replace(/&apos;/g, "'")
+                            .replace(/&amp;/g, '&'); // Must be last to avoid double-decoding
+                    };
+                    
+                    // First pass: decode HTML entities
+                    unescapedXml = decodeHtmlEntities(unescapedXml);
+                    
+                    // Check if still escaped (double-escaped case)
+                    if (unescapedXml.includes('&lt;') || unescapedXml.includes('&gt;') || unescapedXml.includes('&quot;')) {
+                        unescapedXml = decodeHtmlEntities(unescapedXml);
+                    }
 
-                    // Wrap in proper OMML structure for Word to recognize as equation
-                    return `</w:t></w:r><m:oMath>${unescapedXml}</m:oMath><w:r><w:t xml:space="preserve">`;
+                    // Check if the XML is already a complete block structure
+                    let result;
+                    if (unescapedXml.trim().startsWith('<m:oMathParaPr') || unescapedXml.trim().startsWith('<m:jc')) {
+                        // Already contains paragraph properties, wrap in m:oMathPara
+                        result = `</w:t></w:r>
+                     <m:oMathPara>
+                       ${unescapedXml}
+                     </m:oMathPara>
+                   <w:r><w:t xml:space="preserve">`;
+                    } else if (unescapedXml.trim().startsWith('<m:oMath')) {
+                        // Complete oMath element, add paragraph wrapper
+                        result = `</w:t></w:r>
+                     <m:oMathPara>
+                       <m:oMathParaPr>
+                         <m:jc m:val="left"/>
+                       </m:oMathParaPr>
+                       ${unescapedXml}
+                     </m:oMathPara>
+                   <w:r><w:t xml:space="preserve">`;
+                    } else {
+                        // Partial content, wrap completely
+                        result = `</w:t></w:r>
+                     <m:oMathPara>
+                       <m:oMathParaPr>
+                         <m:jc m:val="left"/>
+                       </m:oMathParaPr>
+                       <m:oMath>${unescapedXml}</m:oMath>
+                     </m:oMathPara>
+                   <w:r><w:t xml:space="preserve">`;
+                    }
+                   
+                    return result;
                 }
             }
         ];
 
-        // Apply replacements
+        // Apply replacements - first pass: process individual text nodes
         replacements.forEach(({pattern, replacement}) => {
-            docXml = docXml.replace(/<w:t([^>]*)>([^<]*)<\/w:t>/g, (match, attributes, content) => {
+            docXml = docXml.replace(/<w:t([^>]*)>([\s\S]*?)<\/w:t>/g, (match, attributes, content) => {
                 if (pattern.test(content)) {
                     const newContent = content.replace(pattern, replacement);
-                    const preserveSpace = attributes.includes('xml:space="preserve"') ? attributes : attributes + ' xml:space="preserve"';
-                    return `<w:t${preserveSpace}>${newContent}</w:t>`;
+                    
+                    // FIXED: Handle attributes more carefully to avoid missing spaces
+                    let finalAttributes = attributes ? attributes.trim() : '';
+                    
+                    // Ensure xml:space="preserve" is present
+                    if (!finalAttributes.includes('xml:space="preserve"')) {
+                        if (finalAttributes) {
+                            // Add space if there are existing attributes
+                            finalAttributes = finalAttributes + ' xml:space="preserve"';
+                        } else {
+                            // Start with space for clean attribute format
+                            finalAttributes = ' xml:space="preserve"';
+                        }
+                    }
+                    
+                    // Ensure finalAttributes always starts with a space for proper XML syntax
+                    if (finalAttributes && !finalAttributes.startsWith(' ')) {
+                        finalAttributes = ' ' + finalAttributes;
+                    }
+                    
+                    const result = `<w:t${finalAttributes}>${newContent}</w:t>`;
+                    
+                    // Validate the result doesn't have malformed attributes
+                    if (result.includes('<w:txml:') || result.includes('<w:t/>') || result.match(/<w:t[^>\s]/)) {
+                        // Fallback: construct a safe version
+                        return `<w:t xml:space="preserve">${newContent}</w:t>`;
+                    }
+                    
+                    return result;
                 }
                 return match;
             });
+            
+            // Document was processed
+        });
+
+        // Apply replacements - second pass: process content that might span multiple paragraphs
+        // This handles cases where math markers might be split across text nodes
+        replacements.forEach(({pattern, replacement}) => {
+            if (pattern.test(docXml)) {
+                docXml = docXml.replace(pattern, (match, ...args) => {
+                    return replacement(match, ...args);
+                });
+            }
         });
 
         // FIXED: Also handle arrow characters in regular text (not just code blocks)
@@ -211,6 +329,10 @@ export async function postProcessTextFormatting(docxBlob) {
 
         // Clean up any empty text runs that might have been created
         docXml = docXml.replace(/<w:r><w:t[^>]*><\/w:t><\/w:r>/g, '');
+
+        // CLEANUP: Fix malformed w:t tags that could cause XML parsing errors
+        docXml = docXml.replace(/<w:t\/\s+([^>]*?)>(.*?)<\/w:t>/g, '<w:t $1>$2</w:t>');
+        docXml = docXml.replace(/<w:t\s*\/>/g, '<w:t></w:t>'); // Convert empty self-closing to regular empty tags
 
         // Update document.xml
         zip.file('word/document.xml', docXml);

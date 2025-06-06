@@ -19,6 +19,7 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
     try {
         const coverPage = await loadDocx(coverPageFile);
         const body = await loadDocx(bodyFile);
+        
         const coverDoc = coverPage.documentObj.find((el) => 'w:document' in el);
         const coverBodyContainer = coverDoc['w:document'].find((el) => 'w:body' in el);
         if (!coverBodyContainer) throw new Error('Invalid cover page structure: missing w:body');
@@ -115,7 +116,8 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
         preserveWhitespace(bodyDoc);
 
         // Insert the exam body after the relocated first section break
-        coverBody.splice(pageBreakIndex !== -1 ? pageBreakIndex + 1 : coverBody.length, 0, ...bodyContent);
+        const insertIndex = pageBreakIndex !== -1 ? pageBreakIndex + 1 : coverBody.length;
+        coverBody.splice(insertIndex, 0, ...bodyContent);
 
         // Ensure the final section properties are preserved
         if (finalSectPr) {
@@ -149,9 +151,12 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
         }
 
         const updatedDocXml = xmlBuilder.build([coverDoc]);
+        
         outputZip.file('word/document.xml', updatedDocXml);
+        
         const updatedRelXml = updateRelationshipsXml(coverPage.relationshipsXml, newRelationships);
         outputZip.file('word/_rels/document.xml.rels', updatedRelXml);
+        
         const coverContentTypesData = coverPage.files.get('[Content_Types].xml');
         const bodyContentTypesData = body.files.get('[Content_Types].xml');
         const coverContentTypesXml = coverContentTypesData ? new TextDecoder().decode(coverContentTypesData) : '';
@@ -162,11 +167,14 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
         const contentTypesXml = buildContentTypesXml(mergedContentTypes);
         outputZip.file('[Content_Types].xml', contentTypesXml);
 
-        return await outputZip.generateAsync({
+        const result = await outputZip.generateAsync({
             type: 'blob',
             mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         });
+        
+        return result;
     } catch (error) {
+        console.error('🔍 MERGE: Error in mergeDocxFiles():', error);
         console.error('Something failed in mergeDocxFiles():', error);
         throw error;
     }
