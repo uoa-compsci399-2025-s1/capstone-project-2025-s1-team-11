@@ -333,7 +333,8 @@ const Randomiser = () => {
                   type="default"
                   onClick={handleImportMarkingKey}
                   loading={isImportingKey}
-                  style={{
+                  disabled={!exam}
+                  style={!exam ? {} : {
                     borderColor: token.colorPrimary,
                     color: token.colorPrimary
                   }}
