@@ -8,7 +8,7 @@ import 'katex/dist/katex.min.css';
 
 const { Title, Paragraph, Text } = Typography;
 
-const ExamPreview = () => {
+const ExamPreview = ({ tabId }) => {
   const examData = useSelector((state) => state.exam.examData);
   const [previewHtml, setPreviewHtml] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -36,11 +36,13 @@ const ExamPreview = () => {
   }, [examData]);
 
   useEffect(() => {
-    const container = document.getElementById("preview-container");
-    if (container) {
-      renderLatexInContainer(container);
+    if (tabId === "preview") {
+      const container = document.getElementById("preview-container");
+      if (container) {
+        renderLatexInContainer(container);
+      }
     }
-  }, [previewHtml]);
+  }, [previewHtml, tabId]);
 
   if (!examData) {
     return (
