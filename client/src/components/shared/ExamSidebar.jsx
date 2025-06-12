@@ -157,14 +157,14 @@ const ExamSidebar = ({ exam, currentItemId, onNavigateToItem, onEditDetails }) =
         <List size="small">
           <List.Item>
             <Paragraph style={{ margin: 0 }}>
-              <Text type="secondary">Course Code:</Text>{' '}
-              <Text>{exam?.courseCode || "N/A"}</Text>
+              <Text type="secondary">Course Name:</Text>{' '}
+              <Text>{exam?.courseName || "N/A"}</Text>
             </Paragraph>
           </List.Item>
           <List.Item>
             <Paragraph style={{ margin: 0 }}>
-              <Text type="secondary">Course Name:</Text>{' '}
-              <Text>{exam?.courseName || "N/A"}</Text>
+              <Text type="secondary">Course Code:</Text>{' '}
+              <Text>{exam?.courseCode || "N/A"}</Text>
             </Paragraph>
           </List.Item>
           <List.Item>
