@@ -44,7 +44,7 @@ export async function exportExamWithDocxtemplater(examData, templateContent, ver
         const doc = new Docxtemplater(zip, {
             modules: [imageModule],
             paragraphLoop: true,
-            linebreaks: false,
+            linebreaks: true,
             delimiters: {
                 start: '{',
                 end: '}'

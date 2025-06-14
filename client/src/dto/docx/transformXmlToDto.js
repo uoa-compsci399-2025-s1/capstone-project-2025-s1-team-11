@@ -1,13 +1,13 @@
 // client/docxDTO/transformXmlToDto.js
 
 import { buildContentFormatted } from './utils/buildContentFormatted.js';
-import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
-import { getMarksRegexPattern, extractMarks } from './utils/marksExtraction.js';
+import { sanitizeContentFormatted as _sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
+import { getMarksRegexPattern, extractMarks as _extractMarks } from './utils/marksExtraction.js';
 import { classifyContent } from './patterns/contentClassifier.js';
 import { isSectionBreak, analyzeSectionStructure, isDocumentStart, isTableBlock } from './patterns/sectionDetectors.js';
 import { createInitialState, createFlushQuestion, createFlushSection } from './utils/stateManagement.js';
 import { createQuestion, createAnswer, handleSectionContentCreation, createStandaloneSection } from './handlers/contentHandlers.js';
-import { handleDocumentStartSection, handleConsecutiveSectionBreaks, processSectionContent, finalizeSection } from './handlers/sectionHandlers.js';
+import { handleDocumentStartSection as _handleDocumentStartSection, handleConsecutiveSectionBreaks as _handleConsecutiveSectionBreaks, processSectionContent, finalizeSection } from './handlers/sectionHandlers.js';
 
 
 
@@ -113,10 +113,10 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
     
     // Create flush functions
     const flushQuestion = createFlushQuestion(state, dto);
-    const flushSection = createFlushSection(state, dto);
+    const _flushSection = createFlushSection(state, dto);
     
     // Analyze section structure for enhanced handling
-    const sectionAnalysis = analyzeSectionStructure(blocks);
+    const _sectionAnalysis = analyzeSectionStructure(blocks);
     
     // Debug: Check for table blocks
     const blockTypes = {};
@@ -168,7 +168,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
         if (isSectionBreak(block)) {
             // Handle section break at document start
             if (isDocumentStart(i, blocks)) {
-                handleDocumentStartSection(state, addWarning);
+                _handleDocumentStartSection(state);
                 continue;
             }
             
@@ -302,10 +302,11 @@ const handleContentType = (classification, text, runs, para, documentXml, global
     };
 
     switch (classification.type) {
-        case 'case13':
+        case 'case13': {
             const case13Result = classification.handler();
             if (case13Result.action === 'continue') return true;
             break;
+        }
             
         case 'empty_line':
             state.emptyLineCounter++;
@@ -317,7 +318,7 @@ const handleContentType = (classification, text, runs, para, documentXml, global
             }
             return true;
             
-        case 'case14':
+        case 'case14': {
             const case14Result = classification.handler();
             if (case14Result.action === 'create_section') {
                 state.emptyLineCounter = 0;
@@ -326,21 +327,24 @@ const handleContentType = (classification, text, runs, para, documentXml, global
                 return true;
             }
             break;
+        }
             
-        case 'table_block':
+        case 'table_block': {
             // Handle table in section body
             const tableResult = processSectionContent(text, classification.block, state, addWarning);
             if (tableResult.action === 'table_replaced') {
                 return true;
             }
             break;
+        }
             
-        case 'section_content':
+        case 'section_content': {
             // Process content for section body
-            const contentResult = processSectionContent(text, classification.block, state, addWarning);
+            const _contentResult = processSectionContent(text, classification.block, state, addWarning);
             return true;
+        }
             
-        case 'section_body_end':
+        case 'section_body_end': {
             // Section body has ended, treat this as a question
             
             // Create section from accumulated content
@@ -361,8 +365,9 @@ const handleContentType = (classification, text, runs, para, documentXml, global
             flushQuestion();
             state.currentQuestion = createQuestion(text, runs, formatOptions, para, documentXml, globalCounters);
             return true;
+        }
             
-        case 'question':
+        case 'question': {
             state.emptyLineCounter = 0;
             state.questionJustFlushedByEmptyLine = false;
             
@@ -377,6 +382,7 @@ const handleContentType = (classification, text, runs, para, documentXml, global
             // Create new question
             state.currentQuestion = createQuestion(text, runs, formatOptions, para, documentXml, globalCounters);
             return true;
+        }
             
         case 'content':
         default:
@@ -386,7 +392,7 @@ const handleContentType = (classification, text, runs, para, documentXml, global
             
             // Legacy section content handling (now handled by section_content case above)
             if (state.afterSectionBreak && !state.currentQuestion) {
-                const legacyResult = processSectionContent(text, para, state, addWarning);
+                const _legacyResult = processSectionContent(text, para, state, addWarning);
                 return true;
             }
 

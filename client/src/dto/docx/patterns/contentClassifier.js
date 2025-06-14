@@ -2,7 +2,7 @@
 
 import { isNewQuestion } from './questionDetectors.js';
 import { detectCase13Pattern, detectCase14Pattern } from './edgeCaseDetectors.js';
-import { detectSectionBodyEnd, isTableBlock } from './sectionDetectors.js';
+import { isTableBlock } from './sectionDetectors.js';
 import { detectMarksTag } from '../utils/marksExtraction.js';
 import { detectBookmark } from './questionDetectors.js';
 import { handleCase13, handleCase14 } from '../handlers/edgeCaseHandlers.js';

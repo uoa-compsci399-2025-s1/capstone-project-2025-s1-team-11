@@ -196,9 +196,10 @@ describe('DOCX Import Regression Tests', () => {
           console.error(`\n❌ Regression detected in ${testCase.name}:`);
           console.error(`📝 Description: ${testCase.description}`);
           console.error(`🔍 Differences found (${differences.length}):`);
-          differences.slice(0, 10).forEach((diff, index) => {
-            console.error(`  ${index + 1}. ${diff}`);
-          });
+          const firstTenDiffs = differences.slice(0, 10);
+          for (let i = 0; i < firstTenDiffs.length; i++) {
+            console.error(`  ${i + 1}. ${firstTenDiffs[i]}`);
+          }
           if (differences.length > 10) {
             console.error(`  ... and ${differences.length - 10} more differences`);
           }
@@ -221,7 +222,7 @@ describe('DOCX Import Regression Tests', () => {
         console.log(`📊 ${testCase.name} structure: ${expectedData.examBody.length} items (${questions.length} questions, ${sections.length} sections)`);
         
         // Validate each item has required properties
-        expectedData.examBody.forEach((item, index) => {
+        expectedData.examBody.forEach((item) => {
           expect(item).toHaveProperty('type');
           expect(['question', 'section']).toContain(item.type);
           

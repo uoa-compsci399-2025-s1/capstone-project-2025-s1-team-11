@@ -105,22 +105,23 @@ function processNode(node, result) {
         const tagName = node.tagName.toLowerCase();
 
         switch (tagName) {
-            case 'img':
+            case 'img': {
                 // Process image
-            { const imageData = processImage(node);
+                const imageData = processImage(node);
                 if (imageData) {
                     // Add placeholder in text
                     result.text += `{{image_${result.elements.length}}}`;
                     result.elements.push(imageData);
                 }
-                break; }
+                break;
+            }
 
             case 'br':
                 result.text += '\n';
                 break;
 
             case 'p':
-            case 'div':
+            case 'div': {
                 // Check if this is likely a container paragraph (single paragraph with no siblings)
                 // rather than a true paragraph break
                 const parent = node.parentNode;
@@ -140,6 +141,7 @@ function processNode(node, result) {
                     result.text += '\n';
                 }
                 break;
+            }
 
             case 'strong':
             case 'b':
@@ -197,7 +199,7 @@ function processNode(node, result) {
                 result.text += '§/SUPERSCRIPT§';
                 break;
 
-            case 'span':
+            case 'span': {
                 // Handle span tags with font-family styles (check both style attribute and data-font-family)
                 const style = node.getAttribute('style') || '';
                 const dataFontFamily = node.getAttribute('data-font-family') || '';
@@ -226,6 +228,7 @@ function processNode(node, result) {
                     processNode(child, result);
                 }
                 break;
+            }
 
             case 'math':
                 // Math notation - placeholder for now
@@ -236,17 +239,19 @@ function processNode(node, result) {
                 });
                 break;
 
-            case 'math-inline':
+            case 'math-inline': {
                 // Inline LaTeX math
-            { const inlineLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
+                const inlineLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
                 result.text += `§MATH_INLINE§${inlineLatex}§/MATH_INLINE§`;
-                break; }
+                break;
+            }
 
-            case 'math-display':
+            case 'math-display': {
                 // Display LaTeX math
-            { const displayLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
+                const displayLatex = decodeURIComponent(node.getAttribute('data-latex') || '');
                 result.text += `§MATH_DISPLAY§${displayLatex}§/MATH_DISPLAY§`;
-                break; }
+                break;
+            }
 
             default:
                 // Process children for any other tags

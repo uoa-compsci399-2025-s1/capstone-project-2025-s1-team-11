@@ -3,10 +3,9 @@ import { isTableBlock } from '../patterns/sectionDetectors.js';
 /**
  * Handle section break at document start
  * @param {Object} state - Parser state
- * @param {Function} addWarning - Warning function
  * @returns {Object} - Action result
  */
-export const handleDocumentStartSection = (state, addWarning) => {
+export const handleDocumentStartSection = (state) => {
   // Create section with empty body that will collect questions
   state.currentSection = {
     type: 'section',

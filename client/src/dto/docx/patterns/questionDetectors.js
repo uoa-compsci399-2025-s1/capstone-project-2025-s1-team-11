@@ -6,7 +6,7 @@ import { detectMarksTag } from '../utils/marksExtraction.js';
  * @param {string} text - Text to check for bookmarks
  * @returns {boolean} - True if bookmark detected
  */
-export const detectBookmark = (text) => {
+export const detectBookmark = () => {
   // For now, return false to maintain current behavior
   return false;
 };

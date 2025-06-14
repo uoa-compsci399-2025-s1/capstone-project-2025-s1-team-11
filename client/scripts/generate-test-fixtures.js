@@ -1,3 +1,4 @@
+/* global process */
 import { parseDocx } from '../src/dto/docx/docxParser.js';
 import fs from 'fs';
 import path from 'path';

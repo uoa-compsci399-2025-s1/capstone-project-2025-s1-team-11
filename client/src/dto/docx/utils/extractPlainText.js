@@ -4,7 +4,7 @@ export const extractPlainText = (runs, options = {}) => {
   const { imageData = {}, drawingInstances = [], paragraphIndex = 0 } = options;
 
   let result = '';
-  let lastRunWasLineBreak = false;
+  let _lastRunWasLineBreak = false;
 
   for (let i = 0; i < runs.length; i++) {
     const r = runs[i];
@@ -46,7 +46,7 @@ export const extractPlainText = (runs, options = {}) => {
     // Handle line breaks - but check if there's also text in this run
     if (r['w:br'] !== undefined) {
       result += '<br>';
-      lastRunWasLineBreak = true;
+      _lastRunWasLineBreak = true;
 
       // Check if this run also has text (uncommon but possible)
       if (r['w:t'] === undefined) {
@@ -106,7 +106,7 @@ export const extractPlainText = (runs, options = {}) => {
         result += `<img alt="${alt}" src="[Image Placeholder]">`;
       }
 
-      lastRunWasLineBreak = false;
+      _lastRunWasLineBreak = false;
       continue;
     }
 
@@ -209,7 +209,7 @@ export const extractPlainText = (runs, options = {}) => {
 
     result += textContent;
 
-    lastRunWasLineBreak = false;
+    _lastRunWasLineBreak = false;
   }
 
   // Post-cleaning - Only handle explicit notation patterns
