@@ -6,7 +6,6 @@ import {
     updateRelationshipIds,
     updateRelationshipsXml
 } from "../processors/relationshipProcessor.js";
-import { findFirstPageBreak, isPageBreakSameAsSectPr } from "../processors/pageBreakProcessor.js";
 import { processHeaders } from "../processors/headerFooterProcessor.js";
 import { preserveWhitespace, xmlBuilder } from "../utils/xmlHelpers.js";
 import JSZip from "jszip";

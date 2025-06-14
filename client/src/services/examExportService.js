@@ -224,8 +224,7 @@ export class ExamExportService {
         // Save each versioned file
         for (const {version, blob} of versionedBlobs) {
             // Generate appropriate filename with version included
-            const baseFilename = generateFilename(examData);
-            const filename = baseFilename.replace('.docx', `_Version${version}.docx`);
+            const filename = generateFilename(examData.courseCode, version);
             this._saveBlob(blob, filename);
         }
     }
