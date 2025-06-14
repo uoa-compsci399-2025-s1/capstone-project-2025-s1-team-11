@@ -144,6 +144,34 @@ function processNode(node, result) {
                 result.text += '§/SUPERSCRIPT§';
                 break;
 
+            case 'span':
+                // Handle span tags with font-family styles
+                const style = node.getAttribute('style') || '';
+                const fontFamilyMatch = style.match(/font-family:\s*['"]*([^;'"]+)['"]*[;]?/i);
+                
+                if (fontFamilyMatch) {
+                    const fontFamily = fontFamilyMatch[1].toLowerCase();
+                    // Check if it's a monospace font
+                    const monospaceFonts = ['courier new', 'courier', 'consolas', 'monaco', 'monospace', 'lucida console', 'fixedsys', 'terminal'];
+                    const isMonospace = monospaceFonts.some(f => fontFamily.includes(f));
+                    
+                    if (isMonospace) {
+                        // Treat as code block
+                        result.text += '§CODE§';
+                        for (const child of node.childNodes) {
+                            processNode(child, result);
+                        }
+                        result.text += '§/CODE§';
+                        break;
+                    }
+                }
+                
+                // For non-monospace spans or spans without font-family, just process children
+                for (const child of node.childNodes) {
+                    processNode(child, result);
+                }
+                break;
+
             case 'math':
                 // Math notation - placeholder for now
                 result.text += `{{math_${result.elements.length}}}`;

@@ -193,13 +193,18 @@ export const extractPlainText = (runs, options = {}) => {
           .replace(/—/g, '→'); // Em dash to right arrow (if used)
     }
 
-    // Apply formatting
-    if (isSubscript) textContent = `<sub>${textContent}</sub>`;
-    else if (isSuperscript) textContent = `<sup>${textContent}</sup>`;
-    if (isBold) textContent = `<strong>${textContent}</strong>`;
-    if (isItalic) textContent = `<em>${textContent}</em>`;
-    if (isUnderline) textContent = `<u>${textContent}</u>`;
-    if (isMonospace) textContent = `<code>${textContent}</code>`;
+          // Apply formatting
+      if (isSubscript) textContent = `<sub>${textContent}</sub>`;
+      else if (isSuperscript) textContent = `<sup>${textContent}</sup>`;
+      if (isBold) textContent = `<strong>${textContent}</strong>`;
+      if (isItalic) textContent = `<em>${textContent}</em>`;
+      if (isUnderline) textContent = `<u>${textContent}</u>`;
+      if (isMonospace) {
+        // Get the actual font name from the run properties
+        const fontInfo = r['w:rPr']?.['w:rFonts'];
+        const fontName = fontInfo?.['@_w:ascii'] || fontInfo?.['@_w:hAnsi'] || 'Courier New';
+        textContent = `<span style="font-family: '${fontName}', monospace">${textContent}</span>`;
+      }
 
     result += textContent;
 
