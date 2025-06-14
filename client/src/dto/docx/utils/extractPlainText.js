@@ -203,7 +203,8 @@ export const extractPlainText = (runs, options = {}) => {
         // Get the actual font name from the run properties
         const fontInfo = r['w:rPr']?.['w:rFonts'];
         const fontName = fontInfo?.['@_w:ascii'] || fontInfo?.['@_w:hAnsi'] || 'Courier New';
-        textContent = `<span style="font-family: '${fontName}', monospace">${textContent}</span>`;
+        // Use TipTap's expected format with data-font-family attribute
+        textContent = `<span data-font-family="'${fontName}', Courier, monospace" style="font-family: '${fontName}', Courier, monospace">${textContent}</span>`;
       }
 
     result += textContent;
@@ -217,6 +218,8 @@ export const extractPlainText = (runs, options = {}) => {
 
   // Keep subscripts and superscripts together with their base text
   result = result.replace(/(\w+)\s+<(sub|sup)>(\w+)<\/(sub|sup)>/g, '$1<$2>$3</$4>');
+
+
 
   return result.trim();
 };

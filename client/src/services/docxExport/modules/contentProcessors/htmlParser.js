@@ -145,12 +145,14 @@ function processNode(node, result) {
                 break;
 
             case 'span':
-                // Handle span tags with font-family styles
+                // Handle span tags with font-family styles (check both style attribute and data-font-family)
                 const style = node.getAttribute('style') || '';
+                const dataFontFamily = node.getAttribute('data-font-family') || '';
                 const fontFamilyMatch = style.match(/font-family:\s*['"]*([^;'"]+)['"]*[;]?/i);
                 
-                if (fontFamilyMatch) {
-                    const fontFamily = fontFamilyMatch[1].toLowerCase();
+                const fontFamily = (fontFamilyMatch ? fontFamilyMatch[1] : dataFontFamily).toLowerCase();
+                
+                if (fontFamily) {
                     // Check if it's a monospace font
                     const monospaceFonts = ['courier new', 'courier', 'consolas', 'monaco', 'monospace', 'lucida console', 'fixedsys', 'terminal'];
                     const isMonospace = monospaceFonts.some(f => fontFamily.includes(f));
