@@ -4,9 +4,7 @@ export const extractPlainText = (runs, options = {}) => {
   const { imageData = {}, drawingInstances = [], paragraphIndex = 0 } = options;
 
   let result = '';
-  let lastRunEndedWithSpace = false;
-  let lastRunWasLineBreak = false;
-  let lastRunWasSingleChar = false;
+  let _lastRunWasLineBreak = false;
 
   for (let i = 0; i < runs.length; i++) {
     const r = runs[i];
@@ -48,8 +46,7 @@ export const extractPlainText = (runs, options = {}) => {
     // Handle line breaks - but check if there's also text in this run
     if (r['w:br'] !== undefined) {
       result += '<br>';
-      lastRunEndedWithSpace = false;
-      lastRunWasLineBreak = true;
+      _lastRunWasLineBreak = true;
 
       // Check if this run also has text (uncommon but possible)
       if (r['w:t'] === undefined) {
@@ -109,8 +106,7 @@ export const extractPlainText = (runs, options = {}) => {
         result += `<img alt="${alt}" src="[Image Placeholder]">`;
       }
 
-      lastRunWasLineBreak = false;
-      lastRunWasSingleChar = false;
+      _lastRunWasLineBreak = false;
       continue;
     }
 
@@ -184,25 +180,9 @@ export const extractPlainText = (runs, options = {}) => {
       continue;
     }
 
-    // Handle spacing - Modified to account for line breaks and split words
-    const punctuationStart = /^[.,:;!?)]/.test(textContent);
-    const currentIsSingleWordChar = textContent.length === 1 && /\w/.test(textContent);
-
-    if (!lastRunWasLineBreak && !lastRunEndedWithSpace && result.length > 0 &&
-        !result.endsWith(' ') && !result.endsWith('<br>') &&
-        !textContent.startsWith(' ') && !punctuationStart) {
-
-      // Check if we might be dealing with a split word
-      const lastChar = result[result.length - 1];
-      const isLastCharWordChar = /\w/.test(lastChar);
-      const isFirstCharWordChar = /^\w/.test(textContent);
-
-      // If the last run was a single word character and this run starts with a word character,
-      // this is likely a split word
-      if (!(lastRunWasSingleChar && isLastCharWordChar && isFirstCharWordChar)) {
-        result += ' ';
-      }
-    }
+    // Word-compliant approach: Just concatenate text content directly
+    // Word already includes proper spacing within the text content of runs
+    // No need to guess or add spaces between runs
 
     // Handle font-specific character mappings BEFORE applying formatting
     if (isMonospace && textContent) {
@@ -213,19 +193,23 @@ export const extractPlainText = (runs, options = {}) => {
           .replace(/—/g, '→'); // Em dash to right arrow (if used)
     }
 
-    // Apply formatting
-    if (isSubscript) textContent = `<sub>${textContent}</sub>`;
-    else if (isSuperscript) textContent = `<sup>${textContent}</sup>`;
-    if (isBold) textContent = `<strong>${textContent}</strong>`;
-    if (isItalic) textContent = `<em>${textContent}</em>`;
-    if (isUnderline) textContent = `<u>${textContent}</u>`;
-    if (isMonospace) textContent = `<code>${textContent}</code>`;
+          // Apply formatting
+      if (isSubscript) textContent = `<sub>${textContent}</sub>`;
+      else if (isSuperscript) textContent = `<sup>${textContent}</sup>`;
+      if (isBold) textContent = `<strong>${textContent}</strong>`;
+      if (isItalic) textContent = `<em>${textContent}</em>`;
+      if (isUnderline) textContent = `<u>${textContent}</u>`;
+      if (isMonospace) {
+        // Get the actual font name from the run properties
+        const fontInfo = r['w:rPr']?.['w:rFonts'];
+        const fontName = fontInfo?.['@_w:ascii'] || fontInfo?.['@_w:hAnsi'] || 'Courier New';
+        // Use TipTap's expected format with data-font-family attribute
+        textContent = `<span data-font-family="'${fontName}', Courier, monospace" style="font-family: '${fontName}', Courier, monospace">${textContent}</span>`;
+      }
 
     result += textContent;
 
-    lastRunEndedWithSpace = textContent.endsWith(' ');
-    lastRunWasLineBreak = false;
-    lastRunWasSingleChar = currentIsSingleWordChar;
+    _lastRunWasLineBreak = false;
   }
 
   // Post-cleaning - Only handle explicit notation patterns
@@ -234,6 +218,8 @@ export const extractPlainText = (runs, options = {}) => {
 
   // Keep subscripts and superscripts together with their base text
   result = result.replace(/(\w+)\s+<(sub|sup)>(\w+)<\/(sub|sup)>/g, '$1<$2>$3</$4>');
+
+
 
   return result.trim();
 };
