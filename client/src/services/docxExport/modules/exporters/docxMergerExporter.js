@@ -37,87 +37,82 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
         const sectPrLoc = findAndRemoveFirstSectPr(coverBody);
         const removedSectPr = sectPrLoc ? sectPrLoc.sectPr : null;
 
-        // Find the first page break in the cover page
-        const pageBreakIndex = findFirstPageBreak(coverBody);
-
         const {relIdMap, newRelationships, mediaFileMap} = processRelationships(coverRelationships, bodyRelationships);
 
-        // If the first page break is not the same as the first section break, paste the removed sectPr at the page break
-        if (removedSectPr && pageBreakIndex !== -1 && !isPageBreakSameAsSectPr(sectPrLoc, pageBreakIndex)) {
-            const targetParaObject = coverBody[pageBreakIndex];
+        // If we have a section break location, insert a page break before it
+        if (sectPrLoc) {
+            console.log('[MERGE-DEBUG] Section break found at index:', sectPrLoc.index);
+            console.log('[MERGE-DEBUG] Body content length:', bodyContent.length);
+            console.log('[MERGE-DEBUG] First 3 body content elements:', bodyContent.slice(0, 3).map((item, idx) => ({
+                index: idx,
+                type: Object.keys(item)[0],
+                hasText: item['w:p'] ? 'has w:p' : 'no w:p',
+                isEmpty: item['w:p'] && Array.isArray(item['w:p']) && item['w:p'].length === 0 ? 'empty' : 'not empty'
+            })));
 
+            // Insert the exam body at the section break location
+            const insertIndex = sectPrLoc.index;
+            console.log('[MERGE-DEBUG] Inserting body content at index:', insertIndex);
+            
+            // Add page break to the first paragraph of the body content
+            if (bodyContent.length > 0 && bodyContent[0]['w:p'] && Array.isArray(bodyContent[0]['w:p'])) {
+                const firstPara = bodyContent[0]['w:p'];
+                let pPrContainer = null;
+                
+                // Find or create paragraph properties
+                if (firstPara.length > 0 && firstPara[0]['w:pPr'] && Array.isArray(firstPara[0]['w:pPr'])) {
+                    pPrContainer = firstPara[0];
+                } else {
+                    pPrContainer = {'w:pPr': [{}]};
+                    firstPara.unshift(pPrContainer);
+                }
+                
+                const pPrObject = pPrContainer['w:pPr'][0];
+                pPrObject['w:pageBreakBefore'] = [{}];
+                
+                console.log('[MERGE-DEBUG] Added page break to first paragraph of body content');
+            } else {
+                console.log('[MERGE-DEBUG] Could not add page break - first element is not a paragraph');
+            }
+            
+            coverBody.splice(insertIndex, 0, ...bodyContent);
+
+            console.log('[MERGE-DEBUG] After insertion, cover body length:', coverBody.length);
+            console.log('[MERGE-DEBUG] Elements around insertion point:', coverBody.slice(insertIndex, insertIndex + 3).map((item, idx) => ({
+                actualIndex: insertIndex + idx,
+                type: Object.keys(item)[0],
+                hasText: item['w:p'] ? 'has w:p' : 'no w:p',
+                hasPageBreak: item['w:p'] && Array.isArray(item['w:p']) && item['w:p'].some(p => p['w:pPr'] && Array.isArray(p['w:pPr']) && p['w:pPr'].some(pr => pr['w:pageBreakBefore'])) ? 'HAS PAGE BREAK' : 'no page break'
+            })));
+
+            // Add the section break back at its original location (after the inserted body content)
+            const targetParaObject = coverBody[insertIndex + bodyContent.length];
             if (targetParaObject && targetParaObject['w:p'] && Array.isArray(targetParaObject['w:p'])) {
                 const pChildrenArray = targetParaObject['w:p'];
-
-                // Remove runs containing page breaks and other page break markers
-                for (let i = pChildrenArray.length - 1; i >= 0; i--) {
-                    const pChild = pChildrenArray[i];
-
-                    // Remove entire runs that contain page breaks
-                    if (pChild['w:r'] && Array.isArray(pChild['w:r'])) {
-                        const hasPageBreak = pChild['w:r'].some(run => {
-                            const isPageBreakRun = run['w:br'] !== undefined &&
-                                run[':@'] &&
-                                run[':@']['@_w:type'] === 'page';
-
-                            const hasNestedPageBreak = run['w:br'] &&
-                                Array.isArray(run['w:br']) &&
-                                run['w:br'].some(br => br[':@'] && br[':@']['@_w:type'] === 'page');
-
-                            return isPageBreakRun || hasNestedPageBreak;
-                        });
-                        if (hasPageBreak) {
-                            pChildrenArray.splice(i, 1);
-                            continue;
-                        }
-                    }
-
-                    // Remove w:br with type="page" from runs
-                    if (pChild['w:br'] && Array.isArray(pChild['w:br'])) {
-                        const originalLength = pChild['w:br'].length;
-                        pChild['w:br'] = pChild['w:br'].filter(br => {
-                            return !(br[':@'] && br[':@']['@_w:type'] === 'page');
-                        });
-                        if (pChild['w:br'].length === 0 && originalLength > 0) {
-                            pChildrenArray.splice(i, 1);
-                        }
-                    }
-
-                    // Remove w:pageBreakBefore from w:pPr
-                    if (pChild['w:pPr'] && Array.isArray(pChild['w:pPr']) &&
-                        pChild['w:pPr'][0] && pChild['w:pPr'][0]['w:pageBreakBefore']) {
-                        delete pChild['w:pPr'][0]['w:pageBreakBefore'];
-                    }
-                }
-
-                // Add section break to the paragraph properties
                 let pPrObjectContainer = null;
+                
                 if (pChildrenArray.length > 0 && pChildrenArray[0]['w:pPr'] && Array.isArray(pChildrenArray[0]['w:pPr'])) {
                     pPrObjectContainer = pChildrenArray[0];
                 } else {
                     pPrObjectContainer = {'w:pPr': [{}]};
                     pChildrenArray.unshift(pPrObjectContainer);
                 }
+                
                 const pPrObject = pPrObjectContainer['w:pPr'][0];
-
-                // Remove any existing sectPr before adding the new one
-                if (pPrObject['w:sectPr']) {
-                    delete pPrObject['w:sectPr'];
-                }
-
                 pPrObject['w:sectPr'] = removedSectPr;
             }
+        } else {
+            console.log('[MERGE-DEBUG] No section break found, appending to end');
+            console.log('[MERGE-DEBUG] Body content length:', bodyContent.length);
+            console.log('[MERGE-DEBUG] First 3 body content elements:', bodyContent.slice(0, 3).map((item, idx) => ({
+                index: idx,
+                type: Object.keys(item)[0],
+                hasText: item['w:p'] ? 'has w:p' : 'no w:p',
+                isEmpty: item['w:p'] && Array.isArray(item['w:p']) && item['w:p'].length === 0 ? 'empty' : 'not empty'
+            })));
+            // No section break - append to the end
+            coverBody.push(...bodyContent);
         }
-
-        // Update relationship IDs in the body content ONLY
-        updateRelationshipIds(bodyContent, relIdMap);
-
-        preserveWhitespace(coverPage.documentObj);
-        preserveWhitespace(bodyDoc);
-
-        // Insert the exam body after the relocated first section break
-        const insertIndex = pageBreakIndex !== -1 ? pageBreakIndex + 1 : coverBody.length;
-        coverBody.splice(insertIndex, 0, ...bodyContent);
 
         // Ensure the final section properties are preserved
         if (finalSectPr) {
@@ -129,6 +124,12 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
             // Add back the preserved final section properties
             coverBody.push(finalSectPr);
         }
+
+        // Update relationship IDs in the body content ONLY
+        updateRelationshipIds(bodyContent, relIdMap);
+
+        preserveWhitespace(coverPage.documentObj);
+        preserveWhitespace(bodyDoc);
 
         // Copy related files
         copyRelatedFiles(body, coverPage, bodyRelationships, relIdMap, mediaFileMap);
