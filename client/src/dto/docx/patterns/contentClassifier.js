@@ -57,15 +57,14 @@ export const classifyContent = (text, emptyLineCounter, i, blocks, currentQuesti
 
   // Non-empty content
 
-  // Special handling for image-only content
-  if (isImageOnlyContent(text)) {
-    // Image-only content should be treated as section content if we're in a section
-    // but shouldn't affect empty line counting for question detection
-    if (state && (state.afterSectionBreak || state.inSection) && !currentQuestion) {
-      return { type: 'section_content', block: currentBlock, isImageOnly: true };
-    }
-    // Outside of sections, treat as regular content that doesn't break flow
-    return { type: 'image_content', block: currentBlock };
+  // Special handling for image-only content in section bodies that might trigger 
+  // false positive question detection. Only applies when we're actively collecting
+  // section content and have no current question context.
+  if (state && state.afterSectionBreak && state.sectionContentBlocks && 
+      !currentQuestion && !currentAnswers?.length && 
+      isImageOnlyContent(text)) {
+    // Image-only content in section body should be treated as section content
+    return { type: 'section_content', block: currentBlock, isImageOnly: true };
   }
 
   // Check if we're in a section body and this might end it

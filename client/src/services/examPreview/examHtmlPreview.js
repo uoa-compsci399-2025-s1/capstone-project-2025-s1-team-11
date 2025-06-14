@@ -84,7 +84,7 @@ function processQuestionToHtml(question, teleformOptions = DEFAULT_OPTIONS) {
 
   // Process answers with version-specific shuffling
   if (question.answers && question.answers.length > 0) {
-    html += '<div class="question-answers" style="display: flex; flex-direction: column; gap: 8px; padding-left: 24px;">';
+    html += '<div class="question-answers" style="font-size: 16px; color: #000; line-height: 1.2; padding-left: 24px;">';
 
     // Now render the answers in their original order
     question.answers.forEach((answer, index) => {
@@ -93,12 +93,12 @@ function processQuestionToHtml(question, teleformOptions = DEFAULT_OPTIONS) {
         const labelIndex = index < teleformOptions.length ? index : index % teleformOptions.length;
         const label = teleformOptions[labelIndex];
         
-        html += `
-          <div class="answer-option" style="display: flex; gap: 8px; align-items: flex-start; font-size: 15px; color: #000; line-height: 1.0;">
-            <strong style="white-space: nowrap; color: #000;">${label})</strong>
-            <span style="${answer.correct ? 'color: green;' : 'color: #000;'}">${safeHtmlContent(answer.contentFormatted || '')}</span>
-          </div>
-        `;
+        html += `<strong style="color: #000;">${label})</strong> <span style="${answer.correct ? 'color: green;' : 'color: #000;'}">${safeHtmlContent(answer.contentFormatted || '')}</span>`;
+        
+        // Add line break if not the last answer
+        if (index < question.answers.length - 1) {
+          html += '<br>';
+        }
       }
     });
     

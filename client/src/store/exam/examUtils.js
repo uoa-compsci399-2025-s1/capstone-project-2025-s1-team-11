@@ -18,7 +18,7 @@ export const createExam = (overrides = {}) => ({
   semester: '',
   year: '',
   versions: ['00000001', '00000002', '00000003', '00000004'], // Default versions
-  teleformOptions: ['a', 'b', 'c', 'd', 'e'], // Default options
+  teleformOptions: ['A', 'B', 'C', 'D', 'E'], // Default options
   examBody: [],
   ...overrides,
 });
@@ -55,7 +55,7 @@ const migrateFromLegacy = (examData) => {
   
   // Add any missing fields that were introduced in 1.0.0
   if (!migratedExam.teleformOptions) {
-    migratedExam.teleformOptions = ['a', 'b', 'c', 'd', 'e'];
+    migratedExam.teleformOptions = ['A', 'B', 'C', 'D', 'E'];
   }
   
   // Ensure examBody is an array

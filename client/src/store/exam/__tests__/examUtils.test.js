@@ -176,7 +176,7 @@ describe('Exam Versioning', () => {
     expect(migratedExam.schemaVersion).toBe('1.0.0');
 
     // Check that required fields were added
-    expect(migratedExam.teleformOptions).toEqual(['a', 'b', 'c', 'd', 'e']);
+    expect(migratedExam.teleformOptions).toEqual(['A', 'B', 'C', 'D', 'E']);
     expect(Array.isArray(migratedExam.examBody)).toBe(true);
     expect(migratedExam.examBody).toEqual([]);
 
