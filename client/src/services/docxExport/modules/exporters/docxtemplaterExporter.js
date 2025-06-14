@@ -51,11 +51,8 @@ export async function exportExamWithDocxtemplater(examData, templateContent, ver
             }
         });
 
-        // Set the data
-        doc.setData(processedData);
-
-        // Render the document
-        doc.render();
+        // Render the document with data (replaces deprecated setData + render)
+        doc.render(processedData);
 
         // Get the zip file containing the generated document
         const generatedDocx = doc.getZip().generate({

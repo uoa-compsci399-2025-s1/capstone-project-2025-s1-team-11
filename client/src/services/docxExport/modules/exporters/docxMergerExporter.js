@@ -6,7 +6,7 @@ import {
     updateRelationshipIds,
     updateRelationshipsXml
 } from "../processors/relationshipProcessor.js";
-import { findFirstPageBreak, isPageBreakSameAsSectPr } from "../processors/pageBreakProcessor.js";
+import { processHeaders } from "../processors/headerFooterProcessor.js";
 import { preserveWhitespace, xmlBuilder } from "../utils/xmlHelpers.js";
 import JSZip from "jszip";
 import { RELATIONSHIP_TYPES } from "../utils/docxConstants.js";
@@ -14,8 +14,12 @@ import { parseContentTypes, buildContentTypesXml, mergeContentTypes } from "../c
 
 /**
  * Merges two docx files, inserting the body content after the first page break in the cover page
+ * @param {Blob} coverPageFile - The cover page DOCX file
+ * @param {Blob} bodyFile - The exam body DOCX file
+ * @param {Object} examData - The exam data containing courseCode
+ * @param {string|number} version - The version being exported
  */
-export async function mergeDocxFiles(coverPageFile, bodyFile) {
+export async function mergeDocxFiles(coverPageFile, bodyFile, examData = null, version = null) {
     try {
         const coverPage = await loadDocx(coverPageFile);
         const body = await loadDocx(bodyFile);
@@ -37,87 +41,57 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
         const sectPrLoc = findAndRemoveFirstSectPr(coverBody);
         const removedSectPr = sectPrLoc ? sectPrLoc.sectPr : null;
 
-        // Find the first page break in the cover page
-        const pageBreakIndex = findFirstPageBreak(coverBody);
-
         const {relIdMap, newRelationships, mediaFileMap} = processRelationships(coverRelationships, bodyRelationships);
 
-        // If the first page break is not the same as the first section break, paste the removed sectPr at the page break
-        if (removedSectPr && pageBreakIndex !== -1 && !isPageBreakSameAsSectPr(sectPrLoc, pageBreakIndex)) {
-            const targetParaObject = coverBody[pageBreakIndex];
+        // Process headers to replace placeholders
+        if (examData && version !== null) {
+            processHeaders(coverPage.files, coverRelationships, version, examData.courseCode || '');
+        }
 
+        // If we have a section break location, insert a page break before it
+        if (sectPrLoc) {
+            // Insert the exam body at the section break location
+            const insertIndex = sectPrLoc.index;
+            
+            // Add page break to the first paragraph of the body content
+            if (bodyContent.length > 0 && bodyContent[0]['w:p'] && Array.isArray(bodyContent[0]['w:p'])) {
+                const firstPara = bodyContent[0]['w:p'];
+                let pPrContainer = null;
+                
+                // Find or create paragraph properties
+                if (firstPara.length > 0 && firstPara[0]['w:pPr'] && Array.isArray(firstPara[0]['w:pPr'])) {
+                    pPrContainer = firstPara[0];
+                } else {
+                    pPrContainer = {'w:pPr': [{}]};
+                    firstPara.unshift(pPrContainer);
+                }
+                
+                const pPrObject = pPrContainer['w:pPr'][0];
+                pPrObject['w:pageBreakBefore'] = [{}];
+            }
+            
+            coverBody.splice(insertIndex, 0, ...bodyContent);
+
+            // Add the section break back at its original location (after the inserted body content)
+            const targetParaObject = coverBody[insertIndex + bodyContent.length];
             if (targetParaObject && targetParaObject['w:p'] && Array.isArray(targetParaObject['w:p'])) {
                 const pChildrenArray = targetParaObject['w:p'];
-
-                // Remove runs containing page breaks and other page break markers
-                for (let i = pChildrenArray.length - 1; i >= 0; i--) {
-                    const pChild = pChildrenArray[i];
-
-                    // Remove entire runs that contain page breaks
-                    if (pChild['w:r'] && Array.isArray(pChild['w:r'])) {
-                        const hasPageBreak = pChild['w:r'].some(run => {
-                            const isPageBreakRun = run['w:br'] !== undefined &&
-                                run[':@'] &&
-                                run[':@']['@_w:type'] === 'page';
-
-                            const hasNestedPageBreak = run['w:br'] &&
-                                Array.isArray(run['w:br']) &&
-                                run['w:br'].some(br => br[':@'] && br[':@']['@_w:type'] === 'page');
-
-                            return isPageBreakRun || hasNestedPageBreak;
-                        });
-                        if (hasPageBreak) {
-                            pChildrenArray.splice(i, 1);
-                            continue;
-                        }
-                    }
-
-                    // Remove w:br with type="page" from runs
-                    if (pChild['w:br'] && Array.isArray(pChild['w:br'])) {
-                        const originalLength = pChild['w:br'].length;
-                        pChild['w:br'] = pChild['w:br'].filter(br => {
-                            return !(br[':@'] && br[':@']['@_w:type'] === 'page');
-                        });
-                        if (pChild['w:br'].length === 0 && originalLength > 0) {
-                            pChildrenArray.splice(i, 1);
-                        }
-                    }
-
-                    // Remove w:pageBreakBefore from w:pPr
-                    if (pChild['w:pPr'] && Array.isArray(pChild['w:pPr']) &&
-                        pChild['w:pPr'][0] && pChild['w:pPr'][0]['w:pageBreakBefore']) {
-                        delete pChild['w:pPr'][0]['w:pageBreakBefore'];
-                    }
-                }
-
-                // Add section break to the paragraph properties
                 let pPrObjectContainer = null;
+                
                 if (pChildrenArray.length > 0 && pChildrenArray[0]['w:pPr'] && Array.isArray(pChildrenArray[0]['w:pPr'])) {
                     pPrObjectContainer = pChildrenArray[0];
                 } else {
                     pPrObjectContainer = {'w:pPr': [{}]};
                     pChildrenArray.unshift(pPrObjectContainer);
                 }
+                
                 const pPrObject = pPrObjectContainer['w:pPr'][0];
-
-                // Remove any existing sectPr before adding the new one
-                if (pPrObject['w:sectPr']) {
-                    delete pPrObject['w:sectPr'];
-                }
-
                 pPrObject['w:sectPr'] = removedSectPr;
             }
+        } else {
+            // No section break - append to the end
+            coverBody.push(...bodyContent);
         }
-
-        // Update relationship IDs in the body content ONLY
-        updateRelationshipIds(bodyContent, relIdMap);
-
-        preserveWhitespace(coverPage.documentObj);
-        preserveWhitespace(bodyDoc);
-
-        // Insert the exam body after the relocated first section break
-        const insertIndex = pageBreakIndex !== -1 ? pageBreakIndex + 1 : coverBody.length;
-        coverBody.splice(insertIndex, 0, ...bodyContent);
 
         // Ensure the final section properties are preserved
         if (finalSectPr) {
@@ -130,13 +104,23 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
             coverBody.push(finalSectPr);
         }
 
+        // Update relationship IDs in the body content ONLY
+        updateRelationshipIds(bodyContent, relIdMap);
+
+        preserveWhitespace(coverPage.documentObj);
+        preserveWhitespace(bodyDoc);
+
         // Copy related files
         copyRelatedFiles(body, coverPage, bodyRelationships, relIdMap, mediaFileMap);
 
         const outputZip = new JSZip();
+        
+        // First, add all cover page files (including our modified headers)
         for (const [path, content] of coverPage.files.entries()) {
             outputZip.file(path, content);
         }
+        
+        // Then, add body files that don't conflict with cover page files
         for (const [path, content] of body.files.entries()) {
             if (!coverPage.files.has(path) && path.startsWith('word/media/')) {
                 outputZip.file(path, content);

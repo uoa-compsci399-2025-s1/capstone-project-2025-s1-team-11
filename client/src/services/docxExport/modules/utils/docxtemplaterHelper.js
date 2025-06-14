@@ -85,14 +85,12 @@ export function handleLineBreaks(text) {
  * @param {Object} examData - Exam data to base the filename on
  * @returns {string} - Generated filename
  */
-export function generateFilename(examData) {
-    const courseCode = examData.courseCode || 'Exam';
-    const examTitle = examData.examTitle || 'Untitled';
-    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-
+export function generateFilename(courseCode, version) {
+    if (!courseCode) {
+        courseCode = 'Course Code';
+    }
     // Clean up the filename to remove any problematic characters
     const cleanCourseCode = courseCode.replace(/[^a-zA-Z0-9]/g, '');
-    const cleanExamTitle = examTitle.replace(/[^a-zA-Z0-9]/g, '');
 
-    return `${cleanCourseCode}_${cleanExamTitle}_${date}.docx`;
+    return `${cleanCourseCode}_${version}.docx`;
 }
