@@ -9,7 +9,7 @@ import { useHistory } from '../../hooks/useHistory.js';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts.js';
 import CreateExamModal from './CreateExamModal.jsx';
 import EditExamModal from './EditExamModal.jsx';
-import { handleExportDocx } from '../../utilities/UIUtils.jsx';
+import { useExportDocx } from '../../utilities/UIUtils.jsx';
 import '../../index.css';
 import useMessage from "../../hooks/useMessage.js";
 import { handleExamDetailsSave } from '../../services/examEditService.js';
@@ -64,6 +64,7 @@ const StaticContextBar = ({
   // Exam progress
 
   const message = useMessage();
+  const exportDocx = useExportDocx();
 
   const fileDropdownRef = useRef(null);
   const exportDropdownRef = useRef(null);
@@ -509,7 +510,7 @@ const StaticContextBar = ({
                           key: 'docx',
                           label: 'Download as DOCX',
                           onClick: async () => {
-                            await handleExportDocx(examData, coverPage, mathRegistry, message);
+                            await exportDocx(examData, coverPage, mathRegistry);
                             setExportDropdownOpen(false);
                           }
                         },

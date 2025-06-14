@@ -30,14 +30,6 @@ export function processHeaders(files, relationships, version, courseCode) {
                 
                 // Check if this file contains SDT (Structured Document Tag) content
                 const hasSdt = updatedXml.includes('<w:sdt>');
-                if (hasSdt) {
-                    console.log('[HEADER-DEBUG] File', filePath, 'contains SDT content');
-                    // Show the SDT content specifically
-                    const sdtMatch = updatedXml.match(/<w:sdtContent>[\s\S]*?<\/w:sdtContent>/);
-                    if (sdtMatch) {
-                        console.log('[HEADER-DEBUG] SDT content:', sdtMatch[0]);
-                    }
-                }
                 
                 // Replace &lt;VERSION&gt; with formatted version
                 const beforeReplace = updatedXml;
@@ -45,22 +37,16 @@ export function processHeaders(files, relationships, version, courseCode) {
                 updatedXml = updatedXml.replace(/&lt;VERSION&gt;/g, formattedVersion);
                 
                 // Replace &lt;COURSE CODE&gt; with course code
-                updatedXml = updatedXml.replace(/<COURSE CODE>/g, courseCode);
-                updatedXml = updatedXml.replace(/&lt;COURSE CODE&gt;/g, courseCode);
+                if (courseCode) {
+                    updatedXml = updatedXml.replace(/<COURSE CODE>/g, courseCode);
+                    updatedXml = updatedXml.replace(/&lt;COURSE CODE&gt;/g, courseCode);
+                }
                 
                 // Fix SDTs that contain our placeholders by removing data binding
                 if (hasSdt && (beforeReplace.includes('&lt;VERSION&gt;') || beforeReplace.includes('&lt;COURSE CODE&gt;'))) {
-                    console.log('[HEADER-DEBUG] Removing data binding from SDTs with placeholders in', filePath);
                     // Remove data binding elements that might override our content
                     updatedXml = updatedXml.replace(/<w:dataBinding[^>]*\/>/g, '');
                     updatedXml = updatedXml.replace(/<w:dataBinding[^>]*>.*?<\/w:dataBinding>/g, '');
-                }
-                
-                // Check if replacement actually happened
-                const wasReplaced = beforeReplace !== updatedXml;
-                console.log('[HEADER-DEBUG] File', filePath, 'replacement occurred:', wasReplaced);
-                if (!wasReplaced && (beforeReplace.includes('&lt;VERSION&gt;') || beforeReplace.includes('<VERSION>'))) {
-                    console.log('[HEADER-DEBUG] WARNING: VERSION placeholder found but not replaced in', filePath);
                 }
                 
                 // Update the file in the map

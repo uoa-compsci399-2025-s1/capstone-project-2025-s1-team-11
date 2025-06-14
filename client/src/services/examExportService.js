@@ -158,6 +158,11 @@ export class ExamExportService {
             warnings.push("Answers are not shuffled. All versions will have identical answer orders.");
         }
 
+        // Check if course code is populated
+        if (!examData.courseCode || examData.courseCode.trim() === '') {
+            warnings.push("Course Code empty - This is used in the exam header and filenames.");
+        }
+
         // Add other checks as needed (e.g., ensuring all questions have the same number of answers)
 
         return {

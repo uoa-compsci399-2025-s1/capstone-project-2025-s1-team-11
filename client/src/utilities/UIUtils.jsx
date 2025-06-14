@@ -1,8 +1,9 @@
-import { Modal } from 'antd';
+import { App } from 'antd';
 import { ExamExportService } from '../services/examExportService';
 import React from 'react';
 
-export const handleExportDocx = async (exam, coverPage, mathRegistry, message) => {
+// Main export function that requires modal instance
+const handleExportDocxInternal = async (exam, coverPage, mathRegistry, message, modal) => {
     try {
         if (!exam) {
             message.error("No exam data available for export");
@@ -19,13 +20,13 @@ export const handleExportDocx = async (exam, coverPage, mathRegistry, message) =
 
         // Show warnings if present
         if (warnings && warnings.length > 0) {
-            const warningText = warnings.join("\n");
-
-            Modal.confirm({
+            modal.confirm({
                 title: 'Warning: Issues with Export',
                 content: (
                     <div>
-                        <p>{warningText}</p>
+                        {warnings.map((warning, index) => (
+                            <p key={index}>{warning}</p>
+                        ))}
                         <p>Do you want to proceed with the export anyway?</p>
                     </div>
                 ),
@@ -69,4 +70,12 @@ export const handleExportDocx = async (exam, coverPage, mathRegistry, message) =
         message.error(`Export error: ${error.message}`);
         console.error(error);
     }
+};
+
+// Hook version for components that can use hooks (recommended)
+export const useExportDocx = () => {
+    const { message, modal } = App.useApp();
+    
+    return (exam, coverPage, mathRegistry) => 
+        handleExportDocxInternal(exam, coverPage, mathRegistry, message, modal);
 };
