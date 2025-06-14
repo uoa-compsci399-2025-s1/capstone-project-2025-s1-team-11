@@ -197,7 +197,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
     emptyLineCounter = 0;
 
     // Check if this is a new question
-    if (isNewQuestion(text)) {
+    if (isNewQuestion(text, emptyLineCounter, i === blocks.length - 1)) {
       flushQuestion();
 
       // If we've accumulated section content after a section break, create a new section
@@ -291,21 +291,70 @@ const isSectionBreak = (block) => {
   );
 };
 
-const isNewQuestion = (text) => {
-  if (!text) return false;
-  // Normalize text by removing extra spaces and converting to lowercase
-  const normalizedText = text.trim().toLowerCase();
-  // Check if text starts with [X mark] or [X marks] pattern, allowing for any amount of spaces
-  return /^\[\s*\d+(?:\.\d+)?\s*marks?\s*\]/i.test(normalizedText);
+// Shared marks pattern for consistent detection and removal
+export const getMarksRegexPattern = () => {
+  // Enhanced regex to handle edge cases:
+  // - Empty brackets []
+  // - Missing numbers [ marks]
+  // - Malformed spacing [ 1 m ark ]
+  // - Missing 's' [1 mark] vs [1 marks]
+  return /^\[\s*(\d*(?:\.\d+)?)\s*m?\s*a?\s*r?\s*k?\s*s?\s*\]/i;
 };
 
-const extractMarks = (text) => {
-  // Normalize text by removing extra spaces and converting to lowercase
+// Enhanced question detection with multiple methods
+const isNewQuestion = (text, emptyLineCounter = 0, isAtDocumentEnd = false) => {
+  if (!text) return false;
+  
+  // Method 1: Double paragraph break detection (primary)
+  // If we just had empty lines and now have content, it could be a new question
+  const hasDoubleBreak = emptyLineCounter >= 1 && !isAtDocumentEnd;
+  
+  // Method 2: Marks tag detection (enhanced to handle edge cases)
+  const hasMarksTag = detectMarksTag(text);
+  
+  // Method 3: Bookmark detection (placeholder for future implementation)
+  const hasBookmark = detectBookmark(text);
+  
+  // ANY of these methods indicates a new question
+  return hasMarksTag || hasDoubleBreak || hasBookmark;
+};
+
+// Enhanced marks tag detection using shared pattern
+const detectMarksTag = (text) => {
+  if (!text) return false;
+  
   const normalizedText = text.trim().toLowerCase();
-  // Extract the number, handling any amount of spaces
-  const match = normalizedText.match(/^\[\s*(\d+(?:\.\d+)?)\s*marks?\s*\]/i);
+  return getMarksRegexPattern().test(normalizedText);
+};
+
+// Bookmark detection placeholder
+const detectBookmark = (text) => {
+  // TODO: Implement bookmark detection when needed
+  // For now, return false to maintain current behavior
+  return false;
+};
+
+// Enhanced marks extraction to handle edge cases
+const extractMarks = (text) => {
+  if (!text) return 1;
+  
+  const normalizedText = text.trim().toLowerCase();
+  
+  // Use the same enhanced regex pattern for consistency
+  const match = normalizedText.match(getMarksRegexPattern());
+  
   if (match) {
-    return parseFloat(match[1]);
+    const marksValue = match[1];
+    
+    // Handle empty brackets [] or missing numbers
+    if (!marksValue || marksValue === '') {
+      return 1; // Default to 1 mark
+    }
+    
+    const parsedMarks = parseFloat(marksValue);
+    return isNaN(parsedMarks) ? 1 : parsedMarks;
   }
+  
+  // If no marks tag detected, default to 1
   return 1;
 };

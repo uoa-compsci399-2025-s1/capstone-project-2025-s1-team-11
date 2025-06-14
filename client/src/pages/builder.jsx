@@ -64,7 +64,12 @@ const Builder = () => {
 
             <div>
                         <Typography.Title level={3}>Cover Page</Typography.Title>
-                        <Button type="default" style={{ marginBottom: 12 }} onClick={handleUploadCoverPageClick}>
+                        <Button 
+                        type="default" 
+                        style={{ marginBottom: 12 }} 
+                        onClick={handleUploadCoverPageClick}
+                        disabled={!exam}
+                        >
                             Upload Cover Page
                         </Button>
                         <input
