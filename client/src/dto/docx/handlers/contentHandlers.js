@@ -51,10 +51,12 @@ export const createAnswer = (runs, formatOptions, para, documentXml, globalCount
  * @returns {Object} - Section object or null
  */
 export const handleSectionContentCreation = (state) => {
-  if (state.afterSectionBreak && state.sectionContentBlocks.length > 0) {
+  if (state.afterSectionBreak) {
     const section = {
       type: 'section',
-      contentFormatted: state.sectionContentBlocks.join('<p>\n'),
+      contentFormatted: state.sectionContentBlocks.length > 0 
+        ? state.sectionContentBlocks.join('<p>\n') 
+        : '', // Empty section body
       questions: []
     };
     

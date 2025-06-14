@@ -166,8 +166,12 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
 
         // Check if this is a section break
         if (isSectionBreak(block)) {
+            console.log(`🔍 DEBUG: 🔄 SECTION BREAK detected at block ${i}`);
+            console.log(`🔍 DEBUG: afterSectionBreak: ${state.afterSectionBreak}, sectionContentBlocks: ${state.sectionContentBlocks.length}, currentSection: ${!!state.currentSection}`);
+            
             // Handle section break at document start
             if (isDocumentStart(i, blocks)) {
+                console.log(`🔍 DEBUG: 🏁 Document start section break`);
                 handleDocumentStartSection(state, addWarning);
                 continue;
             }
@@ -175,15 +179,32 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
             // Normal section break handling
             flushQuestion();
             
+            // Check if we're already after a section break with no content (consecutive breaks)
+            if (state.afterSectionBreak && state.sectionContentBlocks.length === 0 && !state.currentSection) {
+                // This is a consecutive section break - create an empty section
+                const emptySection = {
+                    type: 'section',
+                    contentFormatted: '',
+                    questions: []
+                };
+                dto.examBody.push(emptySection);
+                addWarning(
+                    'Empty section detected',
+                    'Consecutive section breaks created an empty section'
+                );
+                // Return to un-nested mode after creating empty section
+                state.afterSectionBreak = false;
+                continue;
+            }
+            
             // Check if we have section content to finalize
             const hadSectionContent = state.sectionContentBlocks.length > 0 || state.currentSection;
-            finalizeSection(state, dto, addWarning);
-            
-            // Only set afterSectionBreak if we're starting a new section
-            // If we just closed a section with content, return to normal mode
             if (hadSectionContent) {
-                state.afterSectionBreak = false;
+                // This is a CLOSING section break - finalize section and return to un-nested mode
+                finalizeSection(state, dto, addWarning);
+                state.afterSectionBreak = false; // Return to un-nested mode
             } else {
+                // This is an OPENING section break - start collecting content for new section
                 state.afterSectionBreak = true;
             }
             continue;
@@ -237,13 +258,16 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
             state
         );
         
-        // Special debugging for table content
-        if (text.includes('C0R0') || text.includes('C1R0') || text.includes('simple table')) {
-            console.log(`🔍 DEBUG: 📊 POTENTIAL TABLE CONTENT detected in block ${i}:`);
+        // Special debugging for section body issues
+        if (text.includes('First answer') && state.inSection) {
+            console.log(`🔍 DEBUG: 🚨 SECTION BODY ISSUE detected in block ${i}:`);
             console.log(`🔍 DEBUG: Text: "${text}"`);
-            console.log(`🔍 DEBUG: Block keys: ${Object.keys(block).join(', ')}`);
-            console.log(`🔍 DEBUG: isTableBlock result: ${isTableBlock(block)}`);
             console.log(`🔍 DEBUG: Classification: ${classification.type}`);
+            console.log(`🔍 DEBUG: afterSectionBreak: ${state.afterSectionBreak}`);
+            console.log(`🔍 DEBUG: inSection: ${state.inSection}`);
+            console.log(`🔍 DEBUG: emptyLineCounter: ${state.emptyLineCounter}`);
+            console.log(`🔍 DEBUG: currentQuestion: ${!!state.currentQuestion}`);
+            console.log(`🔍 DEBUG: sectionContentBlocks: ${state.sectionContentBlocks.length}`);
         }
         
         // Handle different content types
