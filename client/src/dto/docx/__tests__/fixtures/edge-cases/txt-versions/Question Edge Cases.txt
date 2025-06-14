@@ -1,0 +1,129 @@
+[1 mark] Case 0 - Information: The edge cases in this document do not conform to the typical or original intended syntax for input docx files. However, they are close enough that they should all be handled gracefully in a predictable, sensible way – and with sufficient feedback to the user to correct any incorrect handling by reviewing the input docx or correcting in app.
+
+This document was created in MS Word 2016 with default template settings except where noted otherwise. Margins are ‘normal’ with 2.54cm all sides. Image compression was turned off in file>options>advanced>image size and quality. The ‘Normal’ font style is used throughout. The Normal font was changed from Aptos to Times New Roman size 12. Default line spacing is single with 0pt spacing at the end of paragraphs.  
+First answer
+Second answer
+Third answer
+Fourth answer
+
+[1 mark] Case 1 - Acceptable 4 answer questions: The first two questions in this document have only 4 answers but should not cause or flag an issue. An exam with a consistent number of answers other than 5 may be imported without issue, populating only the number of answers per question provided.
+First answer
+Second answer
+Third answer
+Fourth answer
+
+[1 mark] Case 2 – Different number of answers: This question has the typical 5 answers but should at least flag a warning to the user - either on import or on the summary page. Probably the desired behaviour is for the importing process to set the number of teleform Options to the maximum number of answers provided (up to a max of 7) or otherwise ensure that answers are not clipped. Then the user may reduce the teleform Options if they intended only 4 answers throughout the exam for example.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 3 – Two answer question: This is another inconsistent answer count but it’s within the range of 2-7 answers the software is designed to handle. It should raise an appropriate import warning and/or summary page flag but still import. For this and other questions with less than answer options than the exam teleform Options setting, the exported exam should only print the populated answer options. E.g. a) True b) False but no blank options c) d) e)…
+First answer e.g. True
+Second answer e.g. False
+
+Case 4 – No marks tag. This question should still be caught by the two hard-returns preceding it.
+First answer
+Second answer
+Third answer
+Fourth answer
+
+[ 1 mark] Case 5 – Unexpected spaces in marks tag.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+ [2.25m ark ] Case 6 – Unexpected spacing in marks tag and missing plural marks ‘s’.
+First answer
+Second answer
+Third answer
+Fourth answer
+
+[] Case 7 – Exmpty marks tag.
+First answer
+Second answer
+Third answer
+Fourth answer
+
+[1 mark] Case 8 – Combined equation types: ‘Block equation’:
+ax^2+bx+c= ?
+And ‘Inline equation’: y=mx+b in the same question.
+First answer:
+(-b±?(b^2-4ac))/2a
+Second answer: ?_(k=0)^(n-1)??(a+kd)?
+Third answer: ?_(k=0)^(n-1)??(a+kd)? and:
+?_a^b??(x-c)?^2 
+Fourth answer – repeating an existing block eq:
+ax^2+bx+c= ?
+
+[1 mark] Case 9 – First use of bookmarks: Previous questions in this document didn’t use the optional bookmarks to indicate the start of a question. This question does, but that should not really affect anything.
+First answer
+Second answer
+Third answer
+Fourth answer
+
+[1 mark] Case 10 – Duplicate answers.
+First answer
+Second answer
+Third answer
+Fourth answer repeats
+Fourth answer repeats
+
+[1 mark] Case 10 – Too few answers: This should definitely raise a warning on import and/or in the summary table since it’s outside the specified 2-7 answer range. The question and answer should still be imported.
+First answer
+
+[1 mark] Case 11 – Too many answers: When more than 7 answers are present a warning on import and/or in the summary table. Answers after the 7th may be ignored by the import process.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+Sixth answer
+Seventh answer
+Eighth answer (may be dropped)
+Ninth answer (may be dropped)
+
+[1 mark] Case 12 – Unexpected double hard return. 
+Extra hard return is before this first answer. This should raise a warning to the user since it could be ambiguous what the mistake is (was it an extra return before the first answer or was there an accidental text run between questions). Suggested default handling is to assume it’s an accidental extra hard return between question body and answer. If it was an accidental text run between questions then that text run, then the next question could be wrongly interpreted as an answer. However, the correct interpretation should resume on the subsequent question.
+
+First answer
+Second answer
+Third answer
+Fourth answer
+
+Accidental text run between questions. This could be ignored or interpreted as a section body with no nested questions.
+
+Case 13 – Question may get corrupted: Accidental text run between this and previous question could cause this question to get corrupted by interpreting the question body as an answer. That is the acceptable behvaiour if a warning is at least raised during import and/or in the summary table to prompt the user to review the issue. Alternatively if the accidental text run was interpreted as a section with no nested questions, this question should import normally as an un-nested question.
+First answer
+Second answer
+Third answer
+Fourth answer
+
+[1 mark] Case 14 – Normal question: This question should import normally despite issues with all previous edge cases.
+First answer
+Second answer
+Third answer
+Fourth answer
+
+[1 mark] Case 15 – 4mb image:
+This 12 megapixel image has more detail and resolution than any exam would be expected to require. It is displayed here at 10% of its full size but the full 4mb file is used. (Note: up to 30mb image files have been tested previously and while they do slow down the app significantly it is expected that the app would usually handle such large image files without necessarily crashing or corrupting output.)
+First answer
+Second answer
+Third answer
+Fourth answer
+
+
+[1 mark] Case 16 – Too many hard-returns: This question has more than the expected two hard-returns preceding it. It should be imported normally without warning.
+First answer
+Second answer
+Third answer
+Fourth answer
+
+[1 mark] Case 17 – Unterminated question: This question is at the end of the document but the question is not terminated by any additional hard returns.
+First answer
+Second answer
+Third answer
+Fourth answer
