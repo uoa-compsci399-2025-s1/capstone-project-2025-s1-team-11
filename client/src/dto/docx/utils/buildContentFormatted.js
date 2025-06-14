@@ -1,6 +1,7 @@
 ﻿// client/docxDTO/utils/buildContentFormatted.js
 
 import { extractPlainText } from './extractPlainText.js';
+import { getMarksRegexPattern } from '../transformXmlToDto.js';
 
 /**
  * Detect math elements in a paragraph
@@ -199,15 +200,38 @@ function processSequentialParagraphContent(para, documentXml, options = {}, math
         if (textContent) {
             const rPr = run['w:rPr'];
             if (rPr) {
-                if (rPr['w:b'] !== undefined) textContent = `<strong>${textContent}</strong>`;
-                if (rPr['w:i'] !== undefined) textContent = `<em>${textContent}</em>`;
-                if (rPr['w:u'] !== undefined) textContent = `<u>${textContent}</u>`;
+                // Check for monospace fonts first
+                let isMonospace = false;
+                if (rPr['w:rFonts']) {
+                    const fontInfo = rPr['w:rFonts'];
+                    const fontAscii = fontInfo['@_w:ascii'] || fontInfo?.['$']?.['w:ascii'];
+                    const fontHAnsi = fontInfo['@_w:hAnsi'] || fontInfo?.['$']?.['w:hAnsi'];
+                    const monospaceFonts = ['consolas', 'courier', 'courier new', 'lucida console', 'monaco', 'monospace', 'fixedsys', 'terminal'];
+                    const asciiLower = fontAscii?.toLowerCase() || '';
+                    const hAnsiLower = fontHAnsi?.toLowerCase() || '';
+                    if (monospaceFonts.some(f => asciiLower.includes(f) || hAnsiLower.includes(f))) {
+                        isMonospace = true;
+                    }
+                }
 
+                // Apply vertical alignment first
                 if (rPr['w:vertAlign']) {
                     const vertAlign = rPr['w:vertAlign'];
                     const val = vertAlign['@_w:val'] || vertAlign['w:val'] || vertAlign?.['$']?.['w:val'];
                     if (val === 'subscript') textContent = `<sub>${textContent}</sub>`;
                     else if (val === 'superscript') textContent = `<sup>${textContent}</sup>`;
+                }
+
+                // Apply basic formatting
+                if (rPr['w:b'] !== undefined) textContent = `<strong>${textContent}</strong>`;
+                if (rPr['w:i'] !== undefined) textContent = `<em>${textContent}</em>`;
+                if (rPr['w:u'] !== undefined) textContent = `<u>${textContent}</u>`;
+
+                // Apply monospace formatting last
+                if (isMonospace) {
+                    const fontInfo = rPr['w:rFonts'];
+                    const fontName = fontInfo?.['@_w:ascii'] || fontInfo?.['@_w:hAnsi'] || 'Courier New';
+                    textContent = `<span data-font-family="'${fontName}', Courier, monospace" style="font-family: '${fontName}', Courier, monospace">${textContent}</span>`;
                 }
             }
         }
@@ -341,7 +365,9 @@ export const buildContentFormatted = (runs, options = {}, parentPara = null, doc
     }
     // Remove marks pattern if requested
     if (removeMarks) {
-        content = content.replace(/^\[\s*\d+(?:\.\d+)?\s*marks?\s*\]\s*/i, '');
+        // Use shared regex pattern function to ensure consistency with detection
+        const marksPattern = getMarksRegexPattern();
+        content = content.replace(marksPattern, '');
     }
 
     // Process multiple br tags to preserve spacing

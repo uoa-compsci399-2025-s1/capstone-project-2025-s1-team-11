@@ -54,12 +54,27 @@ export function processImage(imgElement) {
                 }
             }
             
-            // Fallback to element attributes
-            if (imgElement.width && !imgElement.style.width) {
-                width = imgElement.width;
+            // Fallback to element attributes - but skip "auto" values
+            if (imgElement.width && !imgElement.style.width && imgElement.width !== "auto") {
+                const attrWidth = parseFloat(imgElement.width);
+                if (!isNaN(attrWidth)) {
+                    width = attrWidth;
+                }
             }
-            if (imgElement.height && !imgElement.style.height) {
-                height = imgElement.height;
+            if (imgElement.height && !imgElement.style.height && imgElement.height !== "auto") {
+                const attrHeight = parseFloat(imgElement.height);
+                if (!isNaN(attrHeight)) {
+                    height = attrHeight;
+                }
+            }
+
+            // Apply default export scaling similar to MoodleXML import
+            // Scale down large images to improve DOCX performance and layout
+            const maxExportWidth = 500; // Max width for DOCX export
+            if (width > maxExportWidth) {
+                const aspectRatio = height / width;
+                width = maxExportWidth;
+                height = width * aspectRatio;
             }
 
             return {

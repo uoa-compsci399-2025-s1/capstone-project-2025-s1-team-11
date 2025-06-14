@@ -1,7 +1,15 @@
 // client/docxDTO/transformXmlToDto.js
 
 import { buildContentFormatted } from './utils/buildContentFormatted.js';
-import { sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
+import { sanitizeContentFormatted as _sanitizeContentFormatted } from './utils/sanitizeContentFormatted.js';
+import { getMarksRegexPattern, extractMarks as _extractMarks } from './utils/marksExtraction.js';
+import { classifyContent } from './patterns/contentClassifier.js';
+import { isSectionBreak, analyzeSectionStructure, isDocumentStart, isTableBlock } from './patterns/sectionDetectors.js';
+import { createInitialState, createFlushQuestion, createFlushSection } from './utils/stateManagement.js';
+import { createQuestion, createAnswer, handleSectionContentCreation, createStandaloneSection } from './handlers/contentHandlers.js';
+import { handleDocumentStartSection as _handleDocumentStartSection, handleConsecutiveSectionBreaks as _handleConsecutiveSectionBreaks, processSectionContent, finalizeSection } from './handlers/sectionHandlers.js';
+
+
 
 /**
  * Match math elements in a paragraph to the pre-extracted math elements
@@ -60,164 +68,166 @@ const getMatchingMathElementsForParagraph = (para, preExtractedMathElements, glo
     return mathElementsForParagraph;
 };
 
+// Section break detection moved to patterns/sectionDetectors.js
+
 export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, documentXml = null, preExtractedMathElements = [], drawingInstances = []) => {
     const body = xmlJson['w:document']?.['w:body'];
     if (!body) {
         throw new Error('Invalid XML structure: missing w:body');
     }
 
-  // Create math registry for this document
-  const mathRegistry = {};
+    // Create math registry for this document
+    const mathRegistry = {};
 
-  // Add global math counter to track across all paragraphs
-  const globalCounters = { mathIndex: 0 };
+    // Add global math counter to track across all paragraphs
+    const globalCounters = { mathIndex: 0 };
 
-  // Extract all blocks from the document body
-  const blocks = [
-    ...(Array.isArray(body['w:p']) ? body['w:p'] : (body['w:p'] ? [body['w:p']] : [])),
-    ...(Array.isArray(body['w:tbl']) ? body['w:tbl'] : (body['w:tbl'] ? [body['w:tbl']] : [])),
-    ...(body['w:sectPr'] ? [body['w:sectPr']] : [])
-  ];
+    // Extract all blocks from the document body
+    const blocks = [
+        ...(Array.isArray(body['w:p']) ? body['w:p'] : (body['w:p'] ? [body['w:p']] : [])),
+        ...(Array.isArray(body['w:tbl']) ? body['w:tbl'] : (body['w:tbl'] ? [body['w:tbl']] : [])),
+        ...(body['w:sectPr'] ? [body['w:sectPr']] : [])
+    ];
 
-  const dto = {
-    type: 'exam',
-    examBody: []
-  };
+    const dto = {
+        type: 'exam',
+        examBody: []
+    };
 
-  let currentSection = null;
-  let currentQuestion = null;
-  let currentAnswers = [];
-  let sectionContentBlocks = [];
-  let inSection = false;
-  let afterSectionBreak = false;
-  let emptyLineCounter = 0;
+    // Array to collect warnings during parsing
+    const warnings = [];
+    
+    // Helper function to add warnings
+    const addWarning = (message, context = '') => {
+        warnings.push({
+            type: 'parsing',
+            message: message,
+            context: context,
+            timestamp: Date.now()
+        });
+        console.log(`⚠️ WARNING: ${message} ${context ? `(${context})` : ''}`);
+    };
 
-  const flushQuestion = () => {
-    if (currentQuestion) {
-      // Remove any empty answers at the end
-      while (
-          currentAnswers.length > 0 &&
-          currentAnswers[currentAnswers.length - 1].contentFormatted.trim() === ''
-          ) {
-        currentAnswers.pop();
-      }
-
-      currentQuestion.answers = [...currentAnswers];
-
-      if (inSection && currentSection) {
-        // Add question to current section
-        if (!currentSection.questions) {
-          currentSection.questions = [];
+    // Initialize parser state
+    const state = createInitialState();
+    
+    // Create flush functions
+    const flushQuestion = createFlushQuestion(state, dto);
+    const _flushSection = createFlushSection(state, dto);
+    
+    // Analyze section structure for enhanced handling
+    const _sectionAnalysis = analyzeSectionStructure(blocks);
+    
+    // Debug: Check for table blocks
+    const blockTypes = {};
+    blocks.forEach((block, i) => {
+        if (!block) {
+            blockTypes['null'] = (blockTypes['null'] || 0) + 1;
+        } else if (block['w:sectPr']) {
+            blockTypes['sectPr'] = (blockTypes['sectPr'] || 0) + 1;
+        } else if (block['w:pPr']?.['w:sectPr']) {
+            blockTypes['pPr.sectPr'] = (blockTypes['pPr.sectPr'] || 0) + 1;
+        } else if (block['w:tbl']) {
+            blockTypes['table'] = (blockTypes['table'] || 0) + 1;
+            console.log(`🔍 DEBUG: Found w:tbl at block ${i}`);
+        } else if (block['w:p']) {
+            blockTypes['paragraph'] = (blockTypes['paragraph'] || 0) + 1;
+            // Check if paragraph contains table content
+            const para = block['w:p'] ?? block;
+            const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
+            const text = runs.map(run => {
+                if (run['w:t']) return run['w:t'];
+                return '';
+            }).join('');
+            if (text.includes('C0R0') || text.includes('C1R0')) {
+                console.log(`🔍 DEBUG: Block ${i} contains table-like content: "${text.substring(0, 50)}..."`);
+            }
+        } else {
+            blockTypes['other'] = (blockTypes['other'] || 0) + 1;
+            // Debug: Check what's in the 'other' blocks
+            const keys = Object.keys(block);
+            if (keys.length > 0 && keys.some(key => key.includes('tbl') || key.includes('table'))) {
+                // console.log(`🔍 DEBUG: Block ${i} might be a table! Keys: ${keys.join(', ')}`);
+            }
         }
-        currentSection.questions.push(currentQuestion);
-      } else {
-        // Add directly to DTO
-        dto.examBody.push(currentQuestion);
-      }
-
-      currentQuestion = null;
-      currentAnswers = [];
-      emptyLineCounter = 0;
+    });
+    
+    if (blockTypes['table']) {
+        console.log(`🔍 DEBUG: Found ${blockTypes['table']} table block(s)`);
     }
-  };
+    
+    // Note: Consecutive section breaks will be handled during normal processing
+    // to ensure they're created at the right time in the document flow
 
-  const flushSection = () => {
-    if (currentSection) {
-      // Format section content (same pattern as questions)
-      if (sectionContentBlocks.length > 0) {
-        currentSection.contentFormatted = sectionContentBlocks.join('<p>\n');
-      }
+    // Process each block
+    for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        if (!block) continue;
 
-      // Only add section if it has content
-      if (currentSection.contentFormatted && currentSection.contentFormatted.trim() !== '') {
-        dto.examBody.push(currentSection);
-      } else {
-        // If section has no content, move any nested questions to top level
-        if (currentSection.questions && currentSection.questions.length > 0) {
-          dto.examBody.push(...currentSection.questions);
+        // Check if this is a section break
+        if (isSectionBreak(block)) {
+            // Handle section break at document start
+            if (isDocumentStart(i, blocks)) {
+                _handleDocumentStartSection(state);
+                continue;
+            }
+            
+            // Normal section break handling
+            flushQuestion();
+            
+            // Check if we're already after a section break with no content (consecutive breaks)
+            if (state.afterSectionBreak && state.sectionContentBlocks.length === 0 && !state.currentSection) {
+                // This is a consecutive section break - create an empty section
+                const emptySection = {
+                    type: 'section',
+                    contentFormatted: '',
+                    questions: []
+                };
+                dto.examBody.push(emptySection);
+                addWarning(
+                    'Empty section detected',
+                    'Consecutive section breaks created an empty section'
+                );
+                // Return to un-nested mode after creating empty section
+                state.afterSectionBreak = false;
+                continue;
+            }
+            
+            // Check if we have section content to finalize
+            const hadSectionContent = state.sectionContentBlocks.length > 0 || state.currentSection;
+            if (hadSectionContent) {
+                // This is a CLOSING section break - finalize section and return to un-nested mode
+                finalizeSection(state, dto, addWarning);
+                state.afterSectionBreak = false; // Return to un-nested mode
+            } else {
+                // This is an OPENING section break - start collecting content for new section
+                state.afterSectionBreak = true;
+            }
+            continue;
         }
-      }
 
-      currentSection = null;
-      sectionContentBlocks = [];
-    }
-    inSection = false;
-    afterSectionBreak = false;
-  };
+        // Check if this is a table block BEFORE extracting paragraph content
+        if (isTableBlock(block)) {
+            // Handle table in section body
+            const tableResult = processSectionContent('', block, state, addWarning);
+            if (tableResult.action === 'table_replaced') {
+                // Reset empty line counter since table replacement counts as content, not empty space
+                state.emptyLineCounter = 0;
+                continue;
+            }
+        }
 
-  // Process each block
-  for (let i = 0; i < blocks.length; i++) {
-    const block = blocks[i];
-    if (!block) continue;
+        // Extract the paragraph content
+        const para = block['w:p'] ?? block;
 
-    // Check if this is a section break
-    if (isSectionBreak(block)) {
-      flushQuestion();
-      flushSection();
-      afterSectionBreak = true;
-      continue;
-    }
+        // Get matching math elements for this paragraph from pre-extracted elements
+        const mathElementsWithXml = getMatchingMathElementsForParagraph(para, preExtractedMathElements, globalCounters);
 
-    // Extract the paragraph content
-    const para = block['w:p'] ?? block;
+        // Get all runs
+        const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
 
-    // Get matching math elements for this paragraph from pre-extracted elements
-    const mathElementsWithXml = getMatchingMathElementsForParagraph(para, preExtractedMathElements, globalCounters);
-
-    // Get all runs
-    const runs = Array.isArray(para['w:r']) ? para['w:r'] : (para['w:r'] ? [para['w:r']] : []);
-
-    // Build content with math handling, passing math elements with original XML
-      let text = buildContentFormatted(runs, {
-          relationships,
-          imageData,
-          preserveMath: true,
-          mathRegistry,
-          mathElementsWithXml,
-          drawingInstances,
-          paragraphIndex: i
-      }, para, documentXml, globalCounters);
-
-    // Update the global counter after processing this paragraph
-    globalCounters.mathIndex += mathElementsWithXml.length;
-
-    // Handle empty lines
-    if (text.trim() === '') {
-      emptyLineCounter++;
-
-      // If we have a current question, end it after an empty line (if it has answers)
-      if (currentQuestion && emptyLineCounter >= 1 && currentAnswers.length > 0) {
-        flushQuestion();
-      }
-
-      continue;
-    }
-
-    // Reset empty line counter for non-empty text
-    emptyLineCounter = 0;
-
-    // Check if this is a new question
-    if (isNewQuestion(text)) {
-      flushQuestion();
-
-      // If we've accumulated section content after a section break, create a new section
-      if (afterSectionBreak && sectionContentBlocks.length > 0) {
-        currentSection = {
-          type: 'section',
-          contentFormatted: sectionContentBlocks.join('<p>\n'),
-          questions: []
-        };
-        inSection = true;
-        sectionContentBlocks = [];
-        afterSectionBreak = false;
-      }
-
-      // Extract marks and create new question
-      const marks = extractMarks(text);
-
-      // Process the question content with math preservation
-        const contentText = buildContentFormatted(runs, {
-            removeMarks: true,
+        // Build content with math handling, passing math elements with original XML
+        let text = buildContentFormatted(runs, {
             relationships,
             imageData,
             preserveMath: true,
@@ -226,86 +236,183 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
             drawingInstances,
             paragraphIndex: i
         }, para, documentXml, globalCounters);
-      currentQuestion = {
-        type: 'question',
-        contentFormatted: sanitizeContentFormatted(contentText),
-        marks: marks,
-        answers: []
-      };
 
-      continue;
+        // Update the global counter after processing this paragraph
+        globalCounters.mathIndex += mathElementsWithXml.length;
+
+        // Classify and handle content based on pattern detection
+        const classification = classifyContent(
+            text, 
+            state.emptyLineCounter, 
+            i, 
+            blocks, 
+            state.currentQuestion, 
+            state.currentAnswers, 
+            state.questionJustFlushedByEmptyLine, 
+            addWarning,
+            state
+        );
+        
+
+        
+        // Handle different content types
+        if (handleContentType(classification, text, runs, para, documentXml, globalCounters, state, dto, flushQuestion, mathRegistry, mathElementsWithXml, drawingInstances, i, relationships, imageData, addWarning)) {
+            continue;
+        }
     }
 
-    // If we're after a section break and not in a question, collect section content
-    if (afterSectionBreak && !currentQuestion) {
-      if (text.trim() !== '') {
-        sectionContentBlocks.push(text);
-      }
-      continue;
+    // Flush any remaining question or section
+    flushQuestion();
+    finalizeSection(state, dto, addWarning);
+
+
+
+    return { dto, mathRegistry, warnings };
+};
+
+/**
+ * Handle different content types based on classification
+ * @param {Object} classification - Content classification result
+ * @param {string} text - Text content
+ * @param {Array} runs - Document runs
+ * @param {Object} para - Paragraph object
+ * @param {string} documentXml - Document XML
+ * @param {Object} globalCounters - Global counters
+ * @param {Object} state - Parser state
+ * @param {Object} dto - Document DTO
+ * @param {Function} flushQuestion - Question flush function
+ * @param {Object} mathRegistry - Math registry
+ * @param {Array} mathElementsWithXml - Math elements
+ * @param {Array} drawingInstances - Drawing instances
+ * @param {number} i - Block index
+ * @param {Object} relationships - Document relationships
+ * @param {Object} imageData - Image data
+ * @param {Function} addWarning - Warning function
+ * @returns {boolean} - True if should continue to next block
+ */
+const handleContentType = (classification, text, runs, para, documentXml, globalCounters, state, dto, flushQuestion, mathRegistry, mathElementsWithXml, drawingInstances, i, relationships, imageData, addWarning) => {
+    const formatOptions = {
+        relationships,
+        imageData,
+        preserveMath: true,
+        mathRegistry,
+        mathElementsWithXml,
+        drawingInstances,
+        paragraphIndex: i
+    };
+
+    switch (classification.type) {
+        case 'case13': {
+            const case13Result = classification.handler();
+            if (case13Result.action === 'continue') return true;
+            break;
+        }
+            
+        case 'empty_line':
+            state.emptyLineCounter++;
+            
+            // If we have a current question, end it after an empty line (if it has answers)
+            if (state.currentQuestion && state.emptyLineCounter >= 1 && state.currentAnswers.length > 0) {
+                state.questionJustFlushedByEmptyLine = true;
+                flushQuestion();
+            }
+            return true;
+            
+        case 'case14': {
+            const case14Result = classification.handler();
+            if (case14Result.action === 'create_section') {
+                state.emptyLineCounter = 0;
+                state.questionJustFlushedByEmptyLine = false;
+                dto.examBody.push(case14Result.sectionData);
+                return true;
+            }
+            break;
+        }
+            
+        case 'table_block': {
+            // Handle table in section body
+            const tableResult = processSectionContent(text, classification.block, state, addWarning);
+            if (tableResult.action === 'table_replaced') {
+                return true;
+            }
+            break;
+        }
+            
+        case 'section_content': {
+            // Process content for section body
+            const _contentResult = processSectionContent(text, classification.block, state, addWarning);
+            return true;
+        }
+            
+        case 'section_body_end': {
+            // Section body has ended, treat this as a question
+            
+            // Create section from accumulated content
+            if (state.sectionContentBlocks.length > 0) {
+                state.currentSection = {
+                    type: 'section',
+                    contentFormatted: state.sectionContentBlocks.join('<p>\n'),
+                    questions: []
+                };
+                state.inSection = true;
+                state.sectionContentBlocks = [];
+                state.afterSectionBreak = false;
+            }
+            
+            // Fall through to question handling
+            state.emptyLineCounter = 0;
+            state.questionJustFlushedByEmptyLine = false;
+            flushQuestion();
+            state.currentQuestion = createQuestion(text, runs, formatOptions, para, documentXml, globalCounters);
+            return true;
+        }
+            
+        case 'question': {
+            state.emptyLineCounter = 0;
+            state.questionJustFlushedByEmptyLine = false;
+            
+            flushQuestion();
+            
+            // Handle section content creation if needed
+            const newSection = handleSectionContentCreation(state);
+            if (newSection) {
+                state.currentSection = newSection;
+            }
+            
+            // Create new question
+            state.currentQuestion = createQuestion(text, runs, formatOptions, para, documentXml, globalCounters);
+            return true;
+        }
+            
+        case 'content':
+        default:
+            // Handle regular content (answers, section content, etc.)
+            state.emptyLineCounter = 0;
+            state.questionJustFlushedByEmptyLine = false;
+            
+            // Legacy section content handling (now handled by section_content case above)
+            if (state.afterSectionBreak && !state.currentQuestion) {
+                const _legacyResult = processSectionContent(text, para, state, addWarning);
+                return true;
+            }
+
+            // Handle question answers
+            if (state.currentQuestion) {
+                const answer = createAnswer(runs, formatOptions, para, documentXml, globalCounters);
+                state.currentAnswers.push(answer);
+                return true;
+            }
+
+            // If we have non-question, non-section content, treat as standalone section content
+            if (text.trim() !== '' && !state.currentQuestion && !state.inSection && !state.afterSectionBreak) {
+                state.currentSection = createStandaloneSection(text);
+                state.inSection = true;
+            }
+            break;
     }
-
-    // Handle question answers
-      if (currentQuestion) {
-          const answerText = buildContentFormatted(runs, {
-              relationships,
-              imageData,
-              preserveMath: true,
-              mathRegistry,
-              mathElementsWithXml,
-              drawingInstances,
-              paragraphIndex: i
-          }, para, documentXml, globalCounters);
-
-      currentAnswers.push({
-        type: 'answer',
-        contentFormatted: sanitizeContentFormatted(answerText)
-      });
-
-      continue;
-    }
-
-    // If we have non-question, non-section content, treat as standalone section content
-    if (text.trim() !== '' && !currentQuestion && !inSection && !afterSectionBreak) {
-      currentSection = {
-        type: 'section',
-        contentFormatted: text,
-        questions: []
-      };
-      inSection = true;
-    }
-  }
-
-  // Flush any remaining question or section
-  flushQuestion();
-  flushSection();
-
-  return { dto, mathRegistry };
+    
+    return false;
 };
 
-// --- Helper functions ---
-
-const isSectionBreak = (block) => {
-  return (
-      block['w:pPr']?.['w:sectPr'] !== undefined ||
-      block['w:sectPr'] !== undefined
-  );
-};
-
-const isNewQuestion = (text) => {
-  if (!text) return false;
-  // Normalize text by removing extra spaces and converting to lowercase
-  const normalizedText = text.trim().toLowerCase();
-  // Check if text starts with [X mark] or [X marks] pattern, allowing for any amount of spaces
-  return /^\[\s*\d+(?:\.\d+)?\s*marks?\s*\]/i.test(normalizedText);
-};
-
-const extractMarks = (text) => {
-  // Normalize text by removing extra spaces and converting to lowercase
-  const normalizedText = text.trim().toLowerCase();
-  // Extract the number, handling any amount of spaces
-  const match = normalizedText.match(/^\[\s*(\d+(?:\.\d+)?)\s*marks?\s*\]/i);
-  if (match) {
-    return parseFloat(match[1]);
-  }
-  return 1;
-};
+// Export the shared marks regex pattern for backward compatibility
+export { getMarksRegexPattern }; 

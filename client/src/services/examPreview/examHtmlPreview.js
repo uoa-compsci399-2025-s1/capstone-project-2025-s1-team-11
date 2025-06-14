@@ -10,8 +10,8 @@ export function generateExamHtmlPreview(examData) {
   }
 
   let html = `
-    <div class="exam-preview" style="font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin-left: 0; background-color: #fff;">
-      <div class="exam-body" style="display: flex; flex-direction: column; gap: 64px;">
+    <div class="exam-preview" style="font-family: 'Times New Roman', Times, serif; padding: 40px; max-width: 800px; margin-left: 0; background-color: #fff;">
+      <div class="exam-body" style="display: flex; flex-direction: column; gap: 32px;">
   `;
 
   // Process exam body
@@ -46,8 +46,9 @@ function processSectionToHtml(section, teleformOptions) {
   let html = `
     <section class="exam-section" style="display: flex; flex-direction: column;">
       ${section.contentFormatted ? 
-        `<div class="section-content" style="font-size: 16px; line-height: 1.6; font-weight: bold;">${safeHtmlContent(section.contentFormatted)}</div>` : ''}
-      <div class="section-questions" style="display: flex; flex-direction: column; gap: 32px;">
+        `<div class="section-content" style="font-size: 32x; line-height: 1.6; padding-bottom: 32px;">${safeHtmlContent(section.contentFormatted)}</div>
+         <div style="border-bottom: 1px solid #eee;"></div>` : ''}
+      <div class="section-questions" style="display: flex; flex-direction: column; gap: 32px; margin-top: ${section.contentFormatted ? '32px' : '0'};">
   `;
 
   // Process questions in this section
@@ -141,9 +142,8 @@ function safeHtmlContent(html) {
   // Remove empty <p> and <div> tags
   html = html.replace(/<(p|div)>\s*<\/\1>/g, '');
 
-  // Strip excessive or empty <strong> tags
+  // Strip only empty <strong> tags, preserve non-empty ones
   html = html.replace(/<strong>\s*<\/strong>/g, '');
-  html = html.replace(/<strong>([^<]+)<\/strong>/g, '$1');
 
   // Escape <code> blocks
   return html.replace(/<code>([\s\S]*?)<\/code>/g, function(match, codeContent) {

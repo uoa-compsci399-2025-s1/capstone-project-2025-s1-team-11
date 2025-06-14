@@ -1,0 +1,47 @@
+Parsing Specification
+Document Start Assumption
+•	Unless explicit section break at start of doc, assume doc starts with a question
+Question Detection (ANY of these = question start)
+Detection Strategy: Scan for ANY indicator, prefer the most reliable when multiple present:
+1.	Double paragraph break (most reliable structural indicator)
+•	Two consecutive paragraph breaks (unless at document end)
+2.	Bookmark (explicit Word marker)
+•	Word bookmark indicates question start
+3.	Marks tag (content-based, most flexible)
+•	^\[\s*(\d*(?:\.\d+)?)\s*m?\s*a?\s*r?\s*k?\s*s?\s*\] - handles [ # mark(s) ] ignoring spaces and plural 's'
+Redundancy Handling: If multiple indicators present (e.g., double break → bookmark → marks tag), treat as ONE question with the indicators in sequence.
+Question Body Detection
+•	Start: After question start detection, after [# marks] tag (if present), after "Question #" (if present)
+•	End: At next paragraph break (not part of table) OR at table start
+•	Table handling: Drop table + warning, continue as if table didn't exist
+Answer Detection
+•	Answer start: Paragraph break after question body (non-table)
+•	Answer end: Next paragraph break (non-table)
+•	Question termination:
+1.	Empty paragraph after ≥1 answer
+2.	New question start indicator detected
+3.	Section break detected
+4.	End of document
+Section Detection
+Primary: Explicit section break (XML w:sectPr) - questions after open/before close are nestedAlternative: Standalone paragraph section detection
+•	If NOT in section AND paragraph occurs between two hard returns AND no single paragraph breaks with following text (which would indicate question/answer pattern)
+•	→ Interpret as section body with no nested questions
+Section Body Detection
+•	Text after section break = section body content
+•	Section body ends when: bookmark OR marks tag OR double paragraph break detected
+•	Table handling: Drop tables in section body + warning
+Table Handling (Universal)
+•	Detection: Look for table patterns (cells, rows) and XML table elements
+•	Action: Drop table including paragraph break at start + generate warning
+•	Continuation: Parse after table as if table didn't exist (don't treat as paragraph break)
+Enhanced Error Handling
+Warnings for:
+•	Tables detected and dropped (with location info)
+•	Malformed marks tags (but still parsed)
+•	Inconsistent answer counts across questions
+•	Empty sections
+•	Ambiguous content patterns
+Graceful Degradation:
+•	Malformed marks → extract what's possible, default to 1
+•	Multiple question indicators → use most reliable
+•	Ambiguous content → prefer question interpretation

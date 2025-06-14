@@ -1,0 +1,99 @@
+[1 mark] Case 0 - Information: This document was created in MS Word 2016 with default template settings except where noted otherwise. Margins are ‘normal’ with 2.54cm all sides. Image compression was turned off in file>options>advanced>image size and quality. The ‘Normal’ font style is used throughout. The Normal font was changed from Aptos to Times New Roman size 12. Default line spacing is single with 0pt spacing at the end of paragraphs.  
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 1 - Minimal Question: Only required formatting and the typical five answer options.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 2 - Soft returns
+Should allow line breaks within the question body like this line.
+
+And this one after two soft returns.
+Answers should allow line breaks in the same way
+Like this, without causing issues with answer separation.
+Should be the same for any answer.
+Another new line.
+Third answer
+Fourth answer
+Last answer
+new lines should work too.
+
+[1 mark] Case 3 - Font modifiers: bold italic underline bold-italic bold-underline italic-underline bold-italic-underline.
+Bold answer
+Italic answer
+Underline answer
+Bold-italic answer
+Italic-underline answer
+
+[1 mark] Case 4 - Special font modifiers: Superscript subscript strikethrough.
+Superscript answer
+Subscript answer
+Strikethrough answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 5 - Inline Equations: ax^2+bx+c= ? 
+First answer: (-b±?(b^2-4ac))/2a
+Second answer: ?_(k=0)^(n-1)??(a+kd)?
+Third answer: ?_a^b??(x-c)?^2 
+Fourth answer: (((A?B)) ??(B ??C)) ?+ ((B?C ?)) ?
+Fifth answer: A ??B ??C+A ??B?C+ A?B?C ?+ A?B ??C
+
+[1 mark] Case 6 - ‘Block Equations’:
+ax^2+bx+c= ?
+First answer:
+(-b±?(b^2-4ac))/2a
+Second answer
+?_(k=0)^(n-1)??(a+kd)?
+Third answer:
+?_a^b??(x-c)?^2 
+Fourth answer
+Fifth answer
+
+[1 mark] Case 7 - Symbols: 
+Word allows insertion of symbols like omega ?, Pi ?, and Sigma ?..
+First answer ? infinity
+Second answer µ myu.
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 8 - Code blocks are typically simply displayed by using Courier New font.in size 10.
+This line shows a code block by manually setting font to Courier New and size 10.
+Note applying font settings via MS Word styles applies to paragraphs at a time so that will be tested in answers since we can’t split the question body into paragraphs.
+First answer shows a code block via a document style that is based on the ‘Normal’ style but font set to Courier New size 10.
+Second answer has a code block by manually setting font to Courier New and size 10.
+Third answer
+Fourth answer
+Fifth answer
+
+[2.25 mark] Case 9 – Different marks: Any positive numerical marks value within reason should be handled, at least to the nearest 0.25 or preferably 0.1 mark. This question was set to 2.25 marks.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 10 - Question with table: Tables are not supported but should not break the rest of import process, even if this question does not import correctly. Ideally the user is notified that a table was detected but not imported to check the relevant question, ideally replace the table with an image and re-import.
+C0R0C0R1C0R1C1R1This would be part of the question body but tables in MS Word start with a new paragraph, which may cause issues in importing this question.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 11 - Normal question: Just to show previous questions import did not break this one.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+

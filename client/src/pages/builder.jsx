@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCoverPage } from "../store/exam/examSlice";
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/builder/examDisplay.jsx";
-// import ExamFileManager from "../components/builder/ExamContentManager.jsx";
+import ExamFileManager from "../components/builder/ExamContentManager.jsx";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { Typography, Button, Collapse, Divider} from "antd";
 //import { exportExamToPdf } from "../services/exportPdf.js";
@@ -63,8 +63,13 @@ const Builder = () => {
             <Divider />
 
             <div>
-                        <Typography.Title level={2}>Cover Page</Typography.Title>
-                        <Button type="default" style={{ marginBottom: 12 }} onClick={handleUploadCoverPageClick}>
+                        <Typography.Title level={3}>Cover Page</Typography.Title>
+                        <Button
+                        type="default"
+                        style={{ marginBottom: 12 }}
+                        onClick={handleUploadCoverPageClick}
+                        disabled={!exam}
+                        >
                             Upload Cover Page
                         </Button>
                         <input
@@ -89,9 +94,8 @@ const Builder = () => {
                 {exam
                     ? <ExamDisplay exam={exam} />
                     : <EmptyExam />}
-                {/* <ExamFileManager /> - removed from here so it's not on all three tabs, only the builder tab */}
+                <ExamFileManager />
             </div>
-
         </>
     );
 };

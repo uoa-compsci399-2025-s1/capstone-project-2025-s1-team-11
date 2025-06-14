@@ -27,6 +27,7 @@
     "cy:run": "cypress run",
     "cy:run-with-server": "start-server-and-test \"dev\" \"http://localhost:5173\" \"cy:run\"",
     "docxdto": "node docxDTO/parseDocxDto.js",
+    "update-fixtures": "node scripts/generate-test-fixtures.js",
     "prepare": "lefthook install",
     "setup-hooks": "node src/testing/scripts/setupHooks.js",
     "lefthook-checkconfig": "node src/testing/scripts/lefthookCheckConfig.js"

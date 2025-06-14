@@ -1,0 +1,58 @@
+
+[1 mark] Question 1. Information: This document was created in MS Word 2016 with default template settings except where noted otherwise. Margins are ‘normal’ with 2.54cm all sides. Image compression was turned off in file>options>advanced>image size and quality. The ‘Normal’ font style is used throughout. The Normal font was changed from Aptos to Times New Roman size 12. Default line spacing is single with 0pt spacing at the end of paragraphs.  
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Question 2. This and the first question should be nested in section 1 but section 1 should have an empty section body. This is because an explicit section break was inserted at the start of the document.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+
+
+[1 mark] Question 3. First un-nested section.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Question 4. Second un-nested section.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+
+This is the 2nd section. An image is present in this section body. This section only contains one nested question.
+
+Image above shows a tree datastructure.
+
+[1 mark] Question 5. This question should be nested in section 2.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Question 6. Also nested in section 2.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+
+[1 mark] Question 7. This question should be loaded un-nested at the end.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
