@@ -158,6 +158,11 @@ export class ExamExportService {
             warnings.push("Answers are not shuffled. All versions will have identical answer orders.");
         }
 
+        // Check if course code is populated
+        if (!examData.courseCode || examData.courseCode.trim() === '') {
+            warnings.push("Course Code empty - This is used in the exam header and filenames.");
+        }
+
         // Add other checks as needed (e.g., ensuring all questions have the same number of answers)
 
         return {
@@ -195,7 +200,7 @@ export class ExamExportService {
             const bodyBlob = await exportExamToDocxWithDocxtemplater(examData, version, mathRegistry);
 
             // Merge the cover page with this body using the docxMerger function
-            const mergedBlob = await mergeDocxFiles(coverPageBlob, bodyBlob);
+            const mergedBlob = await mergeDocxFiles(coverPageBlob, bodyBlob, examData, version);
 
             // Add to results
             results.push({
@@ -224,8 +229,7 @@ export class ExamExportService {
         // Save each versioned file
         for (const {version, blob} of versionedBlobs) {
             // Generate appropriate filename with version included
-            const baseFilename = generateFilename(examData);
-            const filename = baseFilename.replace('.docx', `_Version${version}.docx`);
+            const filename = generateFilename(examData.courseCode, version);
             this._saveBlob(blob, filename);
         }
     }

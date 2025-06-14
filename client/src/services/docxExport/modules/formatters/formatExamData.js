@@ -119,21 +119,44 @@ function resolveMathPlaceholders(content, mathRegistry) {
         return content;
     }
 
+    // Check for math placeholders in the content
+    const mathPlaceholderMatches = content.match(/\[math:[^\]]+\]/g);
+    
+    if (!mathPlaceholderMatches) {
+        return content;
+    }
+
     const result = content.replace(/\[math:([^\]]+)\]/g, (match, mathId) => {
         const mathEntry = mathRegistry[mathId];
-        if (mathEntry) {
-            const escapedXml = mathEntry.originalXml
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
+        if (mathEntry && mathEntry.originalXml) {
+            // Check if originalXml is already escaped (including quotes)
+            const isAlreadyEscaped = mathEntry.originalXml.includes('&lt;') || 
+                                   mathEntry.originalXml.includes('&gt;') || 
+                                   mathEntry.originalXml.includes('&quot;');
+            
+            let xmlForMarker;
+            if (isAlreadyEscaped) {
+                // Already escaped, use as-is
+                xmlForMarker = mathEntry.originalXml;
+            } else {
+                // Not escaped, need to escape for the marker
+                // Note: Escape quotes and apostrophes too for proper XML attributes
+                xmlForMarker = mathEntry.originalXml
+                    .replace(/&/g, '&amp;')    // Must be first to avoid double-escaping
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&apos;');
+            }
 
-            const replacement = mathEntry.context === 'block'
-                ? `§MATH_OMML§${escapedXml}§/MATH_OMML§`
-                : `§MATH_OMML§${escapedXml}§/MATH_OMML§`;
+            const marker = mathEntry.context === 'block' 
+                ? `§MATH_OMML_BLOCK§${xmlForMarker}§/MATH_OMML_BLOCK§`
+                : `§MATH_OMML§${xmlForMarker}§/MATH_OMML§`;
 
-            return replacement;
+            return marker;
+        } else {
+            return match;
         }
-        return match; // Keep original if not found
     });
 
     return result;
@@ -159,10 +182,9 @@ function processContent(content, mathRegistry = {}) {
     // Check if content contains HTML tags
     if (/<[^>]+>/.test(processedContent)) {
         return parseHtmlContent(processedContent);
+    } else {
+        return { text: processedContent, elements: [] };
     }
-
-    // Plain text
-    return { text: processedContent, elements: [] };
 }
 
 /**

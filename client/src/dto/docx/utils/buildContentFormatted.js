@@ -242,7 +242,8 @@ function processSequentialParagraphContent(para, documentXml, options = {}, math
                 placeholder: `[math]`
             };
 
-            result += `[math:${mathId}]`;
+            const placeholder = `[math:${mathId}]`;
+            result += placeholder;
             mathIndex++;
         }
         // Skip other element types like w:proofErr for now
@@ -287,7 +288,8 @@ function processParagraphFromJson(para, options = {}, mathElementsWithXml = []) 
                 placeholder: `[math]`
             };
 
-            result += `[math:${mathId}]`;
+            const placeholder = `[math:${mathId}]`;
+            result = result.replace(/\[math\]/, placeholder);
         });
     }
 

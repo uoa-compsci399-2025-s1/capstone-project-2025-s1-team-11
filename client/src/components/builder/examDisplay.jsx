@@ -159,6 +159,7 @@ const ExamDisplay = () => {
   const tableData = useSelector(selectQuestionsAndSectionsForTable);
   const dispatch = useDispatch();
   const message = useMessage();
+  const [activeTab, setActiveTab] = useState("builder");
 
   const [modalState, setModalState] = useState({
     visible: false,
@@ -508,7 +509,8 @@ const ExamDisplay = () => {
   return (
     <>
       <Tabs
-        defaultActiveKey="builder"
+        activeKey={activeTab}
+        onChange={setActiveTab}
         type="card"
         items={[
           {
@@ -550,7 +552,7 @@ const ExamDisplay = () => {
             label: "Preview",
             children: (
               <div style={{ marginTop: '24px' }}>
-                <ExamPreview exam={exam} />
+                <ExamPreview exam={exam} tabId={activeTab} />
               </div>
             )
           }

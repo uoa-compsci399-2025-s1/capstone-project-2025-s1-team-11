@@ -17,7 +17,7 @@ export function Navigation({isDarkMode, setIsDarkMode}) {
 
   const textButtonStyles = {
     borderRadius: 0,
-    fontWeight: 500,
+    fontWeight: 400,
     padding: "2.2em",
     backgroundColor: isDarkMode ? "#1f1f1f" : "#ffffff",
     color: isDarkMode ? "#ffffff" : undefined,
@@ -25,14 +25,14 @@ export function Navigation({isDarkMode, setIsDarkMode}) {
 
   const primaryButtonStyles = {
     borderRadius: 0,
-    fontWeight: 500,
+    fontWeight: 400,
     padding: "2.2em",
   };
 
   const docButtonStyles = {
     borderRadius: 0,
     backgroundColor: isDarkMode ? "#1f1f1f" : "#ffffff",
-    fontWeight: 500,
+    fontWeight: 400,
     color: isDarkMode ? "#ffffff" : undefined,
   };
 
