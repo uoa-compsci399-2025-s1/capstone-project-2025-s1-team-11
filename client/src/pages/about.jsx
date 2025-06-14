@@ -42,10 +42,7 @@ const About = () => {
                             zIndex: 2
                         }}
                     >
-                        <h1 style={{ margin: 0, fontSize: "3rem" }}>About Assessly</h1>
-                        <p style={{ marginTop: "1.2rem", fontSize: "1.25rem" }}>
-                            Temp About Page
-                        </p>
+                        <h1 style={{ margin: 0, fontSize: "3rem" }}>About Assessly.</h1>
                     </div>
                 </div>
     
@@ -76,9 +73,7 @@ const About = () => {
                         We hope this tool can improve the process of generating, distributing, and assessing exams consolidated into a single lightweight and intuitive platform, improving the academic experience for educators. 
                     </Paragraph>
                     <div style={{ marginTop: "2rem" }}>
-                        <Paragraph style={{ fontSize: "1.25rem" }}>
-                            <Text strong>Unique Features:</Text>
-                        </Paragraph>
+                            <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Features</h2>
                         <ul style={{ paddingLeft: "1.5rem", fontSize: "1rem" }}>
                             <li style={{ marginBottom: "1rem" }}>   
                                 <Text strong>Format Flexibility:</Text> Wide range of supported sources, including DOCX, LaTeX, and XML, allowing for compatibility with platforms such as Inspera, Moodle CodeRunner, Canvas, and more.
@@ -96,6 +91,7 @@ const About = () => {
                                 <Text strong>Security:</Text> Local data hosting provides privacy and secure handling of files.
                             </li>
                         </ul>
+                        <Text>For more information, please refer to our <a href="https://github.com/uoa-compsci399-2025-s1/capstone-project-2025-s1-team-11">GitHub repository</a>.</Text>
                     </div>
                 </div>
             </div>            
