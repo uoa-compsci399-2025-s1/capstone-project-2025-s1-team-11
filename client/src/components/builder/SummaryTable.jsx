@@ -106,14 +106,26 @@ const SummaryTable = () => {
   };
 
   const handleDeleteSelected = () => {
-    selectedRowKeys.forEach(id => {
+    const sortedKeys = [...selectedRowKeys];
+    sortedKeys.sort((a, b) => {
+      const qa = processedQuestions.find(q => q.id === a);
+      const qb = processedQuestions.find(q => q.id === b);
+      if (!qa || !qb) return 0;
+      if (qa.examBodyIndex !== qb.examBodyIndex) {
+        return qb.examBodyIndex - qa.examBodyIndex; // descending
+      }
+      return (qb.questionsIndex ?? 0) - (qa.questionsIndex ?? 0); // descending
+    });
+
+    for (const id of sortedKeys) {
       const q = processedQuestions.find(q => q.id === id);
-      if (!q) return;
+      if (!q) continue;
       dispatch(removeQuestion({
         examBodyIndex: q.examBodyIndex,
         questionsIndex: q.questionsIndex
       }));
-    });
+    }
+
     setSelectedRowKeys([]);
   };
 
