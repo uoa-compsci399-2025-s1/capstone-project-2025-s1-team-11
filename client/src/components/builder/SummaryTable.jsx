@@ -65,10 +65,18 @@ const SummaryTable = () => {
       }
       if (answers.length < 2 || answers.length > 5) flags.push("No options");
 
+      // Count non-empty answers instead of total answers
+      const nonEmptyAnswerCount = answers.filter(a => {
+        const textContent = htmlToText(a?.contentFormatted || "").trim();
+        return textContent.length > 0;
+      }).length;
+      const totalAnswerSlots = exam?.teleformOptions?.length || answers.length;
+
       return {
         ...item,
         id: item.id || `${item.examBodyIndex}-${item.questionsIndex}`,
-        answerCount: answers.length,
+        answerCount: nonEmptyAnswerCount,
+        totalAnswerSlots: totalAnswerSlots,
         correctCount: answers.filter(a => a.correct).length,
         flags,
         questionNumber: item.questionNumber || `${item.examBodyIndex + 1}.${(item.questionsIndex ?? 0) + 1}`,
@@ -76,7 +84,7 @@ const SummaryTable = () => {
         question
       };
     });
-  }, [tableData]);
+  }, [tableData, exam?.teleformOptions]);
 
   // Apply filter for flagged questions if toggled
   const filteredData = useMemo(() => (
@@ -174,15 +182,19 @@ const SummaryTable = () => {
       ),
     },
     {
-      title: 'Options',
+      title: 'Non-Empty Answers',
       dataIndex: 'answerCount',
       key: 'answerCount',
-      width: 120,
-      render: count => (
-        <Tag color={count > 0 ? 'blue' : 'red'}>
-          {count} {count > 0 ? '(OK)' : '(Invalid)'}
-        </Tag>
-      ),
+      width: 140,
+      render: (count, record) => {
+        const totalSlots = record.totalAnswerSlots;
+        const isComplete = count === totalSlots;
+        return (
+          <Tag color={isComplete ? 'green' : count > 0 ? 'orange' : 'red'}>
+            {count}/{totalSlots} {isComplete ? '(Complete)' : count > 0 ? '(Partial)' : '(Empty)'}
+          </Tag>
+        );
+      },
     },
     {
       title: 'Flags',

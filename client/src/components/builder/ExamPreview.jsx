@@ -61,7 +61,17 @@ const ExamPreview = ({ tabId }) => {
           </div>
         </Spin>
       ) : (
-        <div className="preview-container" id="preview-container">
+        <div 
+          className="preview-container" 
+          id="preview-container"
+          style={{
+            backgroundColor: '#fff',
+            color: '#000',
+            borderRadius: '8px',
+            padding: '0',
+            minHeight: '200px'
+          }}
+        >
           <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
         </div>
       )}

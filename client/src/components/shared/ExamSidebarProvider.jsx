@@ -78,24 +78,29 @@ const ExamSidebarProvider = ({ children }) => {
 
   return (
     <>
-      {showSidebar && (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          marginBottom: 16,
-          paddingRight: sidebarCollapsed ? 0 : 24
-        }}>
-          <Tooltip title={sidebarCollapsed ? "Show Exam Sidebar" : "Hide Exam Sidebar"}>
-            <Button
-              type="default"
-              icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={toggleSidebar}
-            >
-              {sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
-            </Button>
-          </Tooltip>
-        </div>
-      )}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        marginBottom: 16,
+        paddingRight: sidebarCollapsed ? 0 : 24
+      }}>
+        <Tooltip title={
+          !exam 
+            ? "Load an exam to access sidebar" 
+            : sidebarCollapsed 
+              ? "Show Exam Sidebar" 
+              : "Hide Exam Sidebar"
+        }>
+          <Button
+            type="default"
+            icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={toggleSidebar}
+            disabled={!exam}
+          >
+            {sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
+          </Button>
+        </Tooltip>
+      </div>
 
       <Row gutter={24}>
         <Col 
