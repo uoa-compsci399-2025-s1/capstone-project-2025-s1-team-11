@@ -48,31 +48,30 @@ https://github.com/user-attachments/assets/872ba7e9-bf92-4773-b73c-474699309cbe
 
 ### 2. Preparing it for export
 
-
 https://github.com/user-attachments/assets/dda0dffc-9c78-4443-bbbb-d5a7c611b7af
 
 ### 3. Marking and reviewing statistics
 
 https://github.com/user-attachments/assets/234d4dfd-7db4-4c17-a391-246ac26f84c5
 
-
-
 ## Technologies
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB) ![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)  ![Ant-Design](https://img.shields.io/badge/-AntDesign-%230170FE?style=for-the-badge&logo=ant-design&logoColor=white)
 
 ### Languages
 - Javascript
+- HTML
+- CSS
 
 ### Key Technologies
 - antd@5.25.2
-- babel-jest@29.7.0
+- babel-jest@30.0.0
 - cypress@14.3.3
 - eslint@9.27.0
 - globals@15.15.0
 - jest@29.7.0
 - jsdom@26.1.0
 - lefthook@1.11.13
-- lodash@4.17.21
+- lodash-es@4.17.21
 - react@19.1.0
   - react-dom@19.1.0
 - react-redux@9.2.0
@@ -80,33 +79,29 @@ https://github.com/user-attachments/assets/234d4dfd-7db4-4c17-a391-246ac26f84c5
   - react-router-dom@7.6.0
 - recharts@2.15.3
 - redux-mock-store@1.5.5
-- redux-thunk@3.1.0
 - start-server-and-test@2.0.12
 - vite@6.3.5
 
 ### Parsing and exam editing Technologies
-- docx@9.5.0
 - docxtemplater@3.62.2
 - exceljs@4.4.0
 - fast-xml-parser@5.2.3
 - html2canvas@1.4.1
 - identity-obj-proxy@3.0.0
 - katex@0.16.22
-- mammoth@1.9.0
-- mathjax@3.2.2
-- quill@2.0.3
 - tiptap@2.12.0
 
-### File Handling
+### File Handling Technologies
 - file-saver@2.0.5
-- jspdf@3.0.1
 - jszip@3.10.1
 - pizzip@3.2.0
 
+## Links
 
-### Surplus to Requirements
-- lint-staged@15.5.2
-- sql.js@1.13.0
+- [Live Demo](https://assesslyuoa.netlify.app)
+- [Jira Project](https://team11-cache-converters.atlassian.net/jira/software/projects/T11P3CC/boards/68)
+- [Final Report](https://docs.google.com/document/d/1Wwr19Xu3Y3sycnT4Y5coCA9t3XetkyTxE-S2K-7WXjk/edit?tab=t.0)
+
 
 ## Future Roadmap
 
@@ -127,10 +122,12 @@ Cache Converters (Team 11):
 * Dhruv Johar
 * Ollie O’Loughlin
 
-
-
-
 ## Acknowledgments
-### Client
-### Brenda
-### Asma
+Cache Converters acknowledge the following people for their support and guidance during the development of Assessly:
+
+### Project Client
+- Angela Chang
+### Project Supervisor
+- Asma Shakil
+### Project Tutor/Mentor
+- Brenda San German Bravo
