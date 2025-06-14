@@ -195,7 +195,7 @@ export class ExamExportService {
             const bodyBlob = await exportExamToDocxWithDocxtemplater(examData, version, mathRegistry);
 
             // Merge the cover page with this body using the docxMerger function
-            const mergedBlob = await mergeDocxFiles(coverPageBlob, bodyBlob);
+            const mergedBlob = await mergeDocxFiles(coverPageBlob, bodyBlob, examData, version);
 
             // Add to results
             results.push({

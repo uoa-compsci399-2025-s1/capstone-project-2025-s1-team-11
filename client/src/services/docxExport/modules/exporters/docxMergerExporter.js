@@ -7,6 +7,7 @@ import {
     updateRelationshipsXml
 } from "../processors/relationshipProcessor.js";
 import { findFirstPageBreak, isPageBreakSameAsSectPr } from "../processors/pageBreakProcessor.js";
+import { processHeaders } from "../processors/headerFooterProcessor.js";
 import { preserveWhitespace, xmlBuilder } from "../utils/xmlHelpers.js";
 import JSZip from "jszip";
 import { RELATIONSHIP_TYPES } from "../utils/docxConstants.js";
@@ -14,8 +15,12 @@ import { parseContentTypes, buildContentTypesXml, mergeContentTypes } from "../c
 
 /**
  * Merges two docx files, inserting the body content after the first page break in the cover page
+ * @param {Blob} coverPageFile - The cover page DOCX file
+ * @param {Blob} bodyFile - The exam body DOCX file
+ * @param {Object} examData - The exam data containing courseCode
+ * @param {string|number} version - The version being exported
  */
-export async function mergeDocxFiles(coverPageFile, bodyFile) {
+export async function mergeDocxFiles(coverPageFile, bodyFile, examData = null, version = null) {
     try {
         const coverPage = await loadDocx(coverPageFile);
         const body = await loadDocx(bodyFile);
@@ -39,20 +44,15 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
 
         const {relIdMap, newRelationships, mediaFileMap} = processRelationships(coverRelationships, bodyRelationships);
 
+        // Process headers to replace placeholders
+        if (examData && version !== null) {
+            processHeaders(coverPage.files, coverRelationships, version, examData.courseCode || '');
+        }
+
         // If we have a section break location, insert a page break before it
         if (sectPrLoc) {
-            console.log('[MERGE-DEBUG] Section break found at index:', sectPrLoc.index);
-            console.log('[MERGE-DEBUG] Body content length:', bodyContent.length);
-            console.log('[MERGE-DEBUG] First 3 body content elements:', bodyContent.slice(0, 3).map((item, idx) => ({
-                index: idx,
-                type: Object.keys(item)[0],
-                hasText: item['w:p'] ? 'has w:p' : 'no w:p',
-                isEmpty: item['w:p'] && Array.isArray(item['w:p']) && item['w:p'].length === 0 ? 'empty' : 'not empty'
-            })));
-
             // Insert the exam body at the section break location
             const insertIndex = sectPrLoc.index;
-            console.log('[MERGE-DEBUG] Inserting body content at index:', insertIndex);
             
             // Add page break to the first paragraph of the body content
             if (bodyContent.length > 0 && bodyContent[0]['w:p'] && Array.isArray(bodyContent[0]['w:p'])) {
@@ -69,21 +69,9 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
                 
                 const pPrObject = pPrContainer['w:pPr'][0];
                 pPrObject['w:pageBreakBefore'] = [{}];
-                
-                console.log('[MERGE-DEBUG] Added page break to first paragraph of body content');
-            } else {
-                console.log('[MERGE-DEBUG] Could not add page break - first element is not a paragraph');
             }
             
             coverBody.splice(insertIndex, 0, ...bodyContent);
-
-            console.log('[MERGE-DEBUG] After insertion, cover body length:', coverBody.length);
-            console.log('[MERGE-DEBUG] Elements around insertion point:', coverBody.slice(insertIndex, insertIndex + 3).map((item, idx) => ({
-                actualIndex: insertIndex + idx,
-                type: Object.keys(item)[0],
-                hasText: item['w:p'] ? 'has w:p' : 'no w:p',
-                hasPageBreak: item['w:p'] && Array.isArray(item['w:p']) && item['w:p'].some(p => p['w:pPr'] && Array.isArray(p['w:pPr']) && p['w:pPr'].some(pr => pr['w:pageBreakBefore'])) ? 'HAS PAGE BREAK' : 'no page break'
-            })));
 
             // Add the section break back at its original location (after the inserted body content)
             const targetParaObject = coverBody[insertIndex + bodyContent.length];
@@ -102,14 +90,6 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
                 pPrObject['w:sectPr'] = removedSectPr;
             }
         } else {
-            console.log('[MERGE-DEBUG] No section break found, appending to end');
-            console.log('[MERGE-DEBUG] Body content length:', bodyContent.length);
-            console.log('[MERGE-DEBUG] First 3 body content elements:', bodyContent.slice(0, 3).map((item, idx) => ({
-                index: idx,
-                type: Object.keys(item)[0],
-                hasText: item['w:p'] ? 'has w:p' : 'no w:p',
-                isEmpty: item['w:p'] && Array.isArray(item['w:p']) && item['w:p'].length === 0 ? 'empty' : 'not empty'
-            })));
             // No section break - append to the end
             coverBody.push(...bodyContent);
         }
@@ -135,9 +115,13 @@ export async function mergeDocxFiles(coverPageFile, bodyFile) {
         copyRelatedFiles(body, coverPage, bodyRelationships, relIdMap, mediaFileMap);
 
         const outputZip = new JSZip();
+        
+        // First, add all cover page files (including our modified headers)
         for (const [path, content] of coverPage.files.entries()) {
             outputZip.file(path, content);
         }
+        
+        // Then, add body files that don't conflict with cover page files
         for (const [path, content] of body.files.entries()) {
             if (!coverPage.files.has(path) && path.startsWith('word/media/')) {
                 outputZip.file(path, content);
