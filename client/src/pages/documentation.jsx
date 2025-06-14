@@ -29,6 +29,12 @@ const DocumentationPage = () => {
               <li>Organize questions into sets</li>
               <li>Save/export questions for later use</li>
             </ul>
+            <Paragraph>
+              For detailed formatting requirements when preparing DOCX input files, refer to the{" "}
+              <a href="/docs/DOCX_Input_Formatting_Criteria.pdf" target="_blank" rel="noopener noreferrer">
+                DOCX Input Formatting Criteria (PDF)
+              </a>.
+            </Paragraph>
           </section>
 
           <Divider />
