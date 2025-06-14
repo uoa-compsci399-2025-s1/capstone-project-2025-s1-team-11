@@ -6,12 +6,10 @@ import { selectExamData } from '../../store/exam/selectors';
 import { handleExamDetailsSave } from '../../services/examEditService';
 import ExamSidebar from './ExamSidebar';
 import EditExamModal from './EditExamModal';
-import useMessage from '../../hooks/useMessage';
 
 const ExamSidebarProvider = ({ children }) => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
-  const message = useMessage();
   
   // state management for the sidebar
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -70,7 +68,7 @@ const ExamSidebarProvider = ({ children }) => {
         });
       }
     });
-  }, [editDetailsData, dispatch, exam.teleformOptions, message]);
+  }, [editDetailsData, dispatch, exam.teleformOptions]);
 
   const handleEditDetails = useCallback(() => {
     setShowEditDetailsModal(true);
