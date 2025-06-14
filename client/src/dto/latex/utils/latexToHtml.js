@@ -69,56 +69,41 @@ export function latexToHtml(latex) {
  * @returns {string} - Text with math expressions replaced
  */
 function replaceMathExpressions(text) {
-  // First, let's protect any $ inside math environments to prevent double processing
   let result = text;
-  
+
   // Remove any LaTeX comments within math expressions
-  result = result.replace(/(\$.*?)%[^\n$]*?(\$)/g, '$1$2');
-  
-  // Handle display math ($$...$$)
+  result = result.replace(/(\$\$.*?)%[^\n$]*?(\$\$)/g, '$1$2');
+
+  // Uniformly handle all $$...$$ as inline
   result = result.replace(/\$\$(.*?)\$\$/gs, (match, formula) => {
-    // Check if this is a display math block (multiple lines or contains display math commands)
-    const isDisplayMath = formula.includes('\n') || 
-                         formula.includes('\\begin{align}') || 
-                         formula.includes('\\begin{equation}') ||
-                         formula.includes('\\sum') ||
-                         formula.includes('\\int') ||
-                         formula.includes('\\prod');
-    
-    if (isDisplayMath) {
-      return `<div class="math-display">$$${cleanMathFormula(formula)}$$</div>`;
-    } else {
-      return `<span class="math-inline">$$${cleanMathFormula(formula)}$$</span>`;
-    }
-  });
-  
-  // Handle inline math ($...$)
-  result = result.replace(/\$([^$]+?)\$/g, (match, formula) => {
     return `<span class="math-inline">$$${cleanMathFormula(formula)}$$</span>`;
   });
-  
+
+  // Remove old $...$ handling logic
+  // Remove ambiguous math parsing by skipping $...$ entirely
+
   // Handle specific problems with fractions in math
   result = result.replace(/\\dfrac/g, '\\frac');
-  
+
   // Handle specific display style commands
   result = result.replace(/\\displaystyle/g, '');
-  
+
   // Ensure proper log rendering for bases
   result = result.replace(/\\log_([0-9]+)/g, '\\log_{$1}');
-  
+
   // Replace \[ \] display math
   result = result.replace(/\\\[(.*?)\\\]/g, (match, formula) => {
-    return `<div class="math-display">$$${cleanMathFormula(formula)}$$</div>`;
+    return `<span class="math-inline">$$${cleanMathFormula(formula)}$$</span>`;
   });
-  
+
   // Replace \( \) inline math
   result = result.replace(/\\\((.*?)\\\)/g, (match, formula) => {
     return `<span class="math-inline">$$${cleanMathFormula(formula)}$$</span>`;
   });
-  
+
   // Process math-related commands like \frac, \sqrt, etc.
   result = processMathCommands(result);
-  
+
   return result;
 }
 

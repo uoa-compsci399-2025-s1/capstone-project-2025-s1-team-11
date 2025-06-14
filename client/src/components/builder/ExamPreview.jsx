@@ -3,10 +3,12 @@ import { useSelector } from 'react-redux';
 import { Spin, Typography } from 'antd';
 import { generateExamHtmlPreview } from '../../services/examPreview/examHtmlPreview';
 import { renderLatexInContainer } from '../../dto/latex/utils/katexRenderer';
+import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 
 const { Title, Paragraph, Text } = Typography;
 
-const ExamPreview = () => {
+const ExamPreview = ({ tabId }) => {
   const examData = useSelector((state) => state.exam.examData);
   const [previewHtml, setPreviewHtml] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -34,11 +36,13 @@ const ExamPreview = () => {
   }, [examData]);
 
   useEffect(() => {
-    const container = document.getElementById("preview-container");
-    if (container) {
-      renderLatexInContainer(container);
+    if (tabId === "preview") {
+      const container = document.getElementById("preview-container");
+      if (container) {
+        renderLatexInContainer(container);
+      }
     }
-  }, [previewHtml]);
+  }, [previewHtml, tabId]);
 
   if (!examData) {
     return (
@@ -58,11 +62,7 @@ const ExamPreview = () => {
         </Spin>
       ) : (
         <div className="preview-container" id="preview-container">
-          <Typography>
-            <div
-              dangerouslySetInnerHTML={{ __html: previewHtml }}
-            />
-          </Typography>
+          <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
         </div>
       )}
     </div>
