@@ -69,6 +69,18 @@ export const classifyContent = (text, emptyLineCounter, i, blocks, currentQuesti
         };
       } else if (questionDetection.detected && questionDetection.method === 'double_break') {
         // This might be a question based on double break, but could also be section content
+        
+        // Special case: Table-related explanatory text should be treated as section content
+        const isTableExplanation = text.toLowerCase().includes('table') && 
+                                  (text.toLowerCase().includes('above') || 
+                                   text.toLowerCase().includes('below') || 
+                                   text.toLowerCase().includes('inserted') ||
+                                   text.toLowerCase().includes('dropped'));
+        
+        if (isTableExplanation) {
+          return { type: 'section_content', block: currentBlock };
+        }
+        
         // Use fallback logic - if it's the first content after section break, it's probably section content
         if (state.sectionContentBlocks.length === 0) {
           // First content after section break - likely section content

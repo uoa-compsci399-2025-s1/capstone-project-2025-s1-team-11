@@ -59,13 +59,11 @@ export const handleConsecutiveSectionBreaks = (consecutiveBreakIndices, state, d
  */
 export const handleTableInSection = (block, addWarning) => {
   addWarning(
-    'Table found in section body - dropped during import',
-    'Tables are not supported in section content and have been removed'
+    'Table found in section body - replaced with paragraph break',
+    'Tables are not supported in section content and have been replaced with <br>'
   );
   
-
-  
-  return { action: 'table_dropped' };
+  return { action: 'table_replaced', replacement: '<br>' };
 };
 
 /**
@@ -79,7 +77,13 @@ export const handleTableInSection = (block, addWarning) => {
 export const processSectionContent = (text, block, state, addWarning) => {
   // Check for table blocks
   if (isTableBlock(block)) {
-    return handleTableInSection(block, addWarning);
+    const tableResult = handleTableInSection(block, addWarning);
+    if (tableResult.action === 'table_replaced') {
+      // Add the replacement content (paragraph break) to section content
+      state.sectionContentBlocks.push(tableResult.replacement);
+      return { action: 'table_replaced' };
+    }
+    return tableResult;
   }
   
   // Add non-empty text to section content

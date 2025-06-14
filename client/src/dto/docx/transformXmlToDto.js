@@ -117,20 +117,16 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
     
     // Analyze section structure for enhanced handling
     const sectionAnalysis = analyzeSectionStructure(blocks);
-    console.log(`🔍 DEBUG: Section analysis:`, sectionAnalysis);
     
-    // Debug: Check what types of blocks we have
-    console.log(`🔍 DEBUG: Block types summary:`);
+    // Debug: Check for table blocks
     const blockTypes = {};
     blocks.forEach((block, i) => {
         if (!block) {
             blockTypes['null'] = (blockTypes['null'] || 0) + 1;
         } else if (block['w:sectPr']) {
             blockTypes['sectPr'] = (blockTypes['sectPr'] || 0) + 1;
-            console.log(`🔍 DEBUG: Found w:sectPr at block ${i}`);
         } else if (block['w:pPr']?.['w:sectPr']) {
             blockTypes['pPr.sectPr'] = (blockTypes['pPr.sectPr'] || 0) + 1;
-            console.log(`🔍 DEBUG: Found w:pPr.w:sectPr at block ${i}`);
         } else if (block['w:tbl']) {
             blockTypes['table'] = (blockTypes['table'] || 0) + 1;
             console.log(`🔍 DEBUG: Found w:tbl at block ${i}`);
@@ -148,9 +144,17 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
             }
         } else {
             blockTypes['other'] = (blockTypes['other'] || 0) + 1;
+            // Debug: Check what's in the 'other' blocks
+            const keys = Object.keys(block);
+            if (keys.length > 0 && keys.some(key => key.includes('tbl') || key.includes('table'))) {
+                console.log(`🔍 DEBUG: Block ${i} might be a table! Keys: ${keys.join(', ')}`);
+            }
         }
     });
-    console.log(`🔍 DEBUG: Block types:`, blockTypes);
+    
+    if (blockTypes['table']) {
+        console.log(`🔍 DEBUG: Found ${blockTypes['table']} table block(s)`);
+    }
     
     // Note: Consecutive section breaks will be handled during normal processing
     // to ensure they're created at the right time in the document flow
@@ -162,18 +166,13 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
 
         // Check if this is a section break
         if (isSectionBreak(block)) {
-            console.log(`🔍 DEBUG: 🔧 SECTION BREAK detected at block ${i}`);
-            console.log(`🔍 DEBUG: State before section break - inSection: ${state.inSection}, afterSectionBreak: ${state.afterSectionBreak}`);
-            
             // Handle section break at document start
             if (isDocumentStart(i, blocks)) {
-                console.log(`🔍 DEBUG: Section break at document start`);
                 handleDocumentStartSection(state, addWarning);
                 continue;
             }
             
             // Normal section break handling
-            console.log(`🔍 DEBUG: Normal section break - flushing question and finalizing section`);
             flushQuestion();
             
             // Check if we have section content to finalize
@@ -184,12 +183,9 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
             // If we just closed a section with content, return to normal mode
             if (hadSectionContent) {
                 state.afterSectionBreak = false;
-                console.log(`🔍 DEBUG: Section with content closed - returning to normal mode (afterSectionBreak = false)`);
             } else {
                 state.afterSectionBreak = true;
-                console.log(`🔍 DEBUG: Section break without content - starting new section (afterSectionBreak = true)`);
             }
-            console.log(`🔍 DEBUG: State after section break - afterSectionBreak: ${state.afterSectionBreak}`);
             continue;
         }
 
@@ -198,7 +194,9 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
             console.log(`🔍 DEBUG: 📊 TABLE BLOCK detected at block ${i} - processing as table`);
             // Handle table in section body
             const tableResult = processSectionContent('', block, state, addWarning);
-            if (tableResult.action === 'table_dropped') {
+            if (tableResult.action === 'table_replaced') {
+                // Reset empty line counter since table replacement counts as content, not empty space
+                state.emptyLineCounter = 0;
                 continue;
             }
         }
@@ -239,8 +237,14 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
             state
         );
         
-        console.log(`🔍 DEBUG: Block ${i} classified as: ${classification.type} - "${text.substring(0, 30)}..."`);
-        console.log(`🔍 DEBUG: Current state - afterSectionBreak: ${state.afterSectionBreak}, inSection: ${state.inSection}`);
+        // Special debugging for table content
+        if (text.includes('C0R0') || text.includes('C1R0') || text.includes('simple table')) {
+            console.log(`🔍 DEBUG: 📊 POTENTIAL TABLE CONTENT detected in block ${i}:`);
+            console.log(`🔍 DEBUG: Text: "${text}"`);
+            console.log(`🔍 DEBUG: Block keys: ${Object.keys(block).join(', ')}`);
+            console.log(`🔍 DEBUG: isTableBlock result: ${isTableBlock(block)}`);
+            console.log(`🔍 DEBUG: Classification: ${classification.type}`);
+        }
         
         // Handle different content types
         if (handleContentType(classification, text, runs, para, documentXml, globalCounters, state, dto, flushQuestion, mathRegistry, mathElementsWithXml, drawingInstances, i, relationships, imageData, addWarning)) {
@@ -329,7 +333,7 @@ const handleContentType = (classification, text, runs, para, documentXml, global
         case 'table_block':
             // Handle table in section body
             const tableResult = processSectionContent(text, classification.block, state, addWarning);
-            if (tableResult.action === 'table_dropped') {
+            if (tableResult.action === 'table_replaced') {
                 return true;
             }
             break;

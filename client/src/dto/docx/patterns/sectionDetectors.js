@@ -16,7 +16,9 @@ export const isSectionBreak = (block) => {
  * @returns {boolean} - True if table block
  */
 export const isTableBlock = (block) => {
-  return block['w:tbl'] !== undefined;
+  return block['w:tbl'] !== undefined || 
+         block['w:tblPr'] !== undefined ||
+         (block['w:tblGrid'] !== undefined && block['w:tr'] !== undefined);
 };
 
 /**
