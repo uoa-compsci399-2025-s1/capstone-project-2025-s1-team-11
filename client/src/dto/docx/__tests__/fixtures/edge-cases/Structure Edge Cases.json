@@ -1,0 +1,391 @@
+{
+  "type": "exam",
+  "examBody": [
+    {
+      "type": "question",
+      "contentFormatted": "Case 0 - Information: The edge cases in this document do not conform to the typical or original intended syntax for input docx files. They are not expected to result in a usable imported exam, but the enough information about the issue would ideally be provided to the user to allow the location of syntax issues to be found and corrected reasonably easily in the source docx file or potentially in app.<br><br>This document was created in MS Word 2016 with default template settings except where noted otherwise. Margins are ‘normal’ with 2.54cm all sides. Image compression was turned off in file>options>advanced>image size and quality. The ‘Normal’ font style is used throughout. The Normal font was changed from Aptos to Times New Roman size 12. Default line spacing is single with 0pt spacing at the end of paragraphs.",
+      "marks": 1,
+      "answers": [
+        {
+          "type": "answer",
+          "contentFormatted": "First answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Second answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Third answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fourth answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fifth answer"
+        }
+      ]
+    },
+    {
+      "type": "question",
+      "contentFormatted": "Question 2. This and the first question should be un-nested since there was no explicit section break used at the start of this document.",
+      "marks": 1,
+      "answers": [
+        {
+          "type": "answer",
+          "contentFormatted": "First answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Second answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Third answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fourth answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fifth answer"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "contentFormatted": "",
+      "questions": [
+        {
+          "type": "question",
+          "contentFormatted": "Question 3. This should be the first question in section 1. However, no content was provided for the section body. That should not cause a warning nor prevent the opening of a section with this and the following question being nested. The section body should simply be empty.",
+          "marks": 1,
+          "answers": [
+            {
+              "type": "answer",
+              "contentFormatted": "First answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Second answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Third answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Fourth answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Fifth answer"
+            }
+          ]
+        },
+        {
+          "type": "question",
+          "contentFormatted": "Question 4. Second question in section 1.",
+          "marks": 1,
+          "answers": [
+            {
+              "type": "answer",
+              "contentFormatted": "First answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Second answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Third answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Fourth answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Fifth answer"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "question",
+      "contentFormatted": "Question 5. Section 1 should be closed before this question. This question should not be nested in any section but appear after section 1.",
+      "marks": 1,
+      "answers": [
+        {
+          "type": "answer",
+          "contentFormatted": "First answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Second answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Third answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fourth answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fifth answer"
+        }
+      ]
+    },
+    {
+      "type": "question",
+      "contentFormatted": "Question 6. Also not nested.",
+      "marks": 1,
+      "answers": [
+        {
+          "type": "answer",
+          "contentFormatted": "First answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Second answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Third answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fourth answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fifth answer"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "contentFormatted": "This might have been intended as the 7<sup>th</sup> question - but since no double hard-returns, marks tag or bookmark have been placed between the start of this text and the section break before it, it should be interpreted as a section body. Even if it contains lines that look like answers and a question mark?<p>\nFirst answer<p>\nSecond answer<p>\nThird answer<p>\nFourth answer<p>\nFifth answer",
+      "questions": [
+        {
+          "type": "question",
+          "contentFormatted": "This 7<sup>th</sup> question also omits the marks tag and bookmark but it’s ideally no-longer ambiguous that it’s a question due to the double hard-returns before it.",
+          "marks": 1,
+          "answers": [
+            {
+              "type": "answer",
+              "contentFormatted": "First answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Second answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Third answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Fourth answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Fifth answer"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "contentFormatted": "Section 3 is a normal section with one nested question.",
+      "questions": [
+        {
+          "type": "question",
+          "contentFormatted": "Question 8 in section 3.",
+          "marks": 1,
+          "answers": [
+            {
+              "type": "answer",
+              "contentFormatted": "First answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Second answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Third answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Fourth answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Fifth answer"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "question",
+      "contentFormatted": "Question 9 is un-nested.",
+      "marks": 1,
+      "answers": [
+        {
+          "type": "answer",
+          "contentFormatted": "First answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Second answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Third answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fourth answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fifth answer"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "contentFormatted": "",
+      "questions": []
+    },
+    {
+      "type": "question",
+      "contentFormatted": "Question 10. Two section breaks were inserted before this question with nothing in between. That would imply a completely empty section. That should import as an empty section with no nested questions. Ideally the user should be notified of the empty section but this is not necessary. This question should be un-nested.",
+      "marks": 1,
+      "answers": [
+        {
+          "type": "answer",
+          "contentFormatted": "First answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Second answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Third answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fourth answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fifth answer"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "contentFormatted": "",
+      "questions": []
+    },
+    {
+      "type": "section",
+      "contentFormatted": "Section body for what should be the 6<sup>th</sup> section. Three section breaks were inserted before this question with nothing between them. That should have created an empty section, then opened this new section.",
+      "questions": [
+        {
+          "type": "question",
+          "contentFormatted": "Question 11 should be in section 6.",
+          "marks": 1,
+          "answers": [
+            {
+              "type": "answer",
+              "contentFormatted": "First answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Second answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Third answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Fourth answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Fifth answer"
+            }
+          ]
+        },
+        {
+          "type": "question",
+          "contentFormatted": "Question 12 should be in section 6.",
+          "marks": 1,
+          "answers": [
+            {
+              "type": "answer",
+              "contentFormatted": "First answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Second answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Third answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Fourth answer"
+            },
+            {
+              "type": "answer",
+              "contentFormatted": "Fifth answer"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "question",
+      "contentFormatted": "Question 13 should be un-nested. A section break will be inserted after this question then the document ends. It would be acceptable to import an empty section after this question or nothing at all.",
+      "marks": 1,
+      "answers": [
+        {
+          "type": "answer",
+          "contentFormatted": "First answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Second answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Third answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fourth answer"
+        },
+        {
+          "type": "answer",
+          "contentFormatted": "Fifth answer"
+        }
+      ]
+    }
+  ],
+  "mathRegistry": {}
+}

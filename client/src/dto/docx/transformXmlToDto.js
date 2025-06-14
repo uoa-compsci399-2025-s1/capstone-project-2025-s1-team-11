@@ -147,7 +147,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
             // Debug: Check what's in the 'other' blocks
             const keys = Object.keys(block);
             if (keys.length > 0 && keys.some(key => key.includes('tbl') || key.includes('table'))) {
-                console.log(`🔍 DEBUG: Block ${i} might be a table! Keys: ${keys.join(', ')}`);
+                // console.log(`🔍 DEBUG: Block ${i} might be a table! Keys: ${keys.join(', ')}`);
             }
         }
     });
