@@ -109,10 +109,38 @@ button:focus-visible {
   transition: all 0.25s ease;
   z-index: 1000;
   width: 100%;
-  max-width: 1400px; /* Increased from 1200px */
+  max-width: 100%;
   max-height: none; /* Remove height restriction */
   overflow: visible; /* Remove overflow hidden */
 }
+
+
+
+
+@media (min-width: 1800px) {
+  .context-bar-wrapper {
+    max-width: 1600px;
+  }
+}
+
+@media (min-width: 1600px) and (max-width: 1799px) {
+  .context-bar-wrapper {
+    max-width: 80vw;
+  }
+}
+
+@media (min-width: 1400px) and (max-width: 1599px) {
+  .context-bar-wrapper {
+    max-width: 100vw;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .context-bar-wrapper {
+    max-width: 100vw;
+  }
+}
+
 
 .context-bar-wrapper.intent-delay {
   transition-delay: 0.15s;

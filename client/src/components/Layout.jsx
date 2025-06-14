@@ -52,7 +52,7 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
 
   const contentContainerStyle = {
     padding: 24,
-    minHeight: 380,
+    minHeight: 800,
     backgroundColor: isDarkMode ? '#1f1f1f' : '#ffffff',
     borderRadius: borderRadiusLG,
     boxShadow: isDarkMode
