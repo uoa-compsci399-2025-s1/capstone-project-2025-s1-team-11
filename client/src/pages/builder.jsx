@@ -4,9 +4,9 @@ import { setCoverPage } from "../store/exam/examSlice";
 import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/builder/examDisplay.jsx";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
-import { Typography, Button, Collapse, Divider} from "antd";
+import { Typography, Button, Divider} from "antd";
 
-const { Title, Paragraph, Text } = Typography;
+const { Title} = Typography;
 
 const Builder = () => {
     const exam = useSelector(selectExamData);
