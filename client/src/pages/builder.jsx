@@ -5,6 +5,7 @@ import { selectExamData } from "../store/exam/selectors.js";
 import ExamDisplay from "../components/builder/examDisplay.jsx";
 import { EmptyExam } from "../components/shared/emptyExam.jsx";
 import { Typography, Button, Divider} from "antd";
+import ExamFileManager from "../components/builder/ExamContentManager.jsx";
 
 const { Title} = Typography;
 
@@ -92,6 +93,9 @@ const Builder = () => {
                 {exam
                     ? <ExamDisplay exam={exam} />
                     : <EmptyExam />}
+            </div>
+            <div style={{padding: "40px 0 20px 0"}}>
+              <ExamFileManager />
             </div>
         </>
     );
