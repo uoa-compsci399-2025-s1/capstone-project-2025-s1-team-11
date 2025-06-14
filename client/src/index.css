@@ -100,7 +100,7 @@ button:focus-visible {
   position: sticky;
   top: 16px;
   margin: 16px auto;
-  margin-bottom: 48px;
+  margin-bottom: 24px;
   padding: 10px;
   background: var(--header-bg);
   color: var(--text-color);

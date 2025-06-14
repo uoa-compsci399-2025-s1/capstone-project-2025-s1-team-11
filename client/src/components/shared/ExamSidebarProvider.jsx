@@ -49,7 +49,7 @@ const ExamSidebarProvider = ({ children }) => {
 
   const handleEditDetailsSave = useCallback(() => {
     // Check if teleformOptions length has changed
-    const currentTeleformOptions = Array.isArray(exam.teleformOptions) ? exam.teleformOptions : [];
+    const currentTeleformOptions = Array.isArray(exam?.teleformOptions) ? exam.teleformOptions : [];
     const newTeleformOptionsArray = editDetailsData.teleformOptions 
       ? editDetailsData.teleformOptions.split(',').map(o => o.trim()).filter(Boolean)
       : [];
@@ -68,7 +68,7 @@ const ExamSidebarProvider = ({ children }) => {
         });
       }
     });
-  }, [editDetailsData, dispatch, exam.teleformOptions]);
+  }, [editDetailsData, dispatch, exam?.teleformOptions]);
 
   const handleEditDetails = useCallback(() => {
     setShowEditDetailsModal(true);

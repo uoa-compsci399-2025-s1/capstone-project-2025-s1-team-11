@@ -141,7 +141,7 @@ const Marker = () => {
 
   return (
       <>
-      <Typography.Title level={1}>MCQ Auto-Marker</Typography.Title>
+      <Typography.Title level={1} style={{ marginTop: -16, marginBottom: 16 }}>MCQ Auto-Marker</Typography.Title>
       <Divider />
       
       <div style={{ margin: "24px 0" }}>

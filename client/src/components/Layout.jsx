@@ -45,13 +45,13 @@ const MCQLayout = ({ children, isDarkMode, setIsDarkMode }) => {
   };
 
   const contentStyle = {
-    padding: location.pathname === '/' ? '0' : '24px 48px',
+    padding: location.pathname === '/' ? '0' : '6px 48px',
     flex: 1,
     backgroundColor: isDarkMode ? '#121212' : '#f0f2f5'
   };
 
   const contentContainerStyle = {
-    padding: 24,
+    padding: 16,
     minHeight: 380,
     backgroundColor: isDarkMode ? '#1f1f1f' : '#ffffff',
     borderRadius: borderRadiusLG,
