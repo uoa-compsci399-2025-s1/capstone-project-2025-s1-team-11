@@ -11,7 +11,7 @@ export const handleCase13 = (addWarning, currentQuestion) => {
     'Unexpected paragraph break after question', 
     `Question: "${currentQuestion.contentFormatted.substring(0, 50)}..."`
   );
-  console.log(`🔍 DEBUG: Case 13 detected - handling unexpected empty line gracefully`);
+
   return { action: 'continue' }; // Skip this empty line
 };
 
@@ -27,7 +27,7 @@ export const handleCase14 = (text, addWarning) => {
     `Content: "${text.substring(0, 50)}..." - Interpreted as section content`
   );
   
-  console.log(`🔍 DEBUG: Case 14 detected - creating section for standalone paragraph`);
+
   
   return {
     action: 'create_section',

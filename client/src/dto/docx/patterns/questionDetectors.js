@@ -29,15 +29,6 @@ export const isNewQuestion = (text, emptyLineCounter = 0, isAtDocumentEnd = fals
   // Low Confidence Detection (Fallback)
   const hasDoubleBreak = (emptyLineCounter >= 1 && !isAtDocumentEnd) || questionJustFlushedByEmptyLine;
   
-  // Debug logging
-  console.log(`🔍 DEBUG: Question detection for: "${text.substring(0, 40)}..."`);
-  console.log(`🔍 DEBUG:   - emptyLineCounter: ${emptyLineCounter}`);
-  console.log(`🔍 DEBUG:   - isAtDocumentEnd: ${isAtDocumentEnd}`);
-  console.log(`🔍 DEBUG:   - questionJustFlushedByEmptyLine: ${questionJustFlushedByEmptyLine}`);
-  console.log(`🔍 DEBUG:   - hasMarksTag: ${hasMarksTag} (HIGH CONFIDENCE)`);
-  console.log(`🔍 DEBUG:   - hasBookmark: ${hasBookmark} (HIGH CONFIDENCE)`);
-  console.log(`🔍 DEBUG:   - hasDoubleBreak: ${hasDoubleBreak} (LOW CONFIDENCE - FALLBACK)`);
-  
   // Hierarchical detection: High confidence methods take precedence
   const result = hasMarksTag || hasBookmark || hasDoubleBreak;
   
@@ -46,8 +37,6 @@ export const isNewQuestion = (text, emptyLineCounter = 0, isAtDocumentEnd = fals
   if (hasMarksTag) detectionMethod = 'marks_tag';
   else if (hasBookmark) detectionMethod = 'bookmark';
   else if (hasDoubleBreak) detectionMethod = 'double_break';
-  
-  console.log(`🔍 DEBUG:   - RESULT: ${result} (via ${detectionMethod})`);
   
   return { detected: result, method: detectionMethod };
 }; 
