@@ -1,14 +1,24 @@
 import { detectMarksTag } from '../utils/marksExtraction.js';
 
 /**
- * Bookmark detection placeholder
- * TODO: Implement bookmark detection when needed
- * @param {string} text - Text to check for bookmarks
- * @returns {boolean} - True if bookmark detected
+ * Detect if text content indicates a bookmark-based question
+ * This checks for content that would typically follow a bookmark in the source XML
+ * @param {string} text - Text to check for bookmark patterns
+ * @returns {boolean} - True if bookmark-based question detected
  */
-export const detectBookmark = () => {
-  // For now, return false to maintain current behavior
-  return false;
+export const detectBookmark = (text) => {
+  if (!text || typeof text !== 'string') return false;
+  
+  // Look for patterns that typically follow Word bookmarks for questions
+  // Common patterns: Question numbers, marks tags at start
+  const bookmarkPatterns = [
+    /^\s*Question\s+\d+/i,           // "Question 17", "Question 1", etc.
+    /^\s*Q\d+/i,                     // "Q17", "Q1", etc.
+    /^\s*\[\s*\d+.*?marks?\s*\]/i,   // "[1 mark]", "[2 marks]", etc. at start
+    /^\s*\d+\.\s+/,                  // "1. ", "17. ", etc. (numbered questions)
+  ];
+  
+  return bookmarkPatterns.some(pattern => pattern.test(text.trim()));
 };
 
 /**

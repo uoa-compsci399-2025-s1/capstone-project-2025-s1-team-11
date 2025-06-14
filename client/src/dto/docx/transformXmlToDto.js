@@ -344,6 +344,14 @@ const handleContentType = (classification, text, runs, para, documentXml, global
             return true;
         }
             
+        case 'image_content': {
+            // Image-only content outside of sections - don't increment empty line counter
+            // but also don't break the flow. Just continue processing.
+            state.emptyLineCounter = 0; // Reset counter since we have content
+            state.questionJustFlushedByEmptyLine = false;
+            return true;
+        }
+            
         case 'section_body_end': {
             // Section body has ended, treat this as a question
             
