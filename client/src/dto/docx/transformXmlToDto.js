@@ -166,12 +166,8 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
 
         // Check if this is a section break
         if (isSectionBreak(block)) {
-            console.log(`🔍 DEBUG: 🔄 SECTION BREAK detected at block ${i}`);
-            console.log(`🔍 DEBUG: afterSectionBreak: ${state.afterSectionBreak}, sectionContentBlocks: ${state.sectionContentBlocks.length}, currentSection: ${!!state.currentSection}`);
-            
             // Handle section break at document start
             if (isDocumentStart(i, blocks)) {
-                console.log(`🔍 DEBUG: 🏁 Document start section break`);
                 handleDocumentStartSection(state, addWarning);
                 continue;
             }
@@ -212,7 +208,6 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
 
         // Check if this is a table block BEFORE extracting paragraph content
         if (isTableBlock(block)) {
-            console.log(`🔍 DEBUG: 📊 TABLE BLOCK detected at block ${i} - processing as table`);
             // Handle table in section body
             const tableResult = processSectionContent('', block, state, addWarning);
             if (tableResult.action === 'table_replaced') {
@@ -258,17 +253,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
             state
         );
         
-        // Special debugging for section body issues
-        if (text.includes('First answer') && state.inSection) {
-            console.log(`🔍 DEBUG: 🚨 SECTION BODY ISSUE detected in block ${i}:`);
-            console.log(`🔍 DEBUG: Text: "${text}"`);
-            console.log(`🔍 DEBUG: Classification: ${classification.type}`);
-            console.log(`🔍 DEBUG: afterSectionBreak: ${state.afterSectionBreak}`);
-            console.log(`🔍 DEBUG: inSection: ${state.inSection}`);
-            console.log(`🔍 DEBUG: emptyLineCounter: ${state.emptyLineCounter}`);
-            console.log(`🔍 DEBUG: currentQuestion: ${!!state.currentQuestion}`);
-            console.log(`🔍 DEBUG: sectionContentBlocks: ${state.sectionContentBlocks.length}`);
-        }
+
         
         // Handle different content types
         if (handleContentType(classification, text, runs, para, documentXml, globalCounters, state, dto, flushQuestion, mathRegistry, mathElementsWithXml, drawingInstances, i, relationships, imageData, addWarning)) {
@@ -280,19 +265,7 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
     flushQuestion();
     finalizeSection(state, dto, addWarning);
 
-    // Debug log: Print examBody structure
-    console.log('\n🔍 DEBUG: === FINAL EXAM BODY STRUCTURE ===');
-    dto.examBody.forEach((item, index) => {
-        if (item.type === 'question') {
-            console.log(`${index}: UN-NESTED QUESTION - "${item.contentFormatted?.substring(0, 50)}..."`);
-        } else if (item.type === 'section') {
-            console.log(`${index}: SECTION - "${item.contentFormatted?.substring(0, 50)}..." (${item.questions?.length || 0} nested questions)`);
-            item.questions?.forEach((q, qIndex) => {
-                console.log(`  ${qIndex}: NESTED QUESTION - "${q.contentFormatted?.substring(0, 50)}..."`);
-            });
-        }
-    });
-    console.log('=== END EXAM BODY STRUCTURE ===\n');
+
 
     return { dto, mathRegistry, warnings };
 };
