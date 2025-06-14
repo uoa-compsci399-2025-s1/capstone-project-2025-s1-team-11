@@ -8,6 +8,21 @@ import { detectBookmark } from './questionDetectors.js';
 import { handleCase13, handleCase14 } from '../handlers/edgeCaseHandlers.js';
 
 /**
+ * Check if content is image-only (contains only image tags with no meaningful text)
+ * @param {string} text - Text content to check
+ * @returns {boolean} - True if content contains only images
+ */
+const isImageOnlyContent = (text) => {
+  if (!text || typeof text !== 'string') return false;
+  
+  // Remove all image tags and check if any meaningful content remains
+  const textWithoutImages = text.replace(/<img[^>]*>/gi, '').trim();
+  
+  // If nothing meaningful remains after removing images, it's image-only content
+  return textWithoutImages === '' || textWithoutImages.match(/^\s*$/);
+};
+
+/**
  * Classify content and determine how to handle it
  * This is the main orchestrator that coordinates all pattern detection
  * @param {string} text - Text content to classify
@@ -41,6 +56,16 @@ export const classifyContent = (text, emptyLineCounter, i, blocks, currentQuesti
   }
 
   // Non-empty content
+
+  // Special handling for image-only content in section bodies that might trigger 
+  // false positive question detection. Only applies when we're actively collecting
+  // section content and have no current question context.
+  if (state && state.afterSectionBreak && state.sectionContentBlocks && 
+      !currentQuestion && !currentAnswers?.length && 
+      isImageOnlyContent(text)) {
+    // Image-only content in section body should be treated as section content
+    return { type: 'section_content', block: currentBlock, isImageOnly: true };
+  }
 
   // Check if we're in a section body and this might end it
   if (state && (state.afterSectionBreak || state.inSection) && !currentQuestion) {

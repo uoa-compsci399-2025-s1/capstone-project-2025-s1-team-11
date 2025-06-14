@@ -58,7 +58,7 @@ const Builder = () => {
 
     return (
         <>
-            <Title level={1}>MCQ Builder</Title>
+            <Typography.Title level={1} style={{ marginTop: -16, marginBottom: 16 }}>MCQ Builder</Typography.Title>
             <Divider />
 
             <div>

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Button, Tooltip, Row, Col } from 'antd';
+import { Button, Tooltip, Row, Col, Modal } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { selectExamData } from '../../store/exam/selectors';
 import { handleExamDetailsSave } from '../../services/examEditService';
@@ -20,7 +20,9 @@ const ExamSidebarProvider = ({ children }) => {
     courseCode: '',
     courseName: '',
     semester: '',
-    year: ''
+    year: '',
+    versions: '',
+    teleformOptions: ''
   });
 
   React.useEffect(() => {
@@ -30,7 +32,9 @@ const ExamSidebarProvider = ({ children }) => {
         courseCode: exam.courseCode || '',
         courseName: exam.courseName || '',
         semester: exam.semester || '',
-        year: exam.year || ''
+        year: exam.year || '',
+        versions: Array.isArray(exam.versions) ? exam.versions.join(', ') : (exam.versions || ''),
+        teleformOptions: Array.isArray(exam.teleformOptions) ? exam.teleformOptions.join(', ') : (exam.teleformOptions || '')
       });
     }
   }, [exam]);
@@ -44,8 +48,27 @@ const ExamSidebarProvider = ({ children }) => {
   }, []);
 
   const handleEditDetailsSave = useCallback(() => {
-    handleExamDetailsSave(editDetailsData, dispatch, () => setShowEditDetailsModal(false));
-  }, [editDetailsData, dispatch]);
+    // Check if teleformOptions length has changed
+    const currentTeleformOptions = Array.isArray(exam?.teleformOptions) ? exam.teleformOptions : [];
+    const newTeleformOptionsArray = editDetailsData.teleformOptions 
+      ? editDetailsData.teleformOptions.split(',').map(o => o.trim()).filter(Boolean)
+      : [];
+    
+    const lengthChanged = currentTeleformOptions.length !== newTeleformOptionsArray.length;
+    
+    handleExamDetailsSave(editDetailsData, dispatch, () => {
+      setShowEditDetailsModal(false);
+      
+      // Show alert if teleformOptions length has changed
+      if (lengthChanged) {
+        Modal.info({
+          title: 'Teleform Options Changed',
+          content: 'Number of teleform options changed - please "Shuffle All Answers" in Randomiser module',
+          okText: 'OK'
+        });
+      }
+    });
+  }, [editDetailsData, dispatch, exam?.teleformOptions]);
 
   const handleEditDetails = useCallback(() => {
     setShowEditDetailsModal(true);
@@ -55,24 +78,29 @@ const ExamSidebarProvider = ({ children }) => {
 
   return (
     <>
-      {showSidebar && (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          marginBottom: 16,
-          paddingRight: sidebarCollapsed ? 0 : 24
-        }}>
-          <Tooltip title={sidebarCollapsed ? "Show Exam Sidebar" : "Hide Exam Sidebar"}>
-            <Button
-              type="default"
-              icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={toggleSidebar}
-            >
-              {sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
-            </Button>
-          </Tooltip>
-        </div>
-      )}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        marginBottom: 16,
+        paddingRight: sidebarCollapsed ? 0 : 24
+      }}>
+        <Tooltip title={
+          !exam 
+            ? "Load an exam to access sidebar" 
+            : sidebarCollapsed 
+              ? "Show Exam Sidebar" 
+              : "Hide Exam Sidebar"
+        }>
+          <Button
+            type="default"
+            icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={toggleSidebar}
+            disabled={!exam}
+          >
+            {sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
+          </Button>
+        </Tooltip>
+      </div>
 
       <Row gutter={24}>
         <Col 

@@ -10,7 +10,7 @@ export function generateExamHtmlPreview(examData) {
   }
 
   let html = `
-    <div class="exam-preview" style="font-family: 'Times New Roman', Times, serif; padding: 40px; max-width: 800px; margin-left: 0; background-color: #fff;">
+    <div class="exam-preview" style="font-family: 'Times New Roman', Times, serif; padding: 40px; max-width: 800px; margin-left: 0; background-color: #fff; color: #000;">
       <div class="exam-body" style="display: flex; flex-direction: column; gap: 32px;">
   `;
 
@@ -46,7 +46,7 @@ function processSectionToHtml(section, teleformOptions) {
   let html = `
     <section class="exam-section" style="display: flex; flex-direction: column;">
       ${section.contentFormatted ? 
-        `<div class="section-content" style="font-size: 32x; line-height: 1.6; padding-bottom: 32px;">${safeHtmlContent(section.contentFormatted)}</div>
+        `<div class="section-content" style="font-size: 32x; line-height: 1.2; padding-bottom: 32px; color: #000;">${safeHtmlContent(section.contentFormatted)}</div>
          <div style="border-bottom: 1px solid #eee;"></div>` : ''}
       <div class="section-questions" style="display: flex; flex-direction: column; gap: 32px; margin-top: ${section.contentFormatted ? '32px' : '0'};">
   `;
@@ -76,15 +76,15 @@ function processSectionToHtml(section, teleformOptions) {
 function processQuestionToHtml(question, teleformOptions = DEFAULT_OPTIONS) {
   let html = `
     <article class="exam-question" style="display: flex; flex-direction: column; gap: 12px;">
-      <div class="question-header" style="font-size: 20px; font-weight: 600;">
-        Question ${question.questionNumber || ''}${question.marks ? ` <span style="color: #888; font-size: 16px;">[${question.marks} mark${question.marks !== 1 ? 's' : ''}]</span>` : ''}
+      <div class="question-header" style="font-size: 20px; font-weight: 600; color: #000;">
+        Question ${question.questionNumber || ''}${question.marks ? ` <span style="color: #666; font-size: 16px;">[${question.marks} mark${question.marks !== 1 ? 's' : ''}]</span>` : ''}
       </div>
-      <div class="question-text" style="font-size: 16px; line-height: 1.6; color: #333; padding-bottom: 16px;">${safeHtmlContent(question.contentFormatted || '')}</div>
+      <div class="question-text" style="font-size: 16px; line-height: 1.2; color: #000; padding-bottom: 16px;">${safeHtmlContent(question.contentFormatted || '')}</div>
   `;
 
   // Process answers with version-specific shuffling
   if (question.answers && question.answers.length > 0) {
-    html += '<div class="question-answers" style="display: flex; flex-direction: column; gap: 8px; padding-left: 24px;">';
+    html += '<div class="question-answers" style="font-size: 16px; color: #000; line-height: 1.2; padding-left: 24px;">';
 
     // Now render the answers in their original order
     question.answers.forEach((answer, index) => {
@@ -93,12 +93,12 @@ function processQuestionToHtml(question, teleformOptions = DEFAULT_OPTIONS) {
         const labelIndex = index < teleformOptions.length ? index : index % teleformOptions.length;
         const label = teleformOptions[labelIndex];
         
-        html += `
-          <div class="answer-option" style="display: flex; gap: 8px; align-items: flex-start; font-size: 15px;">
-            <strong style="white-space: nowrap;">${label})</strong>
-            <span style="${answer.correct ? 'color: green;' : ''}">${safeHtmlContent(answer.contentFormatted || '')}</span>
-          </div>
-        `;
+        html += `<strong style="color: #000;">${label})</strong> <span style="${answer.correct ? 'color: green;' : 'color: #000;'}">${safeHtmlContent(answer.contentFormatted || '')}</span>`;
+        
+        // Add line break if not the last answer
+        if (index < question.answers.length - 1) {
+          html += '<br>';
+        }
       }
     });
     

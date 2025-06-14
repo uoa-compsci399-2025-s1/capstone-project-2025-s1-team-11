@@ -230,7 +230,7 @@ const Randomiser = () => {
 
   return (
     <>
-      <Typography.Title level={1}>MCQ Randomiser</Typography.Title>
+      <Typography.Title level={1} style={{ marginTop: -16, marginBottom: 16 }}>MCQ Randomiser</Typography.Title>
       <Divider />
           <Card style={{ marginBottom: "20px" }}>
             <Space direction="vertical" size="middle" style={{ width: "100%" }}>

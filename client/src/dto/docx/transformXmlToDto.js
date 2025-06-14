@@ -344,6 +344,8 @@ const handleContentType = (classification, text, runs, para, documentXml, global
             return true;
         }
             
+
+            
         case 'section_body_end': {
             // Section body has ended, treat this as a question
             
