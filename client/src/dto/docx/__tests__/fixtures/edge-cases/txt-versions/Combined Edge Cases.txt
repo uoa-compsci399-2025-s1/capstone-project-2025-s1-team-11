@@ -1,0 +1,68 @@
+[1 mark] Case 0 - Information: This document is meant to check that typical import features can exist in the same question and document together.
+It was created in MS Word 2016 with default template settings except where noted otherwise. Margins are ‘normal’ with 2.54cm all sides. Image compression was turned off in file>options>advanced>image size and quality. The ‘Normal’ font style is used throughout. The Normal font was changed from Aptos to Times New Roman size 12. Default line spacing is single with 0pt spacing at the end of paragraphs.  
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 1 - Minimal Question: Only required formatting and the typical five answer options.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+
+This section body contains a table which should be dropped but not break the import process:
+C0R0C1R0C0R1C1R1An image is also included:
+
+Two questions are nested in this section.
+
+[1 mark] Case 2,3,4 - Soft returns, font modifiers, 
+Should allow line breaks within the question body like this line.
+
+And this one after two soft returns.
+Font modifiers: bold italic underline bold-italic bold-underline italic-underline bold-italic-underline.
+is
+Answers should allow line breaks in the same way
+Like this, without causing issues with answer separation.
+And subscript superscript and strikethrouth.
+Unsupported highlight.
+Another new line.
+Bold-italic answer
+Italic-underline answer
+Bold-italic
+and underlined answer with a new line.
+
+[2.25 marks] Case 5, 6, 7, 8, 9 - Inline Equations: ax^2+bx+c= ? and block equations:
+ax^2+bx+c= ?
+symbols Omega ?, Pi ?, and Sigma ?. And a code block.
+First answer: (-b±?(b^2-4ac))/2a
+Second answer: ? infinity and µ my and a code block
+Third answer: ?_a^b??(x-c)?^2 
+?_a^b??(x-c)?^2 
+Fourth answer: (((A?B)) ??(B ??C)) ?+ ((B?C ?)) ?
+Fifth answer: A ??B ??C+A ??B?C+ A?B?C ?+ A?B ??C
+
+
+[1 mark] Case 11 - Normal question: Just to show previous questions’ import did not break this one.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+
+
+
+VERSION 00004321		THIS-SHOULD-NOT-SHOW
+
+
+
+
+
+
+
+
+

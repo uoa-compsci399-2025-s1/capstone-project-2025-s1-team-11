@@ -1,0 +1,74 @@
+[1 mark] Question 1. Information: This document was created in MS Word 2016 with default template settings except where noted otherwise. Margins are ‘normal’ with 2.54cm all sides. Image compression was turned off in file>options>advanced>image size and quality. The ‘Normal’ font style is used throughout. The Normal font was changed from Aptos to Times New Roman size 12. Default line spacing is single with 0pt spacing at the end of paragraphs.  
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Question 2. This and the first question should be un-nested since there was no explicit section break used at the start of this document.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+
+Section 1. This is a section body. It is the content that appears after a section break. This would typically contain information used to help answer the next few questions, stating something to that effect like “Use this the following diagram to answer the next two questions.” After the relevant questions, another section break should mark the end of the section. The questions that fall after the opening and closing section breaks should be loaded as nested in the section. The closing section break does not imply the start of another section but a return to un-nested questions.
+Notes: Some legacy MCQ docx include tables in section bodies. Tables in MS Word require a hard return (new paragraph) to prevent absorbing preceding text. While paragraphs are used in questions as delimiters to show start of each answer and the end of all answers, in sections, paragraphs have been ignored. The square bracket marks tag or a bookmark are the main features that could be used to detect the end of the section body and start of the first nested question which is unfortunately inconsistent with how questions could normally be detected with a double hard return. 
+C0R0C1R0C0R1C1R1A simple table is inserted above. It is expected to be dropped during import but a warning should be raised to the user.
+Ideally detection of end of section body by double hard return would be implemented as a fallback to allow future MCQ docx to use double hard return as a ‘start of next question’ indicator. 
+The following two questions should be nested in this section.
+
+[1 mark] Question 3. First question in section 1.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Question 4. Second question in section 1.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+
+[1 mark] Question 5. Section 1 should be closed before this question. This question should not be nested in any section but appear after section 1.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Question 6. Also not nested.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+
+This is the 2nd section. It is much like section 1 just checking that the closing and opening of a new section happens properly. An image is present in this section body. This section only contains one nested question.
+
+Image above shows a tree datastructure.
+
+[1 mark] This is the 7th question - the only question in the 2nd section.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+
+
+Section 3 is being used as an information block only. That is, it’s a section with no nested questions. There were no un-nested questions between section 2 and 3 - two section breaks we used to close the previous section and immediately open this section.
+
+
+[1 mark] VIII’th qstn. This question should be loaded un-nested despite the previous section not containing any questions.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+

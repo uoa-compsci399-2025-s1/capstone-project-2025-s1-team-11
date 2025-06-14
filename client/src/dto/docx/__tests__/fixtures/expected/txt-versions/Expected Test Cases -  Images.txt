@@ -1,0 +1,127 @@
+[1 mark] Case 0 - Information: This document was created in MS Word 2016 with default template settings except where noted otherwise. Margins are ‘normal’ with 2.54cm all sides. Image compression was turned off in file>options>advanced>image size and quality. The template font was changed from Aptos to Times New Roman size 12. Default line spacing is 1.16. 
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 1 - Small image: The following .png should be small enough to be inserted in docx without resizing and appear 6cm wide and 2cm high at 100% scale:
+
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 2 - Full-width image: The following .png should be the full width of an A4 page within 2.54cm margins:
+
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 3 – Full height image: The following .png should be the full height of an A4 page within 2.54cm margins. There is only a soft return at the end of this line but on the input docx this image appears on the next page.
+
+This first answer appears on the page after the preceeding image.
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 4 – Extra wide .png at 100% scale:
+
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 5 – Extra tall .png at 100% scale: 
+
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 6 - Oversize .png both dimensions at 100% scale:
+
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 7 - Double width .png scaled to 50%:
+
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 8 - Multiple instances, different scales: First .png 100% scale:
+
+Second .png 50% scale:
+
+Third .png 200% scale:
+
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 9 - Image file types: .bmp:
+
+.jpg:
+
+.gif:
+
+
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 10 – Inline images:  < Image placed in-line here.
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 11 – 180deg Rotation:
+
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 12 - Adjacent images:
+
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 13 - Multiple images, new lines:
+
+
+First answer
+Second answer
+Third answer
+Fourth answer
+Fifth answer
+
+[1 mark] Case 14 - Images in answers.
+First answer image: 
+Second answer image: 
+
+
+Fifth answer no image but previous answers were images only.
+
