@@ -135,8 +135,8 @@ function safeHtmlContent(html) {
 
   html = html.trim();
 
-  // Convert 43554-delimited expressions to inline math ($...$)
-  html = html.replace(/43554(.*?)43554/g, (_, inner) => `$${inner}$`);
+  // Convert to display math ($$...$$)
+  html = html.replace(/43554(.*?)43554/g, (_, inner) => `$$${inner}$$`);
 
   // Remove empty <p> and <div> tags
   html = html.replace(/<(p|div)>\s*<\/\1>/g, '');
