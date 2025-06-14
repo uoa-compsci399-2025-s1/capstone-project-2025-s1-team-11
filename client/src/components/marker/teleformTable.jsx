@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Table } from "antd";
 import AnswerGrid from "./AnswerGrid";
 
@@ -29,14 +29,26 @@ const columns = (answerKey) => [
   }
 ];
 
-const TeleformTable = ({ data, answerKey = {} }) => (
-  <Table
-    columns={columns(answerKey)}
-    dataSource={data.map((row, idx) => ({ ...row, key: idx }))}
-    pagination={{ pageSize: 5, showSizeChanger: true }}
-    bordered
-    scroll={{ x: true }}
-  />
-);
+const TeleformTable = ({ data, answerKey = {} }) => {
+  const [pageSize, setPageSize] = useState(10);
+
+  const handleShowSizeChange = (current, size) => {
+    setPageSize(size);
+  };
+
+  return (
+    <Table
+      columns={columns(answerKey)}
+      dataSource={data.map((row, idx) => ({ ...row, key: idx }))}
+      pagination={{ 
+        pageSize: pageSize, 
+        showSizeChanger: true,
+        onShowSizeChange: handleShowSizeChange
+      }}
+      bordered
+      scroll={{ x: true }}
+    />
+  );
+};
 
 export default TeleformTable;

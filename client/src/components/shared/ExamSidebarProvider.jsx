@@ -1,15 +1,17 @@
 import React, { useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Button, Tooltip, Row, Col } from 'antd';
+import { Button, Tooltip, Row, Col, Modal } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { selectExamData } from '../../store/exam/selectors';
 import { handleExamDetailsSave } from '../../services/examEditService';
 import ExamSidebar from './ExamSidebar';
 import EditExamModal from './EditExamModal';
+import useMessage from '../../hooks/useMessage';
 
 const ExamSidebarProvider = ({ children }) => {
   const dispatch = useDispatch();
   const exam = useSelector(selectExamData);
+  const message = useMessage();
   
   // state management for the sidebar
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -20,7 +22,9 @@ const ExamSidebarProvider = ({ children }) => {
     courseCode: '',
     courseName: '',
     semester: '',
-    year: ''
+    year: '',
+    versions: '',
+    teleformOptions: ''
   });
 
   React.useEffect(() => {
@@ -30,7 +34,9 @@ const ExamSidebarProvider = ({ children }) => {
         courseCode: exam.courseCode || '',
         courseName: exam.courseName || '',
         semester: exam.semester || '',
-        year: exam.year || ''
+        year: exam.year || '',
+        versions: Array.isArray(exam.versions) ? exam.versions.join(', ') : (exam.versions || ''),
+        teleformOptions: Array.isArray(exam.teleformOptions) ? exam.teleformOptions.join(', ') : (exam.teleformOptions || '')
       });
     }
   }, [exam]);
@@ -44,8 +50,27 @@ const ExamSidebarProvider = ({ children }) => {
   }, []);
 
   const handleEditDetailsSave = useCallback(() => {
-    handleExamDetailsSave(editDetailsData, dispatch, () => setShowEditDetailsModal(false));
-  }, [editDetailsData, dispatch]);
+    // Check if teleformOptions length has changed
+    const currentTeleformOptions = Array.isArray(exam.teleformOptions) ? exam.teleformOptions : [];
+    const newTeleformOptionsArray = editDetailsData.teleformOptions 
+      ? editDetailsData.teleformOptions.split(',').map(o => o.trim()).filter(Boolean)
+      : [];
+    
+    const lengthChanged = currentTeleformOptions.length !== newTeleformOptionsArray.length;
+    
+    handleExamDetailsSave(editDetailsData, dispatch, () => {
+      setShowEditDetailsModal(false);
+      
+      // Show alert if teleformOptions length has changed
+      if (lengthChanged) {
+        Modal.info({
+          title: 'Teleform Options Changed',
+          content: 'Number of teleform options changed - please "Shuffle All Answers" in Randomiser module',
+          okText: 'OK'
+        });
+      }
+    });
+  }, [editDetailsData, dispatch, exam.teleformOptions, message]);
 
   const handleEditDetails = useCallback(() => {
     setShowEditDetailsModal(true);
