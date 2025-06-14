@@ -146,9 +146,6 @@ const Randomiser = () => {
           setIsImportingKey(false);
           return;
         }
-
-        // Add the shouldCreate flag to marking key data for this case
-        markingKeyData.shouldCreate = true;
       }
       // Case 2: Question count mismatch
       else if (markingKeyQuestionCount !== questionCount) {
@@ -333,8 +330,7 @@ const Randomiser = () => {
                   type="default"
                   onClick={handleImportMarkingKey}
                   loading={isImportingKey}
-                  disabled={!exam}
-                  style={!exam ? {} : {
+                  style={{
                     borderColor: token.colorPrimary,
                     color: token.colorPrimary
                   }}
