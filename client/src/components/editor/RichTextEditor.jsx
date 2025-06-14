@@ -121,6 +121,7 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
           background-color: ${token.colorBgContainer};
           overflow: hidden;
           position: relative;
+          font-family: 'Times New Roman', Times, serif;
         }
         .ProseMirror p {
           margin: 0;
@@ -633,7 +634,7 @@ const CompactRichTextEditor = ({ content, onChange  }) => { //placeholder = 'Ent
                   (editor.getAttributes('textStyle').fontFamily || 'default') :
                   'default'}
               >
-                <Option value="default">Default</Option>
+                <Option value="default">Times New Roman</Option>
                 <Option value="'Times New Roman', Times, serif" style={{ fontFamily: 'Times New Roman' }}>Times New Roman</Option>
                 <Option value="'Courier New', Courier, monospace" style={{ fontFamily: 'Courier New' }}>Courier New</Option>
                 <Option value="Arial, Helvetica, sans-serif" style={{ fontFamily: 'Arial' }}>Arial</Option>

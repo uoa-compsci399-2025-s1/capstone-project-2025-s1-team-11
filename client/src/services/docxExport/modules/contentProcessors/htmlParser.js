@@ -15,6 +15,9 @@ export function parseHtmlContent(htmlString) {
         };
     }
 
+    // Clean up potential problematic characters from MoodleXML content
+    htmlString = cleanupMoodleXmlContent(htmlString);
+
     // Pre-process LaTeX math expressions in the HTML
     htmlString = preprocessLatexMath(htmlString);
 
@@ -31,7 +34,44 @@ export function parseHtmlContent(htmlString) {
     // Process all child nodes
     processNode(body, result);
 
+    // Additional cleanup of the final text
+    result.text = cleanupProcessedText(result.text);
+
     return result;
+}
+
+/**
+ * Clean up problematic characters that might be present in MoodleXML content
+ * @param {string} htmlString - HTML string to clean
+ * @returns {string} Cleaned HTML string
+ */
+function cleanupMoodleXmlContent(htmlString) {
+    return htmlString
+        // Remove zero-width spaces and other invisible characters
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        // Remove left-to-right marks and right-to-left marks
+        .replace(/[\u200E\u200F]/g, '')
+        // Normalize Unicode combining characters
+        .normalize('NFKC')
+        // Remove carriage returns that might interfere with parsing
+        .replace(/\r/g, '')
+        // Clean up excessive whitespace while preserving single spaces
+        .replace(/[ \t]+/g, ' ');
+}
+
+/**
+ * Clean up the processed text content
+ * @param {string} text - Processed text to clean
+ * @returns {string} Cleaned text
+ */
+function cleanupProcessedText(text) {
+    return text
+        // Remove any remaining problematic characters
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        // Clean up multiple consecutive newlines
+        .replace(/\n\n+/g, '\n\n')
+        // Trim whitespace at start and end
+        .trim();
 }
 
 /**
@@ -81,11 +121,24 @@ function processNode(node, result) {
 
             case 'p':
             case 'div':
-                // Process children and add newline
+                // Check if this is likely a container paragraph (single paragraph with no siblings)
+                // rather than a true paragraph break
+                const parent = node.parentNode;
+                const isContainerParagraph = parent && 
+                    parent.nodeName.toLowerCase() === 'body' && 
+                    parent.children.length === 1 &&
+                    node.textContent.trim().length > 0;
+                
+                // Process children
                 for (const child of node.childNodes) {
                     processNode(child, result);
                 }
-                result.text += '\n';
+                
+                // Only add newline if this is NOT a container paragraph
+                // or if there are multiple paragraphs
+                if (!isContainerParagraph) {
+                    result.text += '\n';
+                }
                 break;
 
             case 'strong':
