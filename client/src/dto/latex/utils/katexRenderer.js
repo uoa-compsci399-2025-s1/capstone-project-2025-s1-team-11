@@ -16,8 +16,8 @@ export async function renderLatexInContainer(containerElement) {
     const { default: renderMathInElement } = await import('katex/contrib/auto-render');
     renderMathInElement(containerElement, {
       delimiters: [
-        { left: "$$", right: "$$", display: true },
-        { left: "\\(", right: "\\)", display: true },
+        { left: "$$", right: "$$", display: false },
+        { left: "\\(", right: "\\)", display: false },
         { left: "\\[", right: "\\]", display: true }
       ],
       throwOnError: false,
