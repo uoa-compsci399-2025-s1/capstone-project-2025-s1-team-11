@@ -29,13 +29,6 @@ export function Navigation({isDarkMode, setIsDarkMode}) {
     padding: "2.2em",
   };
 
-  const docButtonStyles = {
-    borderRadius: 0,
-    backgroundColor: isDarkMode ? "#1f1f1f" : "#ffffff",
-    fontWeight: 400,
-    color: isDarkMode ? "#ffffff" : undefined,
-  };
-
   const toggleTheme = () => {
     setIsDarkMode(prevMode => !prevMode);
   };
