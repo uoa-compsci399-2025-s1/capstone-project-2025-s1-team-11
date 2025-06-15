@@ -29,13 +29,6 @@ export function Navigation({isDarkMode, setIsDarkMode}) {
     padding: "2.2em",
   };
 
-  const docButtonStyles = {
-    borderRadius: 0,
-    backgroundColor: isDarkMode ? "#1f1f1f" : "#ffffff",
-    fontWeight: 400,
-    color: isDarkMode ? "#ffffff" : undefined,
-  };
-
   const toggleTheme = () => {
     setIsDarkMode(prevMode => !prevMode);
   };
@@ -71,9 +64,11 @@ export function Navigation({isDarkMode, setIsDarkMode}) {
               <Button type={isActive ? "primary" : "text"} style={isActive ? primaryButtonStyles : textButtonStyles}>About</Button>
             )}
           </NavLink>
-          <a href="/documentation" target="_blank" rel="noopener noreferrer">
-            <Button type="text" style={docButtonStyles}>Documentation</Button>
-          </a>
+          <NavLink to="/documentation" end>
+            {({ isActive }) => (
+              <Button type={isActive ? "primary" : "text"} style={isActive ? primaryButtonStyles : textButtonStyles}>Documentation</Button>
+            )}
+          </NavLink>
           <ThemeToggleButton isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
         </Space>
       </div>

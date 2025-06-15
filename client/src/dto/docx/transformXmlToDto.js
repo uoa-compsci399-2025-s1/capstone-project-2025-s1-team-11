@@ -196,6 +196,16 @@ export const transformXmlToDto = (xmlJson, relationships = {}, imageData = {}, d
             // Check if we have section content to finalize
             const hadSectionContent = state.sectionContentBlocks.length > 0 || state.currentSection;
             if (hadSectionContent) {
+                // If we have accumulated section content blocks but no currentSection, create it
+                if (state.sectionContentBlocks.length > 0 && !state.currentSection) {
+                    state.currentSection = {
+                        type: 'section',
+                        contentFormatted: state.sectionContentBlocks.join('<p>\n'),
+                        questions: []
+                    };
+                    state.inSection = true;
+                }
+                
                 // This is a CLOSING section break - finalize section and return to un-nested mode
                 finalizeSection(state, dto, addWarning);
                 state.afterSectionBreak = false; // Return to un-nested mode
