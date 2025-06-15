@@ -1,5 +1,5 @@
 import { Layout, Typography, Divider, Anchor, Space, Card, Row, Col } from "antd";
-import { PlayCircleOutlined } from "@ant-design/icons";
+import { PlayCircleOutlined, FileWordOutlined } from "@ant-design/icons";
 
 const { Content } = Layout;
 const { Title, Paragraph, Text } = Typography;
@@ -13,15 +13,6 @@ const DocumentationPage = () => {
           <Title level={2} style={{ textAlign: "center", marginBottom: "40px" }}>
             Documentation
           </Title>
-          
-          <Card style={{ marginBottom: "24px" }}>
-            <Anchor affix={false}>
-              <Link href="#builder" title="MCQ Builder" />
-              <Link href="#randomiser" title="MCQ Randomiser" />
-              <Link href="#automarker" title="MCQ Automarker" />
-            </Anchor>
-          </Card>
-
           <section id="builder">
             <Card>
               <Title level={3}>
@@ -45,6 +36,24 @@ const DocumentationPage = () => {
                       DOCX Input Formatting Criteria (PDF)
                     </a>.
                   </Paragraph>
+  
+                  <Text strong>DOCX Templates:</Text>
+
+                    <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+                    <li style={{ marginBottom: '8px' }}><FileWordOutlined style={{ color: '#1890ff', marginRight: '8px' }} />
+                      <a href="/docs/questions_only_template.docx" target="_blank" rel="noopener noreferrer">Multiple Choice Questions - no Sections</a> (Start with this)
+                    </li>
+                    <li style={{ marginBottom: '8px' }}><FileWordOutlined style={{ color: '#1890ff', marginRight: '8px' }} />
+                      <a href="/docs/sections_template.docx" target="_blank" rel="noopener noreferrer">Mulitple Choice Questions - with Sections</a>
+                    </li>
+                    <li style={{ marginBottom: '8px' }}><FileWordOutlined style={{ color: '#1890ff', marginRight: '8px' }} />
+                      <a href="/docs/cover_page_template_simplified.docx" target="_blank" rel="noopener noreferrer">Cover Page and Appendix - Simplified</a>
+                    </li>
+                    <li style={{ marginBottom: '8px' }}><FileWordOutlined style={{ color: '#1890ff', marginRight: '8px' }} />
+                      <a href="/docs/cover_page_template_detailed.docx" target="_blank" rel="noopener noreferrer">Cover Page and Appendix - Detailed</a> (With tables, overflow page etc.)
+                    </li>
+                    </ul>
+
                 </Col>
                 <Col xs={24} lg={12}>
                   <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden" }}>
