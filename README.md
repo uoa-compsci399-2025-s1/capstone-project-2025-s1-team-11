@@ -27,9 +27,9 @@ In order to install and use Assessly, you will need to install:
 2. Install npm prerequisites ```npm install```
 
 #### 2. Server-side (optional)
-5. Navigate to client directory ```cd ../server```
-6. Open the backend folder and create a venv ```cd <path>/backend``` ```python -m venv /.venv```
-7. Still in the backend folder, run ```pip install -r requirements.txt```
+5. Navigate to server directory ```cd server```
+6. Create a venv ```python -m venv .venv```
+7. Still in the server folder, run ```pip install -r requirements.txt```
 
 ### Running the Development Environment
 
@@ -37,7 +37,7 @@ In order to install and use Assessly, you will need to install:
 1. Start the clientside development environment using ```npm run dev```
 
 #### Option 2. Serverside development environment
-1. Start the server using ```cd <path>/backend``` and running ```python app.py```
+1. Start the server using ```cd server``` and running ```python app.py```
 2. Run ```npm run build``` to create a distributable - you can run this anytime you want to update what the server is sending.
 
 ## Usage
